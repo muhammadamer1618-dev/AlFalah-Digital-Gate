@@ -13,7 +13,6 @@ content="width=device-width, initial-scale=1.0">
 بوابة الفلاح الرقمية
 </title>
 
-
 <link
 rel="preconnect"
 href="https://fonts.googleapis.com">
@@ -27,42 +26,33 @@ crossorigin>
 href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap"
 rel="stylesheet">
 
-
 <style>
 
 :root{
 
   --green:#004c3f;
-
   --green2:#006653;
-
   --green3:#0b7864;
 
   --gold:#c9972c;
-
   --gold2:#f0cf79;
 
   --cream:#f7f1e4;
-
   --cream2:#fffdf8;
 
   --white:#ffffff;
 
   --text:#17372f;
-
   --muted:#6a776f;
 
   --danger:#b42318;
 
 }
 
-
 *{
 
   box-sizing:border-box;
-
   margin:0;
-
   padding:0;
 
   font-family:
@@ -73,18 +63,15 @@ rel="stylesheet">
 
 }
 
-
 html,
 body{
 
   width:100%;
-
   height:100%;
 
   overflow:hidden;
 
 }
-
 
 body{
 
@@ -101,7 +88,6 @@ body{
 
 }
 
-
 button,
 input{
 
@@ -111,16 +97,14 @@ input{
 
 
 /* =========================================
-   MAIN
+   MAIN PAGE
 ========================================= */
-
 
 .page{
 
   position:relative;
 
   width:100vw;
-
   height:100vh;
 
   overflow:hidden;
@@ -141,7 +125,6 @@ input{
    BACKGROUND DECORATION
 ========================================= */
 
-
 .page::before{
 
   content:"";
@@ -149,7 +132,6 @@ input{
   position:absolute;
 
   width:520px;
-
   height:300px;
 
   background:
@@ -161,7 +143,6 @@ input{
   );
 
   top:-170px;
-
   right:-120px;
 
   border-radius:
@@ -179,7 +160,6 @@ input{
 
 }
 
-
 .page::after{
 
   content:"";
@@ -187,7 +167,6 @@ input{
   position:absolute;
 
   width:520px;
-
   height:300px;
 
   background:
@@ -199,7 +178,6 @@ input{
   );
 
   bottom:-190px;
-
   left:-120px;
 
   border-radius:
@@ -222,7 +200,6 @@ input{
    CORNER TEXT
 ========================================= */
 
-
 .corner-left,
 .corner-right{
 
@@ -240,33 +217,23 @@ input{
 
 }
 
-
 .corner-right{
 
-  /*
-  تم رفع النص لأعلى
-  حتى لا يصطدم بالخط الذهبي
-  */
-
-  top:12px;
-
+  top:10px;
   right:34px;
 
   text-align:right;
 
 }
 
-
 .corner-left{
 
-  bottom:28px;
-
+  bottom:30px;
   left:34px;
 
   text-align:left;
 
 }
-
 
 .corner-right::after,
 .corner-left::after{
@@ -276,7 +243,6 @@ input{
   display:block;
 
   width:54px;
-
   height:2px;
 
   background:
@@ -285,7 +251,6 @@ input{
   margin-top:8px;
 
 }
-
 
 .corner-left::after{
 
@@ -297,7 +262,6 @@ input{
 /* =========================================
    HEADER
 ========================================= */
-
 
 .top{
 
@@ -316,47 +280,37 @@ input{
    LOGO
 ========================================= */
 
-
 .logo{
 
-  width:100px;
-
-  height:100px;
+  width:96px;
+  height:96px;
 
   object-fit:contain;
 
   display:block;
 
   margin:
-  0 auto 1px;
-
-
-  /*
-  يجعل الخلفية البيضاء الموجودة
-  داخل JPEG تندمج مع لون الصفحة
-  */
+  0 auto 0;
 
   mix-blend-mode:multiply;
 
-
   filter:
 
-  contrast(1.04)
+  contrast(1.05)
 
   saturate(1.05)
 
   drop-shadow(
     0 4px 7px
-    rgba(0,0,0,.06)
+    rgba(0,0,0,.05)
   );
 
 }
 
 
 /* =========================================
-   MAIN TITLE
+   TITLE
 ========================================= */
-
 
 .main-title{
 
@@ -371,7 +325,7 @@ input{
 
   font-weight:900;
 
-  line-height:1.05;
+  line-height:1.02;
 
   margin-top:0;
 
@@ -387,10 +341,9 @@ input{
    ENGLISH TITLE
 ========================================= */
 
-
 .english-title{
 
-  margin-top:4px;
+  margin-top:3px;
 
   color:var(--gold);
 
@@ -415,14 +368,12 @@ input{
 
 }
 
-
 .english-title::before,
 .english-title::after{
 
   content:"";
 
   width:70px;
-
   height:2px;
 
   background:
@@ -434,7 +385,6 @@ input{
   );
 
 }
-
 
 .english-title::after{
 
@@ -453,7 +403,6 @@ input{
    PORTAL GRID
 ========================================= */
 
-
 .portal-grid{
 
   position:relative;
@@ -462,8 +411,8 @@ input{
 
   width:
   min(
-    1280px,
-    96vw
+    1120px,
+    90vw
   );
 
   margin:
@@ -490,16 +439,15 @@ input{
    PORTAL CARD
 ========================================= */
 
-
 .portal-card{
 
   position:relative;
 
-  min-height:245px;
+  min-height:205px;
 
   border:none;
 
-  border-radius:28px;
+  border-radius:25px;
 
   cursor:pointer;
 
@@ -520,18 +468,12 @@ input{
   0 0 0 6px
   rgba(255,241,196,.8),
 
-  0 18px 34px
-  rgba(0,76,63,.22),
+  0 16px 30px
+  rgba(0,76,63,.20),
 
   inset
   0 1px 0
   rgba(255,255,255,.2);
-
-  transition:
-
-  transform .24s ease,
-
-  box-shadow .24s ease;
 
   overflow:hidden;
 
@@ -545,8 +487,28 @@ input{
 
   justify-content:center;
 
+  transform:
+  scale(1);
+
+  transition:
+
+  transform
+  .28s
+  cubic-bezier(.2,.8,.2,1),
+
+  box-shadow
+  .28s ease,
+
+  filter
+  .28s ease;
+
+  will-change:
+  transform;
+
 }
 
+
+/* light reflection */
 
 .portal-card::before{
 
@@ -569,6 +531,8 @@ input{
 }
 
 
+/* bottom decoration */
+
 .portal-card::after{
 
   content:"";
@@ -576,12 +540,11 @@ input{
   position:absolute;
 
   left:-20%;
-
   right:-20%;
 
   bottom:-55px;
 
-  height:110px;
+  height:100px;
 
   border-radius:50%;
 
@@ -589,8 +552,14 @@ input{
 
   rgba(255,255,255,.04);
 
+  pointer-events:none;
+
 }
 
+
+/* =========================================
+   CARD ZOOM
+========================================= */
 
 .portal-card:hover{
 
@@ -598,17 +567,22 @@ input{
 
   translateY(-7px)
 
-  scale(1.012);
+  scale(1.065);
+
+  z-index:20;
+
+  filter:
+  brightness(1.06);
 
   box-shadow:
 
   0 0 0 3px
-  rgba(226,182,73,.95),
+  rgba(230,185,74,.98),
 
   0 0 0 7px
-  rgba(255,243,204,.85),
+  rgba(255,243,204,.92),
 
-  0 25px 45px
+  0 27px 48px
   rgba(0,64,53,.32);
 
 }
@@ -618,16 +592,10 @@ input{
    CARD ICON
 ========================================= */
 
-
 .card-icon{
 
-  /*
-  تم تصغير الأيقونات
-  */
-
-  width:106px;
-
-  height:106px;
+  width:80px;
+  height:80px;
 
   border-radius:50%;
 
@@ -635,7 +603,7 @@ input{
 
   place-items:center;
 
-  font-size:46px;
+  font-size:34px;
 
   background:
 
@@ -646,29 +614,66 @@ input{
   );
 
   border:
-  5px solid
+
+  4px solid
   var(--gold);
 
   box-shadow:
 
-  0 0 0 4px
-  rgba(255,226,140,.32),
+  0 0 0 3px
+  rgba(255,226,140,.30),
 
-  0 0 20px
-  rgba(231,189,81,.40),
+  0 0 17px
+  rgba(231,189,81,.35),
 
   inset
-  0 0 18px
+  0 0 15px
   rgba(0,0,0,.28);
 
-  margin-bottom:17px;
+  margin-bottom:14px;
 
   position:relative;
 
   z-index:2;
 
+  transition:
+
+  transform
+  .28s
+  cubic-bezier(.2,.8,.2,1),
+
+  box-shadow
+  .28s ease;
+
 }
 
+
+/* icon zoom */
+
+.portal-card:hover
+.card-icon{
+
+  transform:
+  scale(1.13);
+
+  box-shadow:
+
+  0 0 0 3px
+  rgba(255,226,140,.40),
+
+  0 0 27px
+  rgba(231,189,81,.60),
+
+  inset
+  0 0 15px
+  rgba(0,0,0,.28);
+
+}
+
+
+/* =========================================
+   CARD TITLE
+========================================= */
 
 .portal-card h2{
 
@@ -676,7 +681,7 @@ input{
 
   z-index:2;
 
-  font-size:30px;
+  font-size:27px;
 
   font-weight:900;
 
@@ -687,8 +692,17 @@ input{
   0 2px 5px
   rgba(0,0,0,.22);
 
+  transition:
+  transform .28s ease;
+
 }
 
+.portal-card:hover h2{
+
+  transform:
+  scale(1.05);
+
+}
 
 .portal-card h2::after{
 
@@ -696,17 +710,25 @@ input{
 
   display:block;
 
-  width:54px;
-
+  width:48px;
   height:3px;
 
   background:
   var(--gold);
 
   margin:
-  12px auto 0;
+  10px auto 0;
 
   border-radius:4px;
+
+  transition:
+  width .28s ease;
+
+}
+
+.portal-card:hover h2::after{
+
+  width:68px;
 
 }
 
@@ -714,7 +736,6 @@ input{
 /* =========================================
    LEADERSHIP
 ========================================= */
-
 
 .leadership{
 
@@ -740,17 +761,10 @@ input{
 
   flex:none;
 
-
-  /*
-  تحريك المشرف والمدير
-  قليلًا ناحية اليمين
-  */
-
   transform:
-  translateX(48px);
+  translateX(42px);
 
 }
-
 
 .leader{
 
@@ -783,7 +797,6 @@ input{
 
 }
 
-
 .leader::before{
 
   content:"";
@@ -793,7 +806,6 @@ input{
   top:-2px;
 
   right:24%;
-
   left:24%;
 
   height:3px;
@@ -809,7 +821,6 @@ input{
 
 }
 
-
 .leader-role{
 
   color:#ad7b15;
@@ -821,7 +832,6 @@ input{
   margin-bottom:2px;
 
 }
-
 
 .leader-name{
 
@@ -837,7 +847,6 @@ input{
 /* =========================================
    DESIGN CREDIT
 ========================================= */
-
 
 .credit{
 
@@ -875,14 +884,12 @@ input{
 
 }
 
-
 .credit::before,
 .credit::after{
 
   content:"";
 
   width:55px;
-
   height:2px;
 
   background:
@@ -894,7 +901,6 @@ input{
   );
 
 }
-
 
 .credit::after{
 
@@ -912,7 +918,6 @@ input{
 /* =========================================
    MODAL
 ========================================= */
-
 
 .modal{
 
@@ -939,13 +944,11 @@ input{
 
 }
 
-
 .modal.open{
 
   display:flex;
 
 }
-
 
 .modal-box{
 
@@ -983,7 +986,6 @@ input{
 
 }
 
-
 .modal-head{
 
   display:flex;
@@ -1002,7 +1004,6 @@ input{
 
 }
 
-
 .modal-head h3{
 
   color:var(--green);
@@ -1013,11 +1014,9 @@ input{
 
 }
 
-
 .close-btn{
 
   width:40px;
-
   height:40px;
 
   border:none;
@@ -1034,7 +1033,6 @@ input{
 
 }
 
-
 .system-list{
 
   display:grid;
@@ -1044,7 +1042,6 @@ input{
   margin-top:18px;
 
 }
-
 
 .system-link{
 
@@ -1081,7 +1078,6 @@ input{
 
 }
 
-
 .system-link:hover{
 
   border-color:
@@ -1094,7 +1090,6 @@ input{
 
 }
 
-
 button.system-link{
 
   font:inherit;
@@ -1103,13 +1098,11 @@ button.system-link{
 
 }
 
-
 .system-text{
 
   text-align:right;
 
 }
-
 
 .system-text strong{
 
@@ -1123,7 +1116,6 @@ button.system-link{
 
 }
 
-
 .system-text span{
 
   display:block;
@@ -1135,7 +1127,6 @@ button.system-link{
   font-size:13px;
 
 }
-
 
 .arrow{
 
@@ -1152,7 +1143,6 @@ button.system-link{
    PHONE LOOKUP
 ========================================= */
 
-
 .phone-area{
 
   text-align:center;
@@ -1162,11 +1152,9 @@ button.system-link{
 
 }
 
-
 .phone-big-icon{
 
   width:76px;
-
   height:76px;
 
   margin:
@@ -1200,7 +1188,6 @@ button.system-link{
 
 }
 
-
 .phone-area h4{
 
   color:var(--green);
@@ -1213,7 +1200,6 @@ button.system-link{
 
 }
 
-
 .phone-area p{
 
   color:var(--muted);
@@ -1225,7 +1211,6 @@ button.system-link{
   margin-bottom:15px;
 
 }
-
 
 .phone-input{
 
@@ -1255,7 +1240,6 @@ button.system-link{
 
 }
 
-
 .phone-input:focus{
 
   border-color:
@@ -1267,7 +1251,6 @@ button.system-link{
   rgba(201,151,44,.14);
 
 }
-
 
 .phone-btn{
 
@@ -1299,7 +1282,6 @@ button.system-link{
 
 }
 
-
 .phone-btn:disabled{
 
   opacity:.6;
@@ -1307,7 +1289,6 @@ button.system-link{
   cursor:wait;
 
 }
-
 
 .message{
 
@@ -1320,7 +1301,6 @@ button.system-link{
   font-weight:800;
 
 }
-
 
 .back-btn{
 
@@ -1345,7 +1325,6 @@ button.system-link{
    RESPONSIVE
 ========================================= */
 
-
 @media(max-width:1000px){
 
   html,
@@ -1354,7 +1333,6 @@ button.system-link{
     overflow:auto;
 
   }
-
 
   .page{
 
@@ -1369,13 +1347,18 @@ button.system-link{
 
   }
 
-
   .portal-grid{
 
     grid-template-columns:
     repeat(
       2,
       1fr
+    );
+
+    width:
+    min(
+      760px,
+      92vw
     );
 
     flex:none;
@@ -1385,13 +1368,11 @@ button.system-link{
 
   }
 
-
   .portal-card{
 
-    min-height:230px;
+    min-height:190px;
 
   }
-
 
   .corner-left,
   .corner-right{
@@ -1399,7 +1380,6 @@ button.system-link{
     display:none;
 
   }
-
 
   .leadership{
 
@@ -1418,15 +1398,12 @@ button.system-link{
 
 @media(max-width:600px){
 
-
   .logo{
 
     width:82px;
-
     height:82px;
 
   }
-
 
   .main-title{
 
@@ -1434,13 +1411,11 @@ button.system-link{
 
   }
 
-
   .english-title{
 
     font-size:15px;
 
   }
-
 
   .portal-grid{
 
@@ -1454,37 +1429,48 @@ button.system-link{
 
   }
 
-
   .portal-card{
 
-    min-height:180px;
+    min-height:165px;
 
-    border-radius:22px;
+    border-radius:21px;
 
   }
-
 
   .card-icon{
 
-    width:78px;
+    width:66px;
+    height:66px;
 
-    height:78px;
+    font-size:28px;
 
-    font-size:34px;
+    border-width:3px;
 
-    border-width:4px;
-
-    margin-bottom:12px;
+    margin-bottom:10px;
 
   }
-
 
   .portal-card h2{
 
-    font-size:21px;
+    font-size:20px;
 
   }
 
+  .portal-card:hover{
+
+    transform:
+    translateY(-4px)
+    scale(1.035);
+
+  }
+
+  .portal-card:hover
+  .card-icon{
+
+    transform:
+    scale(1.08);
+
+  }
 
   .leadership{
 
@@ -1494,14 +1480,12 @@ button.system-link{
 
   }
 
-
   .leader{
 
     padding:
     9px 12px;
 
   }
-
 
   .credit{
 
