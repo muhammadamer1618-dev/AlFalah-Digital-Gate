@@ -1,1 +1,697 @@
-1
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بوابة الفلاح الرقمية</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --green:#0d4f43;
+      --green-2:#0f6758;
+      --gold:#c89b3c;
+      --gold-2:#e1ba63;
+      --ivory:#f8f5ee;
+      --white:#ffffff;
+      --text:#1e2b27;
+      --muted:#6e7d77;
+      --border:#e8e0cf;
+      --shadow:0 18px 45px rgba(13,79,67,.12);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:"Tajawal",sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(200,155,60,.10), transparent 26%),
+        linear-gradient(180deg,#fff 0%,var(--ivory) 100%);
+    }
+
+    .page{
+      width:min(1180px, calc(100% - 28px));
+      margin:auto;
+      padding:24px 0 36px;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      background:rgba(255,255,255,.96);
+      border:1px solid var(--border);
+      border-radius:30px;
+      box-shadow:var(--shadow);
+      padding:34px 24px 30px;
+      text-align:center;
+    }
+
+    .hero:before,
+    .hero:after{
+      content:"";
+      position:absolute;
+      border-radius:50%;
+      pointer-events:none;
+    }
+
+    .hero:before{
+      width:280px;
+      height:280px;
+      background:rgba(13,79,67,.05);
+      top:-140px;
+      right:-80px;
+    }
+
+    .hero:after{
+      width:220px;
+      height:220px;
+      background:rgba(200,155,60,.08);
+      bottom:-120px;
+      left:-50px;
+    }
+
+    .logo{
+      width:150px;
+      max-width:40vw;
+      display:block;
+      margin:0 auto 10px;
+      position:relative;
+      z-index:1;
+    }
+
+    .school-name{
+      color:var(--green);
+      font-size:clamp(24px,4vw,36px);
+      font-weight:800;
+      position:relative;
+      z-index:1;
+    }
+
+    .english-name{
+      color:var(--gold);
+      font-size:15px;
+      font-weight:700;
+      letter-spacing:2px;
+      margin-top:3px;
+      position:relative;
+      z-index:1;
+    }
+
+    .portal-title{
+      margin-top:20px;
+      font-size:clamp(28px,5vw,46px);
+      color:var(--green);
+      font-weight:800;
+      position:relative;
+      z-index:1;
+    }
+
+    .portal-en{
+      color:var(--muted);
+      font-size:17px;
+      font-weight:600;
+      margin-top:4px;
+      position:relative;
+      z-index:1;
+    }
+
+    .intro{
+      max-width:760px;
+      margin:14px auto 0;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.9;
+      position:relative;
+      z-index:1;
+    }
+
+    .section-title{
+      text-align:center;
+      margin:30px 0 18px;
+    }
+
+    .section-title h2{
+      color:var(--green);
+      font-size:27px;
+      font-weight:800;
+    }
+
+    .section-title p{
+      color:var(--muted);
+      margin-top:5px;
+      font-size:14px;
+    }
+
+    .portal-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+    }
+
+    .portal-card{
+      border:1px solid var(--border);
+      background:var(--white);
+      border-radius:22px;
+      padding:24px 18px;
+      min-height:220px;
+      text-align:center;
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
+      transition:.22s ease;
+      cursor:pointer;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .portal-card:hover{
+      transform:translateY(-5px);
+      border-color:#d8c394;
+      box-shadow:0 18px 38px rgba(13,79,67,.12);
+    }
+
+    .portal-card:before{
+      content:"";
+      position:absolute;
+      top:0;
+      right:0;
+      left:0;
+      height:6px;
+      background:linear-gradient(90deg,var(--green),var(--gold));
+    }
+
+    .icon{
+      width:70px;
+      height:70px;
+      border-radius:20px;
+      margin:6px auto 16px;
+      display:grid;
+      place-items:center;
+      font-size:34px;
+      background:linear-gradient(145deg,#f4f8f6,#fff7e5);
+      border:1px solid #e7dfcf;
+    }
+
+    .portal-card h3{
+      font-size:21px;
+      color:var(--green);
+      font-weight:800;
+    }
+
+    .portal-card p{
+      color:var(--muted);
+      line-height:1.75;
+      margin-top:8px;
+      font-size:14px;
+      min-height:50px;
+    }
+
+    .enter-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      margin-top:14px;
+      min-width:130px;
+      height:42px;
+      border-radius:12px;
+      background:var(--green);
+      color:#fff;
+      font-weight:700;
+      font-size:14px;
+      text-decoration:none;
+      border:none;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .enter-btn:hover{
+      background:var(--green-2);
+    }
+
+    .vision-mission{
+      margin-top:28px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+
+    .vm-card{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:20px;
+      box-shadow:0 8px 24px rgba(0,0,0,.04);
+    }
+
+    .vm-card h3{
+      color:var(--gold);
+      font-size:20px;
+      margin-bottom:7px;
+    }
+
+    .vm-card p{
+      color:#4f5e58;
+      line-height:1.9;
+      font-size:15px;
+    }
+
+    .footer{
+      text-align:center;
+      margin-top:28px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .footer strong{
+      color:var(--green);
+    }
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.52);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:100;
+    }
+
+    .modal.open{
+      display:flex;
+    }
+
+    .modal-box{
+      width:min(620px,100%);
+      max-height:88vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:24px;
+      box-shadow:0 25px 70px rgba(0,0,0,.25);
+      padding:22px;
+      position:relative;
+    }
+
+    .modal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding-bottom:15px;
+      border-bottom:1px solid #eee6d7;
+    }
+
+    .modal-head h3{
+      color:var(--green);
+      font-size:23px;
+    }
+
+    .close-btn{
+      border:none;
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      background:#f2f2f2;
+      cursor:pointer;
+      font-size:20px;
+    }
+
+    .system-list{
+      display:grid;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .system-link{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      text-decoration:none;
+      color:inherit;
+      border:1px solid #e9e1d4;
+      border-radius:16px;
+      padding:15px 16px;
+      background:#fff;
+      transition:.18s ease;
+    }
+
+    .system-link:hover{
+      background:#faf7f0;
+      border-color:#d8c394;
+      transform:translateX(-2px);
+    }
+
+    .system-text{
+      text-align:right;
+    }
+
+    .system-text strong{
+      display:block;
+      color:var(--green);
+      font-size:16px;
+      margin-bottom:3px;
+    }
+
+    .system-text span{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .arrow{
+      color:var(--gold);
+      font-size:24px;
+      font-weight:800;
+      flex:none;
+    }
+
+    @media (max-width:950px){
+      .portal-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
+    @media (max-width:620px){
+      .page{
+        width:min(100% - 18px,1180px);
+        padding-top:10px;
+      }
+
+      .hero{
+        border-radius:22px;
+        padding:25px 14px;
+      }
+
+      .logo{
+        width:120px;
+      }
+
+      .portal-grid{
+        grid-template-columns:1fr;
+      }
+
+      .portal-card{
+        min-height:auto;
+      }
+
+      .vision-mission{
+        grid-template-columns:1fr;
+      }
+
+      .modal-box{
+        padding:17px;
+        border-radius:20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="hero">
+      <img src="logo.jpeg" alt="شعار مدارس الفلاح" class="logo">
+
+      <div class="school-name">مدارس الفلاح الأهلية</div>
+      <div class="english-name">ALFALAH SCHOOLS</div>
+
+      <h1 class="portal-title">بوابة الفلاح الرقمية</h1>
+      <div class="portal-en">AlFalah Digital Gate</div>
+
+      <p class="intro">
+        بوابة موحدة للوصول إلى الأنظمة والخدمات الرقمية بمدارس الفلاح الأهلية
+        بسهولة وسرعة من مكان واحد.
+      </p>
+    </section>
+
+    <div class="section-title">
+      <h2>اختر بوابتك</h2>
+      <p>اختر القسم المناسب للوصول إلى الخدمات المتاحة لك</p>
+    </div>
+
+    <section class="portal-grid">
+
+      <article class="portal-card" onclick="openPortal('teacher')">
+        <div class="icon">👨‍🏫</div>
+        <h3>بوابة المعلم</h3>
+        <p>الرصد، الخطة الأسبوعية، والخدمات الخاصة بالمعلمين.</p>
+        <button class="enter-btn" type="button">دخول البوابة ←</button>
+      </article>
+
+      <article class="portal-card" onclick="openPortal('supervision')">
+        <div class="icon">📋</div>
+        <h3>بوابة الإشراف</h3>
+        <p>أنظمة المتابعة والتقييم والرصد وخدمات الإشراف التربوي.</p>
+        <button class="enter-btn" type="button">دخول البوابة ←</button>
+      </article>
+
+      <article class="portal-card" onclick="openPortal('admin')">
+        <div class="icon">🏫</div>
+        <h3>بوابة الإدارة</h3>
+        <p>الوصول إلى الأنظمة الإدارية ولوحات المتابعة والخدمات الرقمية.</p>
+        <button class="enter-btn" type="button">دخول البوابة ←</button>
+      </article>
+
+      <article class="portal-card" onclick="openPortal('parent')">
+        <div class="icon">👨‍👩‍👦</div>
+        <h3>بوابة ولي الأمر</h3>
+        <p>الخطة الأسبوعية ونتائج الطالب وخدمات المتابعة لولي الأمر.</p>
+        <button class="enter-btn" type="button">دخول البوابة ←</button>
+      </article>
+
+    </section>
+
+    <section class="vision-mission">
+
+      <div class="vm-card">
+        <h3>الرؤية</h3>
+        <p>
+          الريادة في إعداد المتعلم المتميز المعتز بقيمه والمؤهل لمستقبله.
+        </p>
+      </div>
+
+      <div class="vm-card">
+        <h3>الرسالة</h3>
+        <p>
+          نقدم تعليمًا عالي الجودة في بيئة تعليمية آمنة وملهمة، ترسخ القيم،
+          وتبني المعرفة، وتطور المهارات، وتمكن المتعلم من الإبداع والابتكار والمسؤولية.
+        </p>
+      </div>
+
+    </section>
+
+    <footer class="footer">
+      <strong>مدارس الفلاح الأهلية</strong>
+      <br>
+      تصميم محمد عامر أحمد
+    </footer>
+
+  </main>
+
+  <div class="modal" id="portalModal">
+    <div class="modal-box">
+
+      <div class="modal-head">
+        <h3 id="modalTitle">الخدمات</h3>
+        <button class="close-btn" id="closeModal" type="button">×</button>
+      </div>
+
+      <div class="system-list" id="systemList"></div>
+
+    </div>
+  </div>
+
+  <script>
+    const portals = {
+
+      teacher: {
+        title: "بوابة المعلم",
+        systems: [
+          {
+            name: "رصد الدرجات - جميع المعلمين",
+            desc: "نظام راصد لجميع المواد",
+            url: "https://muhammadamer1618-dev.github.io/Rased-System/index.html"
+          },
+          {
+            name: "رصد الدرجات - اللغة الإنجليزية",
+            desc: "نظام راصد الخاص باللغة الإنجليزية",
+            url: "https://muhammadamer1618-dev.github.io/rased-insights/"
+          },
+          {
+            name: "الخطة الأسبوعية",
+            desc: "إعداد وإدارة الخطة الأسبوعية",
+            url: "https://muhammadamer1618-dev.github.io/Weekly-Plan/index.html"
+          },
+          {
+            name: "تبادل الزيارات",
+            desc: "سيتم ربطه برقم جوال المعلم في المرحلة الأخيرة",
+            url: "#",
+            comingSoon: true
+          }
+        ]
+      },
+
+      supervision: {
+        title: "بوابة الإشراف",
+        systems: [
+          {
+            name: "راصد لجميع الدرجات",
+            desc: "متابعة ورصد درجات جميع المواد",
+            url: "https://muhammadamer1618-dev.github.io/Rased-System/index.html"
+          },
+          {
+            name: "رصد الدرجات - اللغة الإنجليزية",
+            desc: "متابعة نتائج اللغة الإنجليزية",
+            url: "https://muhammadamer1618-dev.github.io/rased-insights/"
+          },
+          {
+            name: "استمارة التقييم",
+            desc: "متابعة وتقييم المعلمين",
+            url: "https://muhammadamer1618-dev.github.io/follow-up/index.html"
+          },
+          {
+            name: "تبادل الزيارات",
+            desc: "نظام تبادل الزيارات",
+            url: "https://muhammadamer1618-dev.github.io/visit/"
+          }
+        ]
+      },
+
+      admin: {
+        title: "بوابة الإدارة",
+        systems: [
+          {
+            name: "الخطة الأسبوعية",
+            desc: "إدارة ومتابعة الخطط الأسبوعية",
+            url: "https://muhammadamer1618-dev.github.io/Weekly-Plan/index.html"
+          },
+          {
+            name: "راصد اللغة الإنجليزية",
+            desc: "متابعة نتائج اللغة الإنجليزية",
+            url: "https://muhammadamer1618-dev.github.io/rased-insights/"
+          },
+          {
+            name: "راصد جميع المواد",
+            desc: "متابعة درجات جميع المواد",
+            url: "https://muhammadamer1618-dev.github.io/Rased-System/index.html"
+          },
+          {
+            name: "متابعة الزيارات - المشرف العام",
+            desc: "متابعة وإدارة الزيارات",
+            url: "https://muhammadamer1618-dev.github.io/visit/general-supervisor.html"
+          },
+          {
+            name: "تبادل الزيارات",
+            desc: "الدخول إلى نظام تبادل الزيارات",
+            url: "https://muhammadamer1618-dev.github.io/visit/"
+          }
+        ]
+      },
+
+      parent: {
+        title: "بوابة ولي الأمر",
+        systems: [
+          {
+            name: "الخطة الأسبوعية لولي الأمر",
+            desc: "عرض الخطة الأسبوعية للطالب",
+            url: "https://muhammadamer1618-dev.github.io/Weekly-Plan/student.html"
+          },
+          {
+            name: "نتائج اللغة الإنجليزية",
+            desc: "متابعة نتائج الطالب في مادة اللغة الإنجليزية",
+            url: "https://muhammadamer1618-dev.github.io/rased-insights/parent.html"
+          },
+          {
+            name: "نتيجة الطالب لجميع المواد",
+            desc: "عرض نتيجة الطالب في جميع المواد",
+            url: "https://muhammadamer1618-dev.github.io/Rased-System/student.html"
+          }
+        ]
+      }
+
+    };
+
+    const portalModal = document.getElementById("portalModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const systemList = document.getElementById("systemList");
+    const closeModal = document.getElementById("closeModal");
+
+    function openPortal(type){
+      const portal = portals[type];
+      if(!portal) return;
+
+      modalTitle.textContent = portal.title;
+      systemList.innerHTML = "";
+
+      portal.systems.forEach(system => {
+
+        if(system.comingSoon){
+          const item = document.createElement("div");
+          item.className = "system-link";
+          item.style.opacity = ".65";
+          item.style.cursor = "default";
+
+          item.innerHTML = `
+            <div class="system-text">
+              <strong>${system.name}</strong>
+              <span>${system.desc}</span>
+            </div>
+            <div class="arrow">⏳</div>
+          `;
+
+          systemList.appendChild(item);
+          return;
+        }
+
+        const link = document.createElement("a");
+        link.className = "system-link";
+        link.href = system.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+
+        link.innerHTML = `
+          <div class="system-text">
+            <strong>${system.name}</strong>
+            <span>${system.desc}</span>
+          </div>
+          <div class="arrow">←</div>
+        `;
+
+        systemList.appendChild(link);
+      });
+
+      portalModal.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function hideModal(){
+      portalModal.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    closeModal.addEventListener("click", hideModal);
+
+    portalModal.addEventListener("click", e => {
+      if(e.target === portalModal){
+        hideModal();
+      }
+    });
+
+    document.addEventListener("keydown", e => {
+      if(e.key === "Escape"){
+        hideModal();
+      }
+    });
+  </script>
+
+</body>
+</html>
