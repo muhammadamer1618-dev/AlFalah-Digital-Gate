@@ -72,6 +72,7 @@ input{
   font-family:inherit;
 }
 
+
 /* =========================================
    MAIN PAGE
 ========================================= */
@@ -86,6 +87,7 @@ input{
   justify-content:space-between;
   padding:12px 28px 10px;
 }
+
 
 /* =========================================
    BACKGROUND DECORATION
@@ -129,6 +131,7 @@ input{
   z-index:0;
 }
 
+
 /* =========================================
    CORNER TEXT
 ========================================= */
@@ -169,6 +172,7 @@ input{
   margin-right:auto;
 }
 
+
 /* =========================================
    HEADER
 ========================================= */
@@ -179,6 +183,7 @@ input{
   text-align:center;
   flex:none;
 }
+
 
 /* =========================================
    LOGO
@@ -200,6 +205,7 @@ input{
   );
 }
 
+
 /* =========================================
    TITLE
 ========================================= */
@@ -214,6 +220,7 @@ input{
   0 2px 0
   rgba(255,255,255,.8);
 }
+
 
 /* =========================================
    ENGLISH TITLE
@@ -253,6 +260,7 @@ input{
   );
 }
 
+
 /* =========================================
    PORTAL GRID
 ========================================= */
@@ -268,6 +276,7 @@ input{
   flex:1;
   align-items:center;
 }
+
 
 /* =========================================
    PORTAL CARD
@@ -330,6 +339,7 @@ input{
   pointer-events:none;
 }
 
+
 /* =========================================
    CARD ZOOM
 ========================================= */
@@ -345,6 +355,7 @@ input{
   0 0 0 7px rgba(255,243,204,.92),
   0 27px 48px rgba(0,64,53,.32);
 }
+
 
 /* =========================================
    CARD ICON
@@ -376,14 +387,14 @@ input{
   box-shadow .28s ease;
 }
 
-.portal-card:hover
-.card-icon{
+.portal-card:hover .card-icon{
   transform:scale(1.13);
   box-shadow:
   0 0 0 3px rgba(255,226,140,.40),
   0 0 27px rgba(231,189,81,.60),
   inset 0 0 15px rgba(0,0,0,.28);
 }
+
 
 /* =========================================
    CARD TITLE
@@ -419,6 +430,7 @@ input{
 .portal-card:hover h2::after{
   width:68px;
 }
+
 
 /* =========================================
    LEADERSHIP
@@ -482,6 +494,7 @@ input{
   font-size:19px;
 }
 
+
 /* =========================================
    DESIGN CREDIT
 ========================================= */
@@ -524,6 +537,7 @@ input{
     transparent
   );
 }
+
 
 /* =========================================
    MODAL
@@ -645,6 +659,7 @@ button.system-link{
   font-weight:900;
 }
 
+
 /* =========================================
    PHONE LOOKUP
 ========================================= */
@@ -748,6 +763,7 @@ button.system-link{
   padding:6px;
 }
 
+
 /* =========================================
    RESPONSIVE
 ========================================= */
@@ -832,8 +848,7 @@ button.system-link{
     scale(1.035);
   }
 
-  .portal-card:hover
-  .card-icon{
+  .portal-card:hover .card-icon{
     transform:scale(1.08);
   }
 
@@ -871,6 +886,7 @@ button.system-link{
 بالعلم نصنع<br>
 المستقبل
 </div>
+
 
 <header class="top">
 
@@ -1000,6 +1016,10 @@ type="button"
 </main>
 
 
+<!-- =========================================
+     MODAL
+========================================= -->
+
 <div
 class="modal"
 id="portalModal"
@@ -1041,6 +1061,7 @@ import {
 from
 "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 
+
 import {
   getFirestore,
   collection,
@@ -1052,6 +1073,10 @@ import {
 from
 "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
+
+/* =========================================
+   VISIT FIREBASE
+========================================= */
 
 const visitFirebaseConfig = {
 
@@ -1126,6 +1151,17 @@ url:
 
 {
 name:
+"زياراتي الفنية",
+
+desc:
+"متابعة الزيارات الفنية الخاصة بالمعلم",
+
+url:
+"https://muhammadamer1618-dev.github.io/follow-up/teacher-portal.html"
+},
+
+{
+name:
 "تبادل الزيارات",
 
 desc:
@@ -1160,13 +1196,13 @@ url:
 
 {
 name:
-"استمارة التقييم",
+"الزيارات الفنية",
 
 desc:
-"متابعة وتقييم المعلمين",
+"متابعة الزيارات الفنية للمعلمين",
 
 url:
-"https://muhammadamer1618-dev.github.io/follow-up/index.html"
+"https://muhammadamer1618-dev.github.io/follow-up/supervisor-login.html"
 },
 
 {
@@ -1266,6 +1302,10 @@ url:
 };
 
 
+/* =========================================
+   MODAL ELEMENTS
+========================================= */
+
 const modal =
 document.getElementById(
 "portalModal"
@@ -1303,15 +1343,19 @@ portals[type];
 if(!portal)
 return;
 
+
 modalTitle.textContent =
 portal.title;
+
 
 list.innerHTML =
 "";
 
+
 portal.systems.forEach(
 
 system => {
+
 
 if(
 system.action ===
@@ -1323,14 +1367,18 @@ document.createElement(
 "button"
 );
 
+
 btn.type =
 "button";
+
 
 btn.className =
 "system-link";
 
+
 btn.onclick =
 openTeacherVisit;
+
 
 btn.innerHTML = `
 
@@ -1352,31 +1400,42 @@ ${system.desc}
 
 `;
 
+
 list.appendChild(
 btn
 );
+
 
 return;
 
 }
 
 
+/* =========================================
+   NORMAL LINKS
+========================================= */
+
 const a =
 document.createElement(
 "a"
 );
 
+
 a.className =
 "system-link";
+
 
 a.href =
 system.url;
 
+
 a.target =
 "_blank";
 
+
 a.rel =
 "noopener noreferrer";
+
 
 a.innerHTML = `
 
@@ -1398,6 +1457,7 @@ ${system.desc}
 
 `;
 
+
 list.appendChild(
 a
 );
@@ -1405,6 +1465,7 @@ a
 }
 
 );
+
 
 modal.classList.add(
 "open"
@@ -1419,8 +1480,10 @@ modal.classList.add(
 
 function openTeacherVisit(){
 
+
 modalTitle.textContent =
 "تبادل الزيارات";
+
 
 list.innerHTML = `
 
@@ -1530,6 +1593,10 @@ setTimeout(
 }
 
 
+/* =========================================
+   NORMALIZE PHONE
+========================================= */
+
 function normalizePhone(raw){
 
 let phone =
@@ -1583,6 +1650,10 @@ return phone;
 
 }
 
+
+/* =========================================
+   FIND TEACHER
+========================================= */
 
 async function findTeacher(){
 
@@ -1642,6 +1713,7 @@ button.textContent =
 
 
 try{
+
 
 const q =
 query(
@@ -1764,7 +1836,9 @@ url;
 
 catch(error){
 
-console.error(error);
+console.error(
+error
+);
 
 
 message.style.color =
@@ -1789,6 +1863,10 @@ button.textContent =
 
 }
 
+
+/* =========================================
+   ERROR COLOR
+========================================= */
 
 function varDanger(){
 
