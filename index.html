@@ -1,1839 +1,3080 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>بوابة الفلاح الرقمية</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-  <style>
-
-    :root{
-      --green:#004c3f;
-      --green2:#006653;
-      --green3:#0b7864;
-      --gold:#c9972c;
-      --gold2:#f0cf79;
-      --cream:#f7f1e4;
-      --cream2:#fffdf8;
-      --white:#ffffff;
-      --text:#17372f;
-      --muted:#6a776f;
-      --danger:#b42318;
-    }
-
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-      font-family:"Tajawal",Tahoma,Arial,sans-serif;
-    }
-
-    html,
-    body{
-      width:100%;
-      height:100%;
-      overflow:hidden;
-    }
-
-    body{
-      background:
-        linear-gradient(
-          135deg,
-          #f9f3e6 0%,
-          #fffdf8 48%,
-          #f5eddd 100%
-        );
-      color:var(--text);
-    }
-
-    button,
-    input{
-      font-family:inherit;
-    }
-
-    /* =========================================
-       MAIN
-    ========================================= */
-
-    .page{
-      position:relative;
-      width:100vw;
-      height:100vh;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      padding:16px 28px 12px;
-    }
-
-    /* background decoration */
-
-    .page::before{
-      content:"";
-      position:absolute;
-      width:520px;
-      height:300px;
-      background:linear-gradient(
-        140deg,
-        var(--green),
-        #003a30
-      );
-      top:-170px;
-      right:-120px;
-      border-radius:0 0 0 80%;
-      transform:rotate(-8deg);
-      box-shadow:
-        0 14px 0 var(--gold);
-      z-index:0;
-    }
-
-    .page::after{
-      content:"";
-      position:absolute;
-      width:520px;
-      height:300px;
-      background:linear-gradient(
-        140deg,
-        #003a30,
-        var(--green)
-      );
-      bottom:-190px;
-      left:-120px;
-      border-radius:0 80% 0 0;
-      transform:rotate(8deg);
-      box-shadow:
-        0 -12px 0 var(--gold);
-      z-index:0;
-    }
-
-    .corner-left,
-    .corner-right{
-      position:absolute;
-      color:var(--gold2);
-      font-weight:800;
-      line-height:1.5;
-      z-index:2;
-      font-size:18px;
-    }
-
-    .corner-right{
-      top:26px;
-      right:30px;
-      text-align:right;
-    }
-
-    .corner-left{
-      bottom:28px;
-      left:34px;
-      text-align:left;
-    }
-
-    .corner-right::after,
-    .corner-left::after{
-      content:"";
-      display:block;
-      width:54px;
-      height:2px;
-      background:var(--gold2);
-      margin-top:8px;
-    }
-
-    .corner-left::after{
-      margin-right:auto;
-    }
-
-    /* =========================================
-       HEADER
-    ========================================= */
-
-    .top{
-      position:relative;
-      z-index:3;
-      text-align:center;
-      flex:none;
-    }
-
-    .logo{
-      width:105px;
-      height:105px;
-      object-fit:contain;
-      display:block;
-      margin:0 auto 2px;
-      filter:
-        drop-shadow(
-          0 5px 8px
-          rgba(0,0,0,.08)
-        );
-    }
-
-    .main-title{
-      color:var(--green);
-      font-size:clamp(34px,4vw,58px);
-      font-weight:900;
-      line-height:1.05;
-      margin-top:0;
-      text-shadow:
-        0 2px 0 rgba(255,255,255,.8);
-    }
-
-    .english-title{
-      margin-top:4px;
-      color:var(--gold);
-      font-size:clamp(16px,1.4vw,24px);
-      font-weight:800;
-      letter-spacing:1px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:12px;
-    }
-
-    .english-title::before,
-    .english-title::after{
-      content:"";
-      width:70px;
-      height:2px;
-      background:linear-gradient(
-        90deg,
-        transparent,
-        var(--gold)
-      );
-    }
-
-    .english-title::after{
-      background:linear-gradient(
-        90deg,
-        var(--gold),
-        transparent
-      );
-    }
-
-    /* =========================================
-       PORTAL CARDS
-    ========================================= */
-
-    .portal-grid{
-      position:relative;
-      z-index:3;
-      width:min(1280px,96vw);
-      margin:8px auto;
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:18px;
-      flex:1;
-      align-items:center;
-    }
-
-    .portal-card{
-      position:relative;
-      min-height:245px;
-      border:none;
-      border-radius:28px;
-      cursor:pointer;
-      background:
-        linear-gradient(
-          145deg,
-          #0c725f 0%,
-          #005747 42%,
-          #003f35 100%
-        );
-      box-shadow:
-        0 0 0 3px rgba(214,170,65,.9),
-        0 0 0 6px rgba(255,241,196,.8),
-        0 18px 34px rgba(0,76,63,.22),
-        inset 0 1px 0 rgba(255,255,255,.2);
-      transition:
-        transform .24s ease,
-        box-shadow .24s ease;
-      overflow:hidden;
-      color:#fff;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .portal-card::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(
-          circle at 50% 8%,
-          rgba(255,255,255,.22),
-          transparent 32%
-        );
-      pointer-events:none;
-    }
-
-    .portal-card::after{
-      content:"";
-      position:absolute;
-      left:-20%;
-      right:-20%;
-      bottom:-55px;
-      height:110px;
-      border-radius:50%;
-      background:
-        rgba(255,255,255,.04);
-    }
-
-    .portal-card:hover{
-      transform:
-        translateY(-8px)
-        scale(1.015);
-      box-shadow:
-        0 0 0 3px rgba(226,182,73,.95),
-        0 0 0 7px rgba(255,243,204,.85),
-        0 25px 45px rgba(0,64,53,.32);
-    }
-
-    .card-icon{
-      width:124px;
-      height:124px;
-      border-radius:50%;
-      display:grid;
-      place-items:center;
-      font-size:56px;
-      background:
-        radial-gradient(
-          circle,
-          #063f36 15%,
-          #012b25 100%
-        );
-      border:6px solid var(--gold);
-      box-shadow:
-        0 0 0 4px rgba(255,226,140,.35),
-        0 0 22px rgba(231,189,81,.45),
-        inset 0 0 18px rgba(0,0,0,.28);
-      margin-bottom:20px;
-      position:relative;
-      z-index:2;
-    }
-
-    .portal-card h2{
-      position:relative;
-      z-index:2;
-      font-size:30px;
-      font-weight:900;
-      color:#fff;
-      text-shadow:
-        0 2px 5px rgba(0,0,0,.22);
-    }
-
-    .portal-card h2::after{
-      content:"";
-      display:block;
-      width:54px;
-      height:3px;
-      background:var(--gold);
-      margin:12px auto 0;
-      border-radius:4px;
-    }
-
-    /* =========================================
-       LEADERSHIP
-    ========================================= */
-
-    .leadership{
-      position:relative;
-      z-index:3;
-      width:min(780px,80vw);
-      margin:0 auto 3px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:20px;
-      flex:none;
-    }
-
-    .leader{
-      background:
-        linear-gradient(
-          180deg,
-          rgba(255,255,255,.92),
-          rgba(248,241,225,.92)
-        );
-      border:
-        1px solid rgba(201,151,44,.42);
-      border-radius:20px;
-      padding:10px 20px;
-      text-align:center;
-      box-shadow:
-        0 8px 22px rgba(82,63,24,.09);
-      position:relative;
-    }
-
-    .leader::before{
-      content:"";
-      position:absolute;
-      top:-2px;
-      right:24%;
-      left:24%;
-      height:3px;
-      background:
-        linear-gradient(
-          90deg,
-          transparent,
-          var(--gold),
-          transparent
-        );
-    }
-
-    .leader-role{
-      color:#ad7b15;
-      font-weight:800;
-      font-size:15px;
-      margin-bottom:2px;
-    }
-
-    .leader-name{
-      color:var(--green);
-      font-weight:900;
-      font-size:19px;
-    }
-
-    /* =========================================
-       DESIGN CREDIT
-    ========================================= */
-
-    .credit{
-      position:relative;
-      z-index:4;
-      margin:5px auto 0;
-      padding:6px 22px 4px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:12px;
-      font-size:18px;
-      font-weight:900;
-      color:#003f35;
-      background:rgba(255,253,248,.72);
-      border-radius:12px;
-      flex:none;
-    }
-
-    .credit::before,
-    .credit::after{
-      content:"";
-      width:55px;
-      height:2px;
-      background:linear-gradient(
-        90deg,
-        transparent,
-        var(--gold)
-      );
-    }
-
-    .credit::after{
-      background:linear-gradient(
-        90deg,
-        var(--gold),
-        transparent
-      );
-    }
-
-    /* =========================================
-       MODAL
-    ========================================= */
-
-    .modal{
-      position:fixed;
-      inset:0;
-      z-index:100;
-      background:
-        rgba(0,37,31,.76);
-      backdrop-filter:blur(8px);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-    }
-
-    .modal.open{
-      display:flex;
-    }
-
-    .modal-box{
-      width:min(650px,94vw);
-      max-height:88vh;
-      overflow:auto;
-      background:
-        linear-gradient(
-          180deg,
-          #fffefb,
-          #f8f1e4
-        );
-      border-radius:26px;
-      padding:22px;
-      box-shadow:
-        0 30px 80px
-        rgba(0,0,0,.35);
-      border:
-        2px solid rgba(201,151,44,.42);
-    }
-
-    .modal-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding-bottom:14px;
-      border-bottom:
-        1px solid #eadfc8;
-    }
-
-    .modal-head h3{
-      color:var(--green);
-      font-size:25px;
-      font-weight:900;
-    }
-
-    .close-btn{
-      width:40px;
-      height:40px;
-      border:none;
-      border-radius:50%;
-      background:#eee8da;
-      color:#3e514b;
-      font-size:22px;
-      cursor:pointer;
-    }
-
-    .system-list{
-      display:grid;
-      gap:12px;
-      margin-top:18px;
-    }
-
-    .system-link{
-      width:100%;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:15px;
-      text-decoration:none;
-      color:inherit;
-      border:
-        1px solid #ded2bb;
-      border-radius:16px;
-      padding:15px 16px;
-      background:#fff;
-      cursor:pointer;
-      transition:.2s ease;
-    }
-
-    .system-link:hover{
-      border-color:var(--gold);
-      background:#fffaf0;
-      transform:translateX(-2px);
-    }
-
-    button.system-link{
-      font:inherit;
-      text-align:inherit;
-    }
-
-    .system-text{
-      text-align:right;
-    }
-
-    .system-text strong{
-      display:block;
-      color:var(--green);
-      font-size:17px;
-      font-weight:900;
-    }
-
-    .system-text span{
-      display:block;
-      color:var(--muted);
-      margin-top:3px;
-      font-size:13px;
-    }
-
-    .arrow{
-      color:var(--gold);
-      font-size:24px;
-      font-weight:900;
-    }
-
-    /* =========================================
-       PHONE LOOKUP
-    ========================================= */
-
-    .phone-area{
-      text-align:center;
-      padding:8px 0 2px;
-    }
-
-    .phone-big-icon{
-      width:76px;
-      height:76px;
-      margin:0 auto 12px;
-      border-radius:50%;
-      background:
-        linear-gradient(
-          145deg,
-          var(--green2),
-          var(--green)
-        );
-      display:grid;
-      place-items:center;
-      font-size:34px;
-      border:4px solid var(--gold);
-      box-shadow:
-        0 8px 20px
-        rgba(0,76,63,.18);
-    }
-
-    .phone-area h4{
-      color:var(--green);
-      font-size:21px;
-      font-weight:900;
-      margin-bottom:6px;
-    }
-
-    .phone-area p{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.7;
-      margin-bottom:15px;
-    }
-
-    .phone-input{
-      width:100%;
-      height:52px;
-      padding:0 14px;
-      border:
-        1px solid #d8cbb1;
-      border-radius:14px;
-      outline:none;
-      font-size:18px;
-      text-align:center;
-      direction:ltr;
-      background:#fff;
-    }
-
-    .phone-input:focus{
-      border-color:var(--gold);
-      box-shadow:
-        0 0 0 3px
-        rgba(201,151,44,.14);
-    }
-
-    .phone-btn{
-      width:100%;
-      height:50px;
-      border:none;
-      border-radius:14px;
-      margin-top:12px;
-      background:
-        linear-gradient(
-          145deg,
-          var(--green2),
-          var(--green)
-        );
-      color:white;
-      font-size:16px;
-      font-weight:900;
-      cursor:pointer;
-    }
-
-    .phone-btn:disabled{
-      opacity:.6;
-      cursor:wait;
-    }
-
-    .message{
-      min-height:22px;
-      margin-top:10px;
-      font-size:14px;
-      font-weight:800;
-    }
-
-    .back-btn{
-      margin-top:4px;
-      border:none;
-      background:transparent;
-      color:#68746e;
-      font-weight:700;
-      cursor:pointer;
-      padding:6px;
-    }
-
-    /* =========================================
-       RESPONSIVE
-    ========================================= */
-
-    @media(max-width:1000px){
-
-      html,
-      body{
-        overflow:auto;
-      }
-
-      .page{
-        height:auto;
-        min-height:100vh;
-        overflow:visible;
-        padding:15px 18px 22px;
-      }
-
-      .portal-grid{
-        grid-template-columns:repeat(2,1fr);
-        flex:none;
-        margin:18px auto;
-      }
-
-      .portal-card{
-        min-height:230px;
-      }
-
-      .corner-left,
-      .corner-right{
-        display:none;
-      }
-
-      .leadership{
-        width:min(760px,95vw);
-      }
-
-    }
-
-    @media(max-width:600px){
-
-      .logo{
-        width:88px;
-        height:88px;
-      }
-
-      .main-title{
-        font-size:34px;
-      }
-
-      .english-title{
-        font-size:15px;
-      }
-
-      .portal-grid{
-        grid-template-columns:repeat(2,1fr);
-        gap:12px;
-      }
-
-      .portal-card{
-        min-height:185px;
-        border-radius:22px;
-      }
-
-      .card-icon{
-        width:90px;
-        height:90px;
-        font-size:40px;
-        margin-bottom:14px;
-      }
-
-      .portal-card h2{
-        font-size:21px;
-      }
-
-      .leadership{
-        grid-template-columns:1fr;
-        gap:10px;
-      }
-
-      .leader{
-        padding:9px 12px;
-      }
-
-      .credit{
-        font-size:15px;
-      }
-
-    }
-
-  </style>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>
+بوابة الفلاح الرقمية
+</title>
+
+
+<link
+rel="preconnect"
+href="https://fonts.googleapis.com">
+
+<link
+rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
+
+<link
+href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap"
+rel="stylesheet">
+
+
+<style>
+
+:root{
+
+  --green:#004c3f;
+
+  --green2:#006653;
+
+  --green3:#0b7864;
+
+  --gold:#c9972c;
+
+  --gold2:#f0cf79;
+
+  --cream:#f7f1e4;
+
+  --cream2:#fffdf8;
+
+  --white:#ffffff;
+
+  --text:#17372f;
+
+  --muted:#6a776f;
+
+  --danger:#b42318;
+
+}
+
+
+*{
+
+  box-sizing:border-box;
+
+  margin:0;
+
+  padding:0;
+
+  font-family:
+  "Tajawal",
+  Tahoma,
+  Arial,
+  sans-serif;
+
+}
+
+
+html,
+body{
+
+  width:100%;
+
+  height:100%;
+
+  overflow:hidden;
+
+}
+
+
+body{
+
+  background:
+
+  linear-gradient(
+    135deg,
+    #f9f3e6 0%,
+    #fffdf8 48%,
+    #f5eddd 100%
+  );
+
+  color:var(--text);
+
+}
+
+
+button,
+input{
+
+  font-family:inherit;
+
+}
+
+
+/* =========================================
+   MAIN
+========================================= */
+
+
+.page{
+
+  position:relative;
+
+  width:100vw;
+
+  height:100vh;
+
+  overflow:hidden;
+
+  display:flex;
+
+  flex-direction:column;
+
+  justify-content:space-between;
+
+  padding:
+  12px 28px 10px;
+
+}
+
+
+/* =========================================
+   BACKGROUND DECORATION
+========================================= */
+
+
+.page::before{
+
+  content:"";
+
+  position:absolute;
+
+  width:520px;
+
+  height:300px;
+
+  background:
+
+  linear-gradient(
+    140deg,
+    var(--green),
+    #003a30
+  );
+
+  top:-170px;
+
+  right:-120px;
+
+  border-radius:
+  0 0 0 80%;
+
+  transform:
+  rotate(-8deg);
+
+  box-shadow:
+
+  0 14px 0
+  var(--gold);
+
+  z-index:0;
+
+}
+
+
+.page::after{
+
+  content:"";
+
+  position:absolute;
+
+  width:520px;
+
+  height:300px;
+
+  background:
+
+  linear-gradient(
+    140deg,
+    #003a30,
+    var(--green)
+  );
+
+  bottom:-190px;
+
+  left:-120px;
+
+  border-radius:
+  0 80% 0 0;
+
+  transform:
+  rotate(8deg);
+
+  box-shadow:
+
+  0 -12px 0
+  var(--gold);
+
+  z-index:0;
+
+}
+
+
+/* =========================================
+   CORNER TEXT
+========================================= */
+
+
+.corner-left,
+.corner-right{
+
+  position:absolute;
+
+  color:var(--gold2);
+
+  font-weight:800;
+
+  line-height:1.4;
+
+  z-index:2;
+
+  font-size:17px;
+
+}
+
+
+.corner-right{
+
+  /*
+  تم رفع النص لأعلى
+  حتى لا يصطدم بالخط الذهبي
+  */
+
+  top:12px;
+
+  right:34px;
+
+  text-align:right;
+
+}
+
+
+.corner-left{
+
+  bottom:28px;
+
+  left:34px;
+
+  text-align:left;
+
+}
+
+
+.corner-right::after,
+.corner-left::after{
+
+  content:"";
+
+  display:block;
+
+  width:54px;
+
+  height:2px;
+
+  background:
+  var(--gold2);
+
+  margin-top:8px;
+
+}
+
+
+.corner-left::after{
+
+  margin-right:auto;
+
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+
+.top{
+
+  position:relative;
+
+  z-index:3;
+
+  text-align:center;
+
+  flex:none;
+
+}
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+
+.logo{
+
+  width:100px;
+
+  height:100px;
+
+  object-fit:contain;
+
+  display:block;
+
+  margin:
+  0 auto 1px;
+
+
+  /*
+  يجعل الخلفية البيضاء الموجودة
+  داخل JPEG تندمج مع لون الصفحة
+  */
+
+  mix-blend-mode:multiply;
+
+
+  filter:
+
+  contrast(1.04)
+
+  saturate(1.05)
+
+  drop-shadow(
+    0 4px 7px
+    rgba(0,0,0,.06)
+  );
+
+}
+
+
+/* =========================================
+   MAIN TITLE
+========================================= */
+
+
+.main-title{
+
+  color:var(--green);
+
+  font-size:
+  clamp(
+    34px,
+    4vw,
+    58px
+  );
+
+  font-weight:900;
+
+  line-height:1.05;
+
+  margin-top:0;
+
+  text-shadow:
+
+  0 2px 0
+  rgba(255,255,255,.8);
+
+}
+
+
+/* =========================================
+   ENGLISH TITLE
+========================================= */
+
+
+.english-title{
+
+  margin-top:4px;
+
+  color:var(--gold);
+
+  font-size:
+  clamp(
+    16px,
+    1.4vw,
+    24px
+  );
+
+  font-weight:800;
+
+  letter-spacing:1px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:12px;
+
+}
+
+
+.english-title::before,
+.english-title::after{
+
+  content:"";
+
+  width:70px;
+
+  height:2px;
+
+  background:
+
+  linear-gradient(
+    90deg,
+    transparent,
+    var(--gold)
+  );
+
+}
+
+
+.english-title::after{
+
+  background:
+
+  linear-gradient(
+    90deg,
+    var(--gold),
+    transparent
+  );
+
+}
+
+
+/* =========================================
+   PORTAL GRID
+========================================= */
+
+
+.portal-grid{
+
+  position:relative;
+
+  z-index:3;
+
+  width:
+  min(
+    1280px,
+    96vw
+  );
+
+  margin:
+  7px auto;
+
+  display:grid;
+
+  grid-template-columns:
+  repeat(
+    4,
+    1fr
+  );
+
+  gap:18px;
+
+  flex:1;
+
+  align-items:center;
+
+}
+
+
+/* =========================================
+   PORTAL CARD
+========================================= */
+
+
+.portal-card{
+
+  position:relative;
+
+  min-height:245px;
+
+  border:none;
+
+  border-radius:28px;
+
+  cursor:pointer;
+
+  background:
+
+  linear-gradient(
+    145deg,
+    #0c725f 0%,
+    #005747 42%,
+    #003f35 100%
+  );
+
+  box-shadow:
+
+  0 0 0 3px
+  rgba(214,170,65,.9),
+
+  0 0 0 6px
+  rgba(255,241,196,.8),
+
+  0 18px 34px
+  rgba(0,76,63,.22),
+
+  inset
+  0 1px 0
+  rgba(255,255,255,.2);
+
+  transition:
+
+  transform .24s ease,
+
+  box-shadow .24s ease;
+
+  overflow:hidden;
+
+  color:#fff;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  justify-content:center;
+
+}
+
+
+.portal-card::before{
+
+  content:"";
+
+  position:absolute;
+
+  inset:0;
+
+  background:
+
+  radial-gradient(
+    circle at 50% 8%,
+    rgba(255,255,255,.22),
+    transparent 32%
+  );
+
+  pointer-events:none;
+
+}
+
+
+.portal-card::after{
+
+  content:"";
+
+  position:absolute;
+
+  left:-20%;
+
+  right:-20%;
+
+  bottom:-55px;
+
+  height:110px;
+
+  border-radius:50%;
+
+  background:
+
+  rgba(255,255,255,.04);
+
+}
+
+
+.portal-card:hover{
+
+  transform:
+
+  translateY(-7px)
+
+  scale(1.012);
+
+  box-shadow:
+
+  0 0 0 3px
+  rgba(226,182,73,.95),
+
+  0 0 0 7px
+  rgba(255,243,204,.85),
+
+  0 25px 45px
+  rgba(0,64,53,.32);
+
+}
+
+
+/* =========================================
+   CARD ICON
+========================================= */
+
+
+.card-icon{
+
+  /*
+  تم تصغير الأيقونات
+  */
+
+  width:106px;
+
+  height:106px;
+
+  border-radius:50%;
+
+  display:grid;
+
+  place-items:center;
+
+  font-size:46px;
+
+  background:
+
+  radial-gradient(
+    circle,
+    #063f36 15%,
+    #012b25 100%
+  );
+
+  border:
+  5px solid
+  var(--gold);
+
+  box-shadow:
+
+  0 0 0 4px
+  rgba(255,226,140,.32),
+
+  0 0 20px
+  rgba(231,189,81,.40),
+
+  inset
+  0 0 18px
+  rgba(0,0,0,.28);
+
+  margin-bottom:17px;
+
+  position:relative;
+
+  z-index:2;
+
+}
+
+
+.portal-card h2{
+
+  position:relative;
+
+  z-index:2;
+
+  font-size:30px;
+
+  font-weight:900;
+
+  color:#fff;
+
+  text-shadow:
+
+  0 2px 5px
+  rgba(0,0,0,.22);
+
+}
+
+
+.portal-card h2::after{
+
+  content:"";
+
+  display:block;
+
+  width:54px;
+
+  height:3px;
+
+  background:
+  var(--gold);
+
+  margin:
+  12px auto 0;
+
+  border-radius:4px;
+
+}
+
+
+/* =========================================
+   LEADERSHIP
+========================================= */
+
+
+.leadership{
+
+  position:relative;
+
+  z-index:3;
+
+  width:
+  min(
+    780px,
+    80vw
+  );
+
+  margin:
+  0 auto 3px;
+
+  display:grid;
+
+  grid-template-columns:
+  1fr 1fr;
+
+  gap:20px;
+
+  flex:none;
+
+
+  /*
+  تحريك المشرف والمدير
+  قليلًا ناحية اليمين
+  */
+
+  transform:
+  translateX(48px);
+
+}
+
+
+.leader{
+
+  background:
+
+  linear-gradient(
+    180deg,
+    rgba(255,255,255,.92),
+    rgba(248,241,225,.92)
+  );
+
+  border:
+
+  1px solid
+  rgba(201,151,44,.42);
+
+  border-radius:20px;
+
+  padding:
+  9px 20px;
+
+  text-align:center;
+
+  box-shadow:
+
+  0 8px 22px
+  rgba(82,63,24,.09);
+
+  position:relative;
+
+}
+
+
+.leader::before{
+
+  content:"";
+
+  position:absolute;
+
+  top:-2px;
+
+  right:24%;
+
+  left:24%;
+
+  height:3px;
+
+  background:
+
+  linear-gradient(
+    90deg,
+    transparent,
+    var(--gold),
+    transparent
+  );
+
+}
+
+
+.leader-role{
+
+  color:#ad7b15;
+
+  font-weight:800;
+
+  font-size:15px;
+
+  margin-bottom:2px;
+
+}
+
+
+.leader-name{
+
+  color:var(--green);
+
+  font-weight:900;
+
+  font-size:19px;
+
+}
+
+
+/* =========================================
+   DESIGN CREDIT
+========================================= */
+
+
+.credit{
+
+  position:relative;
+
+  z-index:4;
+
+  margin:
+  5px auto 0;
+
+  padding:
+  6px 22px 4px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:12px;
+
+  font-size:18px;
+
+  font-weight:900;
+
+  color:#003f35;
+
+  background:
+
+  rgba(255,253,248,.78);
+
+  border-radius:12px;
+
+  flex:none;
+
+}
+
+
+.credit::before,
+.credit::after{
+
+  content:"";
+
+  width:55px;
+
+  height:2px;
+
+  background:
+
+  linear-gradient(
+    90deg,
+    transparent,
+    var(--gold)
+  );
+
+}
+
+
+.credit::after{
+
+  background:
+
+  linear-gradient(
+    90deg,
+    var(--gold),
+    transparent
+  );
+
+}
+
+
+/* =========================================
+   MODAL
+========================================= */
+
+
+.modal{
+
+  position:fixed;
+
+  inset:0;
+
+  z-index:100;
+
+  background:
+
+  rgba(0,37,31,.76);
+
+  backdrop-filter:
+  blur(8px);
+
+  display:none;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:18px;
+
+}
+
+
+.modal.open{
+
+  display:flex;
+
+}
+
+
+.modal-box{
+
+  width:
+  min(
+    650px,
+    94vw
+  );
+
+  max-height:88vh;
+
+  overflow:auto;
+
+  background:
+
+  linear-gradient(
+    180deg,
+    #fffefb,
+    #f8f1e4
+  );
+
+  border-radius:26px;
+
+  padding:22px;
+
+  box-shadow:
+
+  0 30px 80px
+  rgba(0,0,0,.35);
+
+  border:
+
+  2px solid
+  rgba(201,151,44,.42);
+
+}
+
+
+.modal-head{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:
+  space-between;
+
+  padding-bottom:14px;
+
+  border-bottom:
+
+  1px solid
+  #eadfc8;
+
+}
+
+
+.modal-head h3{
+
+  color:var(--green);
+
+  font-size:25px;
+
+  font-weight:900;
+
+}
+
+
+.close-btn{
+
+  width:40px;
+
+  height:40px;
+
+  border:none;
+
+  border-radius:50%;
+
+  background:#eee8da;
+
+  color:#3e514b;
+
+  font-size:22px;
+
+  cursor:pointer;
+
+}
+
+
+.system-list{
+
+  display:grid;
+
+  gap:12px;
+
+  margin-top:18px;
+
+}
+
+
+.system-link{
+
+  width:100%;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:
+  space-between;
+
+  gap:15px;
+
+  text-decoration:none;
+
+  color:inherit;
+
+  border:
+
+  1px solid
+  #ded2bb;
+
+  border-radius:16px;
+
+  padding:
+  15px 16px;
+
+  background:#fff;
+
+  cursor:pointer;
+
+  transition:.2s ease;
+
+}
+
+
+.system-link:hover{
+
+  border-color:
+  var(--gold);
+
+  background:#fffaf0;
+
+  transform:
+  translateX(-2px);
+
+}
+
+
+button.system-link{
+
+  font:inherit;
+
+  text-align:inherit;
+
+}
+
+
+.system-text{
+
+  text-align:right;
+
+}
+
+
+.system-text strong{
+
+  display:block;
+
+  color:var(--green);
+
+  font-size:17px;
+
+  font-weight:900;
+
+}
+
+
+.system-text span{
+
+  display:block;
+
+  color:var(--muted);
+
+  margin-top:3px;
+
+  font-size:13px;
+
+}
+
+
+.arrow{
+
+  color:var(--gold);
+
+  font-size:24px;
+
+  font-weight:900;
+
+}
+
+
+/* =========================================
+   PHONE LOOKUP
+========================================= */
+
+
+.phone-area{
+
+  text-align:center;
+
+  padding:
+  8px 0 2px;
+
+}
+
+
+.phone-big-icon{
+
+  width:76px;
+
+  height:76px;
+
+  margin:
+  0 auto 12px;
+
+  border-radius:50%;
+
+  background:
+
+  linear-gradient(
+    145deg,
+    var(--green2),
+    var(--green)
+  );
+
+  display:grid;
+
+  place-items:center;
+
+  font-size:34px;
+
+  border:
+
+  4px solid
+  var(--gold);
+
+  box-shadow:
+
+  0 8px 20px
+  rgba(0,76,63,.18);
+
+}
+
+
+.phone-area h4{
+
+  color:var(--green);
+
+  font-size:21px;
+
+  font-weight:900;
+
+  margin-bottom:6px;
+
+}
+
+
+.phone-area p{
+
+  color:var(--muted);
+
+  font-size:14px;
+
+  line-height:1.7;
+
+  margin-bottom:15px;
+
+}
+
+
+.phone-input{
+
+  width:100%;
+
+  height:52px;
+
+  padding:
+  0 14px;
+
+  border:
+
+  1px solid
+  #d8cbb1;
+
+  border-radius:14px;
+
+  outline:none;
+
+  font-size:18px;
+
+  text-align:center;
+
+  direction:ltr;
+
+  background:#fff;
+
+}
+
+
+.phone-input:focus{
+
+  border-color:
+  var(--gold);
+
+  box-shadow:
+
+  0 0 0 3px
+  rgba(201,151,44,.14);
+
+}
+
+
+.phone-btn{
+
+  width:100%;
+
+  height:50px;
+
+  border:none;
+
+  border-radius:14px;
+
+  margin-top:12px;
+
+  background:
+
+  linear-gradient(
+    145deg,
+    var(--green2),
+    var(--green)
+  );
+
+  color:white;
+
+  font-size:16px;
+
+  font-weight:900;
+
+  cursor:pointer;
+
+}
+
+
+.phone-btn:disabled{
+
+  opacity:.6;
+
+  cursor:wait;
+
+}
+
+
+.message{
+
+  min-height:22px;
+
+  margin-top:10px;
+
+  font-size:14px;
+
+  font-weight:800;
+
+}
+
+
+.back-btn{
+
+  margin-top:4px;
+
+  border:none;
+
+  background:transparent;
+
+  color:#68746e;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  padding:6px;
+
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+
+@media(max-width:1000px){
+
+  html,
+  body{
+
+    overflow:auto;
+
+  }
+
+
+  .page{
+
+    height:auto;
+
+    min-height:100vh;
+
+    overflow:visible;
+
+    padding:
+    15px 18px 22px;
+
+  }
+
+
+  .portal-grid{
+
+    grid-template-columns:
+    repeat(
+      2,
+      1fr
+    );
+
+    flex:none;
+
+    margin:
+    18px auto;
+
+  }
+
+
+  .portal-card{
+
+    min-height:230px;
+
+  }
+
+
+  .corner-left,
+  .corner-right{
+
+    display:none;
+
+  }
+
+
+  .leadership{
+
+    width:
+    min(
+      760px,
+      95vw
+    );
+
+    transform:none;
+
+  }
+
+}
+
+
+@media(max-width:600px){
+
+
+  .logo{
+
+    width:82px;
+
+    height:82px;
+
+  }
+
+
+  .main-title{
+
+    font-size:34px;
+
+  }
+
+
+  .english-title{
+
+    font-size:15px;
+
+  }
+
+
+  .portal-grid{
+
+    grid-template-columns:
+    repeat(
+      2,
+      1fr
+    );
+
+    gap:12px;
+
+  }
+
+
+  .portal-card{
+
+    min-height:180px;
+
+    border-radius:22px;
+
+  }
+
+
+  .card-icon{
+
+    width:78px;
+
+    height:78px;
+
+    font-size:34px;
+
+    border-width:4px;
+
+    margin-bottom:12px;
+
+  }
+
+
+  .portal-card h2{
+
+    font-size:21px;
+
+  }
+
+
+  .leadership{
+
+    grid-template-columns:1fr;
+
+    gap:10px;
+
+  }
+
+
+  .leader{
+
+    padding:
+    9px 12px;
+
+  }
+
+
+  .credit{
+
+    font-size:15px;
+
+  }
+
+}
+
+</style>
+
 </head>
+
 
 <body>
 
+
 <main class="page">
 
-  <div class="corner-right">
-    قيم<br>
-    معرفة<br>
-    مهارات<br>
-    مستقبل أفضل
-  </div>
 
-  <div class="corner-left">
-    بالعلم نصنع<br>
-    المستقبل
-  </div>
+<div class="corner-right">
 
-  <header class="top">
+قيم<br>
 
-    <img
-      src="logo.jpeg"
-      class="logo"
-      alt="شعار مدارس الفلاح"
-    >
+معرفة<br>
 
-    <h1 class="main-title">
-      بوابة الفلاح الرقمية
-    </h1>
+مهارات<br>
 
-    <div class="english-title">
-      AlFalah Digital Gate
-    </div>
+مستقبل أفضل
 
-  </header>
+</div>
 
 
-  <section class="portal-grid">
+<div class="corner-left">
 
-    <button
-      class="portal-card"
-      onclick="openPortal('teacher')"
-      type="button"
-    >
+بالعلم نصنع<br>
 
-      <div class="card-icon">
-        👨‍🏫
-      </div>
+المستقبل
 
-      <h2>
-        المعلم
-      </h2>
-
-    </button>
+</div>
 
 
-    <button
-      class="portal-card"
-      onclick="openPortal('supervision')"
-      type="button"
-    >
-
-      <div class="card-icon">
-        📋
-      </div>
-
-      <h2>
-        الإشراف
-      </h2>
-
-    </button>
+<header class="top">
 
 
-    <button
-      class="portal-card"
-      onclick="openPortal('admin')"
-      type="button"
-    >
-
-      <div class="card-icon">
-        🏫
-      </div>
-
-      <h2>
-        الإدارة
-      </h2>
-
-    </button>
+<img
+src="logo.jpeg"
+class="logo"
+alt="شعار مدارس الفلاح"
+>
 
 
-    <button
-      class="portal-card"
-      onclick="openPortal('parent')"
-      type="button"
-    >
+<h1 class="main-title">
 
-      <div class="card-icon">
-        👨‍👩‍👦
-      </div>
+بوابة الفلاح الرقمية
 
-      <h2>
-        ولي الأمر
-      </h2>
-
-    </button>
-
-  </section>
+</h1>
 
 
-  <section class="leadership">
+<div class="english-title">
 
-    <div class="leader">
+AlFalah Digital Gate
 
-      <div class="leader-role">
-        المشرف العام
-      </div>
-
-      <div class="leader-name">
-        أحمد سمير
-      </div>
-
-    </div>
+</div>
 
 
-    <div class="leader">
-
-      <div class="leader-role">
-        مدير المدرسة
-      </div>
-
-      <div class="leader-name">
-        عبد العزيز بن إبراهيم القحطاني
-      </div>
-
-    </div>
-
-  </section>
+</header>
 
 
-  <div class="credit">
-    تصميم محمد عامر أحمد
-  </div>
+
+<section class="portal-grid">
+
+
+<button
+class="portal-card"
+onclick="openPortal('teacher')"
+type="button"
+>
+
+
+<div class="card-icon">
+
+👨‍🏫
+
+</div>
+
+
+<h2>
+
+المعلم
+
+</h2>
+
+
+</button>
+
+
+
+<button
+class="portal-card"
+onclick="openPortal('supervision')"
+type="button"
+>
+
+
+<div class="card-icon">
+
+📋
+
+</div>
+
+
+<h2>
+
+الإشراف
+
+</h2>
+
+
+</button>
+
+
+
+<button
+class="portal-card"
+onclick="openPortal('admin')"
+type="button"
+>
+
+
+<div class="card-icon">
+
+🏫
+
+</div>
+
+
+<h2>
+
+الإدارة
+
+</h2>
+
+
+</button>
+
+
+
+<button
+class="portal-card"
+onclick="openPortal('parent')"
+type="button"
+>
+
+
+<div class="card-icon">
+
+👨‍👩‍👦
+
+</div>
+
+
+<h2>
+
+ولي الأمر
+
+</h2>
+
+
+</button>
+
+
+</section>
+
+
+
+<section class="leadership">
+
+
+<div class="leader">
+
+
+<div class="leader-role">
+
+المشرف العام
+
+</div>
+
+
+<div class="leader-name">
+
+أحمد سمير
+
+</div>
+
+
+</div>
+
+
+
+<div class="leader">
+
+
+<div class="leader-role">
+
+مدير المدرسة
+
+</div>
+
+
+<div class="leader-name">
+
+عبد العزيز بن إبراهيم القحطاني
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+<div class="credit">
+
+تصميم محمد عامر أحمد
+
+</div>
+
 
 </main>
+
 
 
 <!-- =========================================
      MODAL
 ========================================= -->
 
+
 <div
-  class="modal"
-  id="portalModal"
+class="modal"
+id="portalModal"
 >
 
-  <div class="modal-box">
 
-    <div class="modal-head">
+<div class="modal-box">
 
-      <h3 id="modalTitle">
-        الخدمات
-      </h3>
 
-      <button
-        id="closeModal"
-        class="close-btn"
-        type="button"
-      >
-        ×
-      </button>
+<div class="modal-head">
 
-    </div>
 
-    <div
-      id="systemList"
-      class="system-list"
-    ></div>
+<h3 id="modalTitle">
 
-  </div>
+الخدمات
+
+</h3>
+
+
+<button
+id="closeModal"
+class="close-btn"
+type="button"
+>
+
+×
+
+</button>
+
 
 </div>
 
 
+<div
+id="systemList"
+class="system-list"
+></div>
+
+
+</div>
+
+
+</div>
+
+
+
 <script type="module">
 
-  import {
-    initializeApp
-  } from
-  "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 
+import {
 
-  import {
-    getFirestore,
-    collection,
-    query,
-    where,
-    getDocs,
-    limit
-  } from
-  "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+  initializeApp
 
+}
+from
+"https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 
-  /* =========================================
-     VISIT FIREBASE
-  ========================================= */
 
-  const visitFirebaseConfig = {
+import {
 
-    apiKey:
-      "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
+  getFirestore,
 
-    authDomain:
-      "visit-2026.firebaseapp.com",
+  collection,
 
-    projectId:
-      "visit-2026",
+  query,
 
-    storageBucket:
-      "visit-2026.firebasestorage.app",
+  where,
 
-    messagingSenderId:
-      "355064530699",
+  getDocs,
 
-    appId:
-      "1:355064530699:web:26ad1710ff493c76ce840e"
+  limit
 
-  };
+}
+from
+"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 
-  const visitApp =
-    initializeApp(
-      visitFirebaseConfig,
-      "visitDigitalGate"
-    );
 
+/* =========================================
+   VISIT FIREBASE
+========================================= */
 
-  const visitDb =
-    getFirestore(
-      visitApp
-    );
 
+const visitFirebaseConfig = {
 
-  /* =========================================
-     PORTALS
-  ========================================= */
+  apiKey:
+  "AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
 
-  const portals = {
+  authDomain:
+  "visit-2026.firebaseapp.com",
 
-    teacher: {
+  projectId:
+  "visit-2026",
 
-      title:
-        "المعلم",
+  storageBucket:
+  "visit-2026.firebasestorage.app",
 
-      systems:[
+  messagingSenderId:
+  "355064530699",
 
-        {
-          name:
-            "رصد الدرجات - جميع المعلمين",
+  appId:
+  "1:355064530699:web:26ad1710ff493c76ce840e"
 
-          desc:
-            "نظام راصد لجميع المواد",
+};
 
-          url:
-            "https://muhammadamer1618-dev.github.io/Rased-System/index.html"
-        },
 
-        {
-          name:
-            "رصد الدرجات - اللغة الإنجليزية",
+const visitApp =
 
-          desc:
-            "نظام راصد الخاص باللغة الإنجليزية",
+initializeApp(
 
-          url:
-            "https://muhammadamer1618-dev.github.io/rased-insights/"
-        },
+  visitFirebaseConfig,
 
-        {
-          name:
-            "الخطة الأسبوعية",
+  "visitDigitalGate"
 
-          desc:
-            "إعداد وإدارة الخطة الأسبوعية",
+);
 
-          url:
-            "https://muhammadamer1618-dev.github.io/Weekly-Plan/index.html"
-        },
 
-        {
-          name:
-            "تبادل الزيارات",
+const visitDb =
 
-          desc:
-            "الدخول برقم الجوال",
+getFirestore(
 
-          action:
-            "teacherVisit"
-        }
+  visitApp
 
-      ]
+);
 
-    },
 
 
-    supervision: {
+/* =========================================
+   PORTALS
+========================================= */
 
-      title:
-        "الإشراف",
 
-      systems:[
+const portals = {
 
-        {
-          name:
-            "راصد لجميع الدرجات",
 
-          desc:
-            "متابعة درجات جميع المواد",
+teacher: {
 
-          url:
-            "https://muhammadamer1618-dev.github.io/Rased-System/index.html"
-        },
 
-        {
-          name:
-            "رصد اللغة الإنجليزية",
+title:
+"المعلم",
 
-          desc:
-            "متابعة نتائج اللغة الإنجليزية",
 
-          url:
-            "https://muhammadamer1618-dev.github.io/rased-insights/"
-        },
+systems:[
 
-        {
-          name:
-            "استمارة التقييم",
 
-          desc:
-            "متابعة وتقييم المعلمين",
+{
 
-          url:
-            "https://muhammadamer1618-dev.github.io/follow-up/index.html"
-        },
+name:
+"رصد الدرجات - جميع المعلمين",
 
-        {
-          name:
-            "تبادل الزيارات",
+desc:
+"نظام راصد لجميع المواد",
 
-          desc:
-            "نظام تبادل الزيارات",
+url:
+"https://muhammadamer1618-dev.github.io/Rased-System/index.html"
 
-          url:
-            "https://muhammadamer1618-dev.github.io/visit/"
-        }
+},
 
-      ]
 
-    },
+{
 
+name:
+"رصد الدرجات - اللغة الإنجليزية",
 
-    admin: {
+desc:
+"نظام راصد الخاص باللغة الإنجليزية",
 
-      title:
-        "الإدارة",
+url:
+"https://muhammadamer1618-dev.github.io/rased-insights/"
 
-      systems:[
+},
 
-        {
-          name:
-            "الخطة الأسبوعية",
 
-          desc:
-            "متابعة الخطط الأسبوعية",
+{
 
-          url:
-            "https://muhammadamer1618-dev.github.io/Weekly-Plan/admin-login.html"
-        },
+name:
+"الخطة الأسبوعية",
 
-        {
-          name:
-            "راصد اللغة الإنجليزية",
+desc:
+"إعداد وإدارة الخطة الأسبوعية",
 
-          desc:
-            "متابعة نتائج اللغة الإنجليزية",
+url:
+"https://muhammadamer1618-dev.github.io/Weekly-Plan/index.html"
 
-          url:
-            "https://muhammadamer1618-dev.github.io/rased-insights/"
-        },
+},
 
-        {
-          name:
-            "راصد جميع المواد",
 
-          desc:
-            "متابعة درجات جميع المواد",
+{
 
-          url:
-            "https://muhammadamer1618-dev.github.io/Rased-System/index.html"
-        },
+name:
+"تبادل الزيارات",
 
-        {
-          name:
-            "متابعة الزيارات - المشرف العام",
+desc:
+"الدخول برقم الجوال",
 
-          desc:
-            "متابعة وإدارة الزيارات",
+action:
+"teacherVisit"
 
-          url:
-            "https://muhammadamer1618-dev.github.io/visit/general-supervisor.html"
-        },
+}
 
-        {
-          name:
-            "تبادل الزيارات",
 
-          desc:
-            "الدخول إلى نظام تبادل الزيارات",
+]
 
-          url:
-            "https://muhammadamer1618-dev.github.io/visit/"
-        }
 
-      ]
+},
 
-    },
 
 
-    parent: {
+supervision: {
 
-      title:
-        "ولي الأمر",
 
-      systems:[
+title:
+"الإشراف",
 
-        {
-          name:
-            "الخطة الأسبوعية",
 
-          desc:
-            "عرض الخطة الأسبوعية للطالب",
+systems:[
 
-          url:
-            "https://muhammadamer1618-dev.github.io/Weekly-Plan/student.html"
-        },
 
-        {
-          name:
-            "نتائج اللغة الإنجليزية",
+{
 
-          desc:
-            "متابعة نتائج الطالب في اللغة الإنجليزية",
+name:
+"راصد لجميع الدرجات",
 
-          url:
-            "https://muhammadamer1618-dev.github.io/rased-insights/parent.html"
-        },
+desc:
+"متابعة درجات جميع المواد",
 
-        {
-          name:
-            "نتيجة الطالب لجميع المواد",
+url:
+"https://muhammadamer1618-dev.github.io/Rased-System/index.html"
 
-          desc:
-            "عرض نتيجة الطالب في جميع المواد",
+},
 
-          url:
-            "https://muhammadamer1618-dev.github.io/Rased-System/student.html"
-        }
 
-      ]
+{
 
-    }
+name:
+"رصد اللغة الإنجليزية",
 
-  };
+desc:
+"متابعة نتائج اللغة الإنجليزية",
 
+url:
+"https://muhammadamer1618-dev.github.io/rased-insights/"
 
-  const modal =
-    document.getElementById(
-      "portalModal"
-    );
+},
 
 
-  const modalTitle =
-    document.getElementById(
-      "modalTitle"
-    );
+{
 
+name:
+"استمارة التقييم",
 
-  const list =
-    document.getElementById(
-      "systemList"
-    );
+desc:
+"متابعة وتقييم المعلمين",
 
+url:
+"https://muhammadamer1618-dev.github.io/follow-up/index.html"
 
-  const closeModal =
-    document.getElementById(
-      "closeModal"
-    );
+},
 
 
-  /* =========================================
-     OPEN PORTAL
-  ========================================= */
+{
 
-  window.openPortal =
-    function(type){
+name:
+"تبادل الزيارات",
 
-      const portal =
-        portals[type];
+desc:
+"نظام تبادل الزيارات",
 
-      if(!portal)
-        return;
+url:
+"https://muhammadamer1618-dev.github.io/visit/"
 
+}
 
-      modalTitle.textContent =
-        portal.title;
 
+]
 
-      list.innerHTML =
-        "";
 
+},
 
-      portal.systems.forEach(
 
-        system => {
 
-          if(
-            system.action ===
-            "teacherVisit"
-          ){
+admin: {
 
-            const btn =
-              document.createElement(
-                "button"
-              );
 
+title:
+"الإدارة",
 
-            btn.type =
-              "button";
 
+systems:[
 
-            btn.className =
-              "system-link";
 
+{
 
-            btn.onclick =
-              openTeacherVisit;
+name:
+"الخطة الأسبوعية",
 
+desc:
+"متابعة الخطط الأسبوعية",
 
-            btn.innerHTML = `
+url:
+"https://muhammadamer1618-dev.github.io/Weekly-Plan/admin-login.html"
 
-              <div class="system-text">
+},
 
-                <strong>
-                  ${system.name}
-                </strong>
 
-                <span>
-                  ${system.desc}
-                </span>
+{
 
-              </div>
+name:
+"راصد اللغة الإنجليزية",
 
-              <div class="arrow">
-                ←
-              </div>
+desc:
+"متابعة نتائج اللغة الإنجليزية",
 
-            `;
+url:
+"https://muhammadamer1618-dev.github.io/rased-insights/"
 
+},
 
-            list.appendChild(
-              btn
-            );
 
+{
 
-            return;
+name:
+"راصد جميع المواد",
 
-          }
+desc:
+"متابعة درجات جميع المواد",
 
+url:
+"https://muhammadamer1618-dev.github.io/Rased-System/index.html"
 
-          const a =
-            document.createElement(
-              "a"
-            );
+},
 
 
-          a.className =
-            "system-link";
+{
 
+name:
+"متابعة الزيارات - المشرف العام",
 
-          a.href =
-            system.url;
+desc:
+"متابعة وإدارة الزيارات",
 
+url:
+"https://muhammadamer1618-dev.github.io/visit/general-supervisor.html"
 
-          a.target =
-            "_blank";
+},
 
 
-          a.rel =
-            "noopener noreferrer";
+{
 
+name:
+"تبادل الزيارات",
 
-          a.innerHTML = `
+desc:
+"الدخول إلى نظام تبادل الزيارات",
 
-            <div class="system-text">
+url:
+"https://muhammadamer1618-dev.github.io/visit/"
 
-              <strong>
-                ${system.name}
-              </strong>
+}
 
-              <span>
-                ${system.desc}
-              </span>
 
-            </div>
+]
 
-            <div class="arrow">
-              ←
-            </div>
 
-          `;
+},
 
 
-          list.appendChild(
-            a
-          );
 
-        }
+parent: {
 
-      );
 
+title:
+"ولي الأمر",
 
-      modal.classList.add(
-        "open"
-      );
 
-    };
+systems:[
 
 
-  /* =========================================
-     TEACHER VISIT
-  ========================================= */
+{
 
-  function openTeacherVisit(){
+name:
+"الخطة الأسبوعية",
 
-    modalTitle.textContent =
-      "تبادل الزيارات";
+desc:
+"عرض الخطة الأسبوعية للطالب",
 
+url:
+"https://muhammadamer1618-dev.github.io/Weekly-Plan/student.html"
 
-    list.innerHTML = `
+},
 
-      <div class="phone-area">
 
-        <div class="phone-big-icon">
-          📱
-        </div>
+{
 
-        <h4>
-          الدخول برقم الجوال
-        </h4>
+name:
+"نتائج اللغة الإنجليزية",
 
-        <p>
-          أدخل رقم الجوال المسجل في نظام تبادل الزيارات
-        </p>
+desc:
+"متابعة نتائج الطالب في اللغة الإنجليزية",
 
-        <input
-          id="teacherPhone"
-          class="phone-input"
-          type="tel"
-          inputmode="numeric"
-          placeholder="05xxxxxxxx"
-        >
+url:
+"https://muhammadamer1618-dev.github.io/rased-insights/parent.html"
 
-        <button
-          id="phoneLogin"
-          class="phone-btn"
-          type="button"
-        >
-          دخول
-        </button>
+},
 
-        <div
-          id="phoneMessage"
-          class="message"
-        ></div>
 
-        <button
-          id="backToTeacher"
-          class="back-btn"
-          type="button"
-        >
-          ← رجوع
-        </button>
+{
 
-      </div>
+name:
+"نتيجة الطالب لجميع المواد",
 
-    `;
+desc:
+"عرض نتيجة الطالب في جميع المواد",
 
+url:
+"https://muhammadamer1618-dev.github.io/Rased-System/student.html"
 
-    const phone =
-      document.getElementById(
-        "teacherPhone"
-      );
+}
 
 
-    const login =
-      document.getElementById(
-        "phoneLogin"
-      );
+]
 
 
-    login.onclick =
-      findTeacher;
+}
 
 
-    phone.addEventListener(
+};
 
-      "keydown",
 
-      e => {
 
-        if(
-          e.key === "Enter"
-        ){
+const modal =
 
-          findTeacher();
+document.getElementById(
 
-        }
+"portalModal"
 
-      }
+);
 
-    );
 
+const modalTitle =
 
-    document
-      .getElementById(
-        "backToTeacher"
-      )
-      .onclick =
-      () => {
+document.getElementById(
 
-        window.openPortal(
-          "teacher"
-        );
+"modalTitle"
 
-      };
+);
 
 
-    setTimeout(
-      () => phone.focus(),
-      80
-    );
+const list =
 
-  }
+document.getElementById(
 
+"systemList"
 
-  function normalizePhone(raw){
+);
 
-    let phone =
-      String(
-        raw || ""
-      )
-      .trim()
-      .replace(/\s+/g,"")
-      .replace(/-/g,"")
-      .replace(/^\+/,"");
 
+const closeModal =
 
-    if(
-      phone.startsWith(
-        "00"
-      )
-    ){
+document.getElementById(
 
-      phone =
-        phone.slice(2);
+"closeModal"
 
-    }
+);
 
 
-    if(
-      /^05\d{8}$/.test(
-        phone
-      )
-    ){
 
-      phone =
-        "966" +
-        phone.slice(1);
+/* =========================================
+   OPEN PORTAL
+========================================= */
 
-    }
 
+window.openPortal =
 
-    else if(
-      /^5\d{8}$/.test(
-        phone
-      )
-    ){
+function(type){
 
-      phone =
-        "966" +
-        phone;
 
-    }
+const portal =
 
+portals[type];
 
-    return phone;
 
-  }
+if(!portal)
 
+return;
 
-  async function findTeacher(){
 
-    const phoneInput =
-      document.getElementById(
-        "teacherPhone"
-      );
+modalTitle.textContent =
 
+portal.title;
 
-    const message =
-      document.getElementById(
-        "phoneMessage"
-      );
 
+list.innerHTML =
 
-    const button =
-      document.getElementById(
-        "phoneLogin"
-      );
+"";
 
 
-    const phone =
-      normalizePhone(
-        phoneInput.value
-      );
+portal.systems.forEach(
 
 
-    message.textContent =
-      "";
+system => {
 
 
-    if(
-      !/^9665\d{8}$/.test(
-        phone
-      )
-    ){
+if(
 
-      message.style.color =
-        varDanger();
+system.action ===
 
+"teacherVisit"
 
-      message.textContent =
-        "اكتب رقم جوال صحيح مثل 05xxxxxxxx";
+){
 
 
-      return;
+const btn =
 
-    }
+document.createElement(
 
+"button"
 
-    button.disabled =
-      true;
+);
 
 
-    button.textContent =
-      "جاري التحقق...";
+btn.type =
 
+"button";
 
-    try{
 
-      const q =
-        query(
+btn.className =
 
-          collection(
-            visitDb,
-            "teachers"
-          ),
+"system-link";
 
-          where(
-            "phone",
-            "==",
-            phone
-          ),
 
-          limit(5)
+btn.onclick =
 
-        );
+openTeacherVisit;
 
 
-      const result =
-        await getDocs(q);
+btn.innerHTML = `
 
 
-      if(
-        result.empty
-      ){
+<div class="system-text">
 
-        message.style.color =
-          varDanger();
 
+<strong>
 
-        message.textContent =
-          "رقم الجوال غير مسجل";
+${system.name}
 
+</strong>
 
-        return;
 
-      }
+<span>
 
+${system.desc}
 
-      let teacherDoc =
-        null;
+</span>
 
 
-      result.forEach(
+</div>
 
-        d => {
 
-          const data =
-            d.data();
+<div class="arrow">
 
+←
 
-          if(
-            !teacherDoc &&
-            data.active === true
-          ){
+</div>
 
-            teacherDoc =
-              d;
 
-          }
+`;
 
-        }
 
-      );
+list.appendChild(
 
+btn
 
-      if(
-        !teacherDoc
-      ){
+);
 
-        message.style.color =
-          varDanger();
 
+return;
 
-        message.textContent =
-          "الحساب غير مفعل";
 
+}
 
-        return;
 
-      }
 
+const a =
 
-      message.style.color =
-        "#006653";
+document.createElement(
 
+"a"
 
-      message.textContent =
-        "تم التحقق ✓";
+);
 
 
-      const url =
+a.className =
 
-        "https://muhammadamer1618-dev.github.io/visit/teacher-form.html?tid="
+"system-link";
 
-        +
 
-        encodeURIComponent(
-          teacherDoc.id
-        );
+a.href =
 
+system.url;
 
-      setTimeout(
 
-        () => {
+a.target =
 
-          window.location.href =
-            url;
+"_blank";
 
-        },
 
-        350
+a.rel =
 
-      );
+"noopener noreferrer";
 
 
-    }
+a.innerHTML = `
 
-    catch(error){
 
-      console.error(error);
+<div class="system-text">
 
 
-      message.style.color =
-        varDanger();
+<strong>
 
+${system.name}
 
-      message.textContent =
-        "تعذر التحقق من رقم الجوال حاليًا";
+</strong>
 
-    }
 
-    finally{
+<span>
 
-      button.disabled =
-        false;
+${system.desc}
 
+</span>
 
-      button.textContent =
-        "دخول";
 
-    }
+</div>
 
-  }
 
+<div class="arrow">
 
-  function varDanger(){
+←
 
-    return "#b42318";
+</div>
 
-  }
 
+`;
 
-  /* =========================================
-     CLOSE MODAL
-  ========================================= */
 
-  function closePortal(){
+list.appendChild(
 
-    modal.classList.remove(
-      "open"
-    );
+a
 
-  }
+);
 
 
-  closeModal.onclick =
-    closePortal;
+}
 
 
-  modal.addEventListener(
+);
 
-    "click",
 
-    e => {
+modal.classList.add(
 
-      if(
-        e.target === modal
-      ){
+"open"
 
-        closePortal();
+);
 
-      }
 
-    }
+};
 
-  );
 
 
-  document.addEventListener(
+/* =========================================
+   TEACHER VISIT
+========================================= */
 
-    "keydown",
 
-    e => {
+function openTeacherVisit(){
 
-      if(
-        e.key === "Escape"
-      ){
 
-        closePortal();
+modalTitle.textContent =
 
-      }
+"تبادل الزيارات";
 
-    }
 
-  );
+list.innerHTML = `
+
+
+<div class="phone-area">
+
+
+<div class="phone-big-icon">
+
+📱
+
+</div>
+
+
+<h4>
+
+الدخول برقم الجوال
+
+</h4>
+
+
+<p>
+
+أدخل رقم الجوال المسجل في نظام تبادل الزيارات
+
+</p>
+
+
+<input
+
+id="teacherPhone"
+
+class="phone-input"
+
+type="tel"
+
+inputmode="numeric"
+
+placeholder="05xxxxxxxx"
+
+>
+
+
+<button
+
+id="phoneLogin"
+
+class="phone-btn"
+
+type="button"
+
+>
+
+دخول
+
+</button>
+
+
+<div
+
+id="phoneMessage"
+
+class="message"
+
+></div>
+
+
+<button
+
+id="backToTeacher"
+
+class="back-btn"
+
+type="button"
+
+>
+
+← رجوع
+
+</button>
+
+
+</div>
+
+
+`;
+
+
+const phone =
+
+document.getElementById(
+
+"teacherPhone"
+
+);
+
+
+const login =
+
+document.getElementById(
+
+"phoneLogin"
+
+);
+
+
+login.onclick =
+
+findTeacher;
+
+
+phone.addEventListener(
+
+
+"keydown",
+
+
+e => {
+
+
+if(
+
+e.key ===
+
+"Enter"
+
+){
+
+
+findTeacher();
+
+
+}
+
+
+}
+
+
+);
+
+
+document
+
+.getElementById(
+
+"backToTeacher"
+
+)
+
+.onclick =
+
+()=>{
+
+
+window.openPortal(
+
+"teacher"
+
+);
+
+
+};
+
+
+setTimeout(
+
+()=> phone.focus(),
+
+80
+
+);
+
+
+}
+
+
+
+function normalizePhone(raw){
+
+
+let phone =
+
+String(
+
+raw || ""
+
+)
+
+.trim()
+
+.replace(/\s+/g,"")
+
+.replace(/-/g,"")
+
+.replace(/^\+/,"");
+
+
+if(
+
+phone.startsWith(
+
+"00"
+
+)
+
+){
+
+
+phone =
+
+phone.slice(2);
+
+
+}
+
+
+if(
+
+/^05\d{8}$/.test(
+
+phone
+
+)
+
+){
+
+
+phone =
+
+"966" +
+
+phone.slice(1);
+
+
+}
+
+
+else if(
+
+/^5\d{8}$/.test(
+
+phone
+
+)
+
+){
+
+
+phone =
+
+"966" +
+
+phone;
+
+
+}
+
+
+return phone;
+
+
+}
+
+
+
+async function findTeacher(){
+
+
+const phoneInput =
+
+document.getElementById(
+
+"teacherPhone"
+
+);
+
+
+const message =
+
+document.getElementById(
+
+"phoneMessage"
+
+);
+
+
+const button =
+
+document.getElementById(
+
+"phoneLogin"
+
+);
+
+
+const phone =
+
+normalizePhone(
+
+phoneInput.value
+
+);
+
+
+message.textContent =
+
+"";
+
+
+if(
+
+!/^9665\d{8}$/.test(
+
+phone
+
+)
+
+){
+
+
+message.style.color =
+
+varDanger();
+
+
+message.textContent =
+
+"اكتب رقم جوال صحيح مثل 05xxxxxxxx";
+
+
+return;
+
+
+}
+
+
+
+button.disabled =
+
+true;
+
+
+button.textContent =
+
+"جاري التحقق...";
+
+
+try{
+
+
+const q =
+
+query(
+
+
+collection(
+
+visitDb,
+
+"teachers"
+
+),
+
+
+where(
+
+"phone",
+
+"==",
+
+phone
+
+),
+
+
+limit(5)
+
+
+);
+
+
+const result =
+
+await getDocs(q);
+
+
+if(
+
+result.empty
+
+){
+
+
+message.style.color =
+
+varDanger();
+
+
+message.textContent =
+
+"رقم الجوال غير مسجل";
+
+
+return;
+
+
+}
+
+
+let teacherDoc =
+
+null;
+
+
+result.forEach(
+
+
+d => {
+
+
+const data =
+
+d.data();
+
+
+if(
+
+!teacherDoc &&
+
+data.active === true
+
+){
+
+
+teacherDoc =
+
+d;
+
+
+}
+
+
+}
+
+
+);
+
+
+if(
+
+!teacherDoc
+
+){
+
+
+message.style.color =
+
+varDanger();
+
+
+message.textContent =
+
+"الحساب غير مفعل";
+
+
+return;
+
+
+}
+
+
+
+message.style.color =
+
+"#006653";
+
+
+message.textContent =
+
+"تم التحقق ✓";
+
+
+const url =
+
+
+"https://muhammadamer1618-dev.github.io/visit/teacher-form.html?tid="
+
+
++
+
+
+encodeURIComponent(
+
+teacherDoc.id
+
+);
+
+
+setTimeout(
+
+
+()=>{
+
+
+window.location.href =
+
+url;
+
+
+},
+
+
+350
+
+
+);
+
+
+}
+
+
+catch(error){
+
+
+console.error(error);
+
+
+message.style.color =
+
+varDanger();
+
+
+message.textContent =
+
+"تعذر التحقق من رقم الجوال حاليًا";
+
+
+}
+
+
+finally{
+
+
+button.disabled =
+
+false;
+
+
+button.textContent =
+
+"دخول";
+
+
+}
+
+
+}
+
+
+
+function varDanger(){
+
+
+return "#b42318";
+
+
+}
+
+
+
+/* =========================================
+   CLOSE MODAL
+========================================= */
+
+
+function closePortal(){
+
+
+modal.classList.remove(
+
+"open"
+
+);
+
+
+}
+
+
+closeModal.onclick =
+
+closePortal;
+
+
+modal.addEventListener(
+
+
+"click",
+
+
+e => {
+
+
+if(
+
+e.target === modal
+
+){
+
+
+closePortal();
+
+
+}
+
+
+}
+
+
+);
+
+
+document.addEventListener(
+
+
+"keydown",
+
+
+e => {
+
+
+if(
+
+e.key === "Escape"
+
+){
+
+
+closePortal();
+
+
+}
+
+
+}
+
+
+);
+
 
 </script>
 
+
 </body>
+
 </html>
