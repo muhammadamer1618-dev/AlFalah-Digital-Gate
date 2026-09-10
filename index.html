@@ -271,7 +271,7 @@ input{
   width:min(1120px,90vw);
   margin:7px auto;
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:18px;
   flex:1;
   align-items:center;
@@ -909,71 +909,19 @@ AlFalah Digital Gate
 
 <section class="portal-grid">
 
-<button
-class="portal-card"
-onclick="openPortal('teacher')"
-type="button"
->
-
-<div class="card-icon">
-👨‍🏫
-</div>
-
-<h2>
-المعلم
-</h2>
-
+<button class="portal-card" onclick="openPortal('teacher')" type="button">
+<div class="card-icon">👨‍🏫</div>
+<h2>المعلم</h2>
 </button>
 
-
-<button
-class="portal-card"
-onclick="openPortal('supervision')"
-type="button"
->
-
-<div class="card-icon">
-📋
-</div>
-
-<h2>
-الإشراف
-</h2>
-
+<button class="portal-card" onclick="openPortal('supervision')" type="button">
+<div class="card-icon">📋</div>
+<h2>المشرف</h2>
 </button>
 
-
-<button
-class="portal-card"
-onclick="openPortal('admin')"
-type="button"
->
-
-<div class="card-icon">
-🏫
-</div>
-
-<h2>
-الإدارة
-</h2>
-
-</button>
-
-
-<button
-class="portal-card"
-onclick="openPortal('parent')"
-type="button"
->
-
-<div class="card-icon">
-👨‍👩‍👦
-</div>
-
-<h2>
-ولي الأمر
-</h2>
-
+<button class="portal-card" onclick="openPortal('student')" type="button">
+<div class="card-icon">👨‍🎓</div>
+<h2>الطالب</h2>
 </button>
 
 </section>
@@ -1121,182 +1069,66 @@ getFirestore(
 const portals = {
 
 teacher: {
-
-title:
-"المعلم",
-
+title:"المعلم",
 systems:[
-
 {
-name:
-"رصد درجات الاختبارات",
-
-desc:
-"نظام راصد لجميع المواد",
-
-url:
-"https://muhammadamer1618-dev.github.io/Rased-System/index.html"
+name:"رصد الدرجات - الاختبارات الإلكترونية",
+desc:"الدخول إلى نظام راصد ومنصة الاختبارات الإلكترونية",
+url:"https://muhammadamer1618-dev.github.io/Rased-System/index.html"
 },
-
 {
-name:
-"الخطة الأسبوعية",
-
-desc:
-"إعداد وإدارة الخطة الأسبوعية",
-
-url:
-"https://muhammadamer1618-dev.github.io/Weekly-Plan/index.html"
+name:"الخطة الأسبوعية",
+desc:"إعداد وإدارة الخطة الأسبوعية",
+url:"https://muhammadamer1618-dev.github.io/Weekly-Plan/index.html"
 },
-
 {
-name:
-"زياراتي الفنية",
-
-desc:
-"الاطلاع على الزيارات الفنية الخاصة بي",
-
-url:
-"https://muhammadamer1618-dev.github.io/follow-up/teacher-portal.html"
-},
-
-{
-name:
-"تبادل الزيارات",
-
-desc:
-"الدخول برقم الجوال",
-
-action:
-"teacherVisit"
+name:"زياراتي الفنية",
+desc:"الاطلاع على الزيارات الفنية الخاصة بي",
+url:"https://muhammadamer1618-dev.github.io/follow-up/teacher-portal.html"
 }
-
 ]
-
 },
-
 
 supervision: {
-
-title:
-"الإشراف",
-
+title:"المشرف",
 systems:[
-
 {
-name:
-"راصد - متابعة رصد الدرجات",
-
-desc:
-"متابعة درجات جميع المواد",
-
-url:
-"https://muhammadamer1618-dev.github.io/Rased-System/index.html"
+name:"راصد",
+desc:"متابعة نظام راصد",
+url:"https://muhammadamer1618-dev.github.io/Rased-System/index.html"
 },
-
 {
-name:
-"الزيارات الفنية",
-
-desc:
-"متابعة الزيارات الفنية للمعلمين",
-
-url:
-"https://muhammadamer1618-dev.github.io/follow-up/supervisor-login.html"
+name:"الخطة الأسبوعية",
+desc:"متابعة الخطط الأسبوعية",
+url:"https://muhammadamer1618-dev.github.io/Weekly-Plan/admin-login.html"
 },
-
 {
-name:
-"تبادل الزيارات",
-
-desc:
-"نظام تبادل الزيارات",
-
-url:
-"https://muhammadamer1618-dev.github.io/visit/"
+name:"الزيارات الفنية",
+desc:"متابعة الزيارات الفنية للمعلمين",
+url:"https://muhammadamer1618-dev.github.io/follow-up/supervisor-login.html"
 }
-
 ]
-
 },
 
-
-admin: {
-
-title:
-"الإدارة",
-
+student: {
+title:"الطالب",
 systems:[
-
 {
-name:
-"الخطة الأسبوعية",
-
-desc:
-"متابعة الخطط الأسبوعية",
-
-url:
-"https://muhammadamer1618-dev.github.io/Weekly-Plan/admin-login.html"
+name:"الاختبارات الإلكترونية",
+desc:"الدخول إلى منصة الاختبارات الإلكترونية",
+url:"https://muhammadamer1618-dev.github.io/Rased-System/exams.html"
 },
-
 {
-name:
-"أدمن راصد",
-
-desc:
-"متابعة درجات جميع المواد",
-
-url:
-"https://muhammadamer1618-dev.github.io/Rased-System/index.html"
+name:"نتائج الاختبارات",
+desc:"عرض نتائج اختبارات الطالب",
+url:"https://muhammadamer1618-dev.github.io/Rased-System/student.html"
 },
-
 {
-name:
-"تبادل الزيارات",
-
-desc:
-"الدخول إلى نظام تبادل الزيارات",
-
-url:
-"https://muhammadamer1618-dev.github.io/visit/"
+name:"الخطة الأسبوعية",
+desc:"عرض الخطة الأسبوعية للطالب",
+url:"https://muhammadamer1618-dev.github.io/Weekly-Plan/student.html"
 }
-
 ]
-
-},
-
-
-parent: {
-
-title:
-"ولي الأمر",
-
-systems:[
-
-{
-name:
-"الخطة الأسبوعية",
-
-desc:
-"عرض الخطة الأسبوعية للطالب",
-
-url:
-"https://muhammadamer1618-dev.github.io/Weekly-Plan/student.html"
-},
-
-{
-name:
-"نتائج الاختبارات",
-
-desc:
-"عرض نتائج اختبارات الطالب",
-
-url:
-"https://muhammadamer1618-dev.github.io/Rased-System/student.html"
-}
-
-]
-
 }
 
 };
