@@ -4,6 +4,8 @@
 <header class="head"><img src="logo.jpeg" class="logo"><h1>مدارس الفلاح الأهلية</h1><div id="portalRoleTitle">نظام راصد - بوابة الإشراف</div><button class="logout" onclick="logout()">تسجيل الخروج</button></header>
 <div class="wrap"><div class="welcome">مرحبًا، <strong id="supName">المستخدم</strong> — <span id="supRoleLabel">حساب إشراف</span>. تظهر لك فقط الأقسام التي منحتها لك الإدارة.</div>
 <div class="nav">
+<a href="javascript:void(0)" onclick='openUnifiedWorkspace("weekly")'>📅 متابعة الخطة الأسبوعية</a>
+<a href="javascript:void(0)" onclick='openUnifiedWorkspace("visits")'>📋 الزيارات الفنية</a>
 <a data-perm="analysisView" href="analysis.html">📊 تحليل النتائج</a>
 <a data-perm="comparisonView" href="comparison.html">📈 مقارنة النتائج</a>
 <a data-perm="monitoringView" href="monitoring.html">📋 حالة الرصد</a>
@@ -182,4 +184,85 @@ function renderTests(){const q=testSearch.value.trim().toLowerCase();const rows=
 function renderSchedules(){schedules.sort((a,b)=>String(b.updatedAt?.seconds||"").localeCompare(String(a.updatedAt?.seconds||"")));schedulesBody.innerHTML=schedules.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name||"")}</td><td>${Array.isArray(x.days)?x.days.length:0}</td><td>${esc(fmtTs(x.updatedAt))}</td><td>${x.visibleToParent===false?'مخفي':'ظاهر'}</td></tr>`).join('')||'<tr><td colspan="5">لا توجد جداول.</td></tr>'}
 function renderMessages(){const q=messageSearch.value.trim().toLowerCase();const rows=messages.filter(x=>!q||[x.teacherName,x.studentName,x.subjectName,x.message,x.testName].join(" ").toLowerCase().includes(q)).sort((a,b)=>(b.sentAt?.seconds||0)-(a.sentAt?.seconds||0));messagesBody.innerHTML=rows.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.teacherName||"")}</td><td>${esc(x.studentName||"")}</td><td>${esc((x.grade||"")+"/"+(x.section||""))}</td><td>${esc(x.subjectName||"")}</td><td>${esc(x.messageType==='custom'?'رسالة عامة':(x.testName||'نتيجة اختبار'))}</td><td>${esc(x.guardianPhone||"")}</td><td style="text-align:right;white-space:pre-wrap;max-width:360px">${esc(x.message||"")}</td></tr>`).join('')||'<tr><td colspan="8">لا توجد رسائل.</td></tr>'}
 async function start(){if(!protect())return;try{await verifyAccount();await loadAll()}catch(e){console.error(e);alert("تعذر تحميل بوابة المشرف:\n"+e.message);location.href="index.html"}}start();
-</script></body></html>
+</script>
+<style id="unifiedWorkspaceStyle">
+.unified-workspace{
+  position:fixed;inset:0;z-index:999999;background:#f4f7f5;display:none;flex-direction:column;
+  font-family:Tajawal,Cairo,Tahoma,Arial,sans-serif;
+}
+.unified-workspace.open{display:flex}
+.unified-workspace-head{
+  min-height:64px;background:linear-gradient(135deg,#004c3f,#006653);color:#fff;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;
+  box-shadow:0 5px 18px rgba(0,0,0,.16)
+}
+.unified-workspace-title{font-weight:900;font-size:18px}
+.unified-workspace-actions{display:flex;gap:8px;align-items:center}
+.unified-workspace-actions button{
+  border:0;border-radius:10px;padding:9px 13px;font:inherit;font-weight:800;cursor:pointer
+}
+.unified-workspace-back{background:#fff;color:#004c3f}
+.unified-workspace-home{background:#f0cf79;color:#17372f}
+.unified-workspace-frame{width:100%;flex:1;border:0;background:#fff}
+@media(max-width:650px){
+  .unified-workspace-head{min-height:58px;padding:8px 10px}
+  .unified-workspace-title{font-size:14px}
+  .unified-workspace-actions button{padding:8px 10px;font-size:12px}
+}
+</style>
+
+<div id="unifiedWorkspace" class="unified-workspace" aria-hidden="true">
+  <div class="unified-workspace-head">
+    <div id="unifiedWorkspaceTitle" class="unified-workspace-title">الخدمة</div>
+    <div class="unified-workspace-actions">
+      <button type="button" class="unified-workspace-home" onclick="reloadUnifiedWorkspace()">↻ تحديث</button>
+      <button type="button" class="unified-workspace-back" onclick="closeUnifiedWorkspace()">← رجوع إلى منصة المشرف</button>
+    </div>
+  </div>
+  <iframe id="unifiedWorkspaceFrame" class="unified-workspace-frame" title="الخدمة"></iframe>
+</div>
+
+<script>
+function openUnifiedWorkspace(kind){
+  const box=document.getElementById("unifiedWorkspace");
+  const frame=document.getElementById("unifiedWorkspaceFrame");
+  const title=document.getElementById("unifiedWorkspaceTitle");
+  let url="",label="";
+  if(kind==="weekly"){
+    url="../weekly/admin.html";
+    label="متابعة الخطة الأسبوعية";
+  }else if(kind==="visits"){
+    let role="";
+    try{
+      const x=JSON.parse(localStorage.getItem("currentSupervisor")||sessionStorage.getItem("currentSupervisor")||"null");
+      role=String(x?.role||"");
+    }catch(e){}
+    if(role==="admin") url="../follow-up/admin-dashboard.html";
+    else if(role==="general_supervisor") url="../follow-up/general-supervisor-reports.html";
+    else url="../follow-up/supervisor-dashboard.html";
+    label="الزيارات الفنية";
+  }
+  if(!url)return;
+  title.textContent=label;
+  frame.src=url;
+  box.classList.add("open");
+  box.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+function closeUnifiedWorkspace(){
+  const box=document.getElementById("unifiedWorkspace");
+  const frame=document.getElementById("unifiedWorkspaceFrame");
+  box.classList.remove("open");
+  box.setAttribute("aria-hidden","true");
+  frame.src="about:blank";
+  document.body.style.overflow="";
+}
+function reloadUnifiedWorkspace(){
+  const frame=document.getElementById("unifiedWorkspaceFrame");
+  if(frame&&frame.src&&frame.src!=="about:blank")frame.contentWindow.location.reload();
+}
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"&&document.getElementById("unifiedWorkspace")?.classList.contains("open"))closeUnifiedWorkspace();
+});
+</script>
+</body></html>
