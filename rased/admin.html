@@ -1128,6 +1128,7 @@ onclick="scrollToSection('liveProviderSettingsSection')">
     <div class="admin-dashboard-group-title">الحسابات والإعدادات</div>
     <div class="admin-dashboard-grid">
       <button class="admin-dashboard-tool" data-admin-target="supervisorsSection" onclick="showAdminFeature('supervisorsSection',this,'حسابات الإشراف والصلاحيات')"><span>🛡️</span><strong>حسابات المشرفين</strong><small>الحسابات والصلاحيات والإسنادات</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="studentCounselorsSection" onclick="showAdminFeature('studentCounselorsSection',this,'حسابات الموجه الطلابي')"><span>🧭</span><strong>حسابات الموجه الطلابي</strong><small>إضافة وتعديل حسابات التوجيه الطلابي</small></button>
       <button class="admin-dashboard-tool" data-admin-target="activityLeadersSection" onclick="showAdminFeature('activityLeadersSection',this,'حسابات رواد النشاط')"><span>🎯</span><strong>حسابات رواد النشاط</strong><small>إضافة وتعديل حسابات رواد النشاط</small></button>
       <button class="admin-dashboard-tool" data-admin-target="liveProviderSettingsSection" onclick="showAdminFeature('liveProviderSettingsSection',this,'إعداد مزود الحصص المباشرة')"><span>🎥</span><strong>مزود الحصص المباشرة</strong><small>إعدادات البث والقاعات</small></button>
       <button class="admin-dashboard-tool" data-admin-target="cleanupSection" onclick="showAdminFeature('cleanupSection',this,'تنظيف بيانات راصد')"><span>⚠️</span><strong>تنظيف بيانات راصد</strong><small>عمليات الحذف الجماعي الحساسة</small></button>
@@ -2673,6 +2674,71 @@ onclick="clearCurrentTeacherAssignments()">
 </div>
 
 <!-- =========================================
+     حسابات الموجه الطلابي
+========================================= -->
+
+<div class="box" id="studentCounselorsSection">
+
+<div class="box-title">
+🧭 حسابات الموجه الطلابي
+</div>
+
+<div class="box-body">
+
+<input type="hidden" id="studentCounselorOriginalUsername">
+
+<div class="row">
+
+<div class="col">
+<label>اسم الموجه الطلابي</label>
+<input id="studentCounselorName" placeholder="مثال: ربيع فاروق التوني">
+</div>
+
+<div class="col">
+<label>اسم المستخدم</label>
+<input id="studentCounselorUsername" placeholder="مثال: counselor1">
+</div>
+
+<div class="col">
+<label>كلمة المرور</label>
+<input id="studentCounselorPassword" type="text" autocomplete="new-password">
+</div>
+
+</div>
+
+<div class="actions">
+<button class="btn-primary" onclick="saveStudentCounselor()">💾 حفظ حساب الموجه الطلابي</button>
+<button class="btn-light" onclick="clearStudentCounselorForm()">حساب جديد</button>
+</div>
+
+<div class="note">
+حساب <strong>الموجه الطلابي</strong> مخصص لصفحة التوجيه والإرشاد الطلابي.
+يتم الدخول له من بوابة الإشراف والإدارة بنفس اسم المستخدم وكلمة المرور.
+</div>
+
+<div class="admin-list-count">
+عدد حسابات الموجه الطلابي: <b id="studentCounselorsCount">0</b>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>اسم الموجه الطلابي</th>
+<th>اسم المستخدم</th>
+<th>الإجراءات</th>
+</tr>
+</thead>
+<tbody id="studentCounselorsBody"></tbody>
+</table>
+</div>
+
+</div>
+</div>
+
+
+<!-- =========================================
      حسابات رواد النشاط
 ========================================= -->
 
@@ -3103,6 +3169,7 @@ let messageLogs=[];
 let filteredMessageLogs=[];
 let supervisors=[];
 let activityLeaders=[];
+let studentCounselors=[];
 let examAccessEnabledSubjectIds=null;
 
 
@@ -9524,6 +9591,185 @@ await loadSupervisors();
 
 
 /* =========================================
+   حسابات الموجه الطلابي
+========================================= */
+
+async function loadStudentCounselors(){
+
+const snap=await db.collection("users").get();
+
+studentCounselors=[];
+
+snap.forEach(doc=>{
+
+const data=doc.data()||{};
+
+if(String(data.role||"").toLowerCase()==="student_counselor"){
+
+studentCounselors.push({
+username:doc.id,
+name:data.name||doc.id,
+password:data.password||""
+});
+
+}
+
+});
+
+studentCounselors.sort((a,b)=>
+String(a.name||"").localeCompare(String(b.name||""),"ar")
+);
+
+renderStudentCounselors();
+
+}
+
+
+function renderStudentCounselors(){
+
+const body=document.getElementById("studentCounselorsBody");
+const count=document.getElementById("studentCounselorsCount");
+
+if(count) count.textContent=studentCounselors.length;
+if(!body) return;
+
+body.innerHTML="";
+
+if(!studentCounselors.length){
+
+body.innerHTML="<tr><td colspan='4'>لا توجد حسابات موجهين طلابيين</td></tr>";
+return;
+
+}
+
+studentCounselors.forEach((item,index)=>{
+
+const tr=document.createElement("tr");
+
+tr.innerHTML=`
+<td class="admin-row-number">${index+1}</td>
+<td>${escapeHtml(item.name)}</td>
+<td>${escapeHtml(item.username)}</td>
+<td>
+<button class="small-btn btn-warning" onclick='editStudentCounselor(${JSON.stringify(item.username)})'>تعديل</button>
+<button class="small-btn btn-danger" onclick='deleteStudentCounselor(${JSON.stringify(item.username)})'>حذف</button>
+</td>
+`;
+
+body.appendChild(tr);
+
+});
+
+}
+
+
+async function saveStudentCounselor(){
+
+const original=document.getElementById("studentCounselorOriginalUsername").value.trim().toLowerCase();
+const name=document.getElementById("studentCounselorName").value.trim();
+const username=document.getElementById("studentCounselorUsername").value.trim().toLowerCase();
+const password=document.getElementById("studentCounselorPassword").value.trim();
+
+if(!name || !username || !password){
+
+alert("أدخل اسم الموجه الطلابي واسم المستخدم وكلمة المرور");
+return;
+
+}
+
+if(!/^[a-zA-Z0-9._-]{3,60}$/.test(username)){
+
+alert("اسم المستخدم يجب أن يكون 3 أحرف على الأقل، ويحتوي على حروف إنجليزية أو أرقام أو . _ - فقط.");
+return;
+
+}
+
+if(password.length<4){
+
+alert("كلمة المرور يجب ألا تقل عن 4 أحرف.");
+return;
+
+}
+
+const existing=await db.collection("users").doc(username).get();
+
+if(existing.exists && username!==original){
+
+alert("اسم المستخدم مستخدم بالفعل.");
+return;
+
+}
+
+if(original && original!==username){
+
+const oldDoc=await db.collection("users").doc(original).get();
+
+if(oldDoc.exists && String(oldDoc.data().role||"").toLowerCase()==="student_counselor"){
+await oldDoc.ref.delete();
+}
+
+}
+
+await db.collection("users").doc(username).set({
+name,
+username,
+role:"student_counselor",
+password,
+updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+},{merge:true});
+
+alert("تم حفظ حساب الموجه الطلابي ✅");
+
+clearStudentCounselorForm();
+await loadStudentCounselors();
+
+}
+
+
+function editStudentCounselor(username){
+
+const item=studentCounselors.find(x=>x.username===username);
+if(!item) return;
+
+document.getElementById("studentCounselorOriginalUsername").value=item.username;
+document.getElementById("studentCounselorName").value=item.name||"";
+document.getElementById("studentCounselorUsername").value=item.username||"";
+document.getElementById("studentCounselorPassword").value=item.password||"";
+
+scrollToSection("studentCounselorsSection");
+
+}
+
+
+function clearStudentCounselorForm(){
+
+document.getElementById("studentCounselorOriginalUsername").value="";
+document.getElementById("studentCounselorName").value="";
+document.getElementById("studentCounselorUsername").value="";
+document.getElementById("studentCounselorPassword").value="";
+
+}
+
+
+async function deleteStudentCounselor(username){
+
+const item=studentCounselors.find(x=>x.username===username);
+if(!item) return;
+
+if(!confirm("هل تريد حذف حساب الموجه الطلابي:\n"+item.name+" ؟")) return;
+
+const doc=await db.collection("users").doc(username).get();
+
+if(doc.exists && String(doc.data().role||"").toLowerCase()==="student_counselor"){
+await doc.ref.delete();
+}
+
+await loadStudentCounselors();
+
+}
+
+
+/* =========================================
    حسابات رواد النشاط
 ========================================= */
 
@@ -10603,6 +10849,7 @@ loadSubjects(),
 loadTeachers(),
 loadTests(),
 loadSupervisors(),
+loadStudentCounselors(),
 loadActivityLeaders()
 
 ]);
