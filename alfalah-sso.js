@@ -307,7 +307,8 @@ function renderServices(s){
 function showLogin(type){
   const title=$("modalTitle"),list=$("systemList"),modal=$("portalModal");
   title.textContent=type==="teacher"?"دخول المعلم":"دخول الإشراف والإدارة";
-  list.innerHTML='<div class="phone-area"><div class="phone-big-icon">🔐</div><h4>الدخول الموحد</h4><p>أدخل بيانات حساب راصد مرة واحدة للوصول إلى خدماتك.</p><input id="gateUsername" class="phone-input" type="text" autocomplete="username" placeholder="اسم المستخدم" style="direction:rtl"><input id="gatePassword" class="phone-input" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="direction:rtl;margin-top:10px"><button id="gateLoginBtn" class="phone-btn" type="button">دخول</button><div id="gateMessage" class="message"></div></div>';
+  const userPlaceholder=type==="teacher"?"اسم المستخدم":"رقم الهوية / الإقامة";
+  list.innerHTML='<div class="phone-area"><div class="phone-big-icon">🔐</div><h4>الدخول الموحد</h4><p>أدخل بيانات حساب راصد مرة واحدة للوصول إلى خدماتك.</p><input id="gateUsername" class="phone-input" type="text" autocomplete="username" placeholder="'+userPlaceholder+'" style="direction:rtl"><input id="gatePassword" class="phone-input" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="direction:rtl;margin-top:10px"><button id="gateLoginBtn" class="phone-btn" type="button">دخول</button><div id="gateMessage" class="message"></div></div>';
   modal.classList.add("open");
   const user=$("gateUsername"),pass=$("gatePassword"),btn=$("gateLoginBtn"),msg=$("gateMessage");
   const go=async()=>{
