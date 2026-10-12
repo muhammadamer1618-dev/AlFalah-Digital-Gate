@@ -505,6 +505,22 @@ return null;
 }
 }
 
+function formatViewTime(value){
+  if(!value)return "";
+  try{
+    const d=typeof value.toDate==="function"?value.toDate():(value.seconds?new Date(value.seconds*1000):new Date(value));
+    if(Number.isNaN(d.getTime()))return "";
+    return d.toLocaleString("ar-SA",{dateStyle:"short",timeStyle:"short"});
+  }catch{return ""}
+}
+function supervisorViewReceipt(a){
+  if(!["submitted","reviewed","revision_requested","published"].includes(String(a.status||"")))return "";
+  const at=a.supervisorViewedAt||a.reviewedAt||null;
+  const by=a.supervisorViewedBy||a.reviewedBy||"المشرف العام";
+  if(!at)return '<div class="muted" style="margin-top:7px;color:#8a6d1d;font-weight:bold">⏳ لم يطلع عليه المشرف العام بعد</div>';
+  const when=formatViewTime(at);
+  return '<div class="muted" style="margin-top:7px;color:#08705d;font-weight:bold">👁️ تم الاطلاع بواسطة '+esc(by)+(when?' — '+esc(when):'')+'</div>';
+}
 function statusLabel(s){
 return {
 draft:"مسودة",
@@ -672,6 +688,15 @@ if(submit)data.submittedAt=now;
 
 if(id){
 await db.collection("activities").doc(id).set(data,{merge:true});
+if(submit){
+await db.collection("activities").doc(id).update({
+supervisorViewedAt:firebase.firestore.FieldValue.delete(),
+supervisorViewedBy:firebase.firestore.FieldValue.delete(),
+supervisorFirstViewedAt:firebase.firestore.FieldValue.delete(),
+supervisorFirstViewedBy:firebase.firestore.FieldValue.delete(),
+supervisorViewCount:firebase.firestore.FieldValue.delete()
+});
+}
 }else{
 await db.collection("activities").add(data);
 }
@@ -720,6 +745,7 @@ el("list").innerHTML=activities.map(a=>`
 <div>
 <strong>${esc(a.title||"نشاط بدون عنوان")}</strong>
 <span class="status">${esc(statusLabel(a.status))}</span>
+${supervisorViewReceipt(a)}
 </div>
 
 <div class="muted" style="margin-top:6px">
