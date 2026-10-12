@@ -113,6 +113,26 @@ function waitForReportImages(){const imgs=[...document.querySelectorAll('#report
 async function printActivityReport(){try{const report=document.getElementById('report');if(!report||/جاري التحميل|تعذر تحميل التقرير/.test(report.textContent||'')){alert('انتظر حتى يكتمل تحميل التقرير أولًا.');return}await waitForReportImages();setTimeout(()=>window.print(),120)}catch(e){console.error(e);window.print()}}
 async function parentAllowed(a,studentCode){if(!studentCode)return false;let d=await db.collection('students').doc(String(studentCode)).get();if(!d.exists){const q=await db.collection('students').where('code','==',String(studentCode)).limit(1).get();if(!q.empty)d=q.docs[0]}if(!d.exists)return false;const st=d.data()||{};return (Array.isArray(a.classes)?a.classes:[]).some(c=>c.grade===st.grade&&c.section===st.section)}
 async function fullAllowed(a){const role=(localStorage.getItem('currentUserRole')||'').toLowerCase();if(['admin','superadmin','supervisor','manager'].includes(role))return true;const user=(localStorage.getItem('currentUserEmail')||localStorage.getItem('currentUser')||'').trim().toLowerCase();if(role==='activity_leader'){const creator=String(a.createdByEmail||a.activityLeaderEmail||'').trim().toLowerCase();return !!user&&creator===user}if(role!=='teacher')return false;return user&&String(a.teacherEmail||'').toLowerCase()===user}
+async function recordSupervisorReportView(id,a){
+  const role=(localStorage.getItem("currentUserRole")||"").toLowerCase();
+  if(!["admin","superadmin","supervisor","manager"].includes(role))return;
+  if(!a || a.status==="draft")return;
+  const reviewer=localStorage.getItem("currentUserName")||localStorage.getItem("currentUserEmail")||"المشرف العام";
+  const patch={
+    supervisorViewedAt:firebase.firestore.FieldValue.serverTimestamp(),
+    supervisorViewedBy:reviewer,
+    supervisorViewCount:firebase.firestore.FieldValue.increment(1)
+  };
+  if(!a.supervisorFirstViewedAt){
+    patch.supervisorFirstViewedAt=firebase.firestore.FieldValue.serverTimestamp();
+    patch.supervisorFirstViewedBy=reviewer;
+  }
+  try{
+    await db.collection("activities").doc(id).set(patch,{merge:true});
+  }catch(e){
+    console.error("REPORT VIEW RECEIPT ERROR",e);
+  }
+}
 function isSelfActivityLeader(a){
 return String(a?.executorType||"").toLowerCase()==="activity_leader" ||
 (
@@ -163,6 +183,8 @@ async function load(){
   const a=d.data()||{};
   if(parent){if(a.status!=='published'||!(await parentAllowed(a,studentCode))){out.innerHTML='<div class="empty">هذا التقرير غير متاح لهذا الطالب.</div>';return}}
   else if(!(await fullAllowed(a))){out.innerHTML='<div class="empty">لا تملك صلاحية عرض هذا التقرير.</div>';return}
+
+  if(!parent)await recordSupervisorReportView(id,a);
 
   const v=parent?(a.parentVisibility||{}):{},show=k=>!parent||v[k]!==false;
   /* الصور في عرض ولي الأمر Opt-in فقط: لا تظهر إلا إذا اعتمد المشرف نشر الصور واختار صورًا بعينها */
