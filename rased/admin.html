@@ -2547,7 +2547,7 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="row">
 <div class="col"><label>الاسم</label><input id="supervisorName" placeholder="مثال: أحمد سمير عباس"></div>
-<div class="col"><label>اسم المستخدم / رقم الهوية</label><input id="supervisorUsername" placeholder="رقم الهوية المستخدم في بوابة الفلاح"></div>
+<div class="col"><label>رقم الهوية / الإقامة</label><input id="supervisorUsername" inputmode="numeric" maxlength="10" placeholder="10 أرقام — يستخدم للدخول من بوابة الفلاح"></div>
 <div class="col"><label>رقم جوال المشرف</label><input id="supervisorPhone" inputmode="tel" placeholder="05xxxxxxxx"></div>
 <div class="col"><label>كلمة المرور</label><input id="supervisorPassword" type="text" autocomplete="new-password"></div>
 <div class="col">
@@ -2660,6 +2660,10 @@ onclick="clearCurrentTeacherAssignments()">
 <button class="btn-success" onclick="location.href='supervisor-activities.html'">📋 فتح لوحة الأنشطة</button>
 </div>
 
+<div class="note" style="border-right:4px solid #c9972c">
+<strong>طريقة الدخول والربط:</strong> رقم الهوية هو اسم الدخول للمشرف في بوابة الفلاح، ورقم الجوال يستخدم للربط التلقائي مع نظام الزيارات الفنية. إذا كان المشرف معلمًا أيضًا، يظل حساب المعلم برقم الجوال مستقلًا ولا يحدث تعارض.
+</div>
+
 <div class="note">
 يُحفظ الحساب داخل مجموعة <strong>users</strong> بدور تقني <strong>supervisor</strong> للحفاظ على توافق النظام القديم،
 ويتم تحديد نوعه كـ <strong>مشرف عام / مدير / مشرف</strong> بصورة مستقلة.
@@ -2670,7 +2674,7 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="table-wrap">
 <table style="min-width:1180px">
-<thead><tr><th>#</th><th>الاسم</th><th>اسم المستخدم / الهوية</th><th>رقم الجوال</th><th>نوع الحساب</th><th>المعلمون المسندون</th><th>الصلاحيات</th><th>الإجراءات</th></tr></thead>
+<thead><tr><th>#</th><th>الاسم</th><th>رقم الهوية / الإقامة</th><th>رقم الجوال</th><th>نوع الحساب</th><th>المعلمون المسندون</th><th>الصلاحيات</th><th>الإجراءات</th></tr></thead>
 <tbody id="supervisorsBody"></tbody>
 </table>
 </div>
@@ -9502,7 +9506,7 @@ const normalizedSupervisorPhone=String(phone).replace(/\D/g,"");
 if(!/^(?:05\d{8}|5\d{8}|9665\d{8})$/.test(normalizedSupervisorPhone)){alert("أدخل رقم جوال سعودي صحيح للمشرف.");return}
 const savedSupervisorPhone=normalizedSupervisorPhone.startsWith("966")?"0"+normalizedSupervisorPhone.slice(3):(normalizedSupervisorPhone.startsWith("5")?"0"+normalizedSupervisorPhone:normalizedSupervisorPhone);
 if(!["general_supervisor","manager","deputy","supervisor"].includes(supervisorType)){alert("اختر نوع حساب صحيح.");return}
-if(!/^[a-zA-Z0-9._-]{3,60}$/.test(username)){alert("اسم المستخدم يجب أن يكون 3 أحرف على الأقل، ويحتوي على حروف إنجليزية أو أرقام أو . _ - فقط.");return}
+if(!/^[12]\d{9}$/.test(username)){alert("رقم الهوية / الإقامة يجب أن يكون 10 أرقام ويبدأ بـ 1 أو 2.");return}
 if(password.length<4){alert("كلمة المرور يجب ألا تقل عن 4 أحرف.");return}
 if(supervisorType==="supervisor"&&!assignedTeacherEmails.length){alert("حدد معلمًا واحدًا على الأقل لهذا المشرف.");return}
 if(!permissions.activitiesView&&(permissions.activitiesReview||permissions.activitiesPublish||permissions.activitiesReturn||permissions.activitiesDelete)){
@@ -9516,7 +9520,7 @@ const existing=await db.collection("users").doc(username).get();
 const previousSupervisor=
 original?supervisors.find(x=>x.username===original)||null:
 (existing.exists?{username,...existing.data()}:null);
-if(existing.exists&&username!==original){alert("اسم المستخدم مستخدم بالفعل.");return}
+if(existing.exists&&username!==original){alert("رقم الهوية / الإقامة مستخدم بالفعل في حساب آخر.");return}
 
 if(original&&original!==username){
 const oldDoc=await db.collection("users").doc(original).get();
@@ -9524,7 +9528,7 @@ if(oldDoc.exists&&String(oldDoc.data().role||"").toLowerCase()==="supervisor")aw
 }
 
 await db.collection("users").doc(username).set({
-name,username,phone:savedSupervisorPhone,mobile:savedSupervisorPhone,role:"supervisor",supervisorType,password,permissions,
+name,username,identityNumber:username,phone:savedSupervisorPhone,mobile:savedSupervisorPhone,role:"supervisor",supervisorType,password,permissions,
 assignedTeacherEmails,
 teacherScopeMode:supervisorType==="supervisor"?"assigned":"all",
 updatedAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -9539,6 +9543,7 @@ await writeAuditLog(
   {
     name,
     username,
+    identityNumber:username,
     phone:savedSupervisorPhone,
     role:"supervisor",
     supervisorType,
