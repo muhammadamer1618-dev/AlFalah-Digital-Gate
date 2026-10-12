@@ -247,7 +247,7 @@ document.addEventListener("click",function(event){
 
 
 const firebaseConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};firebase.initializeApp(firebaseConfig);const db=firebase.firestore();
-const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));let students=[],teachers=[],subjects=[],tests=[],grades=[],messages=[],activities=[],schedules=[];let currentPermissions={},currentSupervisorType="general_supervisor";
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));let students=[],teachers=[],subjects=[],tests=[],grades=[],messages=[],activities=[],schedules=[];let currentPermissions={},currentSupervisorType="general_supervisor",currentSupervisorPhone="";
 function protect(){const r=(rasedAuthGet("currentUserRole")||"").toLowerCase();if(r!=="supervisor"){alert("هذه الصفحة لحسابات الإشراف فقط");location.href="index.html";return false}return true}
 function logout(){rasedLogoutThisTab();location.href="index.html"}
 function fmtTs(v){try{const d=v?.toDate?v.toDate():new Date(v);return isNaN(d)?"—":new Intl.DateTimeFormat("ar-SA",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d)}catch{return "—"}}
@@ -272,6 +272,7 @@ const d=await db.collection("users").doc(u).get();
 if(!d.exists||String(d.data()?.role||"").toLowerCase()!=="supervisor")throw Error("حساب الإشراف غير صالح");
 const x=d.data()||{};
 currentSupervisorType=String(x.supervisorType||"general_supervisor").toLowerCase();
+currentSupervisorPhone=String(x.phone||x.mobile||"").trim();
 currentPermissions=x.permissions&&typeof x.permissions==="object"?x.permissions:{};
 const roleLabel=roleTypeLabel(currentSupervisorType);
 supName.textContent=x.name||rasedAuthGet("currentUserName")||u;
@@ -372,7 +373,7 @@ async function openUnifiedWorkspace(kind){
   }else if(kind==="visits"){
     const linked=await ensureVisitSupervisorSession();
     if(!linked){
-      alert("لم يتم العثور على حساب الزيارات الفنية المرتبط باسم المستخدم الحالي. راجع ربط حساب المشرف في نظام الزيارات.");
+      alert("تعذر ربط حساب الزيارات الفنية برقم جوال المشرف. راجع رقم الجوال المسجل في حسابه.");
       return;
     }
     const role=String(linked.role||"");
@@ -441,17 +442,45 @@ document.addEventListener("keydown",function(e){
 })();
 
 async function ensureVisitSupervisorSession(){
+  const gateUsername=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
+  if(!gateUsername)return null;
+
+  const normalizePhone=value=>{
+    let p=String(value||"").replace(/\D/g,"");
+    if(p.startsWith("00966"))p=p.slice(2);
+    if(p.startsWith("966"))return p;
+    if(/^05\d{8}$/.test(p))return "966"+p.slice(1);
+    if(/^5\d{8}$/.test(p))return "966"+p;
+    return p;
+  };
+
+  let wantedPhone=normalizePhone(currentSupervisorPhone);
+
+  if(!wantedPhone){
+    try{
+      const rasedDoc=await db.collection("users").doc(gateUsername).get();
+      if(rasedDoc.exists){
+        const data=rasedDoc.data()||{};
+        currentSupervisorPhone=String(data.phone||data.mobile||"").trim();
+        wantedPhone=normalizePhone(currentSupervisorPhone);
+      }
+    }catch(e){}
+  }
+
+  if(!wantedPhone){
+    alert("رقم جوال المشرف غير مسجل في حسابه. أضفه من إدارة حسابات المشرفين في لوحة الأدمن.");
+    return null;
+  }
+
   try{
     const raw=localStorage.getItem("currentSupervisor")||sessionStorage.getItem("currentSupervisor");
     if(raw){
       const x=JSON.parse(raw);
-      const rasedUser=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
-      if(x && String(x.username||"").trim().toLowerCase()===rasedUser)return x;
+      const sameGate=String(x?.gateUsername||"").trim().toLowerCase()===gateUsername;
+      const samePhone=normalizePhone(x?.phone||x?.username||"")===wantedPhone;
+      if(x&&(sameGate||samePhone))return x;
     }
   }catch(e){}
-
-  const username=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
-  if(!username)return null;
 
   try{
     const visitConfig={
@@ -462,49 +491,45 @@ async function ensureVisitSupervisorSession(){
       messagingSenderId:"355064530699",
       appId:"1:355064530699:web:26ad1710ff493c76ce840e"
     };
+
     let app;
-    try{app=firebase.app("visitSupervisorBridge")}catch(e){app=firebase.initializeApp(visitConfig,"visitSupervisorBridge")}
+    try{app=firebase.app("visitSupervisorBridge")}
+    catch(e){app=firebase.initializeApp(visitConfig,"visitSupervisorBridge")}
+
     const visitDb=app.firestore();
-    let d=null;
-    const snap=await visitDb.collection("supervisors").where("username","==",username).limit(1).get();
-    if(!snap.empty){
-      d=snap.docs[0];
-    }else{
-      const all=await visitDb.collection("supervisors").get();
-      const byUser=all.docs.filter(x=>String(x.data()?.username||"").trim().toLowerCase()===username);
-      if(byUser.length===1){
-        d=byUser[0];
+    const all=await visitDb.collection("supervisors").get();
+
+    const matches=all.docs.filter(doc=>{
+      const data=doc.data()||{};
+      return [data.username,data.phone,data.mobile].some(v=>normalizePhone(v)===wantedPhone);
+    });
+
+    if(matches.length!==1){
+      if(matches.length>1){
+        alert("يوجد أكثر من حساب زيارات بنفس رقم الجوال. راجع حسابات المشرفين في نظام الزيارات.");
       }else{
-        const norm=v=>String(v||"").trim().replace(/\s+/g," ").toLowerCase();
-        const currentName=norm(rasedAuthGet("currentUserName")||"");
-        const byName=currentName?all.docs.filter(x=>norm(x.data()?.name)===currentName):[];
-        if(byName.length===1)d=byName[0];
+        alert("لم يتم العثور على حساب الزيارات المرتبط برقم جوال هذا المشرف.");
       }
+      return null;
     }
-    if(!d){
-      const rasedType=String(rasedAuthGet("currentUserType")||currentSupervisorType||"supervisor").toLowerCase();
-      const createRole=rasedType==="general_supervisor"?"general_supervisor":"supervisor";
-      const payload={
-        name:rasedAuthGet("currentUserName")||username,
-        username,
-        role:createRole,
-        active:true,
-        canVisitAllTeachers:createRole==="general_supervisor",
-        createdFromRasedSSO:true,
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-      };
-      const ref=await visitDb.collection("supervisors").add(payload);
-      d={id:ref.id,data:()=>payload};
-    }
+
+    const d=matches[0];
     const data=d.data()||{};
-    if(data.active===false)return null;
+    if(data.active===false){
+      alert("حساب المشرف في نظام الزيارات غير مفعل.");
+      return null;
+    }
+
     const session={
       id:d.id,
-      name:data.name||rasedAuthGet("currentUserName")||username,
-      username:data.username||username,
+      name:data.name||rasedAuthGet("currentUserName")||gateUsername,
+      username:data.username||data.phone||data.mobile||currentSupervisorPhone,
+      phone:data.phone||data.mobile||currentSupervisorPhone,
+      gateUsername,
       role:data.role||"supervisor",
       canVisitAllTeachers:data.canVisitAllTeachers===true
     };
+
     const value=JSON.stringify(session);
     localStorage.setItem("currentSupervisor",value);
     sessionStorage.setItem("currentSupervisor",value);
