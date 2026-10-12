@@ -367,7 +367,7 @@ async function openUnifiedWorkspace(kind){
   const title=document.getElementById("unifiedWorkspaceTitle");
   let url="",label="";
   if(kind==="weekly"){
-    url="../weekly/admin.html";
+    url="../weekly/supervisor-monitor.html";
     label="متابعة الخطة الأسبوعية";
   }else if(kind==="visits"){
     const linked=await ensureVisitSupervisorSession();
