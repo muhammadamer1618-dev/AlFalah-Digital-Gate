@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>متابعة الخطة الأسبوعية</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--g:#004c3f;--g2:#006653;--gold:#c9972c;--ink:#17372f}
+*{box-sizing:border-box}body{margin:0;font-family:Tajawal,Arial,sans-serif;background:#f4f7f5;color:var(--ink)}
+.hero{background:linear-gradient(135deg,#003f35,#006653);color:#fff;border-bottom:5px solid var(--gold);padding:18px}
+.hero-in{width:min(1180px,96%);margin:auto;display:flex;gap:14px;align-items:center}
+.logo{width:72px;height:72px;border-radius:50%;background:#fff;border:3px solid var(--gold);object-fit:contain;padding:4px}
+h1{margin:0;font-size:26px}.hero p{margin:4px 0 0;font-size:12px;color:rgba(255,255,255,.78)}
+.wrap{width:min(1180px,96%);margin:16px auto 36px}
+.toolbar{display:grid;grid-template-columns:180px 1fr auto;gap:10px;background:#fff;border:1px solid #e2e7e4;border-radius:14px;padding:13px;box-shadow:0 7px 20px rgba(0,0,0,.05);align-items:end}
+label{display:block;font-size:11px;font-weight:800;margin-bottom:5px;color:#52645f}
+select,input{width:100%;height:42px;border:1px solid #cfd8d3;border-radius:10px;padding:0 11px;font:inherit;background:#fff}
+button{border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:800;cursor:pointer}.refresh{background:var(--g);color:#fff}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.stat{background:#fff;border:1px solid #e1e6e3;border-radius:14px;padding:13px;text-align:center;box-shadow:0 5px 16px rgba(0,0,0,.04)}
+.stat b{display:block;font-size:26px;color:#174f7c}.stat span{font-size:10px;color:#6f7f7a}
+.card{background:#fff;border:1px solid #e1e6e3;border-radius:15px;overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.05)}
+.card-head{padding:12px 14px;background:linear-gradient(90deg,#fff,#fbf7eb);border-bottom:1px solid #e8dfca;font-weight:900;color:var(--g)}
+.table{overflow:auto}table{width:100%;border-collapse:collapse;min-width:820px}
+th,td{padding:10px;border-bottom:1px solid #edf0ee;text-align:center;font-size:12px}th{background:#f7f9f7;color:#465852}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:900}.ok{background:#e8f6ef;color:#08705d}.miss{background:#fff0ef;color:#b42318}
+.open{background:#174f7c;color:#fff;padding:7px 10px;font-size:11px}.empty{padding:26px;text-align:center;color:#7a8984}
+.notice{display:none;margin:10px 0;padding:10px 12px;border:1px solid #ead8a7;border-radius:10px;background:#fff8e6;color:#7a641d;font-size:11px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.52);display:none;align-items:center;justify-content:center;padding:16px;z-index:99}.modal.show{display:flex}
+.modal-card{width:min(980px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:16px}.modal-head{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;background:var(--g);color:#fff;padding:12px 14px}.modal-body{padding:14px}.close{background:#fff;color:var(--g)}
+.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.meta div{background:#f7f9f7;border:1px solid #e2e7e4;border-radius:9px;padding:8px;font-size:11px}
+.day{margin:12px 0;border:1px solid #e1e6e3;border-radius:11px;overflow:hidden}.day h3{margin:0;background:#f5f8f6;padding:8px 10px;color:var(--g);font-size:13px}.day table{min-width:0}.day th,.day td{font-size:11px;padding:7px}
+@media(max-width:760px){.toolbar{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.meta{grid-template-columns:1fr}.logo{width:60px;height:60px}h1{font-size:21px}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="hero-in"><img src="logo.jpeg" class="logo"><div><h1>متابعة الخطة الأسبوعية</h1><p>مدارس الفلاح الأهلية — متابعة خطط رواد الفصول</p></div></div></header>
+<main class="wrap">
+  <div class="toolbar">
+    <div><label>الأسبوع</label><select id="week"></select></div>
+    <div><label>بحث</label><input id="search" placeholder="رائد الصف أو المرحلة أو الصف أو الشعبة"></div>
+    <button class="refresh" id="refresh">↻ تحديث المتابعة</button>
+  </div>
+  <div id="notice" class="notice"></div>
+  <div class="stats">
+    <div class="stat"><b id="totalLeaders">0</b><span>رواد الفصول النشطون</span></div>
+    <div class="stat"><b id="savedCount">0</b><span>تم حفظ الخطة</span></div>
+    <div class="stat"><b id="missingCount">0</b><span>لم يحفظ الخطة</span></div>
+    <div class="stat"><b id="plansCount">0</b><span>الخطط المحفوظة</span></div>
+  </div>
+  <section class="card">
+    <div class="card-head">📅 حالة الخطط للأسبوع المحدد</div>
+    <div class="table"><table><thead><tr><th>#</th><th>رائد الصف</th><th>المرحلة</th><th>الصف</th><th>الشعبة</th><th>الحالة</th><th>آخر تحديث</th><th>عرض</th></tr></thead><tbody id="rows"><tr><td colspan="8" class="empty">جاري التحميل...</td></tr></tbody></table></div>
+  </section>
+</main>
+<div id="modal" class="modal"><div class="modal-card"><div class="modal-head"><strong id="modalTitle">تفاصيل الخطة</strong><button id="closeModal" class="close">إغلاق</button></div><div id="modalBody" class="modal-body"></div></div></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {getFirestore,collection,getDocs} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const role=String(sessionStorage.getItem("currentUserRole")||localStorage.getItem("currentUserRole")||"").toLowerCase();
+if(!["supervisor","admin","superadmin","manager"].includes(role)){document.body.innerHTML='<div class="empty" style="padding:60px">هذه الصفحة مخصصة للإشراف والإدارة.</div>';throw new Error("unauthorized")}
+
+const cfg={apiKey:"AIzaSyBYxW_pdFvE1VZyDoTok4-EutPe6oigJhY",authDomain:"weekly-plan-3a743.firebaseapp.com",projectId:"weekly-plan-3a743",storageBucket:"weekly-plan-3a743.firebasestorage.app",messagingSenderId:"575884603803",appId:"1:575884603803:web:e8c4d82c69fd545bed313e"};
+const db=getFirestore(initializeApp(cfg));
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+let plans=[],leaders=[],leadersReadable=true;
+for(let i=1;i<=18;i++){const o=document.createElement("option");o.value=i;o.textContent="الأسبوع "+i;$("week").appendChild(o)}
+
+const tm=v=>{try{return v?.toMillis?v.toMillis():(v?.seconds?v.seconds*1000:new Date(v).getTime()||0)}catch{return 0}};
+const fmt=v=>{try{const d=v?.toDate?v.toDate():(v?.seconds?new Date(v.seconds*1000):new Date(v));return d&&!isNaN(d.getTime())?new Intl.DateTimeFormat("ar-SA",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d):"—"}catch{return "—"}};
+
+async function load(){
+  $("rows").innerHTML='<tr><td colspan="8" class="empty">جاري تحميل الخطط...</td></tr>';
+  $("notice").style.display="none";
+  const ps=await getDocs(collection(db,"weeklyPlans"));
+  plans=ps.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.documentType!=="fixedSchedule"&&Number(x.weekNumber)>=1&&Number(x.weekNumber)<=18);
+  try{
+    const us=await getDocs(collection(db,"users"));
+    leaders=us.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role==="classLeader"&&x.deleted!==true&&x.active!==false);
+    leadersReadable=true;
+  }catch(e){
+    leadersReadable=false;
+    const map=new Map();
+    plans.forEach(x=>{if(x.leaderUid)map.set(x.leaderUid,{id:x.leaderUid,name:x.leaderName||"",stage:x.stage||"",grade:x.grade||"",section:x.section||""})});
+    leaders=[...map.values()];
+    $("notice").textContent="يتم عرض الخطط المحفوظة فقط؛ تعذر تحميل قائمة رواد الفصول لحساب الخطط غير المحفوظة.";
+    $("notice").style.display="block";
+  }
+  const nums=plans.map(x=>Number(x.weekNumber)).filter(Number.isFinite);if(nums.length)$("week").value=String(Math.max(...nums));
+  render();
+}
+
+function render(){
+  const w=Number($("week").value||1),q=$("search").value.trim().toLowerCase(),active=leaders.filter(x=>x.active!==false);
+  let result=active.map(l=>({leader:l,plan:plans.filter(p=>p.leaderUid===l.id&&Number(p.weekNumber)===w).sort((a,b)=>tm(b.updatedAt||b.createdAt)-tm(a.updatedAt||a.createdAt))[0]||null}));
+  result=result.filter(x=>!q||[x.leader.name,x.leader.stage,x.leader.grade,x.leader.section,x.plan?.leaderName,x.plan?.stage,x.plan?.grade,x.plan?.section].join(" ").toLowerCase().includes(q));
+  if(!leadersReadable){
+    result=plans.filter(p=>Number(p.weekNumber)===w).filter(p=>!q||[p.leaderName,p.stage,p.grade,p.section].join(" ").toLowerCase().includes(q)).map(p=>({leader:{id:p.leaderUid,name:p.leaderName||"",stage:p.stage||"",grade:p.grade||"",section:p.section||""},plan:p}));
+  }
+  const weekPlans=plans.filter(p=>Number(p.weekNumber)===w),savedLeaders=new Set(weekPlans.map(p=>p.leaderUid).filter(Boolean));
+  $("totalLeaders").textContent=leadersReadable?active.length:"—";
+  $("savedCount").textContent=result.filter(x=>x.plan).length;
+  $("missingCount").textContent=leadersReadable?Math.max(0,active.length-savedLeaders.size):"—";
+  $("plansCount").textContent=weekPlans.length;
+  result.sort((a,b)=>(a.plan?1:0)-(b.plan?1:0)||String(a.leader.name||"").localeCompare(String(b.leader.name||""),"ar"));
+  $("rows").innerHTML=result.length?result.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.leader.name||x.plan?.leaderName||"—")}</td><td>${esc(x.leader.stage||x.plan?.stage||"—")}</td><td>${esc(x.leader.grade||x.plan?.grade||"—")}</td><td>${esc(x.leader.section||x.plan?.section||"—")}</td><td>${x.plan?'<span class="badge ok">✓ تم الحفظ</span>':'<span class="badge miss">✕ لم يحفظ</span>'}</td><td>${x.plan?fmt(x.plan.updatedAt||x.plan.createdAt):"—"}</td><td>${x.plan?`<button class="open" data-open="${esc(x.plan.id)}">فتح الخطة</button>`:"—"}</td></tr>`).join(""):'<tr><td colspan="8" class="empty">لا توجد بيانات مطابقة.</td></tr>';
+  document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openPlan(b.dataset.open));
+}
+
+function openPlan(id){
+  const p=plans.find(x=>x.id===id);if(!p)return;
+  $("modalTitle").textContent="خطة "+(p.leaderName||"")+" — الأسبوع "+p.weekNumber;
+  const names={sunday:"الأحد",monday:"الإثنين",tuesday:"الثلاثاء",wednesday:"الأربعاء",thursday:"الخميس"};
+  let h=`<div class="meta"><div><b>رائد الصف:</b> ${esc(p.leaderName||"—")}</div><div><b>المرحلة:</b> ${esc(p.stage||"—")}</div><div><b>الفصل:</b> ${esc((p.grade||"")+" / "+(p.section||""))}</div><div><b>الأسبوع:</b> ${esc(p.weekNumber||"")}</div><div><b>من:</b> ${esc(p.startDate||"—")}</div><div><b>إلى:</b> ${esc(p.endDate||"—")}</div></div>`;
+  Object.entries(p.days&&typeof p.days==="object"?p.days:{}).forEach(([k,rows])=>{if(!Array.isArray(rows))return;h+=`<div class="day"><h3>${esc(names[k]||k)}</h3><table><thead><tr><th>الحصة</th><th>المادة</th><th>موضوع الدرس</th><th>الواجب</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r?.subject||"")}</td><td>${esc(r?.topic||"")}</td><td>${esc(r?.homework||"")}</td></tr>`).join("")}</tbody></table></div>`});
+  $("modalBody").innerHTML=h;$("modal").classList.add("show");
+}
+$("closeModal").onclick=()=>$("modal").classList.remove("show");
+$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+$("week").onchange=render;$("search").oninput=render;$("refresh").onclick=load;
+load().catch(e=>{$("rows").innerHTML='<tr><td colspan="8" class="empty">تعذر تحميل متابعة الخطة الأسبوعية.</td></tr>';console.error(e)});
+</script>
+</body>
+</html>
