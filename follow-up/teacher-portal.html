@@ -1,0 +1,3575 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1"
+>
+
+<title>بوابة المعلم - مدارس الفلاح الأهلية</title>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
+  rel="stylesheet"
+>
+
+<style>
+
+:root{
+
+  --green:#0b4a3f;
+  --green-dark:#07372f;
+  --green-soft:#edf5f1;
+
+  --gold:#c89a3b;
+  --gold-dark:#a87921;
+  --gold-soft:#faf2e3;
+
+  --bg:#f7f8f6;
+  --white:#ffffff;
+
+  --text:#1f2926;
+  --muted:#737b77;
+
+  --border:#e3e5e2;
+
+  --red:#b42318;
+  --red-soft:#fff1ef;
+
+  --orange:#b54708;
+  --orange-soft:#fff4e5;
+
+  --shadow:
+    0 18px 50px rgba(15,55,45,.09);
+
+}
+
+
+*{
+
+  box-sizing:border-box;
+
+  font-family:"Cairo",sans-serif;
+
+}
+
+
+body{
+
+  margin:0;
+
+  min-height:100vh;
+
+  background:
+
+    radial-gradient(
+      circle at top right,
+      rgba(200,154,59,.09),
+      transparent 30%
+    ),
+
+    linear-gradient(
+      180deg,
+      #f9faf8,
+      #f4f6f4
+    );
+
+  color:var(--text);
+
+}
+
+
+/* =================================
+   HEADER
+================================= */
+
+.header{
+
+  background:
+    rgba(255,255,255,.96);
+
+  backdrop-filter:
+    blur(10px);
+
+  border-bottom:
+    1px solid var(--border);
+
+  position:sticky;
+
+  top:0;
+
+  z-index:100;
+
+  box-shadow:
+    0 4px 18px rgba(0,0,0,.03);
+
+}
+
+
+.header-inner{
+
+  max-width:1200px;
+
+  margin:auto;
+
+  padding:10px 18px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:15px;
+
+}
+
+
+.brand{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+}
+
+
+.brand img{
+
+  width:62px;
+
+  height:62px;
+
+  object-fit:contain;
+
+}
+
+
+.brand h1{
+
+  margin:0;
+
+  color:var(--green);
+
+  font-size:18px;
+
+  font-weight:900;
+
+}
+
+
+.brand p{
+
+  margin:2px 0 0;
+
+  color:var(--gold-dark);
+
+  font-size:10px;
+
+  font-weight:800;
+
+}
+
+
+.header-actions{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:8px;
+
+}
+
+
+.header-btn{
+
+  border:0;
+
+  border-radius:10px;
+
+  padding:9px 13px;
+
+  cursor:pointer;
+
+  font-size:10px;
+
+  font-weight:900;
+
+  text-decoration:none;
+
+}
+
+
+.home-btn{
+
+  background:
+    var(--green-soft);
+
+  color:
+    var(--green);
+
+}
+
+
+.logout-btn{
+
+  background:
+    var(--red-soft);
+
+  color:
+    var(--red);
+
+  display:none;
+
+}
+
+
+/* =================================
+   PAGE
+================================= */
+
+.page{
+
+  max-width:1200px;
+
+  margin:auto;
+
+  padding:32px 18px 55px;
+
+}
+
+
+/* =================================
+   LOGIN
+================================= */
+
+.login-wrap{
+
+  max-width:480px;
+
+  margin:35px auto 0;
+
+}
+
+
+.login-card{
+
+  background:#fff;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:24px;
+
+  box-shadow:var(--shadow);
+
+  overflow:hidden;
+
+}
+
+
+.login-top{
+
+  background:
+
+    linear-gradient(
+      135deg,
+      var(--green),
+      var(--green-dark)
+    );
+
+  padding:28px 24px;
+
+  text-align:center;
+
+  color:#fff;
+
+  position:relative;
+
+  overflow:hidden;
+
+}
+
+
+.login-top::before{
+
+  content:"";
+
+  position:absolute;
+
+  width:160px;
+
+  height:160px;
+
+  border-radius:50%;
+
+  background:
+    rgba(200,154,59,.12);
+
+  top:-80px;
+
+  right:-70px;
+
+}
+
+
+.login-top img{
+
+  width:90px;
+
+  height:90px;
+
+  object-fit:contain;
+
+  background:#fff;
+
+  border-radius:18px;
+
+  padding:7px;
+
+  position:relative;
+
+  z-index:2;
+
+}
+
+
+.login-top h2{
+
+  margin:
+    12px 0 3px;
+
+  font-size:22px;
+
+  font-weight:900;
+
+  position:relative;
+
+  z-index:2;
+
+}
+
+
+.login-top p{
+
+  margin:0;
+
+  color:
+    rgba(255,255,255,.76);
+
+  font-size:10px;
+
+  position:relative;
+
+  z-index:2;
+
+}
+
+
+.login-body{
+
+  padding:24px;
+
+}
+
+
+.field{
+
+  margin-bottom:13px;
+
+}
+
+
+.field label{
+
+  display:block;
+
+  margin-bottom:5px;
+
+  font-size:11px;
+
+  color:#38423e;
+
+  font-weight:900;
+
+}
+
+
+.field input{
+
+  width:100%;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:11px;
+
+  padding:11px 12px;
+
+  outline:none;
+
+  font-size:12px;
+
+  transition:.2s;
+
+}
+
+
+.field input:focus{
+
+  border-color:
+    var(--green);
+
+  box-shadow:
+    0 0 0 4px
+    rgba(11,74,63,.07);
+
+}
+
+
+.login-btn{
+
+  width:100%;
+
+  border:0;
+
+  background:
+    var(--green);
+
+  color:#fff;
+
+  border-radius:11px;
+
+  padding:11px;
+
+  cursor:pointer;
+
+  font-size:12px;
+
+  font-weight:900;
+
+}
+
+
+.login-btn:hover{
+
+  background:
+    var(--green-dark);
+
+}
+
+
+.login-btn:disabled{
+
+  opacity:.6;
+
+  cursor:not-allowed;
+
+}
+
+
+.login-error{
+
+  display:none;
+
+  margin-top:12px;
+
+  background:
+    var(--red-soft);
+
+  color:
+    var(--red);
+
+  border-radius:9px;
+
+  padding:9px;
+
+  font-size:10px;
+
+  font-weight:800;
+
+}
+
+
+.login-error.show{
+
+  display:block;
+
+}
+
+
+/* =================================
+   PORTAL
+================================= */
+
+.portal{
+
+  display:none;
+
+}
+
+
+.portal.show{
+
+  display:block;
+
+}
+
+
+.teacher-hero{
+
+  background:
+
+    linear-gradient(
+      135deg,
+      var(--green),
+      var(--green-dark)
+    );
+
+  color:#fff;
+
+  border-radius:23px;
+
+  padding:23px;
+
+  box-shadow:var(--shadow);
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:15px;
+
+  flex-wrap:wrap;
+
+  position:relative;
+
+  overflow:hidden;
+
+  margin-bottom:17px;
+
+}
+
+
+.teacher-hero::after{
+
+  content:"";
+
+  position:absolute;
+
+  width:210px;
+
+  height:210px;
+
+  border-radius:50%;
+
+  background:
+    rgba(200,154,59,.12);
+
+  left:-80px;
+
+  bottom:-120px;
+
+}
+
+
+.hero-content{
+
+  position:relative;
+
+  z-index:2;
+
+}
+
+
+.hero-content small{
+
+  color:#efd28f;
+
+  font-size:10px;
+
+  font-weight:800;
+
+}
+
+
+.hero-content h2{
+
+  margin:
+    3px 0;
+
+  font-size:24px;
+
+  font-weight:900;
+
+}
+
+
+.hero-content p{
+
+  margin:0;
+
+  color:
+    rgba(255,255,255,.74);
+
+  font-size:10px;
+
+}
+
+
+.teacher-code-chip{
+
+  position:relative;
+
+  z-index:2;
+
+  background:
+    rgba(255,255,255,.1);
+
+  border:
+    1px solid
+    rgba(255,255,255,.14);
+
+  border-radius:15px;
+
+  padding:10px 15px;
+
+  text-align:center;
+
+}
+
+
+.teacher-code-chip span{
+
+  display:block;
+
+  font-size:9px;
+
+  color:
+    rgba(255,255,255,.7);
+
+}
+
+
+.teacher-code-chip strong{
+
+  display:block;
+
+  margin-top:2px;
+
+  font-size:14px;
+
+  color:#fff;
+
+}
+
+
+/* =================================
+   STATS
+================================= */
+
+.stats{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:11px;
+
+  margin-bottom:17px;
+
+}
+
+
+.stat{
+
+  background:#fff;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:16px;
+
+  padding:14px;
+
+  box-shadow:var(--shadow);
+
+}
+
+
+.stat span{
+
+  display:block;
+
+  color:var(--muted);
+
+  font-size:9px;
+
+  font-weight:800;
+
+}
+
+
+.stat strong{
+
+  display:block;
+
+  margin-top:3px;
+
+  color:var(--green);
+
+  font-size:24px;
+
+  font-weight:900;
+
+}
+
+
+.stat.gold strong{
+
+  color:
+    var(--gold-dark);
+
+}
+
+
+.stat.orange strong{
+
+  color:
+    var(--orange);
+
+}
+
+
+/* =================================
+   FILTER
+================================= */
+
+.toolbar{
+
+  background:#fff;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:15px;
+
+  padding:12px;
+
+  margin-bottom:14px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:10px;
+
+  flex-wrap:wrap;
+
+}
+
+
+.toolbar h3{
+
+  margin:0;
+
+  color:var(--green);
+
+  font-size:15px;
+
+  font-weight:900;
+
+}
+
+
+.toolbar select{
+
+  border:
+    1px solid var(--border);
+
+  border-radius:9px;
+
+  padding:8px 10px;
+
+  background:#fff;
+
+  font-size:10px;
+
+  font-weight:800;
+
+  color:var(--text);
+
+}
+
+
+/* =================================
+   VISITS
+================================= */
+
+.visits-grid{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(2,minmax(0,1fr));
+
+  gap:13px;
+
+}
+
+
+.visit-card{
+
+  background:#fff;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:18px;
+
+  box-shadow:var(--shadow);
+
+  overflow:hidden;
+
+  transition:.2s;
+
+}
+
+
+.visit-card:hover{
+
+  transform:
+    translateY(-2px);
+
+}
+
+
+.visit-card-top{
+
+  padding:14px 15px;
+
+  border-bottom:
+    1px solid #edf0ee;
+
+  display:flex;
+
+  align-items:flex-start;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+}
+
+
+.visit-subject{
+
+  color:
+    var(--green);
+
+  font-size:15px;
+
+  font-weight:900;
+
+}
+
+
+.visit-date{
+
+  margin-top:2px;
+
+  color:
+    var(--muted);
+
+  font-size:9px;
+
+  font-weight:700;
+
+}
+
+
+.visit-score{
+
+  min-width:60px;
+
+  height:60px;
+
+  border-radius:14px;
+
+  background:
+    var(--green-soft);
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  justify-content:center;
+
+}
+
+
+.visit-score strong{
+
+  color:
+    var(--green);
+
+  font-size:20px;
+
+  font-weight:900;
+
+  line-height:1;
+
+}
+
+
+.visit-score span{
+
+  margin-top:2px;
+
+  color:
+    var(--muted);
+
+  font-size:8px;
+
+}
+
+
+.visit-body{
+
+  padding:14px 15px;
+
+}
+
+
+.visit-info{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(2,1fr);
+
+  gap:8px;
+
+}
+
+
+.info-item{
+
+  background:#fafbf9;
+
+  border:
+    1px solid #eef0ee;
+
+  border-radius:9px;
+
+  padding:8px;
+
+}
+
+
+.info-item span{
+
+  display:block;
+
+  color:
+    var(--muted);
+
+  font-size:8px;
+
+  font-weight:700;
+
+}
+
+
+.info-item strong{
+
+  display:block;
+
+  margin-top:2px;
+
+  color:#313a36;
+
+  font-size:10px;
+
+  font-weight:900;
+
+}
+
+
+.visit-footer{
+
+  padding:
+    11px 15px 14px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:8px;
+
+  flex-wrap:wrap;
+
+}
+
+
+.status{
+
+  display:inline-block;
+
+  padding:
+    5px 9px;
+
+  border-radius:20px;
+
+  font-size:8px;
+
+  font-weight:900;
+
+}
+
+
+.status.viewed{
+
+  background:
+    var(--green-soft);
+
+  color:
+    var(--green);
+
+}
+
+
+.status.pending{
+
+  background:
+    var(--orange-soft);
+
+  color:
+    var(--orange);
+
+}
+
+
+.actions{
+
+  display:flex;
+
+  gap:6px;
+
+  flex-wrap:wrap;
+
+}
+
+
+.action-btn{
+
+  border:0;
+
+  border-radius:8px;
+
+  padding:
+    7px 9px;
+
+  cursor:pointer;
+
+  font-size:9px;
+
+  font-weight:900;
+
+  text-decoration:none;
+
+}
+
+
+.open-btn{
+
+  background:
+    var(--gold-soft);
+
+  color:
+    var(--gold-dark);
+
+}
+
+
+.ack-btn{
+
+  background:
+    var(--green);
+
+  color:#fff;
+
+}
+
+
+.ack-btn:disabled{
+
+  opacity:.55;
+
+  cursor:not-allowed;
+
+}
+
+
+/* =================================
+   EMPTY
+================================= */
+
+.empty{
+
+  grid-column:
+    1 / -1;
+
+  background:#fff;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:18px;
+
+  padding:45px 20px;
+
+  text-align:center;
+
+  color:var(--muted);
+
+  box-shadow:var(--shadow);
+
+}
+
+
+.empty strong{
+
+  display:block;
+
+  color:var(--green);
+
+  font-size:15px;
+
+  margin-bottom:4px;
+
+}
+
+
+/* =================================
+   MODAL
+================================= */
+
+.modal{
+
+  position:fixed;
+
+  inset:0;
+
+  background:
+    rgba(3,24,19,.66);
+
+  z-index:300;
+
+  display:none;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:18px;
+
+}
+
+
+.modal.show{
+
+  display:flex;
+
+}
+
+
+.modal-card{
+
+  width:min(
+    900px,
+    100%
+  );
+
+  max-height:90vh;
+
+  overflow:auto;
+
+  background:#fff;
+
+  border-radius:20px;
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.28);
+
+}
+
+
+.modal-head{
+
+  padding:
+    14px 16px;
+
+  border-bottom:
+    1px solid var(--border);
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  position:sticky;
+
+  top:0;
+
+  background:#fff;
+
+  z-index:5;
+
+}
+
+
+.modal-head h3{
+
+  margin:0;
+
+  color:var(--green);
+
+  font-size:16px;
+
+  font-weight:900;
+
+}
+
+
+.close-modal{
+
+  border:0;
+
+  border-radius:8px;
+
+  background:#eee;
+
+  padding:7px 11px;
+
+  cursor:pointer;
+
+  font-size:10px;
+
+  font-weight:900;
+
+}
+
+
+.modal-body{
+
+  padding:16px;
+
+}
+
+
+.detail-table{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+}
+
+
+.detail-table th,
+.detail-table td{
+
+  border:
+    1px solid #e2e5e3;
+
+  padding:8px;
+
+  font-size:9px;
+
+  text-align:center;
+
+}
+
+
+.detail-table th{
+
+  background:
+    var(--green-soft);
+
+  color:
+    var(--green);
+
+  font-weight:900;
+
+}
+
+
+.notes{
+
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:10px;
+
+  margin-top:13px;
+
+}
+
+
+.note-box{
+
+  border:
+    1px solid var(--border);
+
+  border-radius:10px;
+
+  padding:10px;
+
+}
+
+
+.note-box h4{
+
+  margin:
+    0 0 5px;
+
+  color:
+    var(--green);
+
+  font-size:11px;
+
+}
+
+
+.note-box p{
+
+  margin:0;
+
+  white-space:pre-wrap;
+
+  font-size:9px;
+
+  color:#424a46;
+
+  line-height:1.8;
+
+}
+
+
+/* =================================
+   TOAST
+================================= */
+
+.toast{
+
+  position:fixed;
+
+  left:20px;
+
+  bottom:20px;
+
+  z-index:500;
+
+  background:
+    var(--green);
+
+  color:#fff;
+
+  border-radius:11px;
+
+  padding:
+    11px 15px;
+
+  box-shadow:
+    0 15px 40px rgba(0,0,0,.18);
+
+  font-size:10px;
+
+  font-weight:900;
+
+  opacity:0;
+
+  pointer-events:none;
+
+  transform:
+    translateY(15px);
+
+  transition:.25s;
+
+}
+
+
+.toast.show{
+
+  opacity:1;
+
+  transform:none;
+
+}
+
+
+@media(max-width:850px){
+
+  .visits-grid{
+
+    grid-template-columns:1fr;
+
+  }
+
+}
+
+
+@media(max-width:650px){
+
+  .stats{
+
+    grid-template-columns:1fr;
+
+  }
+
+
+  .visit-info{
+
+    grid-template-columns:1fr;
+
+  }
+
+
+  .notes{
+
+    grid-template-columns:1fr;
+
+  }
+
+
+  .header-inner{
+
+    align-items:flex-start;
+
+  }
+
+
+  .brand img{
+
+    width:52px;
+
+    height:52px;
+
+  }
+
+}
+
+</style>
+
+  <link rel="stylesheet" href="mobile.css">
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+  <div class="header-inner">
+
+    <div class="brand">
+
+      <img
+        src="logo.jpeg"
+        alt="شعار مدارس الفلاح"
+      >
+
+      <div>
+
+        <h1>
+          مدارس الفلاح الأهلية
+        </h1>
+
+        <p>
+          بوابة المعلم
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="header-actions">
+
+      <a
+        href="index.html"
+        class="header-btn home-btn"
+      >
+        الرئيسية
+      </a>
+
+
+      <button
+        id="logoutBtn"
+        class="header-btn logout-btn"
+      >
+        تسجيل الخروج
+      </button>
+
+    </div>
+
+  </div>
+
+</header>
+
+
+
+<main class="page">
+
+
+  <!-- LOGIN -->
+
+  <section
+    id="loginSection"
+    class="login-wrap"
+  >
+
+    <div class="login-card">
+
+
+      <div class="login-top">
+
+        <img
+          src="logo.jpeg"
+          alt="شعار المدرسة"
+        >
+
+        <h2>
+          بوابة المعلم
+        </h2>
+
+        <p>
+          للاطلاع على زياراتك التربوية وتأكيد الاطلاع عليها
+        </p>
+
+      </div>
+
+
+      <div class="login-body">
+
+
+        <div class="field">
+
+          <label>
+            كود المعلم
+          </label>
+
+          <input
+            type="text"
+            id="teacherCode"
+            placeholder="أدخل كود المعلم"
+            autocomplete="off"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            الرقم السري PIN
+          </label>
+
+          <input
+            type="password"
+            id="teacherPin"
+            placeholder="أدخل الرقم السري"
+          >
+
+        </div>
+
+
+        <button
+          id="loginBtn"
+          class="login-btn"
+        >
+          دخول
+        </button>
+
+
+        <div
+          id="loginError"
+          class="login-error"
+        ></div>
+
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- PORTAL -->
+
+  <section
+    id="portalSection"
+    class="portal"
+  >
+
+
+    <section class="teacher-hero">
+
+      <div class="hero-content">
+
+        <small>
+          أهلاً بك
+        </small>
+
+        <h2 id="teacherName">
+          -
+        </h2>
+
+        <p>
+          يمكنك الاطلاع على جميع زياراتك التربوية وتأكيد الاطلاع عليها.
+        </p>
+
+      </div>
+
+
+      <div class="teacher-code-chip">
+
+        <span>
+          كود المعلم
+        </span>
+
+        <strong id="teacherCodeDisplay">
+          -
+        </strong>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="stats">
+
+
+      <div class="stat">
+
+        <span>
+          إجمالي الزيارات
+        </span>
+
+        <strong id="totalVisits">
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="stat gold">
+
+        <span>
+          تم الاطلاع عليها
+        </span>
+
+        <strong id="viewedVisits">
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="stat orange">
+
+        <span>
+          بانتظار اطلاعك
+        </span>
+
+        <strong id="pendingVisits">
+          0
+        </strong>
+
+      </div>
+
+
+    </section>
+
+
+
+    <section class="toolbar">
+
+      <h3>
+        زياراتي التربوية
+      </h3>
+
+
+      <select id="statusFilter">
+
+        <option value="all">
+          جميع الزيارات
+        </option>
+
+        <option value="pending">
+          بانتظار الاطلاع
+        </option>
+
+        <option value="viewed">
+          تم الاطلاع
+        </option>
+
+      </select>
+
+    </section>
+
+
+
+    <section
+      id="visitsGrid"
+      class="visits-grid"
+    ></section>
+
+
+  </section>
+
+
+</main>
+
+
+
+<!-- DETAILS MODAL -->
+
+<div
+  id="visitModal"
+  class="modal"
+>
+
+  <div class="modal-card">
+
+
+    <div class="modal-head">
+
+      <h3>
+        تفاصيل الزيارة
+      </h3>
+
+
+      <button
+        id="closeModal"
+        class="close-modal"
+      >
+        إغلاق
+      </button>
+
+    </div>
+
+
+    <div
+      id="modalBody"
+      class="modal-body"
+    ></div>
+
+
+  </div>
+
+</div>
+
+
+
+<div
+  id="toast"
+  class="toast"
+>
+  تم تسجيل اطلاعك على الزيارة
+</div>
+
+
+
+<script type="module">
+
+import { db } from "./firebase.js";
+
+
+import {
+
+  collection,
+
+  getDocs,
+
+  doc,
+
+  getDoc,
+
+  updateDoc,
+
+  serverTimestamp
+
+}
+from
+"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+
+const el =
+  id =>
+    document.getElementById(id);
+
+
+/* ==========================================
+   STATE
+========================================== */
+
+let currentTeacher = null;
+
+let teacherVisits = [];
+
+let currentVisitId = null;
+
+
+/* ==========================================
+   HELPERS
+========================================== */
+
+function esc(value){
+
+  return String(
+    value ?? ""
+  )
+  .replaceAll(
+    "&",
+    "&amp;"
+  )
+  .replaceAll(
+    "<",
+    "&lt;"
+  )
+  .replaceAll(
+    ">",
+    "&gt;"
+  )
+  .replaceAll(
+    '"',
+    "&quot;"
+  )
+  .replaceAll(
+    "'",
+    "&#039;"
+  );
+
+}
+
+
+function toSortableDate(value){
+
+  if(!value)
+    return 0;
+
+
+  const date =
+    Date.parse(value);
+
+
+  return Number.isFinite(date)
+    ? date
+    : 0;
+
+}
+
+
+function formatViewedDate(value){
+
+  if(!value)
+    return "";
+
+
+  try{
+
+    let date;
+
+
+    if(
+      typeof value.toDate ===
+      "function"
+    ){
+
+      date =
+        value.toDate();
+
+    }
+
+    else if(
+      value.seconds
+    ){
+
+      date =
+        new Date(
+          value.seconds *
+          1000
+        );
+
+    }
+
+    else{
+
+      date =
+        new Date(value);
+
+    }
+
+
+    if(
+      Number.isNaN(
+        date.getTime()
+      )
+    ){
+
+      return "";
+
+    }
+
+
+    return date.toLocaleString(
+      "ar-SA",
+      {
+        dateStyle:"short",
+        timeStyle:"short"
+      }
+    );
+
+
+  }catch(error){
+
+    return "";
+
+  }
+
+}
+
+
+function showLoginError(message){
+
+  const box =
+    el("loginError");
+
+
+  box.textContent =
+    message;
+
+
+  box.classList.add(
+    "show"
+  );
+
+}
+
+
+function clearLoginError(){
+
+  el("loginError")
+    .classList
+    .remove("show");
+
+}
+
+
+function showToast(){
+
+  el("toast")
+    .classList
+    .add("show");
+
+
+  setTimeout(
+    ()=>{
+
+      el("toast")
+        .classList
+        .remove("show");
+
+    },
+    3000
+  );
+
+}
+
+
+/* ==========================================
+   AUTO CODE
+========================================== */
+
+const params =
+  new URLSearchParams(
+    location.search
+  );
+
+
+const codeFromUrl =
+  params.get("code");
+
+
+if(codeFromUrl){
+
+  el("teacherCode").value =
+    codeFromUrl;
+
+}
+
+
+/* ==========================================
+   LOGIN
+========================================== */
+
+async function loginTeacher(){
+
+  clearLoginError();
+
+
+  const code =
+    el("teacherCode")
+    .value
+    .trim();
+
+
+  const pin =
+    el("teacherPin")
+    .value
+    .trim();
+
+
+  if(!code){
+
+    showLoginError(
+      "أدخل كود المعلم."
+    );
+
+    return;
+
+  }
+
+
+  if(!pin){
+
+    showLoginError(
+      "أدخل الرقم السري."
+    );
+
+    return;
+
+  }
+
+
+  el("loginBtn").disabled =
+    true;
+
+
+  el("loginBtn").textContent =
+    "جارٍ التحقق...";
+
+
+  try{
+
+    const teacherRef =
+      doc(
+        db,
+        "teachers",
+        code
+      );
+
+
+    const teacherSnap =
+      await getDoc(
+        teacherRef
+      );
+
+
+    let teacher = null;
+
+
+    /*
+      في النظام الحالي غالبًا
+      Document ID = teacher code
+
+      ولكن نضيف fallback
+      لو الدوكومنت ID مختلف
+    */
+
+    if(
+      teacherSnap.exists()
+    ){
+
+      teacher = {
+
+        id:
+          teacherSnap.id,
+
+        ...teacherSnap.data()
+
+      };
+
+    }
+
+    else{
+
+      const teachersSnap =
+        await getDocs(
+          collection(
+            db,
+            "teachers"
+          )
+        );
+
+
+      const found =
+        teachersSnap.docs.find(
+          d=>{
+
+            const data =
+              d.data();
+
+
+            return (
+              String(
+                data.code ||
+                d.id
+              )
+              ===
+              String(code)
+            );
+
+          }
+        );
+
+
+      if(found){
+
+        teacher = {
+
+          id:found.id,
+
+          ...found.data()
+
+        };
+
+      }
+
+    }
+
+
+    if(!teacher){
+
+      showLoginError(
+        "كود المعلم غير صحيح."
+      );
+
+      return;
+
+    }
+
+
+    if(
+      String(
+        teacher.pin ||
+        ""
+      )
+      !==
+      String(pin)
+    ){
+
+      showLoginError(
+        "الرقم السري غير صحيح."
+      );
+
+      return;
+
+    }
+
+
+    currentTeacher =
+      teacher;
+
+
+    sessionStorage.setItem(
+
+      "currentTeacher",
+
+      JSON.stringify({
+
+        id:
+          teacher.id,
+
+        code:
+          teacher.code ||
+          teacher.id,
+
+        name:
+          teacher.name ||
+          ""
+
+      })
+
+    );
+
+
+    await loadTeacherVisits();
+
+
+    openPortal();
+
+
+  }catch(error){
+
+    console.error(error);
+
+
+    showLoginError(
+      "تعذر تسجيل الدخول. تأكد من الاتصال ثم حاول مرة أخرى."
+    );
+
+  }
+
+  finally{
+
+    el("loginBtn").disabled =
+      false;
+
+
+    el("loginBtn").textContent =
+      "دخول";
+
+  }
+
+}
+
+
+/* ==========================================
+   LOAD VISITS
+========================================== */
+
+async function loadTeacherVisits(){
+
+  if(!currentTeacher)
+    return;
+
+
+  const teacherCode =
+    String(
+      currentTeacher.code ||
+      currentTeacher.id ||
+      ""
+    );
+
+
+  const snap =
+    await getDocs(
+      collection(
+        db,
+        "visits"
+      )
+    );
+
+
+  teacherVisits =
+    snap.docs
+    .map(
+      d=>({
+
+        id:d.id,
+
+        ...d.data()
+
+      })
+    )
+    .filter(
+      visit=>
+        String(
+          visit.teacherCode ||
+          ""
+        )
+        ===
+        teacherCode
+    );
+
+
+  teacherVisits.sort(
+    (a,b)=>{
+
+      const da =
+        toSortableDate(
+          a.visitDate
+        );
+
+
+      const db =
+        toSortableDate(
+          b.visitDate
+        );
+
+
+      if(db !== da){
+
+        return db - da;
+
+      }
+
+
+      return (
+
+        Number(
+          b.visitNumber ||
+          0
+        )
+
+        -
+
+        Number(
+          a.visitNumber ||
+          0
+        )
+
+      );
+
+    }
+  );
+
+}
+
+
+/* ==========================================
+   OPEN PORTAL
+========================================== */
+
+function openPortal(){
+
+  el("loginSection")
+    .style.display =
+    "none";
+
+
+  el("portalSection")
+    .classList
+    .add("show");
+
+
+  el("logoutBtn")
+    .style.display =
+    "inline-block";
+
+
+  el("teacherName")
+    .textContent =
+    currentTeacher.name ||
+    "المعلم";
+
+
+  el("teacherCodeDisplay")
+    .textContent =
+    currentTeacher.code ||
+    currentTeacher.id ||
+    "-";
+
+
+  renderStats();
+
+  renderVisits();
+
+}
+
+
+/* ==========================================
+   STATS
+========================================== */
+
+function renderStats(){
+
+  const viewed =
+    teacherVisits.filter(
+      visit=>
+        visit.teacherViewed ===
+        true
+    ).length;
+
+
+  const pending =
+    teacherVisits.length -
+    viewed;
+
+
+  el("totalVisits")
+    .textContent =
+    teacherVisits.length;
+
+
+  el("viewedVisits")
+    .textContent =
+    viewed;
+
+
+  el("pendingVisits")
+    .textContent =
+    pending;
+
+}
+
+
+/* ==========================================
+   RENDER VISITS
+========================================== */
+
+function renderVisits(){
+
+  const grid =
+    el("visitsGrid");
+
+
+  grid.innerHTML =
+    "";
+
+
+  const filter =
+    el("statusFilter")
+    .value;
+
+
+  let list =
+    [...teacherVisits];
+
+
+  if(
+    filter ===
+    "pending"
+  ){
+
+    list =
+      list.filter(
+        visit=>
+          visit.teacherViewed !==
+          true
+      );
+
+  }
+
+
+  if(
+    filter ===
+    "viewed"
+  ){
+
+    list =
+      list.filter(
+        visit=>
+          visit.teacherViewed ===
+          true
+      );
+
+  }
+
+
+  if(!list.length){
+
+    grid.innerHTML = `
+
+      <div class="empty">
+
+        <strong>
+          لا توجد زيارات
+        </strong>
+
+        لا توجد زيارات مطابقة للحالة المحددة.
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  list.forEach(
+    visit=>{
+
+
+      const viewed =
+        visit.teacherViewed ===
+        true;
+
+
+      const viewedDate =
+        formatViewedDate(
+          visit.teacherViewedAt
+        );
+
+
+      const card =
+        document.createElement(
+          "article"
+        );
+
+
+      card.className =
+        "visit-card";
+
+
+      card.innerHTML = `
+
+        <div class="visit-card-top">
+
+
+          <div>
+
+            <div class="visit-subject">
+
+              ${esc(
+                visit.subject ||
+                "زيارة تربوية"
+              )}
+
+            </div>
+
+
+            <div class="visit-date">
+
+              ${esc(
+                visit.visitDate ||
+                "-"
+              )}
+
+            </div>
+
+          </div>
+
+
+          <div class="visit-score">
+
+            <strong>
+
+              ${esc(
+                String(
+                  visit.finalScore ||
+                  0
+                )
+              )}
+
+            </strong>
+
+            <span>
+              من 100
+            </span>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="visit-body">
+
+
+          <div class="visit-info">
+
+
+            <div class="info-item">
+
+              <span>
+                رقم الزيارة
+              </span>
+
+              <strong>
+
+                ${esc(
+                  String(
+                    visit.visitNumber ||
+                    "-"
+                  )
+                )}
+
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span>
+                الصف
+              </span>
+
+              <strong>
+
+                ${esc(
+                  visit.grade ||
+                  "-"
+                )}
+
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span>
+                عنوان الدرس
+              </span>
+
+              <strong>
+
+                ${esc(
+                  visit.lessonTitle ||
+                  "-"
+                )}
+
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span>
+                المشرف
+              </span>
+
+              <strong>
+
+                ${esc(
+                  visit.supervisorName ||
+                  "-"
+                )}
+
+              </strong>
+
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+
+        <div class="visit-footer">
+
+
+          <div>
+
+            ${
+              viewed
+              ?
+              `
+
+                <span class="status viewed">
+                  تم الاطلاع ✓
+                </span>
+
+                ${
+                  viewedDate
+                  ?
+                  `
+
+                    <div
+                      style="
+                        margin-top:4px;
+                        font-size:8px;
+                        color:#7d8581;
+                        font-weight:700;
+                      "
+                    >
+                      ${esc(
+                        viewedDate
+                      )}
+                    </div>
+
+                  `
+                  :
+                  ""
+                }
+
+              `
+              :
+              `
+
+                <span class="status pending">
+                  بانتظار اطلاعك
+                </span>
+
+              `
+            }
+
+          </div>
+
+
+          <div class="actions">
+
+
+            <button
+              class="action-btn open-btn"
+              data-open="${esc(visit.id)}"
+            >
+              عرض التفاصيل
+            </button>
+
+
+            ${
+              !viewed
+              ?
+              `
+
+                <button
+                  class="action-btn ack-btn"
+                  data-ack="${esc(visit.id)}"
+                >
+                  اطلعت على الزيارة
+                </button>
+
+              `
+              :
+              ""
+            }
+
+
+          </div>
+
+
+        </div>
+
+      `;
+
+
+      grid.appendChild(
+        card
+      );
+
+    }
+  );
+
+
+  grid
+    .querySelectorAll(
+      "[data-open]"
+    )
+    .forEach(
+      button=>{
+
+        button.addEventListener(
+          "click",
+          ()=>{
+
+            openVisitDetails(
+              button.dataset.open
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  grid
+    .querySelectorAll(
+      "[data-ack]"
+    )
+    .forEach(
+      button=>{
+
+        button.addEventListener(
+          "click",
+          ()=>{
+
+            acknowledgeVisit(
+              button.dataset.ack,
+              button
+            );
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* ==========================================
+   DETAILS
+========================================== */
+
+function openVisitDetails(id){
+
+  const visit =
+    teacherVisits.find(
+      v=>v.id === id
+    );
+
+
+  if(!visit)
+    return;
+
+
+  currentVisitId =
+    id;
+
+
+  const answers =
+    Array.isArray(
+      visit.answers
+    )
+    ?
+    visit.answers
+    :
+    [];
+
+
+  let answersRows =
+    "";
+
+
+  answers.forEach(
+    answer=>{
+
+
+      answersRows += `
+
+        <tr>
+
+          <td>
+            ${esc(
+              answer.domain ||
+              "-"
+            )}
+          </td>
+
+          <td>
+            ${esc(
+              answer.itemLabel ||
+              "-"
+            )}
+          </td>
+
+          <td>
+            ${esc(
+              answer.selectedText ||
+              "-"
+            )}
+          </td>
+
+          <td>
+            ${esc(
+              String(
+                answer.selected ||
+                0
+              )
+            )}
+          </td>
+
+        </tr>
+
+      `;
+
+    }
+  );
+
+
+  el("modalBody").innerHTML = `
+
+
+    <div
+      style="
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:8px;
+        margin-bottom:12px;
+      "
+    >
+
+      <div class="info-item">
+
+        <span>
+          التاريخ
+        </span>
+
+        <strong>
+          ${esc(
+            visit.visitDate ||
+            "-"
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="info-item">
+
+        <span>
+          الصف
+        </span>
+
+        <strong>
+          ${esc(
+            visit.grade ||
+            "-"
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="info-item">
+
+        <span>
+          المادة
+        </span>
+
+        <strong>
+          ${esc(
+            visit.subject ||
+            "-"
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="info-item">
+
+        <span>
+          عنوان الدرس
+        </span>
+
+        <strong>
+          ${esc(
+            visit.lessonTitle ||
+            "-"
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="info-item">
+
+        <span>
+          رقم الزيارة
+        </span>
+
+        <strong>
+          ${esc(
+            String(
+              visit.visitNumber ||
+              "-"
+            )
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="info-item">
+
+        <span>
+          المشرف
+        </span>
+
+        <strong>
+          ${esc(
+            visit.supervisorName ||
+            "-"
+          )}
+        </strong>
+
+      </div>
+
+
+    </div>
+
+
+    <div
+      style="
+        margin-bottom:12px;
+        padding:13px;
+        border-radius:12px;
+        background:#edf5f1;
+        text-align:center;
+      "
+    >
+
+      <div
+        style="
+          font-size:9px;
+          color:#737b77;
+          font-weight:800;
+        "
+      >
+        الدرجة النهائية
+      </div>
+
+
+      <div
+        style="
+          font-size:27px;
+          color:#0b4a3f;
+          font-weight:900;
+        "
+      >
+        ${esc(
+          String(
+            visit.finalScore ||
+            0
+          )
+        )}
+        / 100
+      </div>
+
+    </div>
+
+
+    ${
+      answers.length
+      ?
+      `
+
+        <div
+          style="
+            overflow:auto;
+          "
+        >
+
+          <table class="detail-table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  المجال
+                </th>
+
+                <th>
+                  العنصر
+                </th>
+
+                <th>
+                  التقييم
+                </th>
+
+                <th>
+                  الدرجة
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              ${answersRows}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      `
+      :
+      `
+
+        <div
+          style="
+            padding:15px;
+            text-align:center;
+            color:#777;
+          "
+        >
+          لا توجد تفاصيل تقييم محفوظة.
+        </div>
+
+      `
+    }
+
+
+    <div class="notes">
+
+
+      <div class="note-box">
+
+        <h4>
+          إيجابيات الحصة
+        </h4>
+
+        <p>
+          ${esc(
+            visit.positives ||
+            "لا توجد ملاحظات."
+          )}
+        </p>
+
+      </div>
+
+
+      <div class="note-box">
+
+        <h4>
+          التوصيات والتوجيهات
+        </h4>
+
+        <p>
+          ${esc(
+            visit.recommendations ||
+            "لا توجد توصيات."
+          )}
+        </p>
+
+      </div>
+
+
+    </div>
+
+
+    ${
+      visit.teacherViewed ===
+      true
+      ?
+      `
+
+        <div
+          style="
+            margin-top:12px;
+            padding:11px;
+            border-radius:10px;
+            background:#edf5f1;
+            color:#0b4a3f;
+            font-size:10px;
+            font-weight:900;
+            text-align:center;
+          "
+        >
+          تم تسجيل اطلاعك على هذه الزيارة
+        </div>
+
+      `
+      :
+      `
+
+        <button
+          id="modalAckBtn"
+          style="
+            width:100%;
+            margin-top:12px;
+            border:0;
+            border-radius:10px;
+            padding:11px;
+            background:#0b4a3f;
+            color:#fff;
+            cursor:pointer;
+            font-size:10px;
+            font-weight:900;
+          "
+        >
+          اطلعت على الزيارة
+        </button>
+
+      `
+    }
+
+  `;
+
+
+  el("visitModal")
+    .classList
+    .add("show");
+
+
+  const modalAckBtn =
+    document.getElementById(
+      "modalAckBtn"
+    );
+
+
+  if(modalAckBtn){
+
+    modalAckBtn.addEventListener(
+      "click",
+      ()=>{
+
+        acknowledgeVisit(
+          id,
+          modalAckBtn
+        );
+
+      }
+    );
+
+  }
+
+}
+
+
+/* ==========================================
+   ACKNOWLEDGE
+========================================== */
+
+async function acknowledgeVisit(
+  id,
+  button
+){
+
+  const visit =
+    teacherVisits.find(
+      v=>v.id === id
+    );
+
+
+  if(!visit)
+    return;
+
+
+  if(
+    visit.teacherViewed ===
+    true
+  ){
+
+    return;
+
+  }
+
+
+  const ok =
+    confirm(
+      "هل تؤكد أنك اطلعت على الزيارة؟"
+    );
+
+
+  if(!ok)
+    return;
+
+
+  if(button){
+
+    button.disabled =
+      true;
+
+
+    button.textContent =
+      "جارٍ الحفظ...";
+
+  }
+
+
+  try{
+
+    await updateDoc(
+
+      doc(
+        db,
+        "visits",
+        id
+      ),
+
+      {
+
+        teacherViewed:true,
+
+        teacherViewedAt:
+          serverTimestamp()
+
+      }
+
+    );
+
+
+    visit.teacherViewed =
+      true;
+
+
+    /*
+      نخزن تاريخ محلي مؤقت للعرض
+      حتى لا ننتظر إعادة القراءة من Firestore
+    */
+
+    visit.teacherViewedAt =
+      new Date();
+
+
+    renderStats();
+
+    renderVisits();
+
+    showToast();
+
+
+    if(
+      el("visitModal")
+      .classList
+      .contains("show")
+    ){
+
+      openVisitDetails(id);
+
+    }
+
+
+  }catch(error){
+
+    console.error(error);
+
+
+    alert(
+      "تعذر تسجيل الاطلاع. حاول مرة أخرى."
+    );
+
+
+    if(button){
+
+      button.disabled =
+        false;
+
+
+      button.textContent =
+        "اطلعت على الزيارة";
+
+    }
+
+  }
+
+}
+
+
+/* ==========================================
+   LOGOUT
+========================================== */
+
+function logoutTeacher(){
+
+  sessionStorage.removeItem(
+    "currentTeacher"
+  );
+
+
+  currentTeacher =
+    null;
+
+
+  teacherVisits =
+    [];
+
+
+  el("portalSection")
+    .classList
+    .remove("show");
+
+
+  el("loginSection")
+    .style.display =
+    "block";
+
+
+  el("logoutBtn")
+    .style.display =
+    "none";
+
+
+  el("teacherPin").value =
+    "";
+
+}
+
+
+/* ==========================================
+   EVENTS
+========================================== */
+
+el("loginBtn")
+  .addEventListener(
+    "click",
+    loginTeacher
+  );
+
+
+el("teacherPin")
+  .addEventListener(
+    "keydown",
+    event=>{
+
+      if(
+        event.key ===
+        "Enter"
+      ){
+
+        loginTeacher();
+
+      }
+
+    }
+  );
+
+
+el("teacherCode")
+  .addEventListener(
+    "keydown",
+    event=>{
+
+      if(
+        event.key ===
+        "Enter"
+      ){
+
+        el("teacherPin")
+          .focus();
+
+      }
+
+    }
+  );
+
+
+el("statusFilter")
+  .addEventListener(
+    "change",
+    renderVisits
+  );
+
+
+el("logoutBtn")
+  .addEventListener(
+    "click",
+    logoutTeacher
+  );
+
+
+el("closeModal")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      el("visitModal")
+        .classList
+        .remove("show");
+
+    }
+  );
+
+
+el("visitModal")
+  .addEventListener(
+    "click",
+    event=>{
+
+      if(
+        event.target ===
+        el("visitModal")
+      ){
+
+        el("visitModal")
+          .classList
+          .remove("show");
+
+      }
+
+    }
+  );
+
+
+/* ==========================================
+   RESTORE SESSION
+========================================== */
+
+async function restoreTeacherSession(){
+
+  const raw =
+    sessionStorage.getItem(
+      "currentTeacher"
+    );
+
+
+  if(!raw)
+    return;
+
+
+  try{
+
+    const session =
+      JSON.parse(raw);
+
+
+    const teacherSnap =
+      await getDoc(
+        doc(
+          db,
+          "teachers",
+          session.id
+        )
+      );
+
+
+    if(
+      !teacherSnap.exists()
+    ){
+
+      sessionStorage.removeItem(
+        "currentTeacher"
+      );
+
+      return;
+
+    }
+
+
+    currentTeacher = {
+
+      id:
+        teacherSnap.id,
+
+      ...teacherSnap.data()
+
+    };
+
+
+    await loadTeacherVisits();
+
+    openPortal();
+
+
+  }catch(error){
+
+    console.error(error);
+
+
+    sessionStorage.removeItem(
+      "currentTeacher"
+    );
+
+  }
+
+}
+
+
+await restoreTeacherSession();
+
+</script>
+
+</body>
+
+</html>
+

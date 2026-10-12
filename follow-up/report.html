@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تقرير الزيارة</title>
+
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      background:#fff;
+      margin:0;
+      padding:12px;
+      color:#000;
+    }
+    .header{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .school{
+      font-size:18px;
+      font-weight:900;
+    }
+    .designer{
+      font-size:12px;
+      font-weight:900;
+    }
+    .box{
+      border:1px solid #000;
+      padding:10px;
+      margin-bottom:10px;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:8px;
+    }
+    th, td{
+      border:1px solid #000;
+      padding:6px;
+      font-size:13px;
+      text-align:center;
+    }
+    th{
+      background:#e3f2fd;
+    }
+    .btn{
+      padding:8px 14px;
+      background:#1976d2;
+      color:#fff;
+      border:0;
+      border-radius:8px;
+      font-weight:900;
+      cursor:pointer;
+      margin-bottom:10px;
+    }
+    @media print{
+      .btn{ display:none; }
+    }
+  </style>
+  <link rel="stylesheet" href="mobile.css">
+</head>
+
+<body>
+
+<button class="btn" onclick="window.print()">طباعة التقرير</button>
+
+<div class="header">
+  <div class="school">مدارس الفلاح الأهلية</div>
+  <div class="designer">تصميم محمد عامر أحمد</div>
+</div>
+
+<div id="content">جاري تحميل التقرير...</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBNFrPNCuQefOXHTCmiiKSBjgPLUy5Ug4U",
+    authDomain: "follow-up-2026.firebaseapp.com",
+    projectId: "follow-up-2026",
+    storageBucket: "follow-up-2026.firebasestorage.app",
+    messagingSenderId: "1077131515114",
+    appId: "1:1077131515114:web:d10d9c5228382d7cfdb393"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const params = new URLSearchParams(window.location.search);
+  const visitId = params.get("id");
+
+  const container = document.getElementById("content");
+
+  if (!visitId){
+    container.innerHTML = "لا يوجد تقرير";
+  } else {
+    const ref = doc(db, "visits", visitId);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()){
+      container.innerHTML = "التقرير غير موجود";
+    } else {
+      const d = snap.data();
+
+      let html = `
+        <div class="box">
+          <b>اسم المعلم:</b> ${d.teacherName}<br>
+          <b>كود المعلم:</b> ${d.teacherCode}<br>
+          <b>الصف:</b> ${d.grade}<br>
+          <b>المادة:</b> ${d.subject}<br>
+          <b>عنوان الدرس:</b> ${d.lessonTitle}<br>
+          <b>رقم الزيارة:</b> ${d.visitNumber}<br>
+          <b>اسم المشرف:</b> ${d.supervisorName}<br>
+          <b>التاريخ:</b> ${d.visitDate}<br>
+          <b>الدرجة النهائية:</b> ${d.finalScore} / 100
+        </div>
+
+        <div class="box">
+          <b>بنود التقييم</b>
+          <table>
+            <tr>
+              <th>المجال</th>
+              <th>العنصر</th>
+              <th>الدرجة</th>
+            </tr>
+      `;
+
+      d.answers.forEach(a=>{
+        html += `
+          <tr>
+            <td>${a.domain}</td>
+            <td>${a.itemLabel}</td>
+            <td>${a.selected}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </table>
+        </div>
+
+        <div class="box">
+          <b>إيجابيات الحصة</b><br>
+          ${d.positives || "-"}
+        </div>
+
+        <div class="box">
+          <b>توصيات وتوجيهات</b><br>
+          ${d.recommendations || "-"}
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+  }
+</script>
+
+</body>
+</html>
+

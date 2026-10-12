@@ -1,0 +1,2779 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+
+<title>طباعة الزيارة - مدارس الفلاح الأهلية</title>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
+  rel="stylesheet"
+>
+
+<style>
+
+:root{
+  --green:#0b4a3f;
+  --green-dark:#07372f;
+  --green-soft:#edf5f1;
+
+  --gold:#c89a3b;
+  --gold-dark:#a87921;
+  --gold-soft:#faf2e3;
+
+  --text:#1f2926;
+  --muted:#707873;
+  --border:#bfc9c3;
+  --red:#b42318;
+}
+
+
+/* =====================================
+   PAGE SETUP
+===================================== */
+
+@page{
+  size:A4 portrait;
+  margin:5mm;
+}
+
+
+*{
+  box-sizing:border-box;
+}
+
+
+html,
+body{
+  margin:0;
+  padding:0;
+  font-family:"Cairo",Arial,sans-serif;
+  color:var(--text);
+  background:#e7ebe8;
+}
+
+
+body{
+  padding:16px 0;
+}
+
+
+/* =====================================
+   SCREEN BUTTONS
+===================================== */
+
+.toolbar{
+  width:200mm;
+  max-width:calc(100% - 20px);
+  margin:0 auto 10px;
+
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+}
+
+
+.toolbar button{
+  border:0;
+  border-radius:9px;
+  padding:9px 16px;
+
+  font-family:"Cairo",sans-serif;
+  font-size:11px;
+  font-weight:900;
+
+  cursor:pointer;
+}
+
+
+.btn-print{
+  background:var(--green);
+  color:#fff;
+}
+
+
+.btn-back{
+  background:#fff;
+  color:var(--green);
+  border:1px solid var(--border) !important;
+}
+
+
+/* =====================================
+   LOADING
+===================================== */
+
+.loading{
+  width:200mm;
+  max-width:calc(100% - 20px);
+
+  margin:30px auto;
+
+  background:#fff;
+
+  border-radius:14px;
+
+  padding:35px;
+
+  text-align:center;
+
+  color:var(--green);
+
+  font-weight:900;
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.08);
+}
+
+
+.error{
+  color:var(--red);
+}
+
+
+/* =====================================
+   A4 SHEET
+===================================== */
+
+.sheet{
+
+  width:200mm;
+  min-height:287mm;
+
+  margin:0 auto 15px;
+
+  background:#fff;
+
+  padding:5mm;
+
+  box-shadow:
+    0 7px 30px rgba(0,0,0,.13);
+
+  position:relative;
+
+  overflow:hidden;
+}
+
+
+.page1{
+  page-break-after:always;
+  break-after:page;
+}
+
+
+.page2{
+  page-break-after:auto;
+  break-after:auto;
+}
+
+
+/* =====================================
+   HEADER
+===================================== */
+
+.header{
+
+  display:grid;
+
+  grid-template-columns:
+    58px 1fr 100px;
+
+  align-items:center;
+
+  gap:7px;
+
+  padding-bottom:4px;
+
+  border-bottom:
+    1.5px solid var(--green);
+
+  margin-bottom:5px;
+}
+
+
+.logo{
+  width:54px;
+  height:54px;
+  object-fit:contain;
+}
+
+
+.header-center{
+  text-align:center;
+}
+
+
+.school-name{
+  margin:0;
+
+  color:var(--green);
+
+  font-size:15px;
+  font-weight:900;
+}
+
+
+.system-title{
+  margin-top:0;
+
+  color:var(--gold-dark);
+
+  font-size:7px;
+  font-weight:800;
+}
+
+
+.form-title{
+  margin-top:2px;
+
+  color:#1e2925;
+
+  font-size:12px;
+  font-weight:900;
+}
+
+
+.header-meta{
+
+  font-size:6.7px;
+
+  line-height:1.7;
+
+  color:#313c37;
+
+  font-weight:700;
+}
+
+
+.header-meta strong{
+  color:var(--green);
+}
+
+
+/* =====================================
+   INFO TABLE
+===================================== */
+
+.info-table{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+  table-layout:fixed;
+
+  margin-bottom:4px;
+}
+
+
+.info-table th,
+.info-table td{
+
+  border:1px solid var(--border);
+
+  padding:3px 4px;
+
+  height:20px;
+
+  font-size:7.3px;
+
+  line-height:1.3;
+
+  vertical-align:middle;
+}
+
+
+.info-table th{
+
+  background:var(--green);
+
+  color:#fff;
+
+  font-weight:900;
+
+  text-align:center;
+}
+
+
+.info-table td{
+  font-weight:700;
+}
+
+
+.score-cell{
+
+  color:var(--green);
+
+  font-size:10px !important;
+
+  font-weight:900 !important;
+
+  text-align:center;
+
+  background:var(--gold-soft);
+}
+
+
+/* =====================================
+   RUBRIC TITLE
+===================================== */
+
+.section-heading{
+
+  margin:3px 0;
+
+  padding:3px 7px;
+
+  background:var(--green-soft);
+
+  color:var(--green);
+
+  border-right:
+    4px solid var(--gold);
+
+  font-size:8px;
+
+  font-weight:900;
+}
+
+
+/* =====================================
+   RUBRIC
+===================================== */
+
+.rubric-table{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+  table-layout:fixed;
+
+  font-size:6px;
+}
+
+
+.rubric-table thead{
+  display:table-header-group;
+}
+
+
+.rubric-table tr{
+  page-break-inside:avoid;
+  break-inside:avoid;
+}
+
+
+.rubric-table th{
+
+  background:var(--green);
+
+  color:#fff;
+
+  border:1px solid var(--green-dark);
+
+  padding:2px;
+
+  height:18px;
+
+  font-size:6.5px;
+
+  font-weight:900;
+
+  text-align:center;
+}
+
+
+.rubric-table td{
+
+  border:1px solid var(--border);
+
+  padding:1.5px 3px;
+
+  height:17px;
+
+  line-height:1.15;
+
+  vertical-align:middle;
+}
+
+
+.col-num{
+  width:20px;
+  text-align:center;
+  font-weight:900;
+}
+
+
+.col-domain{
+
+  width:72px;
+
+  text-align:center;
+
+  color:var(--green);
+
+  background:#f3f8f5;
+
+  font-weight:900;
+}
+
+
+.col-item{
+
+  width:210px;
+
+  font-weight:800;
+
+  text-align:right;
+}
+
+
+.rating-cell{
+  padding:1px !important;
+}
+
+
+.rating-grid{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:1px;
+}
+
+
+.rating-option{
+
+  min-height:14px;
+
+  padding:1px 2px;
+
+  border-radius:2px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:2px;
+
+  text-align:center;
+
+  font-size:5.25px;
+
+  line-height:1.1;
+
+  background:#fafbfa;
+}
+
+
+.rating-option.selected{
+
+  background:#dfeee7;
+
+  color:var(--green);
+
+  font-weight:900;
+}
+
+
+.radio-mark{
+  font-size:6px;
+  flex-shrink:0;
+}
+
+
+/* =====================================
+   NOTES
+===================================== */
+
+.notes{
+
+  display:grid;
+
+  grid-template-columns:1fr 1fr;
+
+  gap:5px;
+
+  margin-top:4px;
+}
+
+
+.note{
+
+  border:
+    1px solid var(--border);
+
+  border-radius:5px;
+
+  overflow:hidden;
+}
+
+
+.note-title{
+
+  background:var(--green-soft);
+
+  color:var(--green);
+
+  text-align:center;
+
+  padding:2px;
+
+  font-size:6.7px;
+
+  font-weight:900;
+}
+
+
+.note-body{
+
+  height:27px;
+
+  padding:3px 5px;
+
+  font-size:6.2px;
+
+  line-height:1.4;
+
+  overflow:hidden;
+
+  white-space:pre-wrap;
+}
+
+
+/* =====================================
+   VIEW STATUS
+===================================== */
+
+.ack{
+
+  margin-top:4px;
+
+  border:
+    1px solid #dfc79b;
+
+  background:#fff8e9;
+
+  color:#8d5c00;
+
+  border-radius:4px;
+
+  padding:2px 5px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:5px;
+
+  font-size:6px;
+
+  font-weight:800;
+}
+
+
+.ack.viewed{
+
+  background:var(--green-soft);
+
+  border-color:#bbd1c6;
+
+  color:var(--green);
+}
+
+
+/* =====================================
+   SIGNATURES
+===================================== */
+
+.signatures{
+
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:12px;
+
+  margin-top:7px;
+}
+
+
+.signature{
+
+  border-top:
+    1px solid #444;
+
+  padding-top:2px;
+
+  text-align:center;
+
+  font-size:6.5px;
+
+  font-weight:900;
+
+  height:18px;
+}
+
+
+/* =====================================
+   FOOTER
+===================================== */
+
+.footer{
+
+  position:absolute;
+
+  bottom:4mm;
+
+  right:5mm;
+  left:5mm;
+
+  border-top:
+    1px solid #cfd6d2;
+
+  padding-top:2px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  font-size:5.5px;
+
+  color:#777;
+}
+
+
+.footer strong{
+  color:var(--green);
+}
+
+
+/* =====================================
+   PAGE TWO
+===================================== */
+
+.page2-main-title{
+
+  text-align:center;
+
+  margin:3px 0 3px;
+
+  color:var(--green);
+
+  font-size:13px;
+
+  font-weight:900;
+}
+
+
+.page2-subtitle{
+
+  text-align:center;
+
+  margin-bottom:7px;
+
+  color:var(--muted);
+
+  font-size:6.5px;
+}
+
+
+.work-info{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+  margin-bottom:7px;
+}
+
+
+.work-info th,
+.work-info td{
+
+  border:1px solid var(--border);
+
+  padding:4px;
+
+  font-size:7px;
+}
+
+
+.work-info th{
+
+  background:var(--green-soft);
+
+  color:var(--green);
+
+  font-weight:900;
+
+  width:14%;
+}
+
+
+/* =====================================
+   STUDENTS TABLE
+===================================== */
+
+.students{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+  table-layout:fixed;
+}
+
+
+.students th{
+
+  border:
+    1px solid var(--green-dark);
+
+  background:var(--green);
+
+  color:#fff;
+
+  padding:5px;
+
+  font-size:8px;
+
+  font-weight:900;
+}
+
+
+.students td{
+
+  border:
+    1px solid var(--border);
+
+  padding:5px;
+
+  height:28px;
+
+  text-align:center;
+
+  font-size:8px;
+}
+
+
+.students td.name{
+
+  text-align:right;
+
+  font-weight:800;
+}
+
+
+.check{
+
+  color:var(--green);
+
+  font-weight:900;
+
+  font-size:15px;
+}
+
+
+/* =====================================
+   WORK STATS
+===================================== */
+
+.work-stats{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:7px;
+
+  margin-top:8px;
+}
+
+
+.work-stat{
+
+  background:#f8faf9;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:6px;
+
+  padding:6px;
+
+  text-align:center;
+}
+
+
+.work-stat span{
+
+  display:block;
+
+  color:var(--muted);
+
+  font-size:6px;
+}
+
+
+.work-stat strong{
+
+  display:block;
+
+  margin-top:1px;
+
+  color:var(--green);
+
+  font-size:14px;
+
+  font-weight:900;
+}
+
+
+/* =====================================
+   PAGE 2 SIGN
+===================================== */
+
+.page2-signatures{
+
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:15px;
+
+  margin-top:30px;
+}
+
+
+.page2-signature{
+
+  border-top:
+    1px solid #444;
+
+  text-align:center;
+
+  padding-top:4px;
+
+  height:30px;
+
+  font-size:7px;
+
+  font-weight:900;
+}
+
+
+/* =====================================
+   PRINT
+===================================== */
+
+@media print{
+
+  html,
+  body{
+    width:210mm;
+    margin:0 !important;
+    padding:0 !important;
+    background:#fff !important;
+  }
+
+
+  body{
+    overflow:visible;
+  }
+
+
+  .toolbar,
+  .loading{
+    display:none !important;
+  }
+
+
+  .sheet{
+
+    width:200mm;
+
+    height:287mm;
+    min-height:287mm;
+    max-height:287mm;
+
+    margin:0 !important;
+
+    padding:5mm;
+
+    box-shadow:none;
+
+    overflow:hidden;
+  }
+
+
+  .page1{
+
+    page-break-after:always !important;
+    break-after:page !important;
+  }
+
+
+  .page2{
+
+    page-break-after:auto !important;
+    break-after:auto !important;
+  }
+
+
+  *{
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+
+}
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media(max-width:850px){
+
+  .sheet{
+    width:calc(100% - 10px);
+    min-height:auto;
+  }
+
+
+  .toolbar{
+    width:calc(100% - 10px);
+  }
+
+}
+
+
+
+/* =====================================
+   PAGE 1 - LARGER / BETTER A4 FILL
+   الصفحة الثانية بدون تعديل
+===================================== */
+
+.page1 .header{
+  grid-template-columns:68px 1fr 118px;
+  gap:9px;
+  padding-bottom:7px;
+  margin-bottom:8px;
+}
+
+.page1 .logo{
+  width:64px;
+  height:64px;
+}
+
+.page1 .school-name{
+  font-size:19px;
+}
+
+.page1 .system-title{
+  margin-top:2px;
+  font-size:9px;
+}
+
+.page1 .form-title{
+  margin-top:3px;
+  font-size:15px;
+}
+
+.page1 .header-meta{
+  font-size:8.5px;
+  line-height:1.85;
+}
+
+.page1 .info-table{
+  margin-bottom:7px;
+}
+
+.page1 .info-table th,
+.page1 .info-table td{
+  padding:5px 5px;
+  height:27px;
+  font-size:9.2px;
+  line-height:1.45;
+}
+
+.page1 .score-cell{
+  font-size:12px !important;
+}
+
+.page1 .section-heading{
+  margin:6px 0 5px;
+  padding:5px 8px;
+  font-size:10px;
+}
+
+.page1 .rubric-table{
+  font-size:7.2px;
+}
+
+.page1 .rubric-table th{
+  padding:3px;
+  height:22px;
+  font-size:8px;
+}
+
+.page1 .rubric-table td{
+  padding:2.4px 4px;
+  height:21px;
+  line-height:1.25;
+}
+
+.page1 .col-num{
+  width:24px;
+}
+
+.page1 .col-domain{
+  width:82px;
+  font-size:7.5px;
+}
+
+.page1 .col-item{
+  width:220px;
+  font-size:7.5px;
+}
+
+.page1 .rating-option{
+  min-height:17px;
+  padding:2px 3px;
+  font-size:6.5px;
+  line-height:1.15;
+}
+
+.page1 .radio-mark{
+  font-size:7px;
+}
+
+.page1 .notes{
+  gap:7px;
+  margin-top:7px;
+}
+
+.page1 .note-title{
+  padding:4px;
+  font-size:8.5px;
+}
+
+.page1 .note-body{
+  height:40px;
+  padding:5px 6px;
+  font-size:8px;
+  line-height:1.5;
+}
+
+.page1 .ack{
+  margin-top:7px;
+  padding:4px 7px;
+  font-size:7.5px;
+}
+
+.page1 .signatures{
+  gap:18px;
+  margin-top:12px;
+}
+
+.page1 .signature{
+  padding-top:4px;
+  font-size:8px;
+  height:24px;
+}
+
+.page1 .footer{
+  font-size:6.5px;
+}
+
+@media print{
+  .page1{
+    padding:5mm;
+  }
+}
+
+
+
+/* =====================================
+   PRINT ONLY - BLACK & WHITE
+   الشاشة تبقى بالألوان، والطباعة فقط أبيض وأسود
+===================================== */
+@media print{
+
+  .sheet,
+  .page1,
+  .page2{
+    background:#fff !important;
+    color:#000 !important;
+  }
+
+  .header{
+    border-bottom-color:#000 !important;
+  }
+
+  .school-name,
+  .system-title,
+  .form-title,
+  .header-meta,
+  .header-meta strong,
+  .section-heading,
+  .col-domain,
+  .score-cell,
+  .note-title,
+  .ack,
+  .ack.viewed,
+  .work-info th,
+  .check,
+  .work-stat strong,
+  .footer strong,
+  .page2-main-title{
+    color:#000 !important;
+  }
+
+  .info-table th,
+  .rubric-table th,
+  .students th{
+    background:#fff !important;
+    color:#000 !important;
+    border-color:#000 !important;
+  }
+
+  .info-table td,
+  .rubric-table td,
+  .work-info th,
+  .work-info td,
+  .students td,
+  .note,
+  .ack,
+  .ack.viewed,
+  .work-stat{
+    border-color:#000 !important;
+  }
+
+  .section-heading,
+  .col-domain,
+  .score-cell,
+  .note-title,
+  .ack,
+  .ack.viewed,
+  .work-info th,
+  .rating-option,
+  .rating-option.selected,
+  .work-stat{
+    background:#fff !important;
+  }
+
+  .section-heading{
+    border-right-color:#000 !important;
+  }
+
+  .rating-option.selected{
+    color:#000 !important;
+    font-weight:900 !important;
+    outline:1px solid #000;
+  }
+
+  .footer,
+  .signature,
+  .page2-signature{
+    border-color:#000 !important;
+  }
+
+  .footer,
+  .work-stat span,
+  .page2-subtitle{
+    color:#000 !important;
+  }
+
+  *{
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+}
+
+</style>
+
+  <link rel="stylesheet" href="mobile.css">
+</head>
+
+
+<body>
+
+
+<div
+  id="loading"
+  class="loading"
+>
+  جاري تحميل بيانات الزيارة...
+</div>
+
+
+<div
+  id="toolbar"
+  class="toolbar"
+  style="display:none"
+>
+
+  <button
+    id="backBtn"
+    class="btn-back"
+  >
+    رجوع
+  </button>
+
+
+  <button
+    id="printBtn"
+    class="btn-print"
+  >
+    طباعة
+  </button>
+
+</div>
+
+
+
+<!-- =================================
+     PAGE 1
+================================= -->
+
+<section
+  id="page1"
+  class="sheet page1"
+  style="display:none"
+>
+
+
+<header class="header">
+
+
+  <div>
+
+    <img
+      src="logo.jpeg"
+      class="logo"
+      alt="شعار المدرسة"
+    >
+
+  </div>
+
+
+  <div class="header-center">
+
+    <h1 class="school-name">
+      مدارس الفلاح الأهلية
+    </h1>
+
+    <div class="system-title">
+      نظام الإشراف التربوي
+    </div>
+
+    <div class="form-title">
+      استمارة دعم وتطوير الهيئة التعليمية
+    </div>
+
+  </div>
+
+
+  <div class="header-meta">
+
+    العام الدراسي:
+    <strong>1448هـ</strong>
+
+    <br>
+
+    الفصل الدراسي الأول
+
+    <br>
+
+    رقم الزيارة:
+    <strong id="headerVisitNumber">-</strong>
+
+  </div>
+
+
+</header>
+
+
+
+<table class="info-table">
+
+
+<tr>
+
+  <th>
+    كود المعلم
+  </th>
+
+  <td id="teacherCode"></td>
+
+
+  <th>
+    اسم المعلم
+  </th>
+
+  <td
+    id="teacherName"
+    colspan="3"
+  ></td>
+
+
+  <th>
+    رقم الزيارة
+  </th>
+
+  <td id="visitNumber"></td>
+
+</tr>
+
+
+<tr>
+
+  <th>
+    الصف
+  </th>
+
+  <td id="grade"></td>
+
+
+  <th>
+    المادة
+  </th>
+
+  <td id="subject"></td>
+
+
+  <th>
+    تاريخ الزيارة
+  </th>
+
+  <td id="visitDate"></td>
+
+
+  <th>
+    الدرجة
+  </th>
+
+  <td
+    id="finalScore"
+    class="score-cell"
+  ></td>
+
+</tr>
+
+
+<tr>
+
+  <th>
+    عنوان الدرس
+  </th>
+
+  <td
+    id="lessonTitle"
+    colspan="5"
+  ></td>
+
+
+  <th>
+    المشرف
+  </th>
+
+  <td id="supervisorName"></td>
+
+</tr>
+
+
+</table>
+
+
+
+<div class="section-heading">
+  عناصر استمارة الزيارة
+</div>
+
+
+
+<div id="rubricContainer"></div>
+
+
+
+<div class="notes">
+
+
+  <div class="note">
+
+    <div class="note-title">
+      إيجابيات الحصة
+    </div>
+
+    <div
+      id="positives"
+      class="note-body"
+    ></div>
+
+  </div>
+
+
+  <div class="note">
+
+    <div class="note-title">
+      التوصيات والتوجيهات
+    </div>
+
+    <div
+      id="recommendations"
+      class="note-body"
+    ></div>
+
+  </div>
+
+
+</div>
+
+
+
+<div
+  id="teacherAck"
+  class="ack"
+></div>
+
+
+
+<div class="signatures">
+
+  <div class="signature">
+    توقيع المعلم
+  </div>
+
+  <div class="signature">
+    توقيع المشرف التربوي
+  </div>
+
+</div>
+
+
+
+<footer class="footer">
+
+  <span>
+    مدارس الفلاح الأهلية
+  </span>
+
+  <strong>
+    تصميم محمد عامر أحمد
+  </strong>
+
+</footer>
+
+
+</section>
+
+
+
+<!-- =================================
+     PAGE 2
+================================= -->
+
+<section
+  id="page2"
+  class="sheet page2"
+  style="display:none"
+>
+
+
+<header class="header">
+
+
+  <div>
+
+    <img
+      src="logo.jpeg"
+      class="logo"
+      alt="شعار المدرسة"
+    >
+
+  </div>
+
+
+  <div class="header-center">
+
+    <h1 class="school-name">
+      مدارس الفلاح الأهلية
+    </h1>
+
+    <div class="system-title">
+      نظام الإشراف التربوي
+    </div>
+
+    <div class="form-title">
+      متابعة الأعمال التحريرية للطلاب
+    </div>
+
+  </div>
+
+
+  <div class="header-meta">
+
+    العام الدراسي:
+    <strong>
+      1448هـ
+    </strong>
+
+    <br>
+
+    الفصل الدراسي الأول
+
+  </div>
+
+
+</header>
+
+
+
+<h2 class="page2-main-title">
+  متابعة الأعمال التحريرية للطلاب
+</h2>
+
+
+<div class="page2-subtitle">
+  متابعة عينة من أعمال الطلاب أثناء الزيارة الصفية
+</div>
+
+
+
+<table class="work-info">
+
+<tr>
+
+  <th>
+    المعلم
+  </th>
+
+  <td id="workTeacherName"></td>
+
+
+  <th>
+    المادة
+  </th>
+
+  <td id="workSubject"></td>
+
+
+  <th>
+    الصف
+  </th>
+
+  <td id="workGrade"></td>
+
+</tr>
+
+</table>
+
+
+
+<table class="students">
+
+<thead>
+
+<tr>
+
+  <th style="width:8%">
+    م
+  </th>
+
+  <th style="width:50%">
+    اسم الطالب
+  </th>
+
+  <th style="width:14%">
+    مصحح
+  </th>
+
+  <th style="width:14%">
+    غير مكتمل
+  </th>
+
+  <th style="width:14%">
+    غير مصحح
+  </th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="workRows"></tbody>
+
+</table>
+
+
+
+<div class="work-stats">
+
+
+  <div class="work-stat">
+
+    <span>
+      مصحح
+    </span>
+
+    <strong id="correctCount">
+      0
+    </strong>
+
+  </div>
+
+
+  <div class="work-stat">
+
+    <span>
+      غير مكتمل
+    </span>
+
+    <strong id="partialCount">
+      0
+    </strong>
+
+  </div>
+
+
+  <div class="work-stat">
+
+    <span>
+      غير مصحح
+    </span>
+
+    <strong id="notCount">
+      0
+    </strong>
+
+  </div>
+
+
+</div>
+
+
+
+<div class="page2-signatures">
+
+  <div class="page2-signature">
+    توقيع المعلم
+  </div>
+
+  <div class="page2-signature">
+    توقيع المشرف التربوي
+  </div>
+
+</div>
+
+
+
+<footer class="footer">
+
+  <span>
+    مدارس الفلاح الأهلية
+  </span>
+
+  <strong>
+    تصميم محمد عامر أحمد
+  </strong>
+
+</footer>
+
+
+</section>
+
+
+
+<script type="module">
+
+
+import { db }
+from "./firebase.js";
+
+
+import {
+
+  doc,
+  getDoc
+
+}
+from
+"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+
+const el =
+  id =>
+    document.getElementById(id);
+
+
+/* =====================================
+   VISIT ID
+===================================== */
+
+const params =
+  new URLSearchParams(
+    location.search
+  );
+
+
+const visitId =
+  params.get("id");
+
+
+if(!visitId){
+
+  showError(
+    "لم يتم تحديد الزيارة."
+  );
+
+  throw new Error(
+    "Missing visit id"
+  );
+
+}
+
+
+/* =====================================
+   ESCAPE
+===================================== */
+
+function esc(value){
+
+  return String(
+    value ?? ""
+  )
+
+  .replaceAll("&","&amp;")
+  .replaceAll("<","&lt;")
+  .replaceAll(">","&gt;")
+  .replaceAll('"',"&quot;")
+  .replaceAll("'","&#039;");
+
+}
+
+
+/* =====================================
+   ALL 25 RUBRIC ITEMS
+===================================== */
+
+const rubricDefinition = [
+
+{
+  no:1,
+  name:"الرؤية",
+  items:[
+    {
+      label:"القيمة التربوية",
+      top:"مناسب",
+      mid:"إلى حد ما",
+      low:"غير مناسب"
+    }
+  ]
+},
+
+{
+  no:2,
+  name:"التخطيط للدرس",
+  items:[
+
+    {
+      label:"التحضير بمنصة مدرستي",
+      top:"مكتمل",
+      mid:"غير مكتمل",
+      low:"غير موجود"
+    },
+
+    {
+      label:"خطة الدرس",
+      top:"مكتملة ومفصلة",
+      mid:"غير مكتملة",
+      low:"غير موجودة"
+    },
+
+    {
+      label:"أهداف الدرس",
+      top:"واضحة قابلة للقياس",
+      mid:"أهداف عامة",
+      low:"غير موجودة"
+    },
+
+    {
+      label:"المفاهيم والمصطلحات الهامة",
+      top:"محددة وواضحة",
+      mid:"غير محددة بدقة",
+      low:"غير موجودة"
+    },
+
+    {
+      label:"تسلسل خطوات الدرس",
+      top:"متسلسلة ومعدة جيدا",
+      mid:"يوجد بعض خطوات",
+      low:"خطوات قليلة"
+    },
+
+    {
+      label:"إعدادات الفروق الفردية",
+      top:"موجود بقوة",
+      mid:"بعض الشواهد",
+      low:"لا توجد شواهد"
+    }
+
+  ]
+},
+
+{
+  no:3,
+  name:"إدارة الصف",
+  items:[
+
+    {
+      label:"تنظيم المقاعد",
+      top:"مجموعات",
+      mid:"خطوط",
+      low:"مزعج"
+    },
+
+    {
+      label:"نظافة الفصل",
+      top:"اهتمام عال بالنظافة",
+      mid:"اهتمام مناسب",
+      low:"لا يوجد اهتمام"
+    },
+
+    {
+      label:"البيئة الصفية",
+      top:"معززة وإيجابية",
+      mid:"مناسبة",
+      low:"غير مناسبة"
+    },
+
+    {
+      label:"تنظيم إجابات الطلاب",
+      top:"منظم",
+      mid:"إلى حد ما",
+      low:"غير منظم"
+    },
+
+    {
+      label:"الإدارة الصفية",
+      top:"جيدة وفعالة",
+      mid:"متوسطة",
+      low:"ضعيفة"
+    },
+
+    {
+      label:"تفعيل القوانين الصفية",
+      top:"مفعلة وفعالة",
+      mid:"مفعلة إلى حد ما",
+      low:"غير مفعلة"
+    }
+
+  ]
+},
+
+{
+  no:4,
+  name:"دعم السلوك",
+  items:[
+
+    {
+      label:"توجيهات المعلم",
+      top:"واضحة وإجرائية",
+      mid:"مبهمة",
+      low:"غير موجودة"
+    },
+
+    {
+      label:"سلوك الطلاب",
+      top:"ممتاز",
+      mid:"مقبول",
+      low:"ضعيف"
+    },
+
+    {
+      label:"تفاعل الطلاب",
+      top:"ممتاز وقوي",
+      mid:"إلى حد ما",
+      low:"ضعيف"
+    },
+
+    {
+      label:"صوت المعلم وتواصله مع الطلاب",
+      top:"فعال عال المستوى",
+      mid:"متوسط",
+      low:"محدود"
+    }
+
+  ]
+},
+
+{
+  no:5,
+  name:"استراتيجيات التدريس",
+  items:[
+
+    {
+      label:"خصائص الأسئلة حسب المنظومة",
+      top:"مطابقة",
+      mid:"إلى حد ما",
+      low:"غير مطابقة"
+    },
+
+    {
+      label:"تنفيذ استراتيجية التدريس",
+      top:"ينفذ",
+      mid:"إلى حد ما",
+      low:"لا ينفذ"
+    },
+
+    {
+      label:"ممارسة الفصحى",
+      top:"ممارسة ممتازة",
+      mid:"ممارسة متوسطة",
+      low:"ممارسة غير مناسبة"
+    },
+
+    {
+      label:"إعلان أهداف الدرس",
+      top:"معلنة وتناقش بداية الحصة",
+      mid:"إما مدونة أو تناقش",
+      low:"لا مدونة ولا تناقش"
+    }
+
+  ]
+},
+
+{
+  no:6,
+  name:"أدوات مساندة للتعلم",
+  items:[
+
+    {
+      label:"الوسيلة التعليمية",
+      top:"مستخدمة",
+      mid:"محدودة",
+      low:"غير مستخدمة"
+    },
+
+    {
+      label:"تفعيل السبورة التفاعلية",
+      top:"مناسب جدا",
+      mid:"محدود",
+      low:"لا يوجد تفعيل"
+    },
+
+    {
+      label:"تطبيق ما تم التدريب عليه",
+      top:"مستوى عال",
+      mid:"مستوى مناسب",
+      low:"مستوى ضعيف"
+    }
+
+  ]
+},
+
+{
+  no:7,
+  name:"التقويم الصفي",
+  items:[
+
+    {
+      label:"ملخص الدرس",
+      top:"خلاصة جيدة وواضحة",
+      mid:"خلاصة محدودة",
+      low:"لا توجد خلاصة"
+    }
+
+  ]
+}
+
+];
+
+
+/* =====================================
+   LOAD VISIT
+===================================== */
+
+async function loadVisit(){
+
+  try{
+
+    const snap =
+      await getDoc(
+        doc(
+          db,
+          "visits",
+          visitId
+        )
+      );
+
+
+    if(!snap.exists()){
+
+      showError(
+        "الزيارة غير موجودة."
+      );
+
+      return;
+
+    }
+
+
+    const visit = {
+
+      id:snap.id,
+
+      ...snap.data()
+
+    };
+
+
+    renderVisit(
+      visit
+    );
+
+
+  }catch(error){
+
+    console.error(
+      error
+    );
+
+
+    showError(
+      "تعذر تحميل بيانات الزيارة."
+    );
+
+  }
+
+}
+
+
+/* =====================================
+   RENDER VISIT
+===================================== */
+
+function renderVisit(v){
+
+  el("teacherCode")
+    .textContent =
+    v.teacherCode || "-";
+
+
+  el("teacherName")
+    .textContent =
+    v.teacherName || "-";
+
+
+  el("visitNumber")
+    .textContent =
+    v.visitNumber || "-";
+
+
+  el("headerVisitNumber")
+    .textContent =
+    v.visitNumber || "-";
+
+
+  el("grade")
+    .textContent =
+    v.grade || "-";
+
+
+  el("subject")
+    .textContent =
+    v.subject || "-";
+
+
+  el("visitDate")
+    .textContent =
+    v.visitDate || "-";
+
+
+  el("lessonTitle")
+    .textContent =
+    v.lessonTitle || "-";
+
+
+  el("supervisorName")
+    .textContent =
+    v.supervisorName || "-";
+
+
+  el("finalScore")
+    .textContent =
+    `${Number(v.finalScore || 0)} / 100`;
+
+
+  el("positives")
+    .textContent =
+    v.positives || "";
+
+
+  el("recommendations")
+    .textContent =
+    v.recommendations || "";
+
+
+  renderRubric(
+    v.answers || []
+  );
+
+
+  renderAcknowledgement(
+    v
+  );
+
+
+  renderWork(
+    v
+  );
+
+
+  el("loading")
+    .style.display =
+    "none";
+
+
+  el("toolbar")
+    .style.display =
+    "flex";
+
+
+  el("page1")
+    .style.display =
+    "block";
+
+
+  el("page2")
+    .style.display =
+    "block";
+
+}
+
+
+/* =====================================
+   FIND SAVED ANSWER
+===================================== */
+
+function findSavedAnswer(
+  savedAnswers,
+  domain,
+  item,
+  index
+){
+
+  if(
+    !Array.isArray(
+      savedAnswers
+    )
+  ){
+
+    return null;
+
+  }
+
+
+  let found =
+    savedAnswers.find(
+      answer=>
+
+        String(
+          answer.itemLabel ||
+          ""
+        ).trim()
+
+        ===
+
+        String(
+          item.label
+        ).trim()
+
+    );
+
+
+  if(found)
+    return found;
+
+
+  const domainItems =
+    savedAnswers.filter(
+      answer=>
+
+        Number(
+          answer.domainNo ||
+          0
+        )
+
+        ===
+
+        Number(
+          domain.no
+        )
+
+    );
+
+
+  return domainItems[index]
+    ||
+    null;
+
+}
+
+
+/* =====================================
+   RUBRIC
+===================================== */
+
+function renderRubric(savedAnswers){
+
+  let rows =
+    "";
+
+
+  rubricDefinition.forEach(
+    domain=>{
+
+
+      domain.items.forEach(
+        (item,index)=>{
+
+
+          const saved =
+            findSavedAnswer(
+              savedAnswers,
+              domain,
+              item,
+              index
+            );
+
+
+          const selected =
+            Number(
+              saved?.selected ||
+              saved?.value ||
+              0
+            );
+
+
+          rows += `
+
+            <tr>
+
+
+              ${
+                index === 0
+                ?
+                `
+
+                  <td
+                    class="col-num"
+                    rowspan="${domain.items.length}"
+                  >
+                    ${domain.no}
+                  </td>
+
+
+                  <td
+                    class="col-domain"
+                    rowspan="${domain.items.length}"
+                  >
+                    ${esc(domain.name)}
+                  </td>
+
+                `
+                :
+                ""
+              }
+
+
+              <td class="col-item">
+
+                ${esc(item.label)}
+
+              </td>
+
+
+              <td class="rating-cell">
+
+                <div class="rating-grid">
+
+
+                  <div
+                    class="
+                      rating-option
+                      ${
+                        selected === 4
+                        ?
+                        "selected"
+                        :
+                        ""
+                      }
+                    "
+                  >
+
+                    <span class="radio-mark">
+                      ${
+                        selected === 4
+                        ?
+                        "●"
+                        :
+                        "○"
+                      }
+                    </span>
+
+                    ${esc(item.top)}
+
+                  </div>
+
+
+                  <div
+                    class="
+                      rating-option
+                      ${
+                        selected === 3
+                        ?
+                        "selected"
+                        :
+                        ""
+                      }
+                    "
+                  >
+
+                    <span class="radio-mark">
+                      ${
+                        selected === 3
+                        ?
+                        "●"
+                        :
+                        "○"
+                      }
+                    </span>
+
+                    ${esc(item.mid)}
+
+                  </div>
+
+
+                  <div
+                    class="
+                      rating-option
+                      ${
+                        selected === 1
+                        ?
+                        "selected"
+                        :
+                        ""
+                      }
+                    "
+                  >
+
+                    <span class="radio-mark">
+                      ${
+                        selected === 1
+                        ?
+                        "●"
+                        :
+                        "○"
+                      }
+                    </span>
+
+                    ${esc(item.low)}
+
+                  </div>
+
+
+                </div>
+
+              </td>
+
+
+            </tr>
+
+          `;
+
+        }
+      );
+
+    }
+  );
+
+
+  el("rubricContainer")
+    .innerHTML = `
+
+      <table class="rubric-table">
+
+        <thead>
+
+          <tr>
+
+            <th style="width:20px">
+              م
+            </th>
+
+            <th style="width:72px">
+              المجال
+            </th>
+
+            <th style="width:210px">
+              العنصر
+            </th>
+
+            <th>
+              التقييم
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          ${rows}
+
+        </tbody>
+
+      </table>
+
+    `;
+
+}
+
+
+/* =====================================
+   ACKNOWLEDGEMENT
+===================================== */
+
+function renderAcknowledgement(v){
+
+  const box =
+    el("teacherAck");
+
+
+  if(
+    v.teacherViewed ===
+    true
+  ){
+
+    box.className =
+      "ack viewed";
+
+
+    box.innerHTML = `
+
+      <span>
+        ✓ تم اطلاع المعلم على الزيارة
+      </span>
+
+      <span>
+        تم تسجيل الاطلاع إلكترونياً
+      </span>
+
+    `;
+
+  }else{
+
+    box.className =
+      "ack";
+
+
+    box.innerHTML = `
+
+      <span>
+        بانتظار اطلاع المعلم
+      </span>
+
+      <span>
+        لم يتم تسجيل الاطلاع بعد
+      </span>
+
+    `;
+
+  }
+
+}
+
+
+/* =====================================
+   WRITTEN WORK
+===================================== */
+
+function renderWork(v){
+
+  el("workTeacherName")
+    .textContent =
+    v.teacherName || "-";
+
+
+  el("workSubject")
+    .textContent =
+    v.subject || "-";
+
+
+  el("workGrade")
+    .textContent =
+    v.grade || "-";
+
+
+  const rows =
+    Array.isArray(
+      v.writtenWork
+    )
+    ?
+    v.writtenWork.slice(
+      0,
+      8
+    )
+    :
+    [];
+
+
+  while(
+    rows.length < 8
+  ){
+
+    rows.push({
+      name:"",
+      status:""
+    });
+
+  }
+
+
+  let html =
+    "";
+
+
+  let correct =
+    0;
+
+
+  let partial =
+    0;
+
+
+  let notCorrect =
+    0;
+
+
+  rows.forEach(
+    (row,index)=>{
+
+
+      if(
+        row.status ===
+        "correct"
+      ){
+
+        correct++;
+
+      }
+
+
+      if(
+        row.status ===
+        "partial"
+      ){
+
+        partial++;
+
+      }
+
+
+      if(
+        row.status ===
+        "not"
+      ){
+
+        notCorrect++;
+
+      }
+
+
+      html += `
+
+        <tr>
+
+
+          <td>
+            ${index + 1}
+          </td>
+
+
+          <td class="name">
+
+            ${esc(
+              row.name || ""
+            )}
+
+          </td>
+
+
+          <td>
+
+            ${
+              row.status ===
+              "correct"
+              ?
+              `<span class="check">✓</span>`
+              :
+              ""
+            }
+
+          </td>
+
+
+          <td>
+
+            ${
+              row.status ===
+              "partial"
+              ?
+              `<span class="check">✓</span>`
+              :
+              ""
+            }
+
+          </td>
+
+
+          <td>
+
+            ${
+              row.status ===
+              "not"
+              ?
+              `<span class="check">✓</span>`
+              :
+              ""
+            }
+
+          </td>
+
+
+        </tr>
+
+      `;
+
+    }
+  );
+
+
+  el("workRows")
+    .innerHTML =
+    html;
+
+
+  el("correctCount")
+    .textContent =
+    correct;
+
+
+  el("partialCount")
+    .textContent =
+    partial;
+
+
+  el("notCount")
+    .textContent =
+    notCorrect;
+
+}
+
+
+/* =====================================
+   ERROR
+===================================== */
+
+function showError(message){
+
+  el("loading")
+    .classList
+    .add("error");
+
+
+  el("loading")
+    .textContent =
+    message;
+
+}
+
+
+/* =====================================
+   PRINT
+===================================== */
+
+el("printBtn")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      window.print();
+
+    }
+  );
+
+
+/* =====================================
+   BACK
+===================================== */
+
+el("backBtn")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      if(
+        history.length >
+        1
+      ){
+
+        history.back();
+
+      }else{
+
+        location.href =
+          "teacher-visits.html";
+
+      }
+
+    }
+  );
+
+
+/* =====================================
+   START
+===================================== */
+
+loadVisit();
+
+
+</script>
+
+
+</body>
+
+</html>
+

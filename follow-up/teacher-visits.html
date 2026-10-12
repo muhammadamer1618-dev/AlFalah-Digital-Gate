@@ -1,0 +1,3033 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1"
+>
+
+<title>سجل الزيارات - مدارس الفلاح الأهلية</title>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
+  rel="stylesheet"
+>
+
+<style>
+
+:root{
+
+  --green:#0b4a3f;
+  --green-dark:#07372f;
+  --green-soft:#edf5f1;
+
+  --gold:#c89a3b;
+  --gold-dark:#a87921;
+  --gold-soft:#faf2e3;
+
+  --bg:#f7f8f6;
+  --white:#fff;
+
+  --text:#1f2926;
+  --muted:#737b77;
+
+  --border:#e3e5e2;
+
+  --red:#b42318;
+  --red-soft:#fff1ef;
+
+  --orange:#b54708;
+  --orange-soft:#fff4e5;
+
+  --shadow:
+    0 15px 45px rgba(20,52,43,.09);
+
+}
+
+
+*{
+  box-sizing:border-box;
+  font-family:"Cairo",sans-serif;
+}
+
+
+body{
+
+  margin:0;
+
+  min-height:100vh;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(200,154,59,.08),
+      transparent 28%
+    ),
+    var(--bg);
+
+  color:var(--text);
+
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+
+  background:#fff;
+
+  border-bottom:
+    1px solid var(--border);
+
+  box-shadow:
+    0 4px 20px rgba(0,0,0,.03);
+
+  position:sticky;
+
+  top:0;
+
+  z-index:100;
+
+}
+
+
+.header-inner{
+
+  max-width:1300px;
+
+  margin:auto;
+
+  padding:10px 18px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:15px;
+
+}
+
+
+.brand{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+}
+
+
+.brand img{
+
+  width:60px;
+
+  height:60px;
+
+  object-fit:contain;
+
+}
+
+
+.brand h1{
+
+  margin:0;
+
+  color:var(--green);
+
+  font-size:18px;
+
+  font-weight:900;
+
+}
+
+
+.brand p{
+
+  margin:2px 0 0;
+
+  color:var(--gold-dark);
+
+  font-size:10px;
+
+  font-weight:800;
+
+}
+
+
+.header-actions{
+
+  display:flex;
+
+  gap:8px;
+
+  flex-wrap:wrap;
+
+}
+
+
+.header-btn{
+
+  text-decoration:none;
+
+  border:0;
+
+  border-radius:10px;
+
+  padding:9px 13px;
+
+  font-size:10px;
+
+  font-weight:900;
+
+  cursor:pointer;
+
+}
+
+
+.back-btn{
+
+  background:var(--green-soft);
+
+  color:var(--green);
+
+}
+
+
+.logout-btn{
+
+  background:var(--red-soft);
+
+  color:var(--red);
+
+}
+
+
+/* =========================
+   PAGE
+========================= */
+
+.page{
+
+  max-width:1300px;
+
+  margin:auto;
+
+  padding:28px 18px 50px;
+
+}
+
+
+.hero{
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--green),
+      var(--green-dark)
+    );
+
+  border-radius:22px;
+
+  padding:22px;
+
+  color:#fff;
+
+  box-shadow:var(--shadow);
+
+  position:relative;
+
+  overflow:hidden;
+
+  margin-bottom:18px;
+
+}
+
+
+.hero::after{
+
+  content:"";
+
+  position:absolute;
+
+  width:180px;
+
+  height:180px;
+
+  border-radius:50%;
+
+  background:
+    rgba(200,154,59,.12);
+
+  left:-60px;
+
+  bottom:-100px;
+
+}
+
+
+.hero small{
+
+  color:#f2d79e;
+
+  font-size:10px;
+
+  font-weight:800;
+
+}
+
+
+.hero h2{
+
+  margin:4px 0 0;
+
+  font-size:23px;
+
+  font-weight:900;
+
+}
+
+
+.hero p{
+
+  margin:4px 0 0;
+
+  color:
+    rgba(255,255,255,.78);
+
+  font-size:10px;
+
+}
+
+
+/* =========================
+   TEACHER SELECTOR
+========================= */
+
+.teacher-selector{
+
+  background:#fff;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:18px;
+
+  padding:18px;
+
+  box-shadow:var(--shadow);
+
+  margin-bottom:18px;
+
+}
+
+
+.selector-title{
+
+  margin-bottom:12px;
+
+}
+
+
+.selector-title h3{
+
+  margin:0;
+
+  color:var(--green);
+
+  font-size:16px;
+
+  font-weight:900;
+
+}
+
+
+.selector-title p{
+
+  margin:3px 0 0;
+
+  color:var(--muted);
+
+  font-size:10px;
+
+}
+
+
+.selector-row{
+
+  display:grid;
+
+  grid-template-columns:minmax(0,1fr) 220px;
+
+  gap:10px;
+
+  align-items:start;
+
+}
+
+
+/* =========================
+   CUSTOM DROPDOWN
+========================= */
+
+.teacher-dropdown{
+
+  position:relative;
+
+  width:100%;
+
+  z-index:50;
+
+}
+
+
+.teacher-dropdown-button{
+
+  width:100%;
+
+  min-height:47px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:12px;
+
+  background:#fff;
+
+  padding:10px 14px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  cursor:pointer;
+
+  outline:none;
+
+  transition:.2s;
+
+  direction:rtl;
+
+}
+
+
+.teacher-dropdown-button:hover{
+
+  border-color:#c7cec9;
+
+}
+
+
+.teacher-dropdown.open
+.teacher-dropdown-button{
+
+  border-color:var(--green);
+
+  box-shadow:
+    0 0 0 4px rgba(11,74,63,.07);
+
+}
+
+
+.teacher-dropdown-text{
+
+  flex:1;
+
+  min-width:0;
+
+  text-align:right;
+
+}
+
+
+.teacher-dropdown-placeholder{
+
+  color:#7c847f;
+
+  font-size:12px;
+
+  font-weight:700;
+
+}
+
+
+.teacher-dropdown-selected{
+
+  color:var(--green);
+
+  font-size:12px;
+
+  font-weight:900;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+
+}
+
+
+.teacher-dropdown-arrow{
+
+  width:25px;
+
+  height:25px;
+
+  border-radius:7px;
+
+  background:var(--green-soft);
+
+  color:var(--green);
+
+  flex-shrink:0;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  font-size:11px;
+
+  transition:.2s;
+
+}
+
+
+.teacher-dropdown.open
+.teacher-dropdown-arrow{
+
+  transform:rotate(180deg);
+
+}
+
+
+.teacher-dropdown-panel{
+
+  display:none;
+
+  position:absolute;
+
+  top:calc(100% + 7px);
+
+  right:0;
+
+  left:0;
+
+  background:#fff;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:14px;
+
+  box-shadow:
+    0 18px 55px rgba(21,53,44,.17);
+
+  overflow:hidden;
+
+  z-index:500;
+
+}
+
+
+.teacher-dropdown.open
+.teacher-dropdown-panel{
+
+  display:block;
+
+}
+
+
+.teacher-search{
+
+  padding:10px;
+
+  border-bottom:
+    1px solid #edf0ee;
+
+  background:#fafbf9;
+
+}
+
+
+.teacher-search input{
+
+  width:100%;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:10px;
+
+  padding:10px 12px;
+
+  outline:none;
+
+  font-size:11px;
+
+  direction:rtl;
+
+  text-align:right;
+
+}
+
+
+.teacher-search input:focus{
+
+  border-color:var(--green);
+
+  box-shadow:
+    0 0 0 3px rgba(11,74,63,.06);
+
+}
+
+
+.teacher-options{
+
+  max-height:330px;
+
+  overflow-y:auto;
+
+  overscroll-behavior:contain;
+
+}
+
+
+.teacher-option{
+
+  width:100%;
+
+  border:0;
+
+  background:#fff;
+
+  padding:11px 13px;
+
+  text-align:right;
+
+  cursor:pointer;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  border-bottom:
+    1px solid #f0f2f1;
+
+  transition:.15s;
+
+}
+
+
+.teacher-option:last-child{
+
+  border-bottom:0;
+
+}
+
+
+.teacher-option:hover{
+
+  background:var(--green-soft);
+
+}
+
+
+.teacher-option.active{
+
+  background:#e6f1ec;
+
+}
+
+
+.teacher-option-info{
+
+  min-width:0;
+
+  flex:1;
+
+}
+
+
+.teacher-option-name{
+
+  color:#26332d;
+
+  font-size:11px;
+
+  font-weight:900;
+
+  white-space:normal;
+
+  word-break:break-word;
+
+}
+
+
+.teacher-option-code{
+
+  margin-top:2px;
+
+  color:var(--muted);
+
+  font-size:8px;
+
+  font-weight:700;
+
+}
+
+
+.teacher-option-count{
+
+  flex-shrink:0;
+
+  min-width:60px;
+
+  text-align:center;
+
+  padding:4px 7px;
+
+  border-radius:20px;
+
+  background:var(--gold-soft);
+
+  color:var(--gold-dark);
+
+  font-size:8px;
+
+  font-weight:900;
+
+}
+
+
+.dropdown-empty{
+
+  padding:25px 12px;
+
+  text-align:center;
+
+  color:var(--muted);
+
+  font-size:10px;
+
+  font-weight:700;
+
+}
+
+
+/* =========================
+   STATUS FILTER
+========================= */
+
+.filter-select{
+
+  width:100%;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:12px;
+
+  padding:12px;
+
+  min-height:47px;
+
+  background:#fff;
+
+  color:var(--text);
+
+  outline:none;
+
+  font-size:10px;
+
+  font-weight:800;
+
+  direction:rtl;
+
+  text-align:right;
+
+}
+
+
+.filter-select:focus{
+
+  border-color:var(--green);
+
+}
+
+
+/* =========================
+   SELECTED TEACHER
+========================= */
+
+.selected-box{
+
+  display:none;
+
+  margin-top:12px;
+
+  background:var(--green-soft);
+
+  border:
+    1px solid rgba(11,74,63,.12);
+
+  border-radius:13px;
+
+  padding:12px 14px;
+
+}
+
+
+.selected-box.show{
+
+  display:block;
+
+}
+
+
+.selected-name{
+
+  color:var(--green);
+
+  font-size:14px;
+
+  font-weight:900;
+
+}
+
+
+.selected-meta{
+
+  margin-top:3px;
+
+  color:#58625d;
+
+  font-size:10px;
+
+  font-weight:700;
+
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+.stats{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:12px;
+
+  margin-bottom:18px;
+
+}
+
+
+.stat{
+
+  background:#fff;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:16px;
+
+  padding:15px;
+
+  box-shadow:var(--shadow);
+
+}
+
+
+.stat span{
+
+  display:block;
+
+  color:var(--muted);
+
+  font-size:10px;
+
+  font-weight:800;
+
+}
+
+
+.stat strong{
+
+  display:block;
+
+  margin-top:3px;
+
+  color:var(--green);
+
+  font-size:25px;
+
+  font-weight:900;
+
+}
+
+
+.stat.gold strong{
+
+  color:var(--gold-dark);
+
+}
+
+
+.stat.red strong{
+
+  color:var(--red);
+
+}
+
+
+/* =========================
+   PANEL
+========================= */
+
+.panel{
+
+  background:#fff;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:18px;
+
+  padding:16px;
+
+  box-shadow:var(--shadow);
+
+}
+
+
+.result-info{
+
+  color:var(--muted);
+
+  font-size:10px;
+
+  font-weight:800;
+
+  margin-bottom:8px;
+
+}
+
+
+.error{
+
+  color:var(--red);
+
+  font-size:10px;
+
+  font-weight:800;
+
+  margin-bottom:8px;
+
+}
+
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrap{
+
+  overflow:auto;
+
+}
+
+
+table{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+  min-width:980px;
+
+}
+
+
+th,
+td{
+
+  border-bottom:
+    1px solid #edf0ee;
+
+  padding:10px 8px;
+
+  text-align:center;
+
+  vertical-align:middle;
+
+  font-size:10px;
+
+}
+
+
+th{
+
+  background:#f3f7f5;
+
+  color:var(--green);
+
+  font-weight:900;
+
+}
+
+
+tbody tr:hover{
+
+  background:#fbfcfb;
+
+}
+
+
+.teacher-name{
+
+  text-align:right;
+
+  font-weight:900;
+
+  color:#28342f;
+
+}
+
+
+.score{
+
+  font-weight:900;
+
+  color:var(--green);
+
+}
+
+
+.status{
+
+  display:inline-block;
+
+  border-radius:20px;
+
+  padding:5px 9px;
+
+  font-size:9px;
+
+  font-weight:900;
+
+}
+
+
+.status.viewed{
+
+  background:var(--green-soft);
+
+  color:var(--green);
+
+}
+
+
+.status.pending{
+
+  background:var(--orange-soft);
+
+  color:var(--orange);
+
+}
+
+
+.view-date{
+
+  display:block;
+
+  margin-top:4px;
+
+  color:#838a86;
+
+  font-size:8px;
+
+  font-weight:700;
+
+}
+
+
+/* =========================
+   ACTIONS
+========================= */
+
+.actions{
+
+  display:flex;
+
+  justify-content:center;
+
+  gap:5px;
+
+  flex-wrap:wrap;
+
+}
+
+
+.action-btn{
+
+  border:0;
+
+  border-radius:8px;
+
+  padding:6px 8px;
+
+  cursor:pointer;
+
+  font-size:9px;
+
+  font-weight:900;
+
+  text-decoration:none;
+
+  display:inline-block;
+
+}
+
+
+.open-btn{
+
+  background:var(--green-soft);
+
+  color:var(--green);
+
+}
+
+
+.print-btn{
+
+  background:var(--gold-soft);
+
+  color:var(--gold-dark);
+
+}
+
+
+.edit-btn{
+
+  background:#eaf1ff;
+
+  color:#2458a6;
+
+}
+
+
+.delete-btn{
+
+  background:var(--red-soft);
+
+  color:var(--red);
+
+}
+
+
+.empty{
+
+  padding:45px 20px !important;
+
+  color:var(--muted);
+
+  text-align:center;
+
+  font-size:11px;
+
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+.footer{
+
+  text-align:center;
+
+  margin-top:25px;
+
+  color:#8e9491;
+
+  font-size:9px;
+
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:800px){
+
+  .stats{
+
+    grid-template-columns:1fr;
+
+  }
+
+
+  .selector-row{
+
+    grid-template-columns:1fr;
+
+  }
+
+
+  .teacher-dropdown-panel{
+
+    right:0;
+
+    left:0;
+
+  }
+
+
+  .header-inner{
+
+    align-items:flex-start;
+
+  }
+
+
+  .brand img{
+
+    width:52px;
+
+    height:52px;
+
+  }
+
+}
+
+</style>
+
+  <link rel="stylesheet" href="mobile.css">
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+  <div class="header-inner">
+
+    <div class="brand">
+
+      <img
+        src="logo.jpeg"
+        alt="شعار مدارس الفلاح"
+      >
+
+      <div>
+
+        <h1>
+          مدارس الفلاح الأهلية
+        </h1>
+
+        <p>
+          نظام الإشراف التربوي
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="header-actions">
+
+      <a
+        href="#"
+        id="backBtn"
+        class="header-btn back-btn"
+      >
+        لوحة التحكم
+      </a>
+
+
+      <button
+        id="logoutBtn"
+        class="header-btn logout-btn"
+      >
+        تسجيل الخروج
+      </button>
+
+    </div>
+
+  </div>
+
+</header>
+
+
+
+<main class="page">
+
+
+  <section class="hero">
+
+    <small>
+      سجل الزيارات التربوية
+    </small>
+
+    <h2 id="pageTitle">
+      سجل زيارات المعلمين
+    </h2>
+
+    <p id="pageSubtitle">
+      اختر المعلم لعرض جميع زياراته التربوية.
+    </p>
+
+  </section>
+
+
+
+  <section class="teacher-selector">
+
+    <div class="selector-title">
+
+      <h3>
+        اختر المعلم
+      </h3>
+
+      <p>
+        اختر اسم المعلم من القائمة لعرض جميع الزيارات المسجلة له.
+      </p>
+
+    </div>
+
+
+    <div class="selector-row">
+
+
+      <div
+        class="teacher-dropdown"
+        id="teacherDropdown"
+      >
+
+        <button
+          type="button"
+          class="teacher-dropdown-button"
+          id="teacherDropdownButton"
+        >
+
+          <div
+            class="teacher-dropdown-text"
+            id="teacherDropdownText"
+          >
+
+            <span class="teacher-dropdown-placeholder">
+              اختر المعلم
+            </span>
+
+          </div>
+
+
+          <div class="teacher-dropdown-arrow">
+            ▼
+          </div>
+
+        </button>
+
+
+        <div
+          class="teacher-dropdown-panel"
+          id="teacherDropdownPanel"
+        >
+
+          <div class="teacher-search">
+
+            <input
+              type="search"
+              id="teacherSearchInput"
+              placeholder="ابحث باسم المعلم أو الكود..."
+              autocomplete="off"
+            >
+
+          </div>
+
+
+          <div
+            class="teacher-options"
+            id="teacherOptions"
+          ></div>
+
+        </div>
+
+      </div>
+
+
+      <select
+        id="statusFilter"
+        class="filter-select"
+      >
+
+        <option value="all">
+          جميع حالات الاطلاع
+        </option>
+
+        <option value="viewed">
+          تم الاطلاع
+        </option>
+
+        <option value="pending">
+          بانتظار الاطلاع
+        </option>
+
+      </select>
+
+
+    </div>
+
+
+    <div
+      id="selectedTeacherBox"
+      class="selected-box"
+    >
+
+      <div
+        id="selectedTeacherName"
+        class="selected-name"
+      ></div>
+
+
+      <div
+        id="selectedTeacherMeta"
+        class="selected-meta"
+      ></div>
+
+    </div>
+
+  </section>
+
+
+
+  <section class="stats">
+
+    <div class="stat">
+
+      <span>
+        زيارات المعلم
+      </span>
+
+      <strong id="totalCount">
+        0
+      </strong>
+
+    </div>
+
+
+    <div class="stat gold">
+
+      <span>
+        تم الاطلاع عليها
+      </span>
+
+      <strong id="viewedCount">
+        0
+      </strong>
+
+    </div>
+
+
+    <div class="stat red">
+
+      <span>
+        بانتظار الاطلاع
+      </span>
+
+      <strong id="pendingCount">
+        0
+      </strong>
+
+    </div>
+
+  </section>
+
+
+
+  <section class="panel">
+
+    <div
+      id="resultInfo"
+      class="result-info"
+    >
+      اختر معلماً لعرض زياراته.
+    </div>
+
+
+    <div
+      id="errorInfo"
+      class="error"
+    ></div>
+
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              المعلم
+            </th>
+
+            <th>
+              التاريخ
+            </th>
+
+            <th>
+              رقم الزيارة
+            </th>
+
+            <th>
+              الصف
+            </th>
+
+            <th>
+              المادة
+            </th>
+
+            <th>
+              عنوان الدرس
+            </th>
+
+            <th>
+              الدرجة
+            </th>
+
+            <th>
+              حالة اطلاع المعلم
+            </th>
+
+            <th>
+              الإجراءات
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody id="visitsBody">
+
+          <tr>
+
+            <td
+              colspan="9"
+              class="empty"
+            >
+              اختر معلماً من القائمة بالأعلى لعرض زياراته.
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+  <div class="footer">
+    تصميم محمد عامر أحمد
+  </div>
+
+
+</main>
+
+
+
+<script type="module">
+
+
+import { db } from "./firebase.js";
+
+
+import {
+
+  collection,
+  getDocs,
+  getDoc,
+  doc,
+  deleteDoc
+
+}
+from
+"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+
+const el =
+  id =>
+    document.getElementById(id);
+
+
+/* =====================================
+   SESSION
+===================================== */
+
+const rawSession =
+
+  localStorage.getItem(
+    "currentSupervisor"
+  )
+
+  ||
+
+  sessionStorage.getItem(
+    "currentSupervisor"
+  );
+
+
+if(!rawSession){
+
+  location.href =
+    "supervisor-login.html";
+
+  throw new Error(
+    "No session"
+  );
+
+}
+
+
+let currentUser;
+
+
+try{
+
+  currentUser =
+    JSON.parse(
+      rawSession
+    );
+
+}catch(error){
+
+  localStorage.removeItem(
+    "currentSupervisor"
+  );
+
+  sessionStorage.removeItem(
+    "currentSupervisor"
+  );
+
+  location.href =
+    "supervisor-login.html";
+
+  throw error;
+
+}
+
+
+const isAdmin =
+  currentUser.role === "admin";
+
+let isGlobalSupervisor = currentUser.canVisitAllTeachers === true;
+if(!isAdmin && currentUser.id){
+  try{
+    const supervisorSnap = await getDoc(doc(db,"supervisors",currentUser.id));
+    if(supervisorSnap.exists()){
+      currentUser.canVisitAllTeachers =
+        supervisorSnap.data().canVisitAllTeachers === true;
+      isGlobalSupervisor = currentUser.canVisitAllTeachers;
+      const refreshedSession = JSON.stringify(currentUser);
+      localStorage.setItem("currentSupervisor",refreshedSession);
+      sessionStorage.setItem("currentSupervisor",refreshedSession);
+    }
+  }catch(error){
+    console.warn("تعذر تحديث صلاحية المشرف:",error);
+    isGlobalSupervisor = currentUser.canVisitAllTeachers === true;
+  }
+}
+
+
+if(isAdmin){
+
+  el("backBtn").href =
+    "admin-dashboard.html";
+
+  el("pageTitle")
+    .textContent =
+    "سجل جميع الزيارات";
+
+  el("pageSubtitle")
+    .textContent =
+    "اختر المعلم لعرض الزيارات المسجلة له.";
+
+}else{
+
+  el("backBtn").href =
+    "supervisor-dashboard.html";
+
+  el("pageTitle")
+    .textContent =
+    "سجل زياراتي";
+
+  el("pageSubtitle")
+    .textContent =
+    isGlobalSupervisor
+      ? "اختر أي معلم في المدرسة لعرض الزيارات التي سجلتها له."
+      : "اختر أحد معلميك لعرض جميع زياراته التربوية.";
+
+}
+
+
+/* =====================================
+   DATA
+===================================== */
+
+let allTeachers = [];
+
+let visibleTeachers = [];
+
+let allVisits = [];
+
+let visibleVisits = [];
+
+let selectedTeacher = null;
+
+
+/* =====================================
+   HELPERS
+===================================== */
+
+function esc(value){
+
+  return String(
+    value ?? ""
+  )
+  .replaceAll("&","&amp;")
+  .replaceAll("<","&lt;")
+  .replaceAll(">","&gt;")
+  .replaceAll('"',"&quot;")
+  .replaceAll("'","&#039;");
+
+}
+
+
+function toSortableDate(value){
+
+  if(!value)
+    return 0;
+
+
+  const t =
+    Date.parse(value);
+
+
+  return Number.isFinite(t)
+    ? t
+    : 0;
+
+}
+
+
+function formatViewedDate(value){
+
+  if(!value)
+    return "";
+
+
+  try{
+
+    let date;
+
+
+    if(
+      typeof value.toDate ===
+      "function"
+    ){
+
+      date =
+        value.toDate();
+
+    }
+
+    else if(
+      value.seconds
+    ){
+
+      date =
+        new Date(
+          value.seconds *
+          1000
+        );
+
+    }
+
+    else{
+
+      date =
+        new Date(value);
+
+    }
+
+
+    if(
+      Number.isNaN(
+        date.getTime()
+      )
+    ){
+
+      return "";
+
+    }
+
+
+    return date.toLocaleString(
+      "ar-SA",
+      {
+        dateStyle:"short",
+        timeStyle:"short"
+      }
+    );
+
+
+  }catch(error){
+
+    return "";
+
+  }
+
+}
+
+
+/* =====================================
+   CUSTOM DROPDOWN
+===================================== */
+
+function openTeacherDropdown(){
+
+  el("teacherDropdown")
+    .classList
+    .add("open");
+
+
+  setTimeout(
+    ()=>{
+
+      el("teacherSearchInput")
+        .focus();
+
+    },
+    50
+  );
+
+}
+
+
+function closeTeacherDropdown(){
+
+  el("teacherDropdown")
+    .classList
+    .remove("open");
+
+}
+
+
+function toggleTeacherDropdown(){
+
+  const dropdown =
+    el("teacherDropdown");
+
+
+  if(
+    dropdown.classList.contains(
+      "open"
+    )
+  ){
+
+    closeTeacherDropdown();
+
+  }else{
+
+    openTeacherDropdown();
+
+  }
+
+}
+
+
+function renderTeacherOptions(){
+
+  const box =
+    el("teacherOptions");
+
+
+  const search =
+    el("teacherSearchInput")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const filtered =
+    visibleTeachers.filter(
+      teacher=>{
+
+        const text =
+
+          String(
+            teacher.name ||
+            ""
+          )
+
+          +
+
+          " "
+
+          +
+
+          String(
+            teacher.code ||
+            teacher.id ||
+            ""
+          );
+
+
+        return text
+          .toLowerCase()
+          .includes(search);
+
+      }
+    );
+
+
+  box.innerHTML =
+    "";
+
+
+  if(!filtered.length){
+
+    box.innerHTML = `
+
+      <div class="dropdown-empty">
+        لا يوجد معلمون مطابقون للبحث.
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  filtered.forEach(
+    teacher=>{
+
+      const code =
+        String(
+          teacher.code ||
+          teacher.id ||
+          ""
+        );
+
+
+      const visitsCount =
+        getTeacherVisits(
+          teacher
+        ).length;
+
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.type =
+        "button";
+
+
+      button.className =
+        "teacher-option";
+
+
+      if(
+        selectedTeacher
+        &&
+        selectedTeacher.id ===
+        teacher.id
+      ){
+
+        button.classList.add(
+          "active"
+        );
+
+      }
+
+
+      button.innerHTML = `
+
+        <div class="teacher-option-info">
+
+          <div class="teacher-option-name">
+
+            ${esc(
+              teacher.name ||
+              "بدون اسم"
+            )}
+
+          </div>
+
+
+          <div class="teacher-option-code">
+
+            كود المعلم:
+            ${esc(code)}
+
+          </div>
+
+        </div>
+
+
+        <div class="teacher-option-count">
+
+          ${visitsCount}
+          زيارة
+
+        </div>
+
+      `;
+
+
+      button.addEventListener(
+        "click",
+        ()=>{
+
+          selectTeacher(
+            teacher.id
+          );
+
+
+          closeTeacherDropdown();
+
+
+          el("teacherSearchInput").value =
+            "";
+
+
+          renderTeacherOptions();
+
+        }
+      );
+
+
+      box.appendChild(
+        button
+      );
+
+    }
+  );
+
+}
+
+
+function updateTeacherDropdownText(){
+
+  const box =
+    el("teacherDropdownText");
+
+
+  if(!selectedTeacher){
+
+    box.innerHTML = `
+
+      <span class="teacher-dropdown-placeholder">
+        اختر المعلم
+      </span>
+
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML = `
+
+    <div class="teacher-dropdown-selected">
+
+      ${esc(
+        selectedTeacher.name ||
+        "بدون اسم"
+      )}
+
+    </div>
+
+  `;
+
+}
+
+
+/* =====================================
+   LOAD
+===================================== */
+
+async function loadData(){
+
+  el("errorInfo").textContent =
+    "";
+
+
+  try{
+
+    const [
+      teachersSnap,
+      visitsSnap
+    ] =
+    await Promise.all([
+
+      getDocs(
+        collection(
+          db,
+          "teachers"
+        )
+      ),
+
+      getDocs(
+        collection(
+          db,
+          "visits"
+        )
+      )
+
+    ]);
+
+
+    allTeachers =
+      teachersSnap.docs.map(
+        d=>({
+          id:d.id,
+          ...d.data()
+        })
+      );
+
+
+    allVisits =
+      visitsSnap.docs.map(
+        d=>({
+          id:d.id,
+          ...d.data()
+        })
+      );
+
+
+    if(isAdmin || isGlobalSupervisor){
+
+      visibleTeachers =
+        [...allTeachers];
+
+    }else{
+
+      visibleTeachers =
+        allTeachers.filter(
+          teacher=>
+            String(
+              teacher.supervisorId ||
+              ""
+            )
+            ===
+            String(
+              currentUser.id ||
+              ""
+            )
+        );
+
+    }
+
+
+    visibleTeachers.sort(
+      (a,b)=>
+        String(
+          a.name ||
+          ""
+        ).localeCompare(
+          String(
+            b.name ||
+            ""
+          ),
+          "ar"
+        )
+    );
+
+
+    const teacherCodes =
+      new Set(
+
+        visibleTeachers.map(
+          teacher=>
+            String(
+              teacher.code ||
+              teacher.id ||
+              ""
+            )
+        )
+
+      );
+
+
+    if(isAdmin){
+
+      visibleVisits =
+        [...allVisits];
+
+    }else{
+
+      visibleVisits =
+        allVisits.filter(
+          visit=>{
+
+            const teacherCode =
+              String(
+                visit.teacherCode ||
+                ""
+              );
+
+
+            return (
+
+              String(
+                visit.supervisorId ||
+                ""
+              )
+              ===
+              String(
+                currentUser.id ||
+                ""
+              )
+
+              ||
+
+              (
+                !isGlobalSupervisor &&
+                !visit.supervisorId &&
+                teacherCodes.has(
+                  teacherCode
+                )
+              )
+
+            );
+
+          }
+        );
+
+    }
+
+
+    visibleVisits.sort(
+      (a,b)=>{
+
+        const da =
+          toSortableDate(
+            a.visitDate
+          );
+
+
+        const db =
+          toSortableDate(
+            b.visitDate
+          );
+
+
+        if(db !== da)
+          return db - da;
+
+
+        return (
+          Number(
+            b.visitNumber ||
+            0
+          )
+          -
+          Number(
+            a.visitNumber ||
+            0
+          )
+        );
+
+      }
+    );
+
+
+    renderTeacherOptions();
+
+
+    const params =
+      new URLSearchParams(
+        location.search
+      );
+
+
+    const requestedCode =
+      params.get("code") ||
+      "";
+
+
+    if(requestedCode){
+
+      const teacher =
+        visibleTeachers.find(
+          t=>
+            String(
+              t.code ||
+              t.id ||
+              ""
+            )
+            ===
+            String(
+              requestedCode
+            )
+        );
+
+
+      if(teacher){
+
+        selectTeacher(
+          teacher.id
+        );
+
+        return;
+
+      }
+
+    }
+
+
+    clearSelectedTeacher();
+
+
+  }catch(error){
+
+    console.error(
+      error
+    );
+
+
+    el("visitsBody").innerHTML = `
+
+      <tr>
+
+        <td
+          colspan="9"
+          class="empty"
+        >
+          تعذر تحميل الزيارات.
+        </td>
+
+      </tr>
+
+    `;
+
+
+    el("resultInfo").textContent =
+      "";
+
+
+    el("errorInfo").textContent =
+      "حدث خطأ أثناء تحميل البيانات.";
+
+  }
+
+}
+
+
+/* =====================================
+   TEACHER VISITS
+===================================== */
+
+function getTeacherVisits(teacher){
+
+  const code =
+    String(
+      teacher.code ||
+      teacher.id ||
+      ""
+    );
+
+
+  return visibleVisits.filter(
+    visit=>
+      String(
+        visit.teacherCode ||
+        ""
+      )
+      ===
+      code
+  );
+
+}
+
+
+/* =====================================
+   SELECT TEACHER
+===================================== */
+
+function selectTeacher(teacherId){
+
+  const teacher =
+    visibleTeachers.find(
+      t=>t.id === teacherId
+    );
+
+
+  if(!teacher){
+
+    clearSelectedTeacher();
+
+    return;
+
+  }
+
+
+  selectedTeacher =
+    teacher;
+
+
+  updateTeacherDropdownText();
+
+
+  el("selectedTeacherName")
+    .textContent =
+    teacher.name ||
+    "بدون اسم";
+
+
+  const code =
+    teacher.code ||
+    teacher.id ||
+    "-";
+
+
+  const phone =
+    teacher.phone ||
+    "غير مسجل";
+
+
+  el("selectedTeacherMeta")
+    .textContent =
+    `رمز المعلم: ${code} — الجوال: ${phone}`;
+
+
+  el("selectedTeacherBox")
+    .classList
+    .add("show");
+
+
+  renderTeacherOptions();
+
+  renderVisits();
+
+}
+
+
+function clearSelectedTeacher(){
+
+  selectedTeacher =
+    null;
+
+
+  updateTeacherDropdownText();
+
+
+  el("selectedTeacherBox")
+    .classList
+    .remove("show");
+
+
+  el("totalCount")
+    .textContent =
+    "0";
+
+
+  el("viewedCount")
+    .textContent =
+    "0";
+
+
+  el("pendingCount")
+    .textContent =
+    "0";
+
+
+  el("resultInfo")
+    .textContent =
+    "اختر معلماً لعرض زياراته.";
+
+
+  el("visitsBody").innerHTML = `
+
+    <tr>
+
+      <td
+        colspan="9"
+        class="empty"
+      >
+        اختر معلماً من القائمة بالأعلى لعرض زياراته.
+      </td>
+
+    </tr>
+
+  `;
+
+}
+
+
+/* =====================================
+   STATS
+===================================== */
+
+function renderStats(list){
+
+  const viewed =
+    list.filter(
+      v=>
+        v.teacherViewed ===
+        true
+    ).length;
+
+
+  const pending =
+    list.length -
+    viewed;
+
+
+  el("totalCount")
+    .textContent =
+    list.length;
+
+
+  el("viewedCount")
+    .textContent =
+    viewed;
+
+
+  el("pendingCount")
+    .textContent =
+    pending;
+
+}
+
+
+/* =====================================
+   RENDER VISITS
+===================================== */
+
+function renderVisits(){
+
+  if(!selectedTeacher){
+
+    clearSelectedTeacher();
+
+    return;
+
+  }
+
+
+  const status =
+    el("statusFilter")
+      .value;
+
+
+  let list =
+    getTeacherVisits(
+      selectedTeacher
+    );
+
+
+  renderStats(list);
+
+
+  if(
+    status ===
+    "viewed"
+  ){
+
+    list =
+      list.filter(
+        visit=>
+          visit.teacherViewed ===
+          true
+      );
+
+  }
+
+
+  if(
+    status ===
+    "pending"
+  ){
+
+    list =
+      list.filter(
+        visit=>
+          visit.teacherViewed !==
+          true
+      );
+
+  }
+
+
+  el("resultInfo").textContent =
+    `عدد الزيارات المعروضة للمعلم ${selectedTeacher.name || ""}: ${list.length}`;
+
+
+  const tbody =
+    el("visitsBody");
+
+
+  tbody.innerHTML =
+    "";
+
+
+  if(!list.length){
+
+    tbody.innerHTML = `
+
+      <tr>
+
+        <td
+          colspan="9"
+          class="empty"
+        >
+          لا توجد زيارات مطابقة لهذا المعلم.
+        </td>
+
+      </tr>
+
+    `;
+
+    return;
+
+  }
+
+
+  list.forEach(
+    visit=>{
+
+
+      const viewed =
+        visit.teacherViewed ===
+        true;
+      const tr =
+        document.createElement(
+          "tr"
+        );
+
+
+      tr.innerHTML = `
+
+        <td class="teacher-name">
+
+          ${esc(
+            visit.teacherName ||
+            "-"
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${esc(
+            visit.visitDate ||
+            "-"
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${esc(
+            String(
+              visit.visitNumber ||
+              "-"
+            )
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${esc(
+            visit.grade ||
+            "-"
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${esc(
+            visit.subject ||
+            "-"
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${esc(
+            visit.lessonTitle ||
+            "-"
+          )}
+
+        </td>
+
+
+        <td class="score">
+
+          ${esc(
+            String(
+              visit.finalScore ||
+              0
+            )
+          )}
+          / 100
+
+        </td>
+
+
+        <td>
+
+          ${
+            viewed
+            ?
+            `
+
+              <span class="status viewed">
+                تم الاطلاع ✓
+              </span>
+
+            `
+            :
+            `
+
+              <span class="status pending">
+                بانتظار الاطلاع
+              </span>
+
+            `
+          }
+
+        </td>
+
+
+        <td>
+
+          <div class="actions">
+
+
+            <a
+              class="action-btn open-btn"
+              href="visit-view.html?id=${encodeURIComponent(visit.id)}"
+            >
+              عرض
+            </a>
+
+
+            <a
+              class="action-btn print-btn"
+              href="print-visit.html?id=${encodeURIComponent(visit.id)}"
+              target="_blank"
+            >
+              طباعة
+            </a>
+
+
+            <a
+              class="action-btn edit-btn"
+              href="evaluation-form.html?id=${encodeURIComponent(visit.id)}"
+            >
+              تعديل
+            </a>
+
+
+            <button
+              class="action-btn delete-btn"
+              data-delete="${esc(visit.id)}"
+            >
+              حذف
+            </button>
+
+
+          </div>
+
+        </td>
+
+      `;
+
+
+      tbody.appendChild(
+        tr
+      );
+
+    }
+  );
+
+
+  tbody
+    .querySelectorAll(
+      "[data-delete]"
+    )
+    .forEach(
+      button=>{
+
+        button.addEventListener(
+          "click",
+          ()=>{
+
+            deleteVisit(
+              button.dataset.delete
+            );
+
+          }
+        );
+
+      }
+    );
+
+}
+
+
+/* =====================================
+   DELETE
+===================================== */
+
+async function deleteVisit(id){
+
+  const visit =
+    visibleVisits.find(
+      v=>v.id === id
+    );
+
+
+  if(!visit){
+
+    alert(
+      "الزيارة غير موجودة أو لا تملك صلاحية الوصول إليها."
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !isAdmin
+    &&
+    visit.supervisorId
+    &&
+    String(
+      visit.supervisorId
+    )
+    !==
+    String(
+      currentUser.id
+    )
+  ){
+
+    alert(
+      "ليس لديك صلاحية حذف هذه الزيارة."
+    );
+
+    return;
+
+  }
+
+
+  const ok =
+    confirm(
+      `هل تريد حذف زيارة المعلم "${visit.teacherName || ""}" نهائيًا؟`
+    );
+
+
+  if(!ok)
+    return;
+
+
+  try{
+
+    await deleteDoc(
+      doc(
+        db,
+        "visits",
+        id
+      )
+    );
+
+
+    allVisits =
+      allVisits.filter(
+        visit=>
+          visit.id !== id
+      );
+
+
+    visibleVisits =
+      visibleVisits.filter(
+        visit=>
+          visit.id !== id
+      );
+
+
+    renderTeacherOptions();
+
+
+    if(selectedTeacher){
+
+      renderVisits();
+
+    }
+
+
+  }catch(error){
+
+    console.error(
+      error
+    );
+
+
+    alert(
+      "تعذر حذف الزيارة."
+    );
+
+  }
+
+}
+
+
+/* =====================================
+   EVENTS
+===================================== */
+
+el("teacherDropdownButton")
+  .addEventListener(
+    "click",
+    event=>{
+
+      event.stopPropagation();
+
+      toggleTeacherDropdown();
+
+    }
+  );
+
+
+el("teacherDropdownPanel")
+  .addEventListener(
+    "click",
+    event=>{
+
+      event.stopPropagation();
+
+    }
+  );
+
+
+el("teacherSearchInput")
+  .addEventListener(
+    "input",
+    renderTeacherOptions
+  );
+
+
+document.addEventListener(
+  "click",
+  ()=>{
+
+    closeTeacherDropdown();
+
+  }
+);
+
+
+document.addEventListener(
+  "keydown",
+  event=>{
+
+    if(
+      event.key ===
+      "Escape"
+    ){
+
+      closeTeacherDropdown();
+
+    }
+
+  }
+);
+
+
+el("statusFilter")
+  .addEventListener(
+    "change",
+    renderVisits
+  );
+
+
+el("logoutBtn")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      localStorage.removeItem(
+        "currentSupervisor"
+      );
+
+      sessionStorage.removeItem(
+        "currentSupervisor"
+      );
+
+      location.href =
+        "supervisor-login.html";
+
+    }
+  );
+
+
+/* =====================================
+   START
+===================================== */
+
+loadData();
+
+
+</script>
+
+</body>
+
+</html>

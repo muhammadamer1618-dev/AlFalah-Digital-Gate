@@ -1,0 +1,47 @@
+/* Shared responsive support for phones and small tablets. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth}
+body{min-width:320px;max-width:100%;overflow-x:hidden}
+img,video,canvas,svg{max-width:100%;height:auto}
+input,select,textarea,button{max-width:100%;font:inherit}
+.table-wrap,.rubricWrap,.table-responsive,.table-container{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+@media (max-width: 760px){
+  .page,.container,.wrapper{width:auto;max-width:100%;margin-inline:10px}
+  .header-inner,.header-content,.header-actions,.top-actions,.actions,.tools{flex-wrap:wrap;max-width:100%}
+  .header-inner{gap:10px}
+  .header-actions,.top-actions,.actions{align-items:center}
+  .page{padding-inline:12px}
+  .welcome,.hero,.section-header,.visit-card-top,.visit-footer,.toolbar,.login-top{flex-wrap:wrap;gap:12px}
+  .stats,.summary,.cards,.quick,.portal-grid,.notes-grid,.filters,.form-grid,.grid,.layout,.notes-grid,.workChoices,.evalGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .layout{grid-template-columns:minmax(0,1fr)!important}
+  .sidebar{position:static;top:auto}
+  .cards,.quick,.portal-grid{gap:10px}
+  .card,.quick-card{min-width:0}
+  .table-wrap table,.rubricWrap table,.table-responsive table,.table-container table{min-width:600px}
+  table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  th,td{overflow-wrap:anywhere}
+  .search,.teacher-search,.field input,.field select,.field textarea,input,select,textarea{min-width:0;max-width:100%}
+  .modal-box,.modal-card,.modal-content{width:min(100%,640px);max-width:100%;max-height:calc(100dvh - 24px);overflow:auto}
+  .modal{padding:12px}
+  .actions button,.header-actions a,.top-actions a{min-height:42px}
+  .brand img,.logo{max-width:72px}
+  .login-wrapper{width:min(100%,520px);margin-inline:auto}
+  .login-side,.login-body,.modal-body{min-width:0}
+}
+
+@media (max-width: 480px){
+  .page,.container,.wrapper{margin-inline:6px;padding-inline:9px}
+  .header-inner{padding-inline:10px}
+  .header-actions,.top-actions{width:100%;justify-content:flex-start}
+  .stats,.summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cards,.quick,.portal-grid,.filters,.notes-grid,.form-grid,.grid,.workChoices,.evalGrid{grid-template-columns:minmax(0,1fr)}
+  .stats .stat{padding:10px}
+  .stats .stat strong{font-size:20px}
+  h1{font-size:clamp(18px,5vw,26px)}
+  h2{font-size:clamp(19px,5.5vw,28px)}
+  .btn,.header-btn,.action-btn{min-height:42px;padding:9px 12px}
+  .welcome,.hero{padding:16px}
+  .section-title h3{font-size:16px}
+  .table-wrap table,.rubricWrap table,.table-responsive table,.table-container table{min-width:560px}
+}
