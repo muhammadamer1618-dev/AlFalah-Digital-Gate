@@ -213,6 +213,15 @@ async function linkSupervisorVisits(s){
   }
 }
 async function refreshLinkedState(s){
+  if(s.type!=="teacher"&&!s.phone&&s.username){
+    try{
+      const d=await getDoc(doc(rasedDb,"users",s.username));
+      if(d.exists()){
+        const x=d.data()||{};
+        s.phone=x.phone||x.mobile||"";
+      }
+    }catch{}
+  }
   try{
     if(typeof weeklyAuth.authStateReady==="function")await weeklyAuth.authStateReady();
     if(weeklyAuth.currentUser){
