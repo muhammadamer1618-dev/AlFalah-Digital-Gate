@@ -171,31 +171,53 @@ async function linkTeacherVisits(s){
 async function linkSupervisorVisits(s){
   try{
     const wantedPhone=normalizePhone(s.phone||"");
-    if(!wantedPhone)throw new Error("supervisor phone missing in Rased");
+    if(!/^9665\d{8}$/.test(wantedPhone))throw new Error("supervisor phone missing in Rased");
 
-    const all=await getDocs(collection(visitDb,"supervisors"));
-    const candidates=all.docs.filter(x=>{
-      const data=x.data()||{};
-      return [
-        data.username,
-        data.phone,
-        data.mobile
-      ].some(v=>normalizePhone(v)===wantedPhone);
-    });
+    const local="0"+wantedPhone.slice(3);
+    const noZero=wantedPhone.slice(3);
+    const variants=[...new Set([local,noZero,wantedPhone,"+"+wantedPhone,"00"+wantedPhone])];
 
-    if(candidates.length!==1){
-      throw new Error(candidates.length>1?"duplicate visit supervisor phone":"visit supervisor phone not found");
+    let d=null;
+
+    for(const candidate of variants){
+      const q=await getDocs(query(
+        collection(visitDb,"supervisors"),
+        where("username","==",candidate),
+        limit(2)
+      ));
+      if(!q.empty){
+        d=q.docs[0];
+        break;
+      }
     }
 
-    const d=candidates[0];
+    if(!d){
+      for(const field of ["phone","mobile"]){
+        for(const candidate of variants){
+          const q=await getDocs(query(
+            collection(visitDb,"supervisors"),
+            where(field,"==",candidate),
+            limit(2)
+          ));
+          if(!q.empty){
+            d=q.docs[0];
+            break;
+          }
+        }
+        if(d)break;
+      }
+    }
+
+    if(!d)throw new Error("visit supervisor phone not found");
+
     const data=d.data()||{};
     if(data.active===false)throw new Error("visit supervisor account inactive");
 
     const value=JSON.stringify({
       id:d.id,
       name:data.name||s.name||"",
-      username:data.username||data.phone||data.mobile||s.phone||"",
-      phone:data.phone||data.mobile||s.phone||"",
+      username:data.username||s.phone||"",
+      phone:s.phone||"",
       gateUsername:s.username,
       role:data.role||"supervisor",
       canVisitAllTeachers:data.canVisitAllTeachers===true
