@@ -167,18 +167,29 @@ async function linkTeacherVisits(s){
     s.followupRole="teacher";
   }catch(e){s.followupReady=false}
 }
-async function linkSupervisorVisits(s,password){
+async function linkSupervisorVisits(s){
   try{
     const q=await getDocs(query(collection(visitDb,"supervisors"),where("username","==",s.username),limit(2)));
-    if(q.empty)throw new Error("not linked");
+    if(q.empty)throw new Error("visit supervisor account not found");
     const d=q.docs[0],data=d.data()||{};
-    if(data.active===false||String(data.password??"")!==String(password))throw new Error("credentials mismatch");
-    const value=JSON.stringify({id:d.id,name:data.name||s.name||"",username:data.username||s.username,role:data.role||"supervisor"});
+    if(data.active===false)throw new Error("visit supervisor account inactive");
+    const value=JSON.stringify({
+      id:d.id,
+      name:data.name||s.name||"",
+      username:data.username||s.username,
+      role:data.role||"supervisor",
+      canVisitAllTeachers:data.canVisitAllTeachers===true
+    });
     sessionStorage.setItem("currentSupervisor",value);
     localStorage.setItem("currentSupervisor",value);
     s.followupReady=true;
     s.followupRole=data.role||"supervisor";
-  }catch(e){s.followupReady=false}
+    return true;
+  }catch(e){
+    console.warn("VISIT SSO LINK ERROR",e);
+    s.followupReady=false;
+    return false;
+  }
 }
 async function refreshLinkedState(s){
   try{
@@ -200,10 +211,18 @@ async function refreshLinkedState(s){
     const raw=sessionStorage.getItem("currentTeacher")||localStorage.getItem("currentTeacher");
     if(raw)s.followupReady=true;
   }else{
+    let linked=false;
     try{
-      const x=JSON.parse(localStorage.getItem("currentSupervisor")||"null");
-      if(x&&String(x.username||"")===String(s.username)) {s.followupReady=true;s.followupRole=x.role||"supervisor";}
+      const x=JSON.parse(localStorage.getItem("currentSupervisor")||sessionStorage.getItem("currentSupervisor")||"null");
+      if(x&&String(x.username||"")===String(s.username)){
+        s.followupReady=true;
+        s.followupRole=x.role||"supervisor";
+        linked=true;
+      }
     }catch{}
+    if(!linked){
+      await linkSupervisorVisits(s);
+    }
   }
   saveSession(s);
 }
@@ -274,7 +293,7 @@ function showLogin(type){
         await linkTeacherVisits(s);
       }else if(["supervisor","superadmin","manager"].includes(s.rasedRole)){
         await linkWeekly(s,password);
-        await linkSupervisorVisits(s,password);
+        await linkSupervisorVisits(s);
       }
       saveSession(s);
       showAccountChip(s);
