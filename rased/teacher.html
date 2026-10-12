@@ -1036,24 +1036,40 @@ tbody tr:nth-child(even){
     <div>
       <span class="dashboard-kicker">لوحة العمل</span>
       <h2>أدوات المعلم</h2>
-      <p>اختر الخدمة التي تريد العمل عليها، وستظهر لك تفاصيلها فقط.</p>
+      <p>ابدأ من إحدى الخدمات الرئيسية، ثم استخدم الأدوات المساندة عند الحاجة.</p>
     </div>
   </div>
 
-  <div class="teacher-dashboard-grid">
+  <div class="dashboard-section-title">الخدمات الرئيسية</div>
+  <div class="teacher-dashboard-grid teacher-dashboard-main">
     <button class="dashboard-tool dashboard-tool-primary" data-feature="grading" onclick="showTeacherFeature('grading',this)">
       <span class="dashboard-tool-icon">📝</span>
       <span class="dashboard-tool-text"><strong>رصد الدرجات</strong><small>الرصد والحفظ والطباعة والحذف</small></span>
       <span class="dashboard-tool-arrow">←</span>
     </button>
 
-    <button class="dashboard-tool dashboard-tool-primary" data-feature="progress" onclick="showTeacherFeature('progress',this)">
+    <button class="dashboard-tool dashboard-tool-primary" onclick="openUnifiedWorkspace('weekly')">
+      <span class="dashboard-tool-icon">📅</span>
+      <span class="dashboard-tool-text"><strong>الخطة الأسبوعية</strong><small>إعداد وتحديث الخطة الأسبوعية</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool dashboard-tool-primary" onclick="openUnifiedWorkspace('visits')">
+      <span class="dashboard-tool-icon">📋</span>
+      <span class="dashboard-tool-text"><strong>زياراتي الفنية</strong><small>الاطلاع على الزيارات والتقارير</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+  </div>
+
+  <div class="dashboard-section-title dashboard-secondary-title">أدوات مساندة</div>
+  <div class="teacher-dashboard-grid teacher-dashboard-secondary">
+    <button class="dashboard-tool" data-feature="progress" onclick="showTeacherFeature('progress',this)">
       <span class="dashboard-tool-icon">📈</span>
       <span class="dashboard-tool-text"><strong>عرض مستوى الطالب</strong><small>متابعة تطور مستوى الطالب ونتائجه</small></span>
       <span class="dashboard-tool-arrow">←</span>
     </button>
 
-    <button class="dashboard-tool dashboard-tool-primary" data-feature="messages" onclick="showTeacherFeature('messages',this)">
+    <button class="dashboard-tool" data-feature="messages" onclick="showTeacherFeature('messages',this)">
       <span class="dashboard-tool-icon">📨</span>
       <span class="dashboard-tool-text"><strong>سجل رسائل أولياء الأمور</strong><small>عرض السجل والطباعة والحذف والإجراءات</small></span>
       <span class="dashboard-tool-arrow">←</span>
@@ -1068,18 +1084,6 @@ tbody tr:nth-child(even){
     <button id="dashboardExamPlatformBtn" class="dashboard-tool" style="display:none" onclick="openExamPlatform()">
       <span class="dashboard-tool-icon">🧪</span>
       <span class="dashboard-tool-text"><strong>الاختبارات الإلكترونية</strong><small>إنشاء وإدارة الاختبارات</small></span>
-      <span class="dashboard-tool-arrow">←</span>
-    </button>
-
-    <button class="dashboard-tool" onclick="openUnifiedWorkspace('weekly')">
-      <span class="dashboard-tool-icon">📅</span>
-      <span class="dashboard-tool-text"><strong>الخطة الأسبوعية</strong><small>إعداد وتحديث الخطة الأسبوعية</small></span>
-      <span class="dashboard-tool-arrow">←</span>
-    </button>
-
-    <button class="dashboard-tool" onclick="openUnifiedWorkspace('visits')">
-      <span class="dashboard-tool-icon">📋</span>
-      <span class="dashboard-tool-text"><strong>زياراتي الفنية</strong><small>الاطلاع على الزيارات والتقارير</small></span>
       <span class="dashboard-tool-arrow">←</span>
     </button>
 
@@ -4907,6 +4911,27 @@ body{
 @media print{
   .teacher-dashboard,.feature-panel-bar{display:none!important}
   .teacher-feature-panel{display:block!important}
+}
+
+.dashboard-section-title{
+  margin:8px 4px 10px;
+  color:var(--falah-green);
+  font-size:13px;
+  font-weight:900;
+}
+.dashboard-secondary-title{
+  margin-top:20px;
+  color:#6b7b76;
+}
+.teacher-dashboard-main .dashboard-tool{
+  min-height:112px;
+  border-width:2px;
+}
+.teacher-dashboard-main .dashboard-tool-text strong{
+  font-size:17px;
+}
+.teacher-dashboard-secondary .dashboard-tool{
+  min-height:86px;
 }
 </style>
 </head><body><div class="head"><img src="logo.jpeg"><h1>مدارس الفلاح الأهلية</h1><h2>سجل رسائل أولياء الأمور - المعلم</h2></div><div class="meta"><span><strong>المعلم:</strong> ${escapeHtml(currentTeacher?.name||"")}</span><span><strong>عدد الرسائل:</strong> ${rows.length}</span></div><table><thead><tr><th>م</th><th>التاريخ والوقت</th><th>الطالب</th><th>الفصل</th><th>المادة</th><th>الاختبار / النوع</th><th>الجوال</th><th>نص الرسالة</th></tr></thead><tbody>${body}</tbody></table><div class="foot"><span>نظام راصد - مدارس الفلاح الأهلية</span><span>تصميم محمد عامر أحمد - 2026</span></div><script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script>
