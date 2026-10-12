@@ -270,7 +270,7 @@ function showLogin(type){
       if(type==="teacher")await linkTeacherVisits(s);else await linkSupervisorVisits(s,password);
       saveSession(s);
       showAccountChip(s);
-      renderServices(s);
+      window.location.href=rasedUrl(s);
     }catch(e){
       msg.style.color="#b42318";msg.textContent=e.message||"تعذر تسجيل الدخول.";
     }finally{btn.disabled=false;btn.textContent="دخول"}
@@ -305,7 +305,7 @@ async function openUnified(type){
   seedRasedSession(s);
   await refreshLinkedState(s);
   showAccountChip(s);
-  renderServices(s);
+  window.location.href=rasedUrl(s);
 }
 function install(){
   const timer=setInterval(()=>{
