@@ -2547,7 +2547,8 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="row">
 <div class="col"><label>الاسم</label><input id="supervisorName" placeholder="مثال: أحمد سمير عباس"></div>
-<div class="col"><label>اسم المستخدم</label><input id="supervisorUsername" placeholder="مثال: supervisor1"></div>
+<div class="col"><label>اسم المستخدم / رقم الهوية</label><input id="supervisorUsername" placeholder="رقم الهوية المستخدم في بوابة الفلاح"></div>
+<div class="col"><label>رقم جوال المشرف</label><input id="supervisorPhone" inputmode="tel" placeholder="05xxxxxxxx"></div>
 <div class="col"><label>كلمة المرور</label><input id="supervisorPassword" type="text" autocomplete="new-password"></div>
 <div class="col">
 <label>نوع الحساب</label>
@@ -2669,7 +2670,7 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="table-wrap">
 <table style="min-width:1180px">
-<thead><tr><th>#</th><th>الاسم</th><th>اسم المستخدم</th><th>نوع الحساب</th><th>المعلمون المسندون</th><th>الصلاحيات</th><th>الإجراءات</th></tr></thead>
+<thead><tr><th>#</th><th>الاسم</th><th>اسم المستخدم / الهوية</th><th>رقم الجوال</th><th>نوع الحساب</th><th>المعلمون المسندون</th><th>الصلاحيات</th><th>الإجراءات</th></tr></thead>
 <tbody id="supervisorsBody"></tbody>
 </table>
 </div>
@@ -9427,6 +9428,7 @@ supervisors.push({
 username:doc.id,
 name:data.name||doc.id,
 password:data.password||"",
+phone:data.phone||data.mobile||"",
 role:"supervisor",
 supervisorType:data.supervisorType||"general_supervisor",
 assignedTeacherEmails:Array.isArray(data.assignedTeacherEmails)?data.assignedTeacherEmails.map(normalizeTeacherEmail).filter(Boolean):[],
@@ -9450,13 +9452,14 @@ const count=document.getElementById("supervisorsCount");
 if(count)count.textContent=supervisors.length;
 if(!body)return;
 body.innerHTML="";
-if(!supervisors.length){body.innerHTML="<tr><td colspan='7'>لا توجد حسابات إشراف</td></tr>";return}
+if(!supervisors.length){body.innerHTML="<tr><td colspan='8'>لا توجد حسابات إشراف</td></tr>";return}
 supervisors.forEach((s,index)=>{
 const tr=document.createElement("tr");
 tr.innerHTML=`
 <td class="admin-row-number">${index+1}</td>
 <td>${escapeHtml(s.name)}</td>
 <td>${escapeHtml(s.username)}</td>
+<td>${escapeHtml(s.phone||"")}</td>
 <td><span class="role-badge">${escapeHtml(supervisorTypeLabel(s.supervisorType))}</span></td>
 <td>${String(s.supervisorType||"").toLowerCase()==="supervisor"
   ?(s.assignedTeacherEmails?.length
@@ -9489,11 +9492,15 @@ const original=document.getElementById("supervisorOriginalUsername").value.trim(
 const name=document.getElementById("supervisorName").value.trim();
 const username=document.getElementById("supervisorUsername").value.trim().toLowerCase();
 const password=document.getElementById("supervisorPassword").value.trim();
+const phone=document.getElementById("supervisorPhone").value.trim();
 const supervisorType=document.getElementById("supervisorRole").value||"general_supervisor";
 const permissions=readSupervisorPermissions();
 const assignedTeacherEmails=supervisorType==="supervisor"?selectedSupervisorTeacherEmails():[];
 
-if(!name||!username||!password){alert("أدخل الاسم واسم المستخدم وكلمة المرور");return}
+if(!name||!username||!phone||!password){alert("أدخل الاسم ورقم الهوية ورقم الجوال وكلمة المرور");return}
+const normalizedSupervisorPhone=String(phone).replace(/\D/g,"");
+if(!/^(?:05\d{8}|5\d{8}|9665\d{8})$/.test(normalizedSupervisorPhone)){alert("أدخل رقم جوال سعودي صحيح للمشرف.");return}
+const savedSupervisorPhone=normalizedSupervisorPhone.startsWith("966")?"0"+normalizedSupervisorPhone.slice(3):(normalizedSupervisorPhone.startsWith("5")?"0"+normalizedSupervisorPhone:normalizedSupervisorPhone);
 if(!["general_supervisor","manager","deputy","supervisor"].includes(supervisorType)){alert("اختر نوع حساب صحيح.");return}
 if(!/^[a-zA-Z0-9._-]{3,60}$/.test(username)){alert("اسم المستخدم يجب أن يكون 3 أحرف على الأقل، ويحتوي على حروف إنجليزية أو أرقام أو . _ - فقط.");return}
 if(password.length<4){alert("كلمة المرور يجب ألا تقل عن 4 أحرف.");return}
@@ -9517,7 +9524,7 @@ if(oldDoc.exists&&String(oldDoc.data().role||"").toLowerCase()==="supervisor")aw
 }
 
 await db.collection("users").doc(username).set({
-name,username,role:"supervisor",supervisorType,password,permissions,
+name,username,phone:savedSupervisorPhone,mobile:savedSupervisorPhone,role:"supervisor",supervisorType,password,permissions,
 assignedTeacherEmails,
 teacherScopeMode:supervisorType==="supervisor"?"assigned":"all",
 updatedAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -9532,6 +9539,7 @@ await writeAuditLog(
   {
     name,
     username,
+    phone:savedSupervisorPhone,
     role:"supervisor",
     supervisorType,
     permissions,
@@ -9550,6 +9558,7 @@ const s=supervisors.find(x=>x.username===username);if(!s)return;
 document.getElementById("supervisorOriginalUsername").value=s.username;
 document.getElementById("supervisorName").value=s.name||"";
 document.getElementById("supervisorUsername").value=s.username||"";
+document.getElementById("supervisorPhone").value=s.phone||"";
 document.getElementById("supervisorPassword").value=s.password||"";
 document.getElementById("supervisorRole").value=s.supervisorType||"general_supervisor";
 document.getElementById("supervisorTeacherSearch").value="";
@@ -9564,6 +9573,7 @@ function clearSupervisorForm(){
 document.getElementById("supervisorOriginalUsername").value="";
 document.getElementById("supervisorName").value="";
 document.getElementById("supervisorUsername").value="";
+document.getElementById("supervisorPhone").value="";
 document.getElementById("supervisorPassword").value="";
 document.getElementById("supervisorRole").value="general_supervisor";
 document.getElementById("supervisorTeacherSearch").value="";
