@@ -1134,8 +1134,22 @@ body{
   .hero-logout{position:static!important;margin-bottom:8px}
 }
 @media print{
-  .teacher-dashboard,.feature-panel-bar{display:none!important}
-  .teacher-feature-panel{display:block!important}
+  .teacher-dashboard,
+  .feature-panel-bar,
+  #gradingSelectorCard,
+  #studentProgressSection,
+  #messagesSection,
+  .legacy-teacher-tools{
+    display:none!important;
+  }
+
+  .teacher-feature-panel{
+    display:none!important;
+  }
+
+  #gradingStudentsCard{
+    display:block!important;
+  }
 }
 </style>
 </head>
