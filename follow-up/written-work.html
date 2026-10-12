@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>متابعة الأعمال التحريرية</title>
+
+  <style>
+    @page { size: A4; margin: 12mm; }
+
+    body{font-family:Arial,sans-serif;background:#f4f8fc;margin:0;padding:12px;color:#000}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+    h1{margin:0;color:#0d47a1;font-size:22px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:0;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer}
+    .btn.back{background:#607d8b;color:#fff;text-decoration:none;display:inline-flex;align-items:center}
+    .btn.print{background:#1976d2;color:#fff}
+    .btn.add{background:#e3f2fd;color:#0d47a1;border:1px solid #90caf9}
+
+    .box{background:#fff;border:1px solid #bbdefb;border-radius:10px;padding:12px}
+
+    table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+    th,td{border:1px solid #000;padding:6px;text-align:center;vertical-align:middle}
+    th{background:#e3f2fd}
+    input[type="text"]{width:100%;padding:6px;border:1px solid #cfcfcf;border-radius:6px;box-sizing:border-box}
+    input[type="radio"]{transform:scale(1.1)}
+
+    .sign-table{width:100%;border-collapse:collapse;margin-top:14px}
+    .sign-table td{border:1px solid #000;padding:10px;text-align:center;font-weight:bold}
+    .sign-line{height:60px}
+
+    @media print{
+      .top,.btn{display:none !important}
+      body{background:#fff;padding:0}
+      .box{border:1px solid #000}
+    }
+  </style>
+  <link rel="stylesheet" href="mobile.css">
+</head>
+
+<body>
+  <div class="top">
+    <h1>متابعة الأعمال التحريرية للطلاب</h1>
+    <div class="actions">
+      <a class="btn back" href="index.html">الرجوع للرئيسية</a>
+      <button class="btn add" id="addRow">إضافة صف</button>
+      <button class="btn print" onclick="window.print()">طباعة</button>
+    </div>
+  </div>
+
+  <div class="box">
+    <table id="workTable">
+      <thead>
+        <tr>
+          <th style="width:40%;">اسم الطالب</th>
+          <th>مصحح</th>
+          <th>غير مكتمل</th>
+          <th>غير مصحح</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <table class="sign-table">
+      <tr>
+        <td>اسم المعلم</td>
+        <td>اسم المشرف</td>
+      </tr>
+      <tr>
+        <td class="sign-line"></td>
+        <td class="sign-line"></td>
+      </tr>
+    </table>
+  </div>
+
+  <script>
+    const tbody = document.querySelector("#workTable tbody");
+
+    function addRow(){
+      const idx = tbody.children.length + 1;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input type="text" placeholder="اكتب اسم الطالب"></td>
+        <td><input type="radio" name="st_${idx}" value="correct"></td>
+        <td><input type="radio" name="st_${idx}" value="partial"></td>
+        <td><input type="radio" name="st_${idx}" value="not"></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    for (let i = 0; i < 18; i++) addRow();
+
+    document.getElementById("addRow").addEventListener("click", addRow);
+  </script>
+</body>
+</html>
+

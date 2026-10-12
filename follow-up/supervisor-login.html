@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>دخول المشرفين - مدارس الفلاح الأهلية</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --green:#0b4a3f;
+      --green-dark:#07372f;
+      --green-soft:#edf5f1;
+
+      --gold:#c89a3b;
+      --gold-dark:#a87921;
+      --gold-soft:#faf2e3;
+
+      --white:#fff;
+      --text:#1f2926;
+      --muted:#747c78;
+      --border:#e2e6e3;
+
+      --shadow:0 25px 70px rgba(20,55,45,.14);
+    }
+
+    *{
+      box-sizing:border-box;
+      font-family:"Cairo",sans-serif;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+
+      background:
+        radial-gradient(circle at top right,rgba(200,154,59,.18),transparent 30%),
+        radial-gradient(circle at bottom left,rgba(11,74,63,.15),transparent 30%),
+        linear-gradient(135deg,#f7f5ef,#fff,#f1f7f4);
+    }
+
+    .login-wrapper{
+      width:100%;
+      max-width:950px;
+      min-height:560px;
+
+      background:#fff;
+
+      border:1px solid var(--border);
+      border-radius:28px;
+      overflow:hidden;
+
+      display:grid;
+      grid-template-columns:1fr 1fr;
+
+      box-shadow:var(--shadow);
+    }
+
+    .identity{
+      background:
+        linear-gradient(
+          145deg,
+          rgba(11,74,63,.98),
+          rgba(7,55,47,.98)
+        );
+
+      position:relative;
+      overflow:hidden;
+
+      padding:45px;
+
+      color:#fff;
+
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+
+      text-align:center;
+    }
+
+    .identity::before{
+      content:"";
+      width:260px;
+      height:260px;
+      border-radius:50%;
+
+      position:absolute;
+      top:-100px;
+      right:-100px;
+
+      background:rgba(255,255,255,.05);
+    }
+
+    .identity::after{
+      content:"";
+      width:220px;
+      height:220px;
+      border-radius:50%;
+
+      position:absolute;
+      bottom:-100px;
+      left:-80px;
+
+      background:rgba(200,154,59,.12);
+    }
+
+    .identity img{
+      width:180px;
+      max-width:70%;
+      object-fit:contain;
+
+      background:#fff;
+      border-radius:22px;
+      padding:10px;
+
+      position:relative;
+      z-index:2;
+
+      margin-bottom:25px;
+    }
+
+    .identity h1{
+      margin:0;
+
+      font-size:24px;
+      font-weight:900;
+
+      position:relative;
+      z-index:2;
+    }
+
+    .identity p{
+      margin:8px 0 0;
+
+      color:#f5ddb0;
+
+      font-size:14px;
+      font-weight:700;
+
+      position:relative;
+      z-index:2;
+    }
+
+    .identity .description{
+      margin-top:22px;
+
+      color:rgba(255,255,255,.78);
+
+      font-size:12px;
+      line-height:2;
+
+      max-width:330px;
+    }
+
+    .login-side{
+      padding:45px;
+
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+
+    .welcome{
+      margin-bottom:25px;
+    }
+
+    .welcome small{
+      color:var(--gold-dark);
+
+      font-weight:800;
+      font-size:11px;
+    }
+
+    .welcome h2{
+      margin:5px 0 0;
+
+      color:var(--green);
+
+      font-size:25px;
+      font-weight:900;
+    }
+
+    .welcome p{
+      margin:6px 0 0;
+
+      color:var(--muted);
+
+      font-size:12px;
+      line-height:1.7;
+    }
+
+    .field{
+      margin-top:14px;
+    }
+
+    .field label{
+      display:block;
+
+      margin-bottom:6px;
+
+      color:#38423d;
+
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .field input{
+      width:100%;
+
+      border:1px solid #dce1de;
+      border-radius:12px;
+
+      padding:12px;
+
+      font-size:13px;
+
+      outline:none;
+
+      transition:.2s;
+    }
+
+    .field input:focus{
+      border-color:var(--green);
+
+      box-shadow:
+        0 0 0 4px rgba(11,74,63,.08);
+    }
+
+    .login-btn{
+      width:100%;
+
+      border:0;
+      border-radius:12px;
+
+      background:var(--green);
+
+      color:#fff;
+
+      padding:12px;
+
+      margin-top:20px;
+
+      font-size:13px;
+      font-weight:900;
+
+      cursor:pointer;
+
+      transition:.2s;
+    }
+
+    .login-btn:hover{
+      background:var(--green-dark);
+      transform:translateY(-1px);
+    }
+
+    .login-btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .home-link{
+      display:block;
+
+      margin-top:15px;
+
+      text-align:center;
+
+      color:var(--gold-dark);
+
+      text-decoration:none;
+
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .error{
+      display:none;
+
+      margin-top:14px;
+
+      padding:10px;
+
+      border-radius:10px;
+
+      background:#fff1ef;
+
+      color:#a92419;
+
+      font-size:11px;
+      font-weight:800;
+
+      text-align:center;
+    }
+
+    .setup{
+      display:none;
+
+      background:var(--gold-soft);
+
+      border:1px solid rgba(200,154,59,.3);
+
+      padding:14px;
+
+      border-radius:13px;
+
+      margin-bottom:17px;
+    }
+
+    .setup strong{
+      display:block;
+
+      color:var(--gold-dark);
+
+      font-size:12px;
+    }
+
+    .setup p{
+      margin:4px 0 0;
+
+      color:#665a42;
+
+      font-size:10px;
+      line-height:1.7;
+    }
+
+    .footer{
+      margin-top:24px;
+
+      text-align:center;
+
+      color:#9a9f9c;
+
+      font-size:9px;
+      font-weight:600;
+    }
+
+    @media(max-width:750px){
+
+      .login-wrapper{
+        grid-template-columns:1fr;
+      }
+
+      .identity{
+        padding:25px;
+        min-height:230px;
+      }
+
+      .identity img{
+        width:120px;
+        margin-bottom:14px;
+      }
+
+      .identity h1{
+        font-size:19px;
+      }
+
+      .identity .description{
+        display:none;
+      }
+
+      .login-side{
+        padding:30px 22px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="mobile.css">
+</head>
+
+<body>
+
+<div class="login-wrapper">
+
+  <section class="identity">
+
+    <img src="logo.jpeg" alt="شعار مدارس الفلاح الأهلية">
+
+    <h1>مدارس الفلاح الأهلية</h1>
+
+    <p>نظام الإشراف التربوي</p>
+
+    <div class="description">
+      منصة متكاملة لإدارة المعلمين والزيارات الصفية
+      ومتابعة الأداء التربوي وتوثيق التقارير.
+    </div>
+
+  </section>
+
+
+  <section class="login-side">
+
+    <div class="welcome">
+
+      <small>بوابة الإدارة والمشرفين</small>
+
+      <h2>تسجيل الدخول</h2>
+
+      <p>
+        أدخل اسم المستخدم وكلمة المرور للدخول
+        إلى لوحة التحكم الخاصة بك.
+      </p>
+
+    </div>
+
+
+    <div class="setup" id="setupBox">
+
+      <strong>تهيئة النظام لأول مرة</strong>
+
+      <p>
+        لا يوجد أي حساب مسجل حتى الآن.
+        الحساب الذي ستنشئه الآن سيكون مدير النظام.
+      </p>
+
+    </div>
+
+
+    <div class="field">
+      <label>اسم المستخدم</label>
+
+      <input
+        type="text"
+        id="username"
+        autocomplete="username"
+        placeholder="اسم المستخدم"
+      >
+    </div>
+
+
+    <div class="field">
+
+      <label>كلمة المرور</label>
+
+      <input
+        type="password"
+        id="password"
+        autocomplete="current-password"
+        placeholder="كلمة المرور"
+      >
+
+    </div>
+
+
+    <div class="field" id="nameField" style="display:none;">
+
+      <label>اسم مدير النظام</label>
+
+      <input
+        type="text"
+        id="supervisorName"
+        placeholder="الاسم الكامل"
+      >
+
+    </div>
+
+
+    <button class="login-btn" id="loginBtn">
+      تسجيل الدخول
+    </button>
+
+
+    <div class="error" id="errorBox"></div>
+
+
+    <a class="home-link" href="index.html">
+      العودة إلى الصفحة الرئيسية
+    </a>
+
+
+    <div class="footer">
+      تصميم محمد عامر أحمد
+    </div>
+
+  </section>
+
+</div>
+
+
+
+<script type="module">
+
+  import { db } from "./firebase.js";
+
+  import {
+    collection,
+    getDocs,
+    query,
+    where,
+    addDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+
+  const el = id =>
+    document.getElementById(id);
+
+
+  let firstSetup = false;
+
+
+  /* ======================================
+     SESSION
+  ======================================= */
+
+  function saveSession(session){
+
+    const value =
+      JSON.stringify(session);
+
+    sessionStorage.setItem(
+      "currentSupervisor",
+      value
+    );
+
+    localStorage.setItem(
+      "currentSupervisor",
+      value
+    );
+
+  }
+
+
+  function redirectByRole(role){
+
+    if(role === "admin"){
+
+      location.href =
+        "admin-dashboard.html";
+
+    }else if(role === "general_supervisor"){
+
+      location.href =
+        "general-supervisor-reports.html";
+
+    }else{
+
+      location.href =
+        "supervisor-dashboard.html";
+
+    }
+
+  }
+
+
+  /* ======================================
+     فحص وجود الحسابات
+  ======================================= */
+
+  async function checkSystem(){
+
+    try{
+
+      const snap =
+        await getDocs(
+          collection(
+            db,
+            "supervisors"
+          )
+        );
+
+
+      if(snap.empty){
+
+        firstSetup = true;
+
+        el("setupBox").style.display =
+          "block";
+
+        el("nameField").style.display =
+          "block";
+
+        el("loginBtn").textContent =
+          "إنشاء حساب مدير النظام";
+
+      }
+
+    }catch(error){
+
+      console.error(error);
+
+      showError(
+        "تعذر الاتصال بقاعدة البيانات"
+      );
+
+    }
+
+  }
+
+
+  /* ======================================
+     إنشاء أول حساب Admin
+  ======================================= */
+
+  async function createFirstSupervisor(){
+
+    const name =
+      el("supervisorName")
+      .value
+      .trim();
+
+
+    const username =
+      el("username")
+      .value
+      .trim();
+
+
+    const password =
+      el("password")
+      .value;
+
+
+    if(!name){
+
+      showError(
+        "اكتب اسم مدير النظام"
+      );
+
+      return;
+
+    }
+
+
+    if(!username){
+
+      showError(
+        "اكتب اسم المستخدم"
+      );
+
+      return;
+
+    }
+
+
+    if(password.length < 4){
+
+      showError(
+        "كلمة المرور يجب ألا تقل عن 4 أحرف"
+      );
+
+      return;
+
+    }
+
+
+    try{
+
+      el("loginBtn").disabled =
+        true;
+
+
+      const duplicate =
+        await getDocs(
+
+          query(
+
+            collection(
+              db,
+              "supervisors"
+            ),
+
+            where(
+              "username",
+              "==",
+              username
+            )
+
+          )
+
+        );
+
+
+      if(!duplicate.empty){
+
+        showError(
+          "اسم المستخدم مستخدم بالفعل"
+        );
+
+        el("loginBtn").disabled =
+          false;
+
+        return;
+
+      }
+
+
+      const ref =
+        await addDoc(
+
+          collection(
+            db,
+            "supervisors"
+          ),
+
+          {
+
+            name,
+            username,
+            password,
+
+            role:"admin",
+
+            active:true,
+
+            createdAt:
+              serverTimestamp()
+
+          }
+
+        );
+
+
+      const session = {
+
+        id:ref.id,
+
+        name,
+
+        username,
+
+        role:"admin"
+
+      };
+
+
+      saveSession(
+        session
+      );
+
+
+      redirectByRole(
+        "admin"
+      );
+
+
+    }catch(error){
+
+      console.error(error);
+
+      showError(
+        "حدث خطأ أثناء إنشاء الحساب"
+      );
+
+      el("loginBtn").disabled =
+        false;
+
+    }
+
+  }
+
+
+  /* ======================================
+     تسجيل الدخول
+  ======================================= */
+
+  async function login(){
+
+    const username =
+      el("username")
+      .value
+      .trim();
+
+
+    const password =
+      el("password")
+      .value;
+
+
+    if(!username || !password){
+
+      showError(
+        "اكتب اسم المستخدم وكلمة المرور"
+      );
+
+      return;
+
+    }
+
+
+    try{
+
+      el("loginBtn").disabled =
+        true;
+
+
+      const snap =
+        await getDocs(
+
+          query(
+
+            collection(
+              db,
+              "supervisors"
+            ),
+
+            where(
+              "username",
+              "==",
+              username
+            )
+
+          )
+
+        );
+
+
+      if(snap.empty){
+
+        showError(
+          "بيانات الدخول غير صحيحة"
+        );
+
+        el("loginBtn").disabled =
+          false;
+
+        return;
+
+      }
+
+
+      const item =
+        snap.docs[0];
+
+
+      const data =
+        item.data() || {};
+
+
+      if(
+        data.password !== password
+      ){
+
+        showError(
+          "بيانات الدخول غير صحيحة"
+        );
+
+        el("loginBtn").disabled =
+          false;
+
+        return;
+
+      }
+
+
+      if(
+        data.active === false
+      ){
+
+        showError(
+          "هذا الحساب موقوف"
+        );
+
+        el("loginBtn").disabled =
+          false;
+
+        return;
+
+      }
+
+
+      const role =
+        data.role ||
+        "supervisor";
+
+
+      const session = {
+
+        id:item.id,
+
+        name:
+          data.name || "",
+
+        username:
+          data.username || "",
+
+        role
+
+      };
+
+
+      saveSession(
+        session
+      );
+
+
+      redirectByRole(
+        role
+      );
+
+
+    }catch(error){
+
+      console.error(error);
+
+      showError(
+        "تعذر تسجيل الدخول"
+      );
+
+      el("loginBtn").disabled =
+        false;
+
+    }
+
+  }
+
+
+  /* ======================================
+     ERROR
+  ======================================= */
+
+  function showError(
+    message
+  ){
+
+    el("errorBox").textContent =
+      message;
+
+    el("errorBox").style.display =
+      "block";
+
+  }
+
+
+  /* ======================================
+     EVENTS
+  ======================================= */
+
+  el("loginBtn")
+    .addEventListener(
+      "click",
+      ()=>{
+
+        el("errorBox").style.display =
+          "none";
+
+
+        if(firstSetup){
+
+          createFirstSupervisor();
+
+        }else{
+
+          login();
+
+        }
+
+      }
+    );
+
+
+  document.addEventListener(
+    "keydown",
+    e=>{
+
+      if(e.key === "Enter"){
+
+        el("loginBtn").click();
+
+      }
+
+    }
+  );
+
+
+  checkSystem();
+
+</script>
+
+</body>
+</html>
+

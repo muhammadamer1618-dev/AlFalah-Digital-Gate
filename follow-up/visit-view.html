@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تقرير الزيارة الصفية</title>
+
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      background:#f4f8fc;
+      margin:0;
+      padding:16px;
+      color:#000;
+    }
+
+    .container{
+      max-width:1000px;
+      margin:auto;
+      background:#fff;
+      border:1px solid #000;
+      padding:16px;
+    }
+
+    h1{
+      text-align:center;
+      margin:0;
+      font-size:22px;
+    }
+
+    .designer{
+      text-align:center;
+      font-size:12px;
+      font-weight:900;
+      margin-bottom:14px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-bottom:12px;
+    }
+
+    th, td{
+      border:1px solid #000;
+      padding:6px;
+      font-size:13px;
+      text-align:center;
+      vertical-align:middle;
+    }
+
+    th{
+      background:#e3f2fd;
+      font-weight:900;
+    }
+
+    .section-title{
+      font-weight:900;
+      margin:14px 0 6px;
+    }
+
+    .box{
+      border:1px solid #000;
+      padding:8px;
+      min-height:40px;
+      font-size:13px;
+    }
+
+    .scoreBox{
+      font-size:16px;
+      font-weight:900;
+      text-align:center;
+      padding:10px;
+      border:1px solid #000;
+      background:#f6fbff;
+    }
+
+    .note{
+      text-align:center;
+      font-size:12px;
+      margin-top:16px;
+      font-weight:900;
+    }
+
+    @media print{
+      body{ background:#fff; }
+    }
+  </style>
+  <link rel="stylesheet" href="mobile.css">
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>مدارس الفلاح الأهلية</h1>
+  <div class="designer">تقرير زيارة صفية – للاطلاع فقط</div>
+
+  <!-- بيانات المعلم -->
+  <table>
+    <tr>
+      <th>اسم المعلم</th>
+      <td id="teacherName"></td>
+      <th>كود المعلم</th>
+      <td id="teacherCode"></td>
+    </tr>
+    <tr>
+      <th>الصف</th>
+      <td id="grade"></td>
+      <th>المادة</th>
+      <td id="subject"></td>
+    </tr>
+    <tr>
+      <th>عنوان الدرس</th>
+      <td id="lessonTitle"></td>
+      <th>رقم الزيارة</th>
+      <td id="visitNumber"></td>
+    </tr>
+    <tr>
+      <th>اسم المشرف</th>
+      <td id="supervisorName"></td>
+      <th>التاريخ</th>
+      <td id="visitDate"></td>
+    </tr>
+  </table>
+
+  <!-- الدرجة -->
+  <div class="section-title">نتيجة التقييم</div>
+  <div class="scoreBox">
+    الدرجة النهائية: <span id="finalScore"></span> / 100
+  </div>
+
+  <!-- بنود التقييم -->
+  <div class="section-title">بنود التقييم</div>
+  <table>
+    <thead>
+      <tr>
+        <th>م</th>
+        <th>المجال</th>
+        <th>العنصر</th>
+        <th>التقدير</th>
+        <th>الدرجة</th>
+      </tr>
+    </thead>
+    <tbody id="itemsBody"></tbody>
+  </table>
+
+  <!-- الإيجابيات -->
+  <div class="section-title">إيجابيات الحصة</div>
+  <div class="box" id="positives"></div>
+
+  <!-- التوصيات -->
+  <div class="section-title">توصيات وتوجيهات</div>
+  <div class="box" id="recommendations"></div>
+
+  <!-- الأعمال التحريرية -->
+  <div class="section-title">متابعة الأعمال التحريرية</div>
+  <table>
+    <thead>
+      <tr>
+        <th>اسم الطالب</th>
+        <th>الحالة</th>
+      </tr>
+    </thead>
+    <tbody id="workBody"></tbody>
+  </table>
+
+  <div class="note">
+    تصميم محمد عامر أحمد
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBNFrPNCuQefOXHTCmiiKSBjgPLUy5Ug4U",
+  authDomain: "follow-up-2026.firebaseapp.com",
+  projectId: "follow-up-2026",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+function qs(name){
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+async function loadVisit(){
+  const visitId = qs("id");
+  if (!visitId){
+    document.body.innerHTML = "لا يوجد تقرير";
+    return;
+  }
+
+  const ref = doc(db, "visits", visitId);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()){
+    document.body.innerHTML = "التقرير غير موجود";
+    return;
+  }
+
+  const d = snap.data();
+
+  document.getElementById("teacherName").textContent = d.teacherName || "";
+  document.getElementById("teacherCode").textContent = d.teacherCode || "";
+  document.getElementById("grade").textContent = d.grade || "";
+  document.getElementById("subject").textContent = d.subject || "";
+  document.getElementById("lessonTitle").textContent = d.lessonTitle || "";
+  document.getElementById("visitNumber").textContent = d.visitNumber || "";
+  document.getElementById("supervisorName").textContent = d.supervisorName || "";
+  document.getElementById("visitDate").textContent = d.visitDate || "";
+  document.getElementById("finalScore").textContent = d.finalScore || 0;
+  document.getElementById("positives").textContent = d.positives || "";
+  document.getElementById("recommendations").textContent = d.recommendations || "";
+
+  // بنود التقييم
+  const tbody = document.getElementById("itemsBody");
+  (d.answers || []).forEach((a, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${a.domain}</td>
+      <td>${a.itemLabel}</td>
+      <td>${a.selectedText}</td>
+      <td>${a.selected}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // الأعمال التحريرية
+  const wb = document.getElementById("workBody");
+  (d.writtenWork || []).forEach(w => {
+    if (!w.name) return;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${w.name}</td>
+      <td>${w.status}</td>
+    `;
+    wb.appendChild(tr);
+  });
+}
+
+loadVisit();
+</script>
+
+</body>
+</html>
+

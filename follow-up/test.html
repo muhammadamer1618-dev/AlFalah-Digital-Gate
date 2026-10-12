@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>اختبار فايربيز</title>
+  <link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+
+<h2>اختبار الاتصال بفايربيز</h2>
+
+<button id="saveBtn">حفظ اختبار</button>
+
+<script type="module">
+  import { db } from "./firebase.js";
+  import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+  document.getElementById("saveBtn").onclick = async () => {
+    await addDoc(collection(db, "test"), {
+      message: "Firebase شغال",
+      time: new Date().toISOString()
+    });
+
+    alert("تم الحفظ بنجاح");
+  };
+</script>
+
+</body>
+</html>
+
