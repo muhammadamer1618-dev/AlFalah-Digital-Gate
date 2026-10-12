@@ -227,9 +227,14 @@ function weeklyUrl(s){
 function serviceRows(s){
   const isTeacher=s.type==="teacher";
   return [
-    {name:isTeacher?"منصة المعلم":"منصة المشرف",desc:"منصة راصد المتكاملة",url:rasedUrl(s),ok:true},
-    {name:"الخطة الأسبوعية",desc:s.weeklyReady?"دخول مباشر — الحساب مرتبط":"يحتاج ربطًا لأول مرة فقط",url:weeklyUrl(s),ok:s.weeklyReady},
-    {name:isTeacher?"زياراتي الفنية":"الزيارات الفنية",desc:s.followupReady?"دخول مباشر — الحساب مرتبط":"يحتاج ربطًا لأول مرة فقط",url:followupUrl(s),ok:s.followupReady}
+    {
+      name:isTeacher?"منصة المعلم":"منصة المشرف",
+      desc:isTeacher
+        ?"جميع خدمات المعلم في منصة واحدة"
+        :"جميع خدمات المشرف في منصة واحدة",
+      url:rasedUrl(s),
+      ok:true
+    }
   ];
 }
 function renderServices(s){
