@@ -2207,26 +2207,14 @@ async function loginTeacher(){
       teacher;
 
 
-    sessionStorage.setItem(
+    const teacherSessionValue = JSON.stringify({
+      id:teacher.id,
+      code:teacher.code || teacher.id,
+      name:teacher.name || ""
+    });
 
-      "currentTeacher",
-
-      JSON.stringify({
-
-        id:
-          teacher.id,
-
-        code:
-          teacher.code ||
-          teacher.id,
-
-        name:
-          teacher.name ||
-          ""
-
-      })
-
-    );
+    sessionStorage.setItem("currentTeacher",teacherSessionValue);
+    localStorage.setItem("currentTeacher",teacherSessionValue);
 
 
     await loadTeacherVisits();
@@ -3362,9 +3350,8 @@ async function acknowledgeVisit(
 
 function logoutTeacher(){
 
-  sessionStorage.removeItem(
-    "currentTeacher"
-  );
+  sessionStorage.removeItem("currentTeacher");
+  localStorage.removeItem("currentTeacher");
 
 
   currentTeacher =
@@ -3498,9 +3485,8 @@ el("visitModal")
 async function restoreTeacherSession(){
 
   const raw =
-    sessionStorage.getItem(
-      "currentTeacher"
-    );
+    sessionStorage.getItem("currentTeacher") ||
+    localStorage.getItem("currentTeacher");
 
 
   if(!raw)
