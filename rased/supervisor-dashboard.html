@@ -372,10 +372,7 @@ async function openUnifiedWorkspace(kind){
     label="متابعة الخطة الأسبوعية";
   }else if(kind==="visits"){
     const linked=await ensureVisitSupervisorSession();
-    if(!linked){
-      alert("تعذر ربط حساب الزيارات الفنية برقم جوال المشرف. راجع رقم الجوال المسجل في حسابه.");
-      return;
-    }
+    if(!linked)return;
     const role=String(linked.role||"");
     if(role==="admin") url="../follow-up/admin-dashboard.html";
     else if(role==="general_supervisor") url="../follow-up/general-supervisor-reports.html";
@@ -445,13 +442,25 @@ async function ensureVisitSupervisorSession(){
   const gateUsername=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
   if(!gateUsername)return null;
 
+  const toEnglishDigits=value=>String(value||"")
+    .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d))
+    .replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+
   const normalizePhone=value=>{
-    let p=String(value||"").replace(/\D/g,"");
+    let p=toEnglishDigits(value).replace(/\D/g,"");
     if(p.startsWith("00966"))p=p.slice(2);
     if(p.startsWith("966"))return p;
     if(/^05\d{8}$/.test(p))return "966"+p.slice(1);
     if(/^5\d{8}$/.test(p))return "966"+p;
     return p;
+  };
+
+  const phoneVariants=value=>{
+    const p=normalizePhone(value);
+    if(!/^9665\d{8}$/.test(p))return [];
+    const local="0"+p.slice(3);
+    const noZero=p.slice(3);
+    return [...new Set([local,noZero,p,"+"+p,"00"+p])];
   };
 
   let wantedPhone=normalizePhone(currentSupervisorPhone);
@@ -467,8 +476,8 @@ async function ensureVisitSupervisorSession(){
     }catch(e){}
   }
 
-  if(!wantedPhone){
-    alert("رقم جوال المشرف غير مسجل في حسابه. أضفه من إدارة حسابات المشرفين في لوحة الأدمن.");
+  if(!/^9665\d{8}$/.test(wantedPhone)){
+    alert("رقم جوال المشرف غير مسجل بصورة صحيحة في حسابه. راجعه من إدارة حسابات المشرفين.");
     return null;
   }
 
@@ -497,23 +506,43 @@ async function ensureVisitSupervisorSession(){
     catch(e){app=firebase.initializeApp(visitConfig,"visitSupervisorBridge")}
 
     const visitDb=app.firestore();
-    const all=await visitDb.collection("supervisors").get();
+    let d=null;
 
-    const matches=all.docs.filter(doc=>{
-      const data=doc.data()||{};
-      return [data.username,data.phone,data.mobile].some(v=>normalizePhone(v)===wantedPhone);
-    });
+    // نظام الزيارات يستخدم رقم الجوال كاسم مستخدم للمشرف.
+    for(const candidate of phoneVariants(wantedPhone)){
+      const snap=await visitDb.collection("supervisors")
+        .where("username","==",candidate)
+        .limit(2)
+        .get();
 
-    if(matches.length!==1){
-      if(matches.length>1){
-        alert("يوجد أكثر من حساب زيارات بنفس رقم الجوال. راجع حسابات المشرفين في نظام الزيارات.");
-      }else{
-        alert("لم يتم العثور على حساب الزيارات المرتبط برقم جوال هذا المشرف.");
+      if(!snap.empty){
+        d=snap.docs[0];
+        break;
       }
+    }
+
+    // توافق احتياطي مع أي حساب قديم خزّن الجوال في phone أو mobile.
+    if(!d){
+      for(const field of ["phone","mobile"]){
+        for(const candidate of phoneVariants(wantedPhone)){
+          const snap=await visitDb.collection("supervisors")
+            .where(field,"==",candidate)
+            .limit(2)
+            .get();
+          if(!snap.empty){
+            d=snap.docs[0];
+            break;
+          }
+        }
+        if(d)break;
+      }
+    }
+
+    if(!d){
+      alert("لم يتم العثور على حساب الزيارات المرتبط برقم الجوال المسجل للمشرف.");
       return null;
     }
 
-    const d=matches[0];
     const data=d.data()||{};
     if(data.active===false){
       alert("حساب المشرف في نظام الزيارات غير مفعل.");
@@ -523,8 +552,8 @@ async function ensureVisitSupervisorSession(){
     const session={
       id:d.id,
       name:data.name||rasedAuthGet("currentUserName")||gateUsername,
-      username:data.username||data.phone||data.mobile||currentSupervisorPhone,
-      phone:data.phone||data.mobile||currentSupervisorPhone,
+      username:data.username||currentSupervisorPhone,
+      phone:currentSupervisorPhone,
       gateUsername,
       role:data.role||"supervisor",
       canVisitAllTeachers:data.canVisitAllTeachers===true
@@ -534,8 +563,10 @@ async function ensureVisitSupervisorSession(){
     localStorage.setItem("currentSupervisor",value);
     sessionStorage.setItem("currentSupervisor",value);
     return session;
+
   }catch(e){
     console.warn("VISIT SUPERVISOR BRIDGE ERROR",e);
+    alert("تعذر الاتصال بحساب الزيارات الفنية. حاول مرة أخرى.");
     return null;
   }
 }
