@@ -825,6 +825,110 @@ border-bottom:1px dashed #e5e7eb
 
 
 </style>
+
+<style id="adminCardDashboardTheme">
+.top-actions{display:none!important}
+
+.admin-card-dashboard{
+  margin:0 0 14px;
+}
+.admin-dashboard-group{
+  margin:0 0 15px;
+}
+.admin-dashboard-group-title{
+  margin:4px 2px 9px;
+  color:#004c3f;
+  font-size:13px;
+  font-weight:bold;
+}
+.admin-dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.admin-dashboard-tool{
+  min-height:74px;
+  border:0;
+  border-radius:11px;
+  padding:12px 14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  color:#fff;
+  cursor:pointer;
+  text-align:center;
+  font-family:Tahoma,Arial,sans-serif;
+  box-shadow:0 5px 15px rgba(0,0,0,.10);
+  transition:.15s ease;
+}
+.admin-dashboard-tool:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.04);
+}
+.admin-dashboard-tool span{font-size:19px;line-height:1}
+.admin-dashboard-tool strong{font-size:14px;line-height:1.35}
+.admin-dashboard-tool small{
+  font-size:9.5px;
+  line-height:1.35;
+  font-weight:normal;
+  color:rgba(255,255,255,.86);
+}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+1){background:#0f7d74}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+2){background:#947219}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+3){background:#7d3ce4}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+4){background:#156b9d}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+5){background:#7a3ec8}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+6){background:#0f7d74}
+.admin-dashboard-tool.active{
+  background:#004c3f!important;
+  box-shadow:0 0 0 3px rgba(201,151,44,.32),0 8px 20px rgba(0,76,63,.18);
+}
+
+.admin-feature-bar{
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:8px 0 13px;
+  padding:10px 13px;
+  border-radius:10px;
+  background:#004c3f;
+  color:#fff;
+}
+.admin-feature-bar.show{display:flex}
+.admin-feature-bar span{display:block;font-size:9px;opacity:.72}
+.admin-feature-bar strong{font-size:14px}
+.admin-feature-bar button{
+  border:0;
+  border-radius:8px;
+  background:#fff;
+  color:#004c3f;
+  padding:8px 11px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* كل أقسام الإدارة الطويلة مخفية حتى اختيار بطاقة */
+.container > .box{
+  display:none!important;
+}
+.container > .box.admin-feature-visible{
+  display:block!important;
+}
+
+/* الملخص الإحصائي يظل ظاهرًا دائمًا */
+.stats{display:grid!important}
+
+@media(max-width:900px){
+  .admin-dashboard-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:620px){
+  .admin-dashboard-grid{grid-template-columns:1fr}
+  .admin-feature-bar{align-items:flex-start;flex-direction:column}
+}
+</style>
 </head>
 
 
@@ -977,6 +1081,69 @@ onclick="scrollToSection('liveProviderSettingsSection')">
 </button>
 </div>
 
+
+
+<div id="adminCardDashboard" class="admin-card-dashboard">
+
+  <div class="admin-dashboard-group">
+    <div class="admin-dashboard-group-title">إدارة البيانات</div>
+    <div class="admin-dashboard-grid">
+      <button class="admin-dashboard-tool" data-admin-target="studentsSection" onclick="showAdminFeature('studentsSection',this,'إدارة الطلاب')"><span>👨‍🎓</span><strong>إدارة الطلاب</strong><small>إضافة وتعديل وحذف الطلاب</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="teachersSection" onclick="showAdminFeature('teachersSection',this,'إدارة المعلمين')"><span>👨‍🏫</span><strong>إدارة المعلمين</strong><small>الحسابات والبيانات الأساسية</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="subjectsSection" onclick="showAdminFeature('subjectsSection',this,'إدارة المواد')"><span>📚</span><strong>إدارة المواد</strong><small>إضافة وتعديل مواد المدرسة</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="teacherAssignmentsSection" onclick="showAdminFeature('teacherAssignmentsSection',this,'إسناد المواد والفصول')"><span>🔗</span><strong>إسناد المواد والفصول</strong><small>إسناد المعلمين للمواد والفصول</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="bulkTeacherSendSection" onclick="showAdminFeature('bulkTeacherSendSection',this,'الإرسال الجماعي للمعلمين')"><span>📨</span><strong>الإرسال الجماعي</strong><small>إرسال بيانات دخول المعلمين</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="excelImportSection" onclick="showAdminFeature('excelImportSection',this,'استيراد الطلاب من Excel')"><span>📊</span><strong>استيراد الطلاب</strong><small>Excel ونموذج الاستيراد</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="studentProgressSection" onclick="showAdminFeature('studentProgressSection',this,'تطور مستوى الطالب')"><span>📈</span><strong>تطور مستوى الطالب</strong><small>متابعة نتائج الطالب عبر الاختبارات</small></button>
+    </div>
+  </div>
+
+  <div class="admin-dashboard-group">
+    <div class="admin-dashboard-group-title">الاختبارات والرصد</div>
+    <div class="admin-dashboard-grid">
+      <button class="admin-dashboard-tool" data-admin-target="testsSection" onclick="showAdminFeature('testsSection',this,'إدارة الاختبارات')"><span>📝</span><strong>إدارة الاختبارات</strong><small>إنشاء وتعديل وإدارة الاختبارات</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="examScheduleSection" onclick="showAdminFeature('examScheduleSection',this,'جدول الاختبارات')"><span>🗓️</span><strong>جدول الاختبارات</strong><small>إنشاء ونسخ جداول الاختبارات</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="gradingWindowsSection" onclick="showAdminFeature('gradingWindowsSection',this,'فترات رصد الدرجات')"><span>⏱️</span><strong>فترات رصد الدرجات</strong><small>فتح وإغلاق فترات الرصد</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="examAccessSection" onclick="showAdminFeature('examAccessSection',this,'إتاحة الاختبارات الإلكترونية')"><span>🎛️</span><strong>إتاحة الاختبارات الإلكترونية</strong><small>تحديد المواد المسموح لها</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="messagesSection" onclick="showAdminFeature('messagesSection',this,'سجل رسائل أولياء الأمور')"><span>📨</span><strong>سجل رسائل أولياء الأمور</strong><small>بحث وطباعة وحذف الرسائل</small></button>
+      <button class="admin-dashboard-tool" onclick="openMonitoring()"><span>📋</span><strong>حالة الرصد</strong><small>متابعة تقدم رصد الدرجات</small></button>
+      <button class="admin-dashboard-tool" onclick="openExamMonitoring()"><span>💻</span><strong>متابعة الاختبارات الإلكترونية</strong><small>متابعة تنفيذ الاختبارات</small></button>
+    </div>
+  </div>
+
+  <div class="admin-dashboard-group">
+    <div class="admin-dashboard-group-title">التحليل والمتابعة</div>
+    <div class="admin-dashboard-grid">
+      <button class="admin-dashboard-tool" onclick="openAnalysis()"><span>📊</span><strong>تحليل النتائج</strong><small>تحليل نتائج الطلاب والفصول</small></button>
+      <button class="admin-dashboard-tool" onclick="openComparison()"><span>📈</span><strong>مقارنة النتائج</strong><small>مقارنة الأداء والنتائج</small></button>
+      <button class="admin-dashboard-tool" onclick="location.href='control-center.html'"><span>🎛️</span><strong>مركز التحكم</strong><small>إدارة ومتابعة النظام</small></button>
+      <button class="admin-dashboard-tool" onclick="location.href='student-report.html'"><span>📄</span><strong>تقرير الطالب الشامل</strong><small>عرض التقرير الكامل للطالب</small></button>
+      <button class="admin-dashboard-tool" onclick="location.href='audit-log.html'"><span>🛡️</span><strong>سجل التدقيق</strong><small>متابعة العمليات والتغييرات</small></button>
+      <button class="admin-dashboard-tool" onclick="openSupportStudents()"><span>👥</span><strong>الطلاب المحتاجون للدعم</strong><small>متابعة حالات الدعم الأكاديمي</small></button>
+      <button class="admin-dashboard-tool" onclick="location.href='supervisor-activities.html'"><span>🎯</span><strong>تقارير الأنشطة</strong><small>مراجعة واعتماد تقارير الأنشطة</small></button>
+    </div>
+  </div>
+
+  <div class="admin-dashboard-group">
+    <div class="admin-dashboard-group-title">الحسابات والإعدادات</div>
+    <div class="admin-dashboard-grid">
+      <button class="admin-dashboard-tool" data-admin-target="supervisorsSection" onclick="showAdminFeature('supervisorsSection',this,'حسابات الإشراف والصلاحيات')"><span>🛡️</span><strong>حسابات المشرفين</strong><small>الحسابات والصلاحيات والإسنادات</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="activityLeadersSection" onclick="showAdminFeature('activityLeadersSection',this,'حسابات رواد النشاط')"><span>🎯</span><strong>حسابات رواد النشاط</strong><small>إضافة وتعديل حسابات رواد النشاط</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="liveProviderSettingsSection" onclick="showAdminFeature('liveProviderSettingsSection',this,'إعداد مزود الحصص المباشرة')"><span>🎥</span><strong>مزود الحصص المباشرة</strong><small>إعدادات البث والقاعات</small></button>
+      <button class="admin-dashboard-tool" data-admin-target="cleanupSection" onclick="showAdminFeature('cleanupSection',this,'تنظيف بيانات راصد')"><span>⚠️</span><strong>تنظيف بيانات راصد</strong><small>عمليات الحذف الجماعي الحساسة</small></button>
+      <button class="admin-dashboard-tool" onclick="location.href='change-password.html?return=admin.html'"><span>🔐</span><strong>تغيير كلمة المرور</strong><small>تحديث كلمة مرور الإدارة</small></button>
+    </div>
+  </div>
+
+</div>
+
+<div id="adminFeatureBar" class="admin-feature-bar">
+  <div>
+    <span>القسم الحالي</span>
+    <strong id="adminFeatureTitle">-</strong>
+  </div>
+  <button type="button" onclick="closeAdminFeature()">← العودة إلى لوحة الأدوات</button>
+</div>
 
 <!-- =========================================
      الإحصائيات
@@ -10511,5 +10678,68 @@ start();
   </div>
 </div>
 
+
+<script id="adminCardDashboardBehavior">
+(function(){
+  function titleText(el){
+    const t=el?.querySelector(":scope > .box-title");
+    return (t?.textContent||"القسم").replace(/\s+/g," ").trim();
+  }
+
+  function ensureSpecialIds(){
+    document.querySelectorAll(".container > .box").forEach(box=>{
+      const text=titleText(box);
+      if(!box.id && text.includes("استيراد الطلاب من Excel"))box.id="excelImportSection";
+      if(!box.id && text.includes("إسناد المواد والفصول للمعلمين"))box.id="teacherAssignmentsSection";
+      if(!box.id && text.includes("تنظيف بيانات راصد"))box.id="cleanupSection";
+    });
+  }
+
+  window.showAdminFeature=function(id,button,label){
+    ensureSpecialIds();
+
+    document.querySelectorAll(".container > .box").forEach(el=>el.classList.remove("admin-feature-visible"));
+    document.querySelectorAll(".admin-dashboard-tool[data-admin-target]").forEach(el=>el.classList.remove("active"));
+
+    const target=document.getElementById(id);
+    if(!target)return;
+
+    target.classList.add("admin-feature-visible");
+    const selected=button||document.querySelector('.admin-dashboard-tool[data-admin-target="'+id+'"]');
+    selected?.classList.add("active");
+
+    const bar=document.getElementById("adminFeatureBar");
+    const title=document.getElementById("adminFeatureTitle");
+    if(title)title.textContent=label||titleText(target);
+    bar?.classList.add("show");
+
+    if(id==="messagesSection"){
+      try{if(typeof loadMessageLogs==="function")loadMessageLogs()}catch(e){}
+    }
+
+    setTimeout(()=>bar?.scrollIntoView({behavior:"smooth",block:"start"}),30);
+  };
+
+  window.closeAdminFeature=function(){
+    document.querySelectorAll(".container > .box").forEach(el=>el.classList.remove("admin-feature-visible"));
+    document.querySelectorAll(".admin-dashboard-tool[data-admin-target]").forEach(el=>el.classList.remove("active"));
+    document.getElementById("adminFeatureBar")?.classList.remove("show");
+    document.getElementById("adminCardDashboard")?.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+
+  window.addEventListener("load",ensureSpecialIds);
+
+  // أي كود قديم يحاول الانتقال إلى قسم داخلي يفتح البطاقة بدل تمرير الصفحة الطويلة.
+  window.scrollToSection=function(id){
+    ensureSpecialIds();
+    const target=document.getElementById(id);
+    if(target && target.closest(".container") && target.classList.contains("box")){
+      window.showAdminFeature(id,null,titleText(target));
+      return;
+    }
+    if(target)target.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+})();
+</script>
 </body>
 </html>
