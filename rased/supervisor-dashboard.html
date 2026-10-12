@@ -465,9 +465,24 @@ async function ensureVisitSupervisorSession(){
     let app;
     try{app=firebase.app("visitSupervisorBridge")}catch(e){app=firebase.initializeApp(visitConfig,"visitSupervisorBridge")}
     const visitDb=app.firestore();
+    let d=null;
     const snap=await visitDb.collection("supervisors").where("username","==",username).limit(1).get();
-    if(snap.empty)return null;
-    const d=snap.docs[0],data=d.data()||{};
+    if(!snap.empty){
+      d=snap.docs[0];
+    }else{
+      const all=await visitDb.collection("supervisors").get();
+      const byUser=all.docs.filter(x=>String(x.data()?.username||"").trim().toLowerCase()===username);
+      if(byUser.length===1){
+        d=byUser[0];
+      }else{
+        const norm=v=>String(v||"").trim().replace(/\s+/g," ").toLowerCase();
+        const currentName=norm(rasedAuthGet("currentUserName")||"");
+        const byName=currentName?all.docs.filter(x=>norm(x.data()?.name)===currentName):[];
+        if(byName.length===1)d=byName[0];
+      }
+    }
+    if(!d)return null;
+    const data=d.data()||{};
     if(data.active===false)return null;
     const session={
       id:d.id,
