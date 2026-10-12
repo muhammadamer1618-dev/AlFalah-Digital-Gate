@@ -5627,32 +5627,52 @@ return p;
 
 async function sendTeacherCredentials(username){
 
+// افتح النافذة فور الضغطة حتى لا يمنع Safari/Chrome فتح واتساب بعد await.
+let whatsappWindow=null;
+try{
+  whatsappWindow=window.open("about:blank","_blank");
+  if(whatsappWindow){
+    whatsappWindow.document.write(
+      '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>جاري فتح واتساب</title></head><body style="font-family:Arial;text-align:center;padding:40px">جاري تجهيز بيانات المعلم وفتح واتساب...</body></html>'
+    );
+  }
+}catch(error){
+  console.warn("WHATSAPP WINDOW OPEN ERROR",error);
+}
+
 const teacher=teachers.find(t=>t.email===username);
 
 if(!teacher){
-alert("لم يتم العثور على بيانات المعلم.");
-return;
+  if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
+  alert("لم يتم العثور على بيانات المعلم.");
+  return;
 }
 
 const phone=normalizeTeacherPhone(teacher.phone||"");
 
-if(!phone){
-alert("لا يوجد رقم جوال مسجل للمعلم:\n"+(teacher.name||username)+"\n\nاضغط تعديل وأضف رقم الجوال أولًا.");
-return;
+if(!/^9665\d{8}$/.test(phone)){
+  if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
+  alert(
+    "رقم جوال المعلم غير صحيح أو غير مسجل:\n"+
+    (teacher.name||username)+
+    "\n\nيجب أن يكون رقمًا سعوديًا مثل 05xxxxxxxx."
+  );
+  return;
 }
 
 let password="";
 
 try{
-const userDoc=await db.collection("users").doc(username).get();
-password=userDoc.exists ? (userDoc.data().password||"") : "";
+  const userDoc=await db.collection("users").doc(username).get();
+  password=userDoc.exists ? (userDoc.data().password||"") : "";
 }catch(error){
-console.error(error);
+  console.error(error);
 }
 
 if(!password){
-alert("لا توجد كلمة مرور محفوظة لهذا المعلم.");
-return;
+  if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
+  alert("لا توجد كلمة مرور محفوظة لهذا المعلم.");
+  return;
 }
 
 const message=`مدارس الفلاح الأهلية
@@ -5669,13 +5689,22 @@ ${password}
 
 يرجى الاحتفاظ ببيانات الدخول.`;
 
-window.open(
-"https://wa.me/"+phone+"?text="+encodeURIComponent(message),
-"_blank"
-);
+const whatsappUrl=
+  "https://wa.me/"+phone+"?text="+encodeURIComponent(message);
 
+try{
+  if(whatsappWindow&&!whatsappWindow.closed){
+    whatsappWindow.location.replace(whatsappUrl);
+  }else{
+    // fallback مهم خصوصًا على iPhone إذا حجب المتصفح النافذة الجديدة.
+    window.location.href=whatsappUrl;
+  }
+}catch(error){
+  console.error("WHATSAPP OPEN ERROR",error);
+  window.location.href=whatsappUrl;
 }
 
+}
 
 async function saveTeacher(){
 
