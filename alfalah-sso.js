@@ -169,9 +169,25 @@ async function linkTeacherVisits(s){
 }
 async function linkSupervisorVisits(s){
   try{
-    const q=await getDocs(query(collection(visitDb,"supervisors"),where("username","==",s.username),limit(2)));
-    if(q.empty)throw new Error("visit supervisor account not found");
-    const d=q.docs[0],data=d.data()||{};
+    let d=null;
+    const exact=await getDocs(query(collection(visitDb,"supervisors"),where("username","==",s.username),limit(2)));
+    if(!exact.empty){
+      d=exact.docs[0];
+    }else{
+      const all=await getDocs(collection(visitDb,"supervisors"));
+      const wantedUser=String(s.username||"").trim().toLowerCase();
+      const byUser=all.docs.filter(x=>String(x.data()?.username||"").trim().toLowerCase()===wantedUser);
+      if(byUser.length===1){
+        d=byUser[0];
+      }else{
+        const norm=v=>String(v||"").trim().replace(/\s+/g," ").toLowerCase();
+        const wantedName=norm(s.name);
+        const byName=wantedName?all.docs.filter(x=>norm(x.data()?.name)===wantedName):[];
+        if(byName.length===1)d=byName[0];
+      }
+    }
+    if(!d)throw new Error("visit supervisor account not found");
+    const data=d.data()||{};
     if(data.active===false)throw new Error("visit supervisor account inactive");
     const value=JSON.stringify({
       id:d.id,
