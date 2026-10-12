@@ -114,6 +114,7 @@ async function rasedLogin(username,password,type){
     sourceRole:role,
     rasedRole,
     currentUserType:role==="supervisor"?String(data.supervisorType||"general_supervisor"):"",
+    phone:data.phone||data.mobile||"",
     permissions:role==="supervisor"&&data.permissions&&typeof data.permissions==="object"?data.permissions:null
   };
 }
@@ -169,33 +170,37 @@ async function linkTeacherVisits(s){
 }
 async function linkSupervisorVisits(s){
   try{
-    let d=null;
-    const exact=await getDocs(query(collection(visitDb,"supervisors"),where("username","==",s.username),limit(2)));
-    if(!exact.empty){
-      d=exact.docs[0];
-    }else{
-      const all=await getDocs(collection(visitDb,"supervisors"));
-      const wantedUser=String(s.username||"").trim().toLowerCase();
-      const byUser=all.docs.filter(x=>String(x.data()?.username||"").trim().toLowerCase()===wantedUser);
-      if(byUser.length===1){
-        d=byUser[0];
-      }else{
-        const norm=v=>String(v||"").trim().replace(/\s+/g," ").toLowerCase();
-        const wantedName=norm(s.name);
-        const byName=wantedName?all.docs.filter(x=>norm(x.data()?.name)===wantedName):[];
-        if(byName.length===1)d=byName[0];
-      }
+    const wantedPhone=normalizePhone(s.phone||"");
+    if(!wantedPhone)throw new Error("supervisor phone missing in Rased");
+
+    const all=await getDocs(collection(visitDb,"supervisors"));
+    const candidates=all.docs.filter(x=>{
+      const data=x.data()||{};
+      return [
+        data.username,
+        data.phone,
+        data.mobile
+      ].some(v=>normalizePhone(v)===wantedPhone);
+    });
+
+    if(candidates.length!==1){
+      throw new Error(candidates.length>1?"duplicate visit supervisor phone":"visit supervisor phone not found");
     }
-    if(!d)throw new Error("visit supervisor account not found");
+
+    const d=candidates[0];
     const data=d.data()||{};
     if(data.active===false)throw new Error("visit supervisor account inactive");
+
     const value=JSON.stringify({
       id:d.id,
       name:data.name||s.name||"",
-      username:data.username||s.username,
+      username:data.username||data.phone||data.mobile||s.phone||"",
+      phone:data.phone||data.mobile||s.phone||"",
+      gateUsername:s.username,
       role:data.role||"supervisor",
       canVisitAllTeachers:data.canVisitAllTeachers===true
     });
+
     sessionStorage.setItem("currentSupervisor",value);
     localStorage.setItem("currentSupervisor",value);
     s.followupReady=true;
@@ -230,7 +235,9 @@ async function refreshLinkedState(s){
     let linked=false;
     try{
       const x=JSON.parse(localStorage.getItem("currentSupervisor")||sessionStorage.getItem("currentSupervisor")||"null");
-      if(x&&String(x.username||"")===String(s.username)){
+      const sameGate=String(x?.gateUsername||"")===String(s.username||"");
+      const samePhone=normalizePhone(x?.phone||x?.username||"")===normalizePhone(s.phone||"") && !!normalizePhone(s.phone||"");
+      if(x&&(sameGate||samePhone)){
         s.followupReady=true;
         s.followupRole=x.role||"supervisor";
         linked=true;
