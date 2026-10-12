@@ -280,9 +280,30 @@ function clearFilters(){
   if(el('classFilter'))el('classFilter').value='';
   render();
 }
+async function recordSupervisorView(id){
+  const item=data.find(x=>x.id===id);
+  if(!item || item.status==="draft")return;
+  const reviewer=localStorage.getItem("currentUserName")||localStorage.getItem("currentUserEmail")||"المشرف العام";
+  const patch={
+    supervisorViewedAt:firebase.firestore.FieldValue.serverTimestamp(),
+    supervisorViewedBy:reviewer,
+    supervisorViewCount:firebase.firestore.FieldValue.increment(1)
+  };
+  if(!item.supervisorFirstViewedAt){
+    patch.supervisorFirstViewedAt=firebase.firestore.FieldValue.serverTimestamp();
+    patch.supervisorFirstViewedBy=reviewer;
+  }
+  try{
+    await db.collection("activities").doc(id).set(patch,{merge:true});
+    item.supervisorViewedBy=reviewer;
+    item.supervisorViewedAt=new Date();
+    item.supervisorViewCount=Number(item.supervisorViewCount||0)+1;
+  }catch(e){console.error("VIEW RECEIPT ERROR",e)}
+}
 function openReview(id){
 current=data.find(x=>x.id===id);
 if(!current)return;
+recordSupervisorView(id);
 
 const v=current.parentVisibility||{};
 const pub=new Set(Array.isArray(current.publishedImageIndexes)?current.publishedImageIndexes:[]);
