@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تقارير المشرفين اليومية - المشرف العام</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--green:#0b4a3f;--gold:#c89a3b;--bg:#eef2ef;--line:#d8e1dc;--ink:#1f2926;--muted:#6f7974}
+*{box-sizing:border-box;font-family:"Cairo",Arial,sans-serif}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+button,input,select{font:inherit}
+.top{background:linear-gradient(135deg,#083a31,#0b594b);color:#fff;border-bottom:4px solid var(--gold);padding:15px 18px;display:flex;align-items:center;gap:13px;box-shadow:0 6px 18px #0002}
+.logo{width:60px;height:60px;object-fit:contain;background:#fff;border-radius:50%;padding:4px}
+.top-main{flex:1}.top h1{margin:0;font-size:21px}.top p{margin:3px 0 0;color:#f2d58e;font-size:11px;font-weight:800}
+.account{text-align:left;font-size:10px;line-height:1.8}.account b{font-size:12px}
+.logout{border:0;border-radius:8px;background:#ffffff18;color:#fff;padding:8px 11px;font-weight:900;cursor:pointer}
+.wrap{max-width:1200px;margin:18px auto;padding:0 14px 35px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 5px 18px #0000000c}
+.stat span{font-size:10px;color:var(--muted);font-weight:800}.stat b{display:block;font-size:23px;color:var(--green);margin-top:3px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 7px 24px #0000000d;overflow:hidden;margin-bottom:14px}
+.card-title{background:linear-gradient(90deg,#edf5f1,#fff);border-bottom:1px solid var(--line);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.card-title h2{margin:0;color:var(--green);font-size:15px}.live{background:#e9f8ef;color:#167044;border:1px solid #c5e8d1;border-radius:20px;padding:5px 9px;font-size:9px;font-weight:900}
+.filters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px}
+input,select{width:100%;border:1px solid #ccd8d1;border-radius:8px;padding:8px 10px;background:#fff;font-size:10px;outline:none}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:850px}
+th,td{border-bottom:1px solid #e6ece8;padding:8px;text-align:center;font-size:9px}
+th{background:#f7faf8;color:var(--green);font-weight:900;position:sticky;top:0}
+.teacher{font-weight:900;color:#183c33}.muted{color:var(--muted)}
+.btn{border:0;border-radius:8px;padding:7px 10px;cursor:pointer;font-weight:900;font-size:9px}.btn-view{background:var(--green);color:#fff}.btn-print{background:var(--gold);color:#fff}
+.empty{text-align:center;padding:28px;color:var(--muted);font-size:11px}.today-row{background:#fffdf6}
+.report-shell{padding:13px;background:#e9eeeb}.report-actions{width:200mm;max-width:100%;margin:0 auto 8px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}.report-actions .spacer{flex:1}.report-actions strong{color:var(--green);font-size:11px}
+.report{width:200mm;min-height:287mm;margin:0 auto;background:#fff;padding:7mm 7mm 5mm;box-shadow:0 8px 28px #0002;position:relative;overflow:hidden}
+.report::before{content:"";position:absolute;top:0;right:0;left:0;height:4px;background:linear-gradient(90deg,var(--green),var(--gold),var(--green))}
+.report-header{display:grid;grid-template-columns:68px 1fr 170px;gap:8px;align-items:center;border-bottom:1.5px solid var(--green);padding-bottom:7px;margin-bottom:7px}
+.report-logo{width:64px;height:64px;object-fit:contain}.report-title{text-align:center}.report-title h1{margin:0;color:var(--green);font-size:23px;font-weight:900}.ornament{color:var(--gold);font-size:11px;letter-spacing:2px;margin-top:2px}
+.identity{font-size:10px;line-height:1.8;font-weight:800;border-right:2px solid var(--gold);padding-right:8px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 9px;padding:7px 9px;border:1px solid #bdc8c2;border-radius:8px;background:#fbfcfb;min-height:18mm;margin-bottom:7px}.meta div{font-size:10.5px}.meta b{color:var(--green)}
+.section{margin-top:6px}.section-title{background:var(--green);color:#fff;padding:5px 8px;border-radius:7px 7px 0 0;font-size:11px;font-weight:900;display:flex;align-items:center;gap:5px}.section-title span{margin-right:auto;color:#f4d998;font-size:8px}
+.report table{min-width:0;table-layout:fixed}.report th,.report td{border:1px solid #bec9c3;padding:4px 3px;font-size:9.5px;line-height:1.45;position:static;background:#fff}.report th{background:#edf5f1;color:var(--green)}.report tbody tr{height:8mm}
+.status-ok{font-weight:900;color:#167044}.status-no{font-weight:900;color:#a62d25}
+.general-notes{border:1px solid #bec9c3;border-radius:0 0 7px 7px;min-height:27mm;padding:8px;font-size:9.5px;line-height:1.7}
+.footer{border-top:1px solid #bec9c3;margin-top:9px;padding-top:7px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}.sign{font-size:8px;color:var(--muted)}.sign b{display:block;color:var(--green);font-size:10px;margin-top:2px}
+.credit{text-align:center;margin-top:4px;font-size:8px;color:#7c8581;font-weight:800}
+@media(max-width:850px){.summary,.filters{grid-template-columns:1fr}.top{align-items:flex-start}.account{display:none}.report-shell{overflow:auto}}
+@page{size:A4 portrait;margin:5mm}
+@media print{body{background:#fff}body.printing .screen-only{display:none!important}body.printing .wrap{max-width:none;margin:0;padding:0}body.printing .card{border:0;box-shadow:none;margin:0}body.printing .report-shell{padding:0;background:#fff}body.printing .report-actions{display:none!important}body.printing .report{box-shadow:none;margin:0;width:200mm;min-height:287mm}}
+</style>
+</head>
+<body>
+<header class="top screen-only">
+  <img src="logo.jpeg" class="logo" alt="شعار مدارس الفلاح">
+  <div class="top-main"><h1>تقارير المشرفين اليومية</h1><p>بوابة المشرف العام — تظهر التقارير فور حفظها من المشرفين</p></div>
+  <div class="account"><div>المشرف العام</div><b id="accountName">—</b></div>
+  <button class="logout" onclick="logout()">تسجيل الخروج</button>
+</header>
+
+<div class="wrap">
+  <section class="summary screen-only">
+    <div class="stat"><span>إجمالي التقارير</span><b id="totalReports">0</b></div>
+    <div class="stat"><span>تقارير اليوم</span><b id="todayReports">0</b></div>
+    <div class="stat"><span>المشرفون أصحاب التقارير</span><b id="reportingSupervisors">0</b></div>
+  </section>
+
+  <section class="card screen-only">
+    <div class="card-title"><h2>📋 سجل تقارير المشرفين</h2><span class="live">● تحديث مباشر</span></div>
+    <div class="filters">
+      <input id="searchBox" placeholder="بحث باسم المشرف أو المادة...">
+      <select id="supervisorFilter"><option value="">كل المشرفين</option></select>
+      <input id="dateFilter" type="date">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>م</th><th>المشرف</th><th>اليوم</th><th>التاريخ</th><th>المواد</th><th>الزيارات</th><th>الإجراءات</th></tr></thead>
+        <tbody id="reportsBody"><tr><td colspan="7"><div class="empty">جاري تحميل التقارير...</div></td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="viewerCard" style="display:none">
+    <div class="report-shell">
+      <div class="report-actions screen-only">
+        <strong id="selectedReportLabel">التقرير المحدد</strong><span class="spacer"></span>
+        <button class="btn btn-print" onclick="printSelected()">🖨️ طباعة التقرير</button>
+      </div>
+
+      <main class="report" id="reportArea">
+        <header class="report-header">
+          <img src="logo.jpeg" class="report-logo" alt="شعار مدارس الفلاح">
+          <div class="report-title"><h1>تقرير المشرف التربوي</h1><div class="ornament">◆ ━━━━━ ◆ ━━━━━ ◆</div></div>
+          <div class="identity">المملكة العربية السعودية<br>وزارة التعليم<br>مدارس الفلاح الأهلية</div>
+        </header>
+
+        <section class="meta">
+          <div><b>اليوم:</b> <span id="rDay">—</span></div>
+          <div><b>التاريخ:</b> <span id="rDate">—</span></div>
+          <div><b>المواد:</b> <span id="rSubjects">—</span></div>
+          <div><b>اسم المشرف التربوي:</b> <span id="rSupervisor">—</span></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">📋 زيارات اليوم <span id="rVisitCount">0 زيارة</span></div>
+          <table><thead><tr><th>م</th><th>اسم المعلم</th><th>المادة</th><th>الدرجة</th><th>الملخص</th></tr></thead><tbody id="rVisits"></tbody></table>
+        </section>
+
+        <section class="section">
+          <div class="section-title">🔄 تبادل الزيارات</div>
+          <table><thead><tr><th>م</th><th>المعلم المزور</th><th>الزائرون</th><th>ملاحظات</th></tr></thead><tbody id="rExchange"></tbody></table>
+        </section>
+
+        <section class="section">
+          <div class="section-title">✅ ملاحظات التصحيح</div>
+          <table><thead><tr><th>م</th><th>المعلم</th><th>الحالة</th><th>الملاحظة</th></tr></thead><tbody id="rCorrections"></tbody></table>
+        </section>
+
+        <section class="section">
+          <div class="section-title">🗂️ مطابقة الخطة مع الشرح</div>
+          <table><thead><tr><th>م</th><th>المعلم</th><th>الحالة</th><th>السبب / الملاحظة</th></tr></thead><tbody id="rPlans"></tbody></table>
+        </section>
+
+        <section class="section"><div class="section-title">📝 ملاحظات عامة</div><div class="general-notes" id="rNotes">—</div></section>
+
+        <footer class="footer">
+          <div class="sign">المشرف التربوي<b id="rFooterSupervisor">—</b></div>
+          <div class="sign">المشرف العام<b id="rGeneralSupervisor">أحمد سمير</b></div>
+          <div class="sign">المدرسة<b>مدارس الفلاح الأهلية</b></div>
+        </footer>
+        <div class="credit">تصميم محمد عامر أحمد</div>
+      </main>
+    </div>
+  </section>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import { collection, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const el=id=>document.getElementById(id);
+const raw=localStorage.getItem("currentSupervisor")||sessionStorage.getItem("currentSupervisor");
+if(!raw){location.href="supervisor-login.html";throw new Error("No session")}
+let currentUser;
+try{currentUser=JSON.parse(raw)}catch(error){location.href="supervisor-login.html";throw error}
+if(!["general_supervisor","admin"].includes(currentUser.role)){location.href="supervisor-dashboard.html";throw new Error("Not general supervisor")}
+
+el("accountName").textContent=currentUser.name||"المشرف العام";
+el("rGeneralSupervisor").textContent=currentUser.name||"أحمد سمير";
+
+let reports=[],selectedReport=null,selectedVisits=[];
+
+function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+function isoToday(){const d=new Date();const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);return local.toISOString().slice(0,10)}
+function dayArabic(date){if(!date)return "—";return new Date(date+"T12:00:00").toLocaleDateString("ar-SA-u-ca-gregory",{weekday:"long"})}
+function niceDate(date){if(!date)return "—";return new Date(date+"T12:00:00").toLocaleDateString("ar-SA-u-ca-gregory",{year:"numeric",month:"2-digit",day:"2-digit"})}
+function normalize(v){return String(v||"").trim().toLowerCase()}
+function visitTeacherKey(v){return String(v.teacherCode||v.teacherName||"").trim()}
+function formatStatus(value,type){
+  if(type==="correction"){if(value==="corrected")return '<span class="status-ok">مصحح ✓</span>';if(value==="not_corrected")return '<span class="status-no">غير مصحح ✕</span>'}
+  else{if(value==="matched")return '<span class="status-ok">مطابقة ✓</span>';if(value==="not_matched")return '<span class="status-no">غير مطابقة ✕</span>'}
+  return "—"
+}
+
+function logout(){localStorage.removeItem("currentSupervisor");sessionStorage.removeItem("currentSupervisor");location.href="supervisor-login.html"}
+window.logout=logout;
+
+function renderStats(){
+  el("totalReports").textContent=reports.length;
+  el("todayReports").textContent=reports.filter(r=>r.reportDate===isoToday()).length;
+  el("reportingSupervisors").textContent=new Set(reports.map(r=>r.supervisorId||r.supervisorName).filter(Boolean)).size;
+}
+
+function fillSupervisorFilter(){
+  const select=el("supervisorFilter"),current=select.value;
+  const items=[...new Map(reports.filter(r=>r.supervisorId||r.supervisorName).map(r=>[String(r.supervisorId||r.supervisorName),{id:String(r.supervisorId||r.supervisorName),name:String(r.supervisorName||r.supervisorId||"")}])).values()].sort((a,b)=>a.name.localeCompare(b.name,"ar"));
+  select.innerHTML='<option value="">كل المشرفين</option>'+items.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("");
+  if(items.some(x=>x.id===current))select.value=current;
+}
+
+function filteredReports(){
+  const q=normalize(el("searchBox").value),sup=el("supervisorFilter").value,date=el("dateFilter").value;
+  return reports.filter(r=>{
+    if(sup&&String(r.supervisorId||r.supervisorName)!==sup)return false;
+    if(date&&r.reportDate!==date)return false;
+    if(q&&!normalize([r.supervisorName,r.subjects,r.reportDate].join(" ")).includes(q))return false;
+    return true;
+  })
+}
+
+function renderReports(){
+  renderStats();fillSupervisorFilter();
+  const list=filteredReports(),body=el("reportsBody");
+  if(!list.length){body.innerHTML='<tr><td colspan="7"><div class="empty">لا توجد تقارير مطابقة.</div></td></tr>';return}
+  body.innerHTML=list.map((r,i)=>`
+    <tr class="${r.reportDate===isoToday()?"today-row":""}">
+      <td>${i+1}</td>
+      <td class="teacher">${esc(r.supervisorName||"—")}</td>
+      <td>${esc(dayArabic(r.reportDate))}</td>
+      <td>${esc(niceDate(r.reportDate))}</td>
+      <td>${esc(r.subjects||"—")}</td>
+      <td><b>${Array.isArray(r.visitIds)?r.visitIds.length:(Array.isArray(r.visitsSnapshot)?r.visitsSnapshot.length:0)}</b></td>
+      <td><button class="btn btn-view" onclick='window.viewReport(${JSON.stringify(r.id)})'>عرض</button> <button class="btn btn-print" onclick='window.printReport(${JSON.stringify(r.id)})'>طباعة</button></td>
+    </tr>`).join("")
+}
+
+async function resolveVisits(report){
+  if(Array.isArray(report.visitsSnapshot)&&report.visitsSnapshot.length)return report.visitsSnapshot;
+  const ids=Array.isArray(report.visitIds)?report.visitIds:[],rows=[];
+  for(const id of ids){
+    try{const snap=await getDoc(doc(db,"visits",String(id)));if(snap.exists())rows.push({id:snap.id,...snap.data()})}
+    catch(error){console.warn("visit load failed",id,error)}
+  }
+  return rows;
+}
+
+async function openReport(id,scroll=true){
+  const report=reports.find(r=>r.id===id);if(!report)return;
+  selectedReport=report;selectedVisits=await resolveVisits(report);
+
+  const subjects=report.subjects||[...new Set(selectedVisits.map(v=>String(v.subject||"").trim()).filter(Boolean))].join("، ");
+  el("rDay").textContent=dayArabic(report.reportDate);
+  el("rDate").textContent=niceDate(report.reportDate);
+  el("rSubjects").textContent=subjects||"—";
+  el("rSupervisor").textContent=report.supervisorName||"—";
+  el("rFooterSupervisor").textContent=report.supervisorName||"—";
+  el("rVisitCount").textContent=selectedVisits.length+" زيارة";
+  el("selectedReportLabel").textContent="تقرير "+(report.supervisorName||"المشرف")+" — "+niceDate(report.reportDate);
+
+  el("rVisits").innerHTML=selectedVisits.length?selectedVisits.map((v,i)=>`
+    <tr><td>${i+1}</td><td>${esc(v.teacherName||"—")}</td><td>${esc(v.subject||"—")}</td><td><b>${Number(v.finalScore||0)}%</b></td><td>${esc(report.visitSummaries?.[v.id]||v.recommendations||v.positives||"—")}</td></tr>`).join("")
+    :'<tr><td colspan="5">لا توجد زيارات محفوظة مع هذا التقرير.</td></tr>';
+
+  const exchange=(Array.isArray(report.exchange)?report.exchange:[]).filter(x=>x&&(x.visited||x.visitors||x.notes));
+  el("rExchange").innerHTML=exchange.length?exchange.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.visited||"—")}</td><td>${esc(x.visitors||"—")}</td><td>${esc(x.notes||"—")}</td></tr>`).join("")
+    :'<tr><td colspan="4">لا توجد بيانات تبادل زيارات.</td></tr>';
+
+  const teacherMap=new Map();
+  selectedVisits.forEach(v=>{const key=visitTeacherKey(v);if(key&&!teacherMap.has(key))teacherMap.set(key,v)});
+  const teachers=[...teacherMap.values()];
+
+  el("rCorrections").innerHTML=teachers.length?teachers.map((v,i)=>{
+    const key=visitTeacherKey(v),saved=report.corrections?.[key]||{},status=saved.status||v.bookCorrectionStatus||"";
+    return `<tr><td>${i+1}</td><td>${esc(v.teacherName||key)}</td><td>${formatStatus(status,"correction")}</td><td>${esc(saved.note||"—")}</td></tr>`;
+  }).join(""):'<tr><td colspan="4">لا توجد بيانات تصحيح.</td></tr>';
+
+  el("rPlans").innerHTML=teachers.length?teachers.map((v,i)=>{
+    const key=visitTeacherKey(v),saved=report.plans?.[key]||{},status=saved.status||v.planMatchStatus||"";
+    return `<tr><td>${i+1}</td><td>${esc(v.teacherName||key)}</td><td>${formatStatus(status,"plan")}</td><td>${esc(saved.note||"—")}</td></tr>`;
+  }).join(""):'<tr><td colspan="4">لا توجد بيانات مطابقة خطة.</td></tr>';
+
+  el("rNotes").textContent=report.generalNotes||"—";
+  el("viewerCard").style.display="block";
+  if(scroll)setTimeout(()=>el("viewerCard").scrollIntoView({behavior:"smooth",block:"start"}),80);
+}
+window.viewReport=openReport;
+
+window.printReport=async function(id){await openReport(id,false);setTimeout(printSelected,100)};
+function printSelected(){if(!selectedReport){alert("اختر تقريرًا أولاً.");return}document.body.classList.add("printing");window.print()}
+window.printSelected=printSelected;
+window.addEventListener("afterprint",()=>document.body.classList.remove("printing"));
+
+el("searchBox").addEventListener("input",renderReports);
+el("supervisorFilter").addEventListener("change",renderReports);
+el("dateFilter").addEventListener("change",renderReports);
+
+onSnapshot(collection(db,"dailySupervisorReports"),snap=>{
+  reports=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+    const byDate=String(b.reportDate||"").localeCompare(String(a.reportDate||""));
+    return byDate!==0?byDate:String(b.supervisorName||"").localeCompare(String(a.supervisorName||""),"ar");
+  });
+  renderReports();
+  if(selectedReport&&reports.some(r=>r.id===selectedReport.id))openReport(selectedReport.id,false);
+},error=>{
+  console.error(error);
+  el("reportsBody").innerHTML='<tr><td colspan="7"><div class="empty">تعذر تحميل التقارير.</div></td></tr>';
+});
+</script>
+</body>
+</html>

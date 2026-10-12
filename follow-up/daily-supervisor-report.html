@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تقرير المشرف التربوي اليومي - مدارس الفلاح الأهلية</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<style>
+:root{
+  --green:#0b4a3f;
+  --green-dark:#07372f;
+  --green-soft:#edf5f1;
+  --gold:#c89a3b;
+  --gold-dark:#9b6d17;
+  --gold-soft:#faf2e3;
+  --ink:#1f2926;
+  --muted:#6d7672;
+  --line:#bfc9c3;
+  --red:#b42318;
+}
+*{box-sizing:border-box;font-family:"Cairo",Arial,sans-serif}
+html,body{margin:0;padding:0;background:#edf1ef;color:var(--ink)}
+body{padding:15px 0 30px}
+
+.toolbar{
+  width:200mm;max-width:calc(100% - 22px);margin:0 auto 10px;
+  background:#fff;border:1px solid #dce4df;border-radius:14px;
+  padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:9px;
+  box-shadow:0 8px 28px rgba(20,52,43,.08)
+}
+.toolbar .full{grid-column:1/-1}
+.toolbar-row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.field{flex:1;min-width:155px}
+label{display:block;font-size:10px;font-weight:900;color:var(--green);margin-bottom:4px}
+input,select,textarea{
+  width:100%;border:1px solid #cdd7d1;border-radius:8px;
+  background:#fff;padding:8px 10px;font-size:11px;outline:none
+}
+textarea{resize:vertical}
+.actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+button,.back{
+  border:0;border-radius:9px;padding:9px 13px;font-weight:900;
+  font-size:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center
+}
+.primary{background:var(--green);color:#fff}
+.gold{background:var(--gold);color:#fff}
+.light{background:#eef2f0;color:var(--green)}
+.whats{background:#25a55f;color:#fff}
+.danger{background:#fff0ef;color:var(--red)}
+.state{font-size:10px;color:var(--muted);font-weight:800}
+.history{
+  width:200mm;max-width:calc(100% - 22px);margin:0 auto 10px;
+  background:#fff;border:1px solid #dce4df;border-radius:14px;
+  box-shadow:0 8px 28px rgba(20,52,43,.07);overflow:hidden
+}
+.history-head{
+  padding:10px 13px;background:linear-gradient(90deg,var(--green-soft),#fff);
+  border-bottom:1px solid #dce4df;display:flex;align-items:center;justify-content:space-between;gap:8px
+}
+.history-head b{color:var(--green);font-size:12px}
+.history-list{max-height:220px;overflow:auto}
+.history table{min-width:650px}
+.history th,.history td{font-size:9px;padding:6px}
+.history .mini{padding:6px 9px;font-size:9px;border-radius:7px}
+.history-empty{padding:18px;text-align:center;color:var(--muted);font-size:10px}
+.fixed-phone{
+  background:#f7faf8;border:1px solid #dbe5df;border-radius:8px;
+  min-height:39px;display:flex;align-items:center;padding:8px 10px;font-weight:900;color:var(--green)
+}
+
+
+@page{size:A4 portrait;margin:5mm}
+.sheet{
+  width:200mm;min-height:287mm;margin:0 auto;background:#fff;
+  padding:7mm 7mm 5mm;box-shadow:0 8px 30px rgba(0,0,0,.12);
+  position:relative;overflow:hidden
+}
+.sheet::before{
+  content:"";position:absolute;right:0;top:0;width:100%;height:4px;
+  background:linear-gradient(90deg,var(--green),var(--gold),var(--green))
+}
+
+.report-header{
+  display:grid;grid-template-columns:68px 1fr 170px;gap:8px;align-items:center;
+  border-bottom:1.5px solid var(--green);padding-bottom:5px;margin-bottom:5px
+}
+.logo{width:64px;height:64px;object-fit:contain}
+.report-title{text-align:center}
+.report-title h1{margin:0;color:var(--green);font-size:23px;font-weight:900}
+.report-title .ornament{color:var(--gold);font-size:11px;letter-spacing:2px;margin-top:1px}
+.report-identity{font-size:10px;line-height:1.8;font-weight:800;color:#27332e;border-right:2px solid var(--gold);padding-right:7px}
+
+.meta{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-bottom:5px;
+  padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fbfcfb
+}
+.meta-item{display:flex;align-items:center;gap:5px;font-size:10.5px;min-height:24px}
+.meta-item b{color:var(--green);white-space:nowrap}
+.meta-item input{
+  border:0;border-bottom:1px dotted #8a9891;border-radius:0;padding:1px 3px;
+  min-width:0;font-size:10px;background:transparent
+}
+
+.section{margin-top:4px}
+.section-title{
+  display:flex;align-items:center;gap:6px;background:var(--green);
+  color:#fff;padding:5px 8px;border-radius:7px 7px 0 0;font-size:11px;font-weight:900
+}
+.section-title .tag{margin-right:auto;color:#f6dda4;font-size:7.8px}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th,td{
+  border:1px solid var(--line);padding:2.4px 3px;text-align:center;
+  vertical-align:middle;font-size:9.7px;line-height:1.5
+}
+th{background:var(--green-soft);color:var(--green);font-weight:900}
+td input,td textarea{
+  border:0;border-bottom:1px dotted #adb8b2;border-radius:0;background:transparent;
+  padding:1px 2px;font-size:9.4px;min-height:22px
+}
+td textarea{height:25px;resize:none}
+.score{font-weight:900;color:var(--green);font-size:8px}
+.empty-row{color:#7a8580;padding:7px}
+
+.choice{
+  display:inline-flex;align-items:center;gap:2px;white-space:nowrap;margin:0 2px;font-size:8.8px
+}
+.choice input{width:11px;height:11px;margin:0;padding:0;accent-color:var(--green)}
+.notes textarea{
+  width:100%;min-height:68px;border:1px solid var(--line);border-radius:0 0 7px 7px;
+  padding:7px 9px;font-size:9.8px;line-height:1.7;background:#fff
+}
+
+.footer{
+  margin-top:5px;border-top:1px solid var(--line);padding-top:4px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center
+}
+.sign{font-size:8.8px;color:var(--muted)}
+.sign b{display:block;color:var(--green);font-size:10px;margin-top:2px}
+.credit{
+  text-align:center;font-size:8px;color:#78827d;margin-top:3px;font-weight:800
+}
+
+.capture-mode input,.capture-mode textarea{color:#13201a}
+/* استغلال أفضل لمساحة A4 */
+#reportSheet table tbody tr{height:8mm}
+#reportSheet .section{margin-top:6px}
+#reportSheet .section-title{min-height:7mm}
+#reportSheet .meta{min-height:18mm}
+#reportSheet .notes textarea{min-height:27mm}
+#reportSheet .footer{margin-top:9px;padding-top:7px}
+#reportSheet .sign{font-size:8.2px}
+#reportSheet .sign b{font-size:10px}
+
+/* لو زاد عدد الزيارات نحافظ على صفحة واحدة تلقائيًا */
+#reportSheet.compact table tbody tr{height:6.2mm}
+#reportSheet.compact th,
+#reportSheet.compact td{font-size:8.5px;padding:2px 3px}
+#reportSheet.compact .section-title{font-size:10px;min-height:5.5mm;padding:4px 7px}
+#reportSheet.compact .meta{min-height:14mm}
+#reportSheet.compact .notes textarea{min-height:19mm}
+#reportSheet.compact .report-title h1{font-size:20px}
+#reportSheet.compact .report-identity{font-size:8.8px}
+
+.capture-mode .editable-hint{display:none}
+
+@media(max-width:850px){
+  body{padding-top:8px}
+  .toolbar{grid-template-columns:1fr}
+  .toolbar .full{grid-column:auto}
+  .sheet{
+    transform-origin:top center;
+    width:200mm;
+    margin-left:auto;margin-right:auto
+  }
+}
+@media print{
+  html,body{background:#fff}
+  body{padding:0}
+  .toolbar,.history{display:none!important}
+  .sheet{box-shadow:none;margin:0;width:200mm;min-height:287mm}
+}
+</style>
+</head>
+
+<body>
+
+<div class="toolbar">
+  <div class="toolbar-row">
+    <div class="field">
+      <label>تاريخ التقرير</label>
+      <input type="date" id="reportDate">
+    </div>
+    <div class="field">
+      <label>رقم المشرف العام للواتساب</label>
+      <div class="fixed-phone">0567199058</div>
+    </div>
+  </div>
+
+  <div class="toolbar-row">
+    <div class="field">
+      <label>المواد</label>
+      <input id="subjectsManual" placeholder="تُسحب تلقائيًا من زيارات اليوم ويمكن تعديلها">
+    </div>
+  </div>
+
+  <div class="actions full">
+    <a class="back light" href="supervisor-dashboard.html">← لوحة المشرف</a>
+    <button class="primary" id="saveBtn">💾 حفظ التقرير</button>
+    <button class="gold" id="printBtn">🖨️ طباعة</button>
+    <button class="whats" id="imageBtn">📲 تجهيز الصورة وفتح واتساب</button>
+    <span class="state" id="saveState"></span>
+  </div>
+</div>
+
+
+
+<section class="history">
+  <div class="history-head">
+    <b>🗂️ سجل التقارير المحفوظة — تعديل / إرسال / حذف</b>
+    <button class="light mini" id="refreshHistoryBtn">↻ تحديث السجل</button>
+  </div>
+  <div class="history-list">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:8%">م</th>
+          <th style="width:22%">التاريخ</th>
+          <th style="width:18%">اليوم</th>
+          <th style="width:18%">عدد الزيارات</th>
+          <th>الإجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody">
+        <tr><td colspan="5" class="history-empty">جاري تحميل سجل التقارير...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<main class="sheet" id="reportSheet">
+
+  <header class="report-header">
+    <img src="logo.jpeg" class="logo" alt="شعار مدارس الفلاح">
+
+    <div class="report-title">
+      <h1>تقرير المشرف التربوي</h1>
+      <div class="ornament">◆ ━━━━━ ◆ ━━━━━ ◆</div>
+    </div>
+
+    <div class="report-identity">
+      المملكة العربية السعودية<br>
+      وزارة التعليم<br>
+      مدارس الفلاح الأهلية
+    </div>
+  </header>
+
+  <section class="meta">
+    <div class="meta-item"><b>اليوم:</b><span id="dayName">—</span></div>
+    <div class="meta-item"><b>التاريخ:</b><span id="dateText">—</span></div>
+    <div class="meta-item"><b>المواد:</b><span id="subjectsText">—</span></div>
+    <div class="meta-item"><b>اسم المشرف التربوي:</b><span id="supervisorName">—</span></div>
+  </section>
+
+
+  <section class="section">
+    <div class="section-title">
+      📋 زيارات اليوم
+      <span class="tag" id="visitCountTag">0 زيارة</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:6%">م</th>
+          <th style="width:24%">اسم المعلم</th>
+          <th style="width:16%">المادة</th>
+          <th style="width:12%">درجة الزيارة</th>
+          <th>الملخص</th>
+        </tr>
+      </thead>
+      <tbody id="visitsBody">
+        <tr><td colspan="5" class="empty-row">جاري تحميل زيارات اليوم...</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <section class="section">
+    <div class="section-title">🔄 تبادل الزيارات <span class="tag">يُستكمل يدويًا</span></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:7%">م</th>
+          <th style="width:28%">المعلم المزور</th>
+          <th style="width:32%">الزائرون</th>
+          <th>ملاحظات عامة</th>
+        </tr>
+      </thead>
+      <tbody id="exchangeBody"></tbody>
+    </table>
+  </section>
+
+
+  <section class="section">
+    <div class="section-title">✅ ملاحظات التصحيح <span class="tag">تُسحب من استمارة التقييم ويمكن تعديلها</span></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:7%">م</th>
+          <th style="width:28%">اسم المعلم</th>
+          <th style="width:28%">حالة التصحيح</th>
+          <th>الملاحظة</th>
+        </tr>
+      </thead>
+      <tbody id="correctionBody"></tbody>
+    </table>
+  </section>
+
+
+  <section class="section">
+    <div class="section-title">🗂️ مطابقة الخطة مع الشرح <span class="tag">تُسحب من استمارة التقييم ويمكن تعديلها</span></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:7%">م</th>
+          <th style="width:25%">اسم المعلم</th>
+          <th style="width:20%">الخطة مطابقة</th>
+          <th style="width:20%">الخطة غير مطابقة</th>
+          <th>أسباب عدم المطابقة / ملاحظة</th>
+        </tr>
+      </thead>
+      <tbody id="planBody"></tbody>
+    </table>
+  </section>
+
+
+  <section class="section notes">
+    <div class="section-title">📝 ملاحظات عامة</div>
+    <textarea id="generalNotes" placeholder="اكتب الملاحظات العامة هنا..."></textarea>
+  </section>
+
+
+  <footer class="footer">
+    <div class="sign">المشرف التربوي<b id="footerSupervisor">—</b></div>
+    <div class="sign">المشرف العام<b>أحمد سمير</b></div>
+    <div class="sign">المدرسة<b>مدارس الفلاح الأهلية</b></div>
+  </footer>
+
+  <div class="credit">تصميم محمد عامر أحمد</div>
+
+</main>
+
+
+<script type="module">
+import { db } from "./firebase.js";
+import {
+  collection,
+  getDocs,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const el=id=>document.getElementById(id);
+
+const raw =
+  localStorage.getItem("currentSupervisor") ||
+  sessionStorage.getItem("currentSupervisor");
+
+if(!raw){
+  location.href="supervisor-login.html";
+  throw new Error("No supervisor session");
+}
+
+let supervisor;
+try{
+  supervisor=JSON.parse(raw);
+}catch(error){
+  location.href="supervisor-login.html";
+  throw error;
+}
+
+if(supervisor.role==="admin"){
+  location.href="admin-dashboard.html";
+  throw new Error("Admin redirected");
+}
+
+let todayVisits=[];
+let savedReport=null;
+let reportHistory=[];
+const GENERAL_SUPERVISOR_PHONE="0567199058";
+
+function esc(v){
+  return String(v??"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function isoToday(){
+  const d=new Date();
+  const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,10);
+}
+
+function dayArabic(date){
+  if(!date)return "—";
+  return new Date(date+"T12:00:00")
+    .toLocaleDateString("ar-SA-u-ca-gregory",{weekday:"long"});
+}
+
+function niceDate(date){
+  if(!date)return "—";
+  return new Date(date+"T12:00:00")
+    .toLocaleDateString("ar-SA-u-ca-gregory",{
+      year:"numeric",month:"2-digit",day:"2-digit"
+    });
+}
+
+function scoreText(value){
+  const n=Number(value||0);
+  return Number.isInteger(n)?String(n):n.toFixed(1);
+}
+
+function teacherKey(v){
+  return String(v.teacherCode||v.teacherName||"").trim();
+}
+
+function uniqueVisitedTeachers(){
+  const map=new Map();
+  todayVisits.forEach(v=>{
+    const key=teacherKey(v);
+    if(key&&!map.has(key))map.set(key,v);
+  });
+  return [...map.values()];
+}
+
+function reportDocId(date){
+  const sid=String(supervisor.id||supervisor.username||"supervisor").replace(/[^\w-]/g,"_");
+  return sid+"_"+date;
+}
+
+function currentDate(){
+  return el("reportDate").value||isoToday();
+}
+
+function getSubjectsAuto(){
+  return [...new Set(todayVisits.map(v=>String(v.subject||"").trim()).filter(Boolean))].join("، ");
+}
+
+function applyReportDensity(){
+  const sheet=el("reportSheet");
+  if(!sheet)return;
+  sheet.classList.toggle("compact",todayVisits.length>4);
+}
+
+function updateHeader(){
+  applyReportDensity();
+  const date=currentDate();
+  el("dayName").textContent=dayArabic(date);
+  el("dateText").textContent=niceDate(date);
+  el("supervisorName").textContent=supervisor.name||"المشرف";
+  el("footerSupervisor").textContent=supervisor.name||"المشرف";
+  el("subjectsText").textContent=el("subjectsManual").value.trim()||getSubjectsAuto()||"—";
+  el("visitCountTag").textContent=todayVisits.length+" زيارة";
+}
+
+function summaryValue(v){
+  const saved=savedReport?.visitSummaries?.[v.id];
+  if(saved!==undefined)return saved;
+  return v.recommendations||v.positives||"";
+}
+
+function renderVisits(){
+  const body=el("visitsBody");
+
+  if(!todayVisits.length){
+    body.innerHTML='<tr><td colspan="5" class="empty-row">لا توجد زيارات مسجلة لهذا المشرف في هذا التاريخ.</td></tr>';
+    return;
+  }
+
+  body.innerHTML=todayVisits.map((v,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${esc(v.teacherName||"—")}</td>
+      <td>${esc(v.subject||"—")}</td>
+      <td class="score">${scoreText(v.finalScore)}%</td>
+      <td>
+        <input
+          class="visit-summary"
+          data-visit="${esc(v.id)}"
+          value="${esc(summaryValue(v))}"
+          placeholder="ملخص مختصر">
+      </td>
+    </tr>
+  `).join("");
+}
+
+function renderExchange(){
+  const rows=Array.isArray(savedReport?.exchange)?savedReport.exchange:[];
+  el("exchangeBody").innerHTML=Array.from({length:4},(_,i)=>{
+    const x=rows[i]||{};
+    return `
+      <tr>
+        <td>${i+1}</td>
+        <td><input class="exchange-visited" value="${esc(x.visited||"")}"></td>
+        <td><input class="exchange-visitors" value="${esc(x.visitors||"")}"></td>
+        <td><input class="exchange-notes" value="${esc(x.notes||"")}"></td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function checked(a,b){return a===b?"checked":""}
+
+function renderCorrection(){
+  const teachers=uniqueVisitedTeachers();
+  const map=savedReport?.corrections||{};
+
+  if(!teachers.length){
+    el("correctionBody").innerHTML='<tr><td colspan="4" class="empty-row">تظهر أسماء المعلمين تلقائيًا بعد وجود زيارة في هذا اليوم.</td></tr>';
+    return;
+  }
+
+  el("correctionBody").innerHTML=teachers.map((v,i)=>{
+    const key=teacherKey(v);
+    const x=map[key]||{};
+    const autoStatus=String(v.bookCorrectionStatus||"");
+    const status=x.status||autoStatus;
+    const name="cor_"+i;
+    return `
+      <tr data-teacher-key="${esc(key)}">
+        <td>${i+1}</td>
+        <td>${esc(v.teacherName||key)}</td>
+        <td>
+          <label class="choice"><input type="radio" name="${name}" value="corrected" ${checked(status,"corrected")}> مصحح</label>
+          <label class="choice"><input type="radio" name="${name}" value="not_corrected" ${checked(status,"not_corrected")}> غير مصحح</label>
+        </td>
+        <td><input class="correction-note" value="${esc(x.note||"")}" placeholder="ملاحظة"></td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderPlan(){
+  const teachers=uniqueVisitedTeachers();
+  const map=savedReport?.plans||{};
+
+  if(!teachers.length){
+    el("planBody").innerHTML='<tr><td colspan="5" class="empty-row">تظهر أسماء المعلمين تلقائيًا بعد وجود زيارة في هذا اليوم.</td></tr>';
+    return;
+  }
+
+  el("planBody").innerHTML=teachers.map((v,i)=>{
+    const key=teacherKey(v);
+    const x=map[key]||{};
+    const autoStatus=String(v.planMatchStatus||"");
+    const status=x.status||autoStatus;
+    const name="plan_"+i;
+    return `
+      <tr data-teacher-key="${esc(key)}">
+        <td>${i+1}</td>
+        <td>${esc(v.teacherName||key)}</td>
+        <td><label class="choice"><input type="radio" name="${name}" value="matched" ${checked(status,"matched")}> ✓ مطابقة</label></td>
+        <td><label class="choice"><input type="radio" name="${name}" value="not_matched" ${checked(status,"not_matched")}> ✕ غير مطابقة</label></td>
+        <td><input class="plan-note" value="${esc(x.note||"")}" placeholder="سبب / ملاحظة"></td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function collectReportData(){
+  const visitSummaries={};
+  document.querySelectorAll(".visit-summary").forEach(input=>{
+    visitSummaries[input.dataset.visit]=input.value.trim();
+  });
+
+  const exchange=[...el("exchangeBody").querySelectorAll("tr")].map(row=>({
+    visited:row.querySelector(".exchange-visited")?.value.trim()||"",
+    visitors:row.querySelector(".exchange-visitors")?.value.trim()||"",
+    notes:row.querySelector(".exchange-notes")?.value.trim()||""
+  }));
+
+  const corrections={};
+  el("correctionBody").querySelectorAll("tr[data-teacher-key]").forEach(row=>{
+    const key=row.dataset.teacherKey;
+    corrections[key]={
+      status:row.querySelector('input[type="radio"]:checked')?.value||"",
+      note:row.querySelector(".correction-note")?.value.trim()||""
+    };
+  });
+
+  const plans={};
+  el("planBody").querySelectorAll("tr[data-teacher-key]").forEach(row=>{
+    const key=row.dataset.teacherKey;
+    plans[key]={
+      status:row.querySelector('input[type="radio"]:checked')?.value||"",
+      note:row.querySelector(".plan-note")?.value.trim()||""
+    };
+  });
+
+  return {
+    reportDate:currentDate(),
+    supervisorId:String(supervisor.id||""),
+    supervisorName:String(supervisor.name||""),
+    subjects:el("subjectsManual").value.trim(),
+    visitIds:todayVisits.map(v=>v.id),
+
+    visitsSnapshot:todayVisits.map(v=>({
+      id:v.id,
+      teacherCode:String(v.teacherCode||""),
+      teacherName:String(v.teacherName||""),
+      subject:String(v.subject||""),
+      finalScore:Number(v.finalScore||0),
+      visitDate:String(v.visitDate||""),
+      positives:String(v.positives||""),
+      recommendations:String(v.recommendations||""),
+      planMatchStatus:String(v.planMatchStatus||""),
+      bookCorrectionStatus:String(v.bookCorrectionStatus||"")
+    })),
+
+    visitSummaries,
+    exchange,
+    corrections,
+    plans,
+    generalNotes:el("generalNotes").value.trim()
+  };
+}
+
+async function saveReport(showMessage=true){
+  const date=currentDate();
+  const data=collectReportData();
+
+  await setDoc(
+    doc(db,"dailySupervisorReports",reportDocId(date)),
+    {
+      ...data,
+      updatedAt:serverTimestamp()
+    },
+    {merge:true}
+  );
+
+  savedReport={...(savedReport||{}),...data};
+  await loadHistory();
+
+  if(showMessage){
+    el("saveState").textContent="تم حفظ التقرير ✅";
+    setTimeout(()=>el("saveState").textContent="",2500);
+  }
+}
+
+
+async function loadHistory(){
+  try{
+    const snap=await getDocs(query(
+      collection(db,"dailySupervisorReports"),
+      where("supervisorId","==",String(supervisor.id||""))
+    ));
+
+    reportHistory=snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>String(b.reportDate||"").localeCompare(String(a.reportDate||"")));
+
+    renderHistory();
+  }catch(error){
+    console.error(error);
+    el("historyBody").innerHTML='<tr><td colspan="5" class="history-empty">تعذر تحميل سجل التقارير.</td></tr>';
+  }
+}
+
+function renderHistory(){
+  const body=el("historyBody");
+  if(!reportHistory.length){
+    body.innerHTML='<tr><td colspan="5" class="history-empty">لا توجد تقارير محفوظة لهذا المشرف حتى الآن.</td></tr>';
+    return;
+  }
+
+  body.innerHTML=reportHistory.map((r,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${esc(niceDate(r.reportDate||""))}</td>
+      <td>${esc(dayArabic(r.reportDate||""))}</td>
+      <td>${Array.isArray(r.visitIds)?r.visitIds.length:0}</td>
+      <td>
+        <button class="primary mini" onclick='window.editSavedReport(${JSON.stringify(r.reportDate||"")})'>✏️ تعديل</button>
+        <button class="whats mini" onclick='window.sendSavedReport(${JSON.stringify(r.reportDate||"")})'>📲 إرسال</button>
+        <button class="danger mini" onclick='window.deleteSavedReport(${JSON.stringify(r.id)})'>🗑 حذف</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+window.editSavedReport=async function(date){
+  if(!date)return;
+  el("reportDate").value=date;
+  window.scrollTo({top:0,behavior:"smooth"});
+  await reloadForDate();
+  setTimeout(()=>{
+    el("reportSheet").scrollIntoView({behavior:"smooth",block:"start"});
+  },150);
+};
+
+
+window.sendSavedReport=async function(date){
+  if(!date)return;
+
+  try{
+    el("reportDate").value=date;
+    await reloadForDate();
+
+    // نعطي المتصفح لحظة لتحديث التقرير قبل تحويله لصورة.
+    await new Promise(resolve=>setTimeout(resolve,180));
+
+    await sendAsImage();
+  }catch(error){
+    console.error(error);
+    alert("تعذر تجهيز التقرير للإرسال: "+(error.message||error));
+  }
+};
+
+window.deleteSavedReport=async function(id){
+  const r=reportHistory.find(x=>x.id===id);
+  if(!r)return;
+
+  if(!confirm(
+    "حذف التقرير المحفوظ نهائيًا؟\\n"+
+    niceDate(r.reportDate||"")+
+    "\\n\\nلن يتم حذف الزيارات الأصلية، سيتم حذف التقرير اليومي فقط."
+  ))return;
+
+  if(prompt("اكتب: حذف")!=="حذف")return;
+
+  try{
+    await deleteDoc(doc(db,"dailySupervisorReports",id));
+
+    if(currentDate()===r.reportDate){
+      savedReport=null;
+      el("subjectsManual").value=getSubjectsAuto();
+      el("generalNotes").value="";
+      renderVisits();
+      renderExchange();
+      renderCorrection();
+      renderPlan();
+      updateHeader();
+    }
+
+    await loadHistory();
+    alert("تم حذف التقرير المحفوظ ✅");
+  }catch(error){
+    console.error(error);
+    alert("تعذر حذف التقرير: "+(error.message||error));
+  }
+};
+
+async function loadSavedReport(){
+  const date=currentDate();
+  const snap=await getDoc(doc(db,"dailySupervisorReports",reportDocId(date)));
+  savedReport=snap.exists()?snap.data():null;
+
+  el("subjectsManual").value=savedReport?.subjects||getSubjectsAuto();
+  el("generalNotes").value=savedReport?.generalNotes||"";
+  renderVisits();
+  renderExchange();
+  renderCorrection();
+  renderPlan();
+  updateHeader();
+}
+
+async function loadVisits(){
+  const date=currentDate();
+
+  const snap=await getDocs(query(
+    collection(db,"visits"),
+    where("supervisorId","==",String(supervisor.id||""))
+  ));
+
+  todayVisits=snap.docs
+    .map(d=>({id:d.id,...d.data()}))
+    .filter(v=>
+      v.recordType!=="monthly_evaluation" &&
+      String(v.visitDate||"")===date
+    )
+    .sort((a,b)=>
+      String(a.teacherName||"").localeCompare(String(b.teacherName||""),"ar")
+    );
+
+  await loadSavedReport();
+}
+
+function normalizeSaudiPhone(raw){
+  let d=String(raw||"").replace(/[^\d]/g,"");
+  if(d.startsWith("00"))d=d.slice(2);
+  if(d.startsWith("0")&&d.length===10)d="966"+d.slice(1);
+  if(d.startsWith("5")&&d.length===9)d="966"+d;
+  return d;
+}
+
+async function sheetToBlob(){
+  document.body.classList.add("capture-mode");
+  const canvas=await html2canvas(el("reportSheet"),{
+    scale:2.2,
+    backgroundColor:"#ffffff",
+    useCORS:true,
+    logging:false
+  });
+  document.body.classList.remove("capture-mode");
+
+  return await new Promise(resolve=>canvas.toBlob(resolve,"image/png",1));
+}
+
+function downloadBlob(blob){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="تقرير-المشرف-"+currentDate()+".png";
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+
+async function sendAsImage(){
+  const phone=normalizeSaudiPhone(GENERAL_SUPERVISOR_PHONE);
+
+  let chatWindow=null;
+  try{
+    chatWindow=window.open("about:blank","_blank");
+  }catch(e){}
+
+  el("imageBtn").disabled=true;
+  el("imageBtn").textContent="جاري تجهيز الصورة...";
+
+  try{
+    await saveReport(false);
+    const blob=await sheetToBlob();
+
+    let copied=false;
+
+    try{
+      if(navigator.clipboard && window.ClipboardItem){
+        await navigator.clipboard.write([
+          new ClipboardItem({"image/png":blob})
+        ]);
+        copied=true;
+      }
+    }catch(error){
+      console.warn("Clipboard image not available:",error);
+    }
+
+    if(!copied){
+      downloadBlob(blob);
+    }
+
+    const message=
+      "السلام عليكم ورحمة الله وبركاته\n" +
+      "تقرير المشرف التربوي ليوم "+dayArabic(currentDate())+
+      " الموافق "+niceDate(currentDate())+
+      "\nالمشرف: "+(supervisor.name||"");
+
+    const url="https://wa.me/"+phone+"?text="+encodeURIComponent(message);
+
+    if(chatWindow){
+      chatWindow.location.href=url;
+    }else{
+      location.href=url;
+    }
+
+    if(copied){
+      setTimeout(()=>{
+        alert("تم تجهيز صورة التقرير ونسخها للحافظة، وفتح محادثة المشرف العام على الرقم المثبت. الصق الصورة داخل المحادثة ثم اضغط إرسال.");
+      },600);
+    }else{
+      setTimeout(()=>{
+        alert("تم تنزيل صورة التقرير وفتح محادثة المشرف العام على الرقم المثبت. أرفق الصورة التي تم تنزيلها ثم اضغط إرسال.");
+      },600);
+    }
+
+  }catch(error){
+    console.error(error);
+    if(chatWindow)chatWindow.close();
+    alert("تعذر تجهيز صورة التقرير: "+(error.message||error));
+  }finally{
+    el("imageBtn").disabled=false;
+    el("imageBtn").textContent="📲 تجهيز الصورة وفتح واتساب";
+  }
+}
+
+async function reloadForDate(){
+  el("visitsBody").innerHTML='<tr><td colspan="5" class="empty-row">جاري تحميل زيارات اليوم...</td></tr>';
+  savedReport=null;
+  todayVisits=[];
+  updateHeader();
+
+  try{
+    await loadVisits();
+  }catch(error){
+    console.error(error);
+    el("visitsBody").innerHTML='<tr><td colspan="5" class="empty-row">تعذر تحميل زيارات هذا اليوم.</td></tr>';
+    alert("تعذر تحميل التقرير: "+(error.message||error));
+  }
+}
+
+el("reportDate").value=isoToday();
+el("reportDate").addEventListener("change",reloadForDate);
+el("refreshHistoryBtn").addEventListener("click",loadHistory);
+el("subjectsManual").addEventListener("input",updateHeader);
+el("saveBtn").addEventListener("click",async()=>{
+  try{await saveReport(true)}
+  catch(error){console.error(error);alert("تعذر حفظ التقرير: "+(error.message||error))}
+});
+el("printBtn").addEventListener("click",async()=>{
+  try{await saveReport(false)}catch(error){console.warn(error)}
+  window.print();
+});
+el("imageBtn").addEventListener("click",sendAsImage);
+
+updateHeader();
+await loadHistory();
+reloadForDate();
+</script>
+
+</body>
+</html>

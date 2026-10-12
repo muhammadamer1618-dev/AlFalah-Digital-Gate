@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>المعلم المتميز - مدارس الفلاح الأهلية</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+    :root{
+      --green:#0b4a3f;
+      --green-dark:#07372f;
+      --green-soft:#edf5f1;
+      --gold:#c89a3b;
+      --gold-dark:#a87921;
+      --gold-soft:#faf2e3;
+      --bg:#f6f8f6;
+      --white:#fff;
+      --text:#1f2926;
+      --muted:#737b77;
+      --border:#e2e6e3;
+      --danger:#a33b3b;
+      --shadow:0 14px 40px rgba(20,55,45,.08);
+    }
+
+    *{box-sizing:border-box;font-family:"Cairo",sans-serif}
+
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top right,rgba(200,154,59,.08),transparent 30%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    .header{
+      background:#fff;
+      border-bottom:1px solid var(--border);
+      box-shadow:0 4px 20px rgba(0,0,0,.03);
+    }
+
+    .header-inner{
+      max-width:1250px;
+      margin:auto;
+      padding:11px 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+    }
+
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img{width:58px;height:58px;object-fit:contain}
+    .brand h1{margin:0;color:var(--green);font-size:17px;font-weight:900}
+    .brand p{margin:2px 0 0;color:var(--gold-dark);font-size:10px;font-weight:700}
+
+    .top-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+    .btn{
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--green);
+      border-radius:10px;
+      padding:9px 14px;
+      font-size:11px;
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+    }
+
+    .btn.primary{
+      background:var(--green);
+      color:#fff;
+      border-color:var(--green);
+    }
+
+    .btn.gold{
+      background:var(--gold-soft);
+      color:var(--gold-dark);
+      border-color:#ecd7aa;
+    }
+
+    .page{
+      max-width:1250px;
+      margin:auto;
+      padding:28px 18px 45px;
+    }
+
+    .hero{
+      background:linear-gradient(135deg,var(--green),var(--green-dark));
+      color:#fff;
+      border-radius:22px;
+      padding:25px;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero small{color:#f2d79e;font-size:10px;font-weight:800}
+    .hero h2{margin:4px 0 0;font-size:24px;font-weight:900}
+    .hero p{margin:5px 0 0;color:rgba(255,255,255,.8);font-size:11px}
+
+    .panel{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
+    }
+
+    .filters{
+      display:grid;
+      grid-template-columns:1.2fr 1fr 1fr 1fr auto;
+      gap:12px;
+      align-items:end;
+    }
+
+    label{
+      display:block;
+      color:var(--green);
+      font-size:11px;
+      font-weight:900;
+      margin-bottom:6px;
+    }
+
+    input,select{
+      width:100%;
+      min-height:44px;
+      border:1px solid var(--border);
+      border-radius:11px;
+      padding:9px 11px;
+      background:#fff;
+      color:var(--text);
+      font-size:12px;
+      outline:none;
+    }
+
+    input:focus,select:focus{
+      border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(200,154,59,.12);
+    }
+
+    .summary{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+
+    .stat{
+      background:var(--green-soft);
+      border:1px solid #dbeae4;
+      border-radius:14px;
+      padding:14px;
+    }
+
+    .stat.gold{
+      background:var(--gold-soft);
+      border-color:#efdfbc;
+    }
+
+    .stat span{
+      display:block;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:700;
+    }
+
+    .stat strong{
+      display:block;
+      margin-top:3px;
+      color:var(--green);
+      font-size:23px;
+      font-weight:900;
+    }
+
+    .section-title{
+      margin-bottom:12px;
+    }
+
+    .section-title h3{
+      margin:0;
+      color:var(--green);
+      font-size:17px;
+      font-weight:900;
+    }
+
+    .section-title p{
+      margin:3px 0 0;
+      color:var(--muted);
+      font-size:10px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:11px;
+    }
+
+    th,td{
+      border:1px solid var(--border);
+      padding:10px;
+      text-align:right;
+      vertical-align:middle;
+    }
+
+    th{
+      background:var(--green-soft);
+      color:var(--green);
+      font-weight:900;
+    }
+
+    td.number{
+      text-align:center;
+      white-space:nowrap;
+      font-weight:900;
+    }
+
+    .auto-row{background:#fbfcfb}
+    .manual-row{background:#fff}
+
+    .manual-input{
+      max-width:120px;
+      min-height:38px;
+      text-align:center;
+      font-weight:900;
+    }
+
+    .mapping{
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+    }
+
+    .mapping select{
+      min-height:38px;
+      font-size:11px;
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:9px;
+      line-height:1.6;
+    }
+
+    .total-box{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      padding:16px;
+      border-radius:15px;
+      background:linear-gradient(135deg,var(--green),var(--green-dark));
+      color:#fff;
+      margin-top:14px;
+    }
+
+    .total-box span{font-size:12px;font-weight:800}
+    .total-box strong{font-size:30px;font-weight:900}
+
+    .visits-list{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+    }
+
+    .visit-chip{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      background:#fff;
+    }
+
+    .visit-chip strong{
+      display:block;
+      color:var(--green);
+      font-size:11px;
+    }
+
+    .visit-chip span{
+      display:block;
+      color:var(--muted);
+      font-size:9px;
+      margin-top:2px;
+    }
+
+    .notice{
+      padding:11px 13px;
+      border-radius:11px;
+      background:#fff8e9;
+      border:1px solid #f0dfb7;
+      color:#765817;
+      font-size:10px;
+      line-height:1.8;
+      margin-bottom:12px;
+    }
+
+    .error{
+      padding:11px 13px;
+      border-radius:11px;
+      background:#fff0f0;
+      border:1px solid #efd1d1;
+      color:var(--danger);
+      font-size:10px;
+      line-height:1.8;
+      margin-bottom:12px;
+    }
+
+    .hidden{display:none!important}
+
+    .print-only{display:none}
+
+    @media(max-width:900px){
+      .filters{grid-template-columns:1fr 1fr}
+      .summary{grid-template-columns:1fr 1fr}
+      .visits-list{grid-template-columns:1fr 1fr}
+    }
+
+    @media(max-width:600px){
+      .filters,.summary,.visits-list{grid-template-columns:1fr}
+      .hero h2{font-size:20px}
+      .header-inner{align-items:flex-start}
+      .top-actions{justify-content:flex-end}
+      table{min-width:760px}
+      .table-wrap{overflow-x:auto}
+      .total-box{align-items:flex-start;flex-direction:column}
+    }
+
+    @media print{
+      body{background:#fff}
+      .header,.no-print{display:none!important}
+      .page{max-width:none;padding:0}
+      .panel,.hero{box-shadow:none;border:1px solid #ccc}
+      .hero{background:#fff;color:#000}
+      .hero small,.hero h2,.hero p{color:#000}
+      .print-only{display:block}
+      .manual-input,.mapping select{border:0;padding:0;background:transparent}
+      .panel{break-inside:avoid}
+    }
+  </style>
+  <link rel="stylesheet" href="mobile.css">
+</head>
+
+<body>
+
+<header class="header no-print">
+  <div class="header-inner">
+    <div class="brand">
+      <img src="logo.jpeg" alt="شعار مدارس الفلاح">
+      <div>
+        <h1>مدارس الفلاح الأهلية</h1>
+        <p>نظام الإشراف التربوي</p>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <a class="btn" href="supervisor-dashboard.html">العودة للوحة المشرف</a>
+      <button class="btn gold" id="printBtn" type="button">طباعة</button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+
+  <section class="hero">
+    <small>نظام الإشراف التربوي</small>
+    <h2>🏆 تقييم المعلم المتميز</h2>
+    <p>حساب التقييم خلال فترة محددة بالاعتماد على الزيارات المسجلة وتقييم البنود المستقلة.</p>
+  </section>
+
+  <section class="panel no-print">
+    <div class="section-title">
+      <h3>اختيار المعلم والفترة</h3>
+      <p>يتم احتساب الزيارات الخاصة بالمشرف الحالي فقط.</p>
+    </div>
+
+    <div id="errorBox" class="error hidden"></div>
+
+    <div class="section-title" style="margin-top:12px">
+      <h3 id="monthlyTitle">التقييم الشهري عن شهر سبتمبر</h3>
+    </div>
+    <div class="filters">
+      <div>
+        <label for="monthSelect">الشهر</label>
+        <select id="monthSelect">
+          <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option>
+          <option value="4">أبريل</option><option value="5">مايو</option><option value="6">يونيو</option>
+          <option value="7">يوليو</option><option value="8">أغسطس</option><option value="9">سبتمبر</option>
+          <option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option>
+        </select>
+      </div>
+      <div>
+        <label for="teacherSelect">المعلم</label>
+        <select id="teacherSelect">
+          <option value="">اختر المعلم</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="fromDate">من تاريخ</label>
+        <input id="fromDate" type="date">
+      </div>
+
+      <div>
+        <label for="toDate">إلى تاريخ</label>
+        <input id="toDate" type="date">
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn primary" id="calculateBtn" type="button">حساب التقييم</button>
+        <button class="btn gold" id="saveEvaluationBtn" type="button">حفظ التقييم الشهري</button>
+        <span class="hint" id="saveStatus"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="summary">
+      <div class="stat">
+        <span>المعلم</span>
+        <strong id="summaryTeacher">—</strong>
+      </div>
+      <div class="stat">
+        <span>عدد الزيارات</span>
+        <strong id="visitsCount">0</strong>
+      </div>
+      <div class="stat gold">
+        <span>متوسط الزيارات</span>
+        <strong id="visitAverage">—</strong>
+      </div>
+      <div class="stat gold">
+        <span>الزيارات الصفية / 10</span>
+        <strong id="visitCriterion">—</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-title">
+      <h3>تقييم المعلم المتميز — 100 درجة</h3>
+      <p>البنود 1–6 تدخل من تقييم المشرف، والبنود 7–10 تُحسب آليًا من الزيارات.</p>
+    </div>
+
+    <div class="notice">
+      البنود 7 و8 و9 مرتبطة ببنود استمارة الزيارة. إذا لم يتعرف النظام تلقائيًا على اسم البند، يمكنك اختيار بند الزيارة من القائمة أمامه. بعد الاختيار سيعاد الحساب مباشرة.
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:6%">م</th>
+            <th>المعيار</th>
+            <th style="width:10%">الدرجة</th>
+            <th style="width:25%">النتيجة المستحقة</th>
+            <th style="width:22%">المصدر / الملاحظة</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr class="manual-row">
+            <td class="number">1</td>
+            <td>الالتزام والانضباط في الحضور والانصراف</td>
+            <td class="number">10</td>
+            <td class="number">
+              <input class="manual-input" id="manual1" type="number" min="0" max="10" step="0.01" value="0">
+            </td>
+            <td class="hint">تقييم مستقل من المشرف.</td>
+          </tr>
+
+          <tr class="manual-row">
+            <td class="number">2</td>
+            <td>مستوى تحصيل الطلاب وتقدمهم الدراسي</td>
+            <td class="number">15</td>
+            <td class="number">
+              <input class="manual-input" id="manual2" type="number" min="0" max="15" step="0.01" value="0">
+            </td>
+            <td class="hint">تقييم مستقل من المشرف.</td>
+          </tr>
+
+          <tr class="manual-row">
+            <td class="number">3</td>
+            <td>التعاون مع المعلمين والإدارة والمشاركة في أعمال المدرسة</td>
+            <td class="number">10</td>
+            <td class="number">
+              <input class="manual-input" id="manual3" type="number" min="0" max="10" step="0.01" value="0">
+            </td>
+            <td class="hint">تقييم مستقل من المشرف.</td>
+          </tr>
+
+          <tr class="manual-row">
+            <td class="number">4</td>
+            <td>الأخلاق المهنية وحسن التعامل مع الطلاب وأولياء الأمور</td>
+            <td class="number">10</td>
+            <td class="number">
+              <input class="manual-input" id="manual4" type="number" min="0" max="10" step="0.01" value="0">
+            </td>
+            <td class="hint">تقييم مستقل من المشرف.</td>
+          </tr>
+
+          <tr class="manual-row">
+            <td class="number">5</td>
+            <td>التطوير المهني وحضور الدورات</td>
+            <td class="number">5</td>
+            <td class="number">
+              <input class="manual-input" id="manual5" type="number" min="0" max="5" step="0.01" value="0">
+            </td>
+            <td class="hint">تقييم مستقل من المشرف.</td>
+          </tr>
+
+          <tr class="manual-row">
+            <td class="number">6</td>
+            <td>المشاركة الفعالة في تنفيذ المبادرات والبرامج المدرسية</td>
+            <td class="number">10</td>
+            <td class="number">
+              <input class="manual-input" id="manual6" type="number" min="0" max="10" step="0.01" value="0">
+            </td>
+            <td class="hint">تقييم مستقل من المشرف.</td>
+          </tr>
+
+          <tr class="auto-row">
+            <td class="number">7</td>
+            <td>المحافظة على النظام والبيئة الصفية</td>
+            <td class="number">10</td>
+            <td class="number" id="auto7">—</td>
+            <td>
+              <div class="mapping">
+                <select id="map7">
+                  <option value="">التعرف تلقائيًا أو اختر بندًا</option>
+                </select>
+                <span class="hint" id="map7Hint">مصدره: الإدارة الصفية</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="auto-row">
+            <td class="number">8</td>
+            <td>تنوع أساليب واستراتيجيات التدريس</td>
+            <td class="number">10</td>
+            <td class="number" id="auto8">—</td>
+            <td>
+              <div class="mapping">
+                <select id="map8">
+                  <option value="">التعرف تلقائيًا أو اختر بندًا</option>
+                </select>
+                <span class="hint" id="map8Hint">مصدره: استراتيجيات التعلم واستخدامها</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="auto-row">
+            <td class="number">9</td>
+            <td>تفاعل الطلاب ومشاركتهم أثناء الحصة</td>
+            <td class="number">10</td>
+            <td class="number" id="auto9">—</td>
+            <td>
+              <div class="mapping">
+                <select id="map9">
+                  <option value="">التعرف تلقائيًا أو اختر بندًا</option>
+                </select>
+                <span class="hint" id="map9Hint">مصدره: تفاعل الطلاب</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="auto-row">
+            <td class="number">10</td>
+            <td>الزيارات الصفية</td>
+            <td class="number">10</td>
+            <td class="number" id="auto10">—</td>
+            <td class="hint">متوسط مجموع درجات الزيارات خلال الفترة المحددة، محول إلى 10 درجات.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="total-box">
+      <span>إجمالي تقييم المعلم المتميز</span>
+      <strong id="grandTotal">0 / 100</strong>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-title">
+      <h3>الزيارات الداخلة في الحساب</h3>
+      <p>هذه هي الزيارات التي تم استخدامها في المتوسط حسب المعلم والفترة.</p>
+    </div>
+
+    <div id="visitsList" class="visits-list">
+      <div class="hint">لم يتم الحساب بعد.</div>
+    </div>
+  </section>
+
+  <section class="panel no-print">
+    <div class="section-title"><h3>التقييمات الشهرية المحفوظة</h3><p>سجلات التقييم التي حفظها هذا المشرف.</p></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>الشهر والفترة</th><th>المعلم</th><th>الدرجة</th><th>الإجراءات</th></tr></thead>
+      <tbody id="savedEvaluationsBody"><tr><td colspan="4" class="hint">جاري تحميل التقييمات...</td></tr></tbody>
+    </table></div>
+  </section>
+  <div class="print-only">
+    <p><strong>مدارس الفلاح الأهلية — تقييم المعلم المتميز</strong></p>
+    <p id="printInfo"></p>
+  </div>
+
+</main>
+  <footer style="text-align:center;padding:14px;color:#737b77;font-size:12px;font-weight:700">تصميم وتطوير محمد عامر أحمد</footer>
+
+<script type="module">
+  import { db } from "./firebase.js";
+
+  import {
+    collection,
+    getDocs,
+    getDoc,
+    setDoc,
+    deleteDoc,
+    doc,
+    serverTimestamp,
+    query,
+    where
+  } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+  const el = id => document.getElementById(id);
+
+  const monthNames = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+  function setMonthPeriod(monthValue){
+    const month = Number(monthValue);
+    if(!month) return;
+    const year = new Date().getFullYear();
+    const start = new Date(year,month-1,1);
+    const end = new Date(year,month,0);
+    const iso = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+    el("fromDate").value = iso(start);
+    el("toDate").value = iso(end);
+    el("monthlyTitle").textContent = `التقييم الشهري عن شهر ${monthNames[month-1]}`;
+  }
+
+  function syncMonthFromDates(){
+    const from = el("fromDate").value;
+    const to = el("toDate").value;
+    if(from && to && from.slice(0,7) === to.slice(0,7)){
+      const month = Number(from.slice(5,7));
+      el("monthSelect").value = String(month);
+      el("monthlyTitle").textContent = `التقييم الشهري عن شهر ${monthNames[month-1]}`;
+    }else{
+      el("monthSelect").value = "";
+      el("monthlyTitle").textContent = "التقييم الشهري عن الفترة المحددة";
+    }
+  }
+
+
+  const raw =
+    localStorage.getItem("currentSupervisor") ||
+    sessionStorage.getItem("currentSupervisor");
+
+  if(!raw){
+    location.href = "supervisor-login.html";
+    throw new Error("No supervisor session");
+  }
+
+  let supervisor;
+
+  try{
+    supervisor = JSON.parse(raw);
+  }catch(error){
+    localStorage.removeItem("currentSupervisor");
+    sessionStorage.removeItem("currentSupervisor");
+    location.href = "supervisor-login.html";
+    throw new Error("Invalid supervisor session");
+  }
+
+  if(supervisor.role === "admin"){
+    location.href = "admin-dashboard.html";
+    throw new Error("Admin redirected");
+  }
+
+  let teachers = [];
+  let visits = [];
+  let monthlyEvaluations = [];
+  let filteredVisits = [];
+  let activeEvaluationKey = "";
+
+  const criterionConfig = {
+    7: {
+      keywords: ["الإدارة الصفية", "ادارة الصف", "النظام والبيئة الصفية", "البيئة الصفية"],
+      max: 4
+    },
+    8: {
+      keywords: ["استراتيجيات التعلم واستخدامها", "استراتيجيات التعلم", "استراتيجيات التدريس", "استراتيجيات"],
+      max: 4
+    },
+    9: {
+      keywords: ["تفاعل الطلاب", "مشاركة الطلاب", "مشاركتهم أثناء الحصة", "تفاعل"],
+      max: 4
+    }
+  };
+
+  function showError(message){
+    const box = el("errorBox");
+    box.textContent = message;
+    box.classList.remove("hidden");
+  }
+
+  function clearError(){
+    el("errorBox").classList.add("hidden");
+  }
+
+  function normalize(value){
+    return String(value ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/[أإآ]/g,"ا")
+      .replace(/ة/g,"ه")
+      .replace(/ى/g,"ي")
+      .replace(/\s+/g," ");
+  }
+
+  function toNumber(value){
+    if(typeof value === "number" && Number.isFinite(value)) return value;
+
+    if(typeof value === "string"){
+      const cleaned = value
+        .replace(/[٠-٩]/g, d => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))
+        .replace(/[٫٬]/g, ".")
+        .replace(/[^\d.-]/g, "");
+
+      const n = Number(cleaned);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    return null;
+  }
+
+  function dateValue(value){
+    if(!value) return "";
+    if(typeof value === "string") return value.slice(0,10);
+
+    if(value?.toDate){
+      const d = value.toDate();
+      return [
+        d.getFullYear(),
+        String(d.getMonth()+1).padStart(2,"0"),
+        String(d.getDate()).padStart(2,"0")
+      ].join("-");
+    }
+
+    return "";
+  }
+
+  function clamp(value,min,max){
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function extractText(obj){
+    if(!obj || typeof obj !== "object") return "";
+
+    const keys = [
+      "question","questionText","label","title","text",
+      "name","criterion","criterionName","item","itemLabel","description",
+      "domain","domainName"
+    ];
+
+    return keys
+      .map(k => obj[k])
+      .filter(v => typeof v === "string")
+      .join(" ");
+  }
+
+  function extractScore(obj){
+    if(!obj || typeof obj !== "object") return null;
+
+    const keys = [
+      "score","points","value","selectedScore",
+      "numericValue","mark","grade"
+    ];
+
+    for(const key of keys){
+      const n = toNumber(obj[key]);
+      if(n !== null) return n;
+    }
+
+    const selected = toNumber(obj.selected);
+    if(selected !== null) return selected;
+
+    return null;
+  }
+
+  function extractMax(obj, fallback=4){
+    if(!obj || typeof obj !== "object") return fallback;
+
+    const keys = [
+      "max","maxScore","maximum","fullMark",
+      "total","pointsMax","scaleMax"
+    ];
+
+    for(const key of keys){
+      const n = toNumber(obj[key]);
+      if(n !== null && n > 0) return n;
+    }
+
+    return fallback;
+  }
+
+  function answerObjects(visit){
+    if(!Array.isArray(visit?.answers)) return [];
+
+    return visit.answers
+      .filter(item => item && typeof item === "object");
+  }
+
+  function findAnswerByKeywords(visit, keywords){
+    const answers = answerObjects(visit);
+    const normalizedKeywords = keywords.map(normalize);
+
+    let best = null;
+    let bestScore = 0;
+
+    for(const answer of answers){
+      const text = normalize(extractText(answer));
+
+      if(!text) continue;
+
+      let score = 0;
+
+      for(const keyword of normalizedKeywords){
+        if(text.includes(keyword)) score += keyword.length;
+      }
+
+      if(score > bestScore){
+        bestScore = score;
+        best = answer;
+      }
+    }
+
+    return best;
+  }
+
+  function allAnswerOptions(){
+    const map = new Map();
+
+    for(const visit of filteredVisits){
+      for(const answer of answerObjects(visit)){
+        const label =
+          extractText(answer).trim() ||
+          String(answer.name || answer.id || "").trim();
+
+        if(!label) continue;
+
+        const key = normalize(label);
+
+        if(!map.has(key)){
+          map.set(key, {
+            key,
+            label
+          });
+        }
+      }
+    }
+
+    return [...map.values()];
+  }
+
+  function findAnswerByLabel(visit, label){
+    const target = normalize(label);
+
+    return answerObjects(visit).find(answer => {
+      const text = normalize(extractText(answer));
+      return text === target || text.includes(target) || target.includes(text);
+    }) || null;
+  }
+
+  function getSelectedMapping(criterionNumber){
+    const select = el(`map${criterionNumber}`);
+    return select.value || "";
+  }
+
+  function calculateCriterion(criterionNumber){
+    if(!filteredVisits.length) return null;
+
+    const config = criterionConfig[criterionNumber];
+    const selectValue = getSelectedMapping(criterionNumber);
+
+    let total = 0;
+    let count = 0;
+    let detectedMax = config.max;
+
+    for(const visit of filteredVisits){
+      let answer = null;
+
+      if(selectValue){
+        answer = findAnswerByLabel(visit, selectValue);
+      }else{
+        answer = findAnswerByKeywords(visit, config.keywords);
+      }
+
+      if(!answer) continue;
+
+      const score = extractScore(answer);
+      if(score === null) continue;
+
+      detectedMax = extractMax(answer, detectedMax);
+      total += score;
+      count++;
+    }
+
+    if(!count) return null;
+
+    const average = total / count;
+    const converted = clamp((average / detectedMax) * 10, 0, 10);
+
+    return {
+      average,
+      sourceMax: detectedMax,
+      converted,
+      count
+    };
+  }
+
+  function fillMappingOptions(){
+    const options = allAnswerOptions();
+
+    for(const number of [7,8,9]){
+      const select = el(`map${number}`);
+      const current = select.value || select.dataset.savedMapping || "";
+
+      select.innerHTML =
+        `<option value="">التعرف تلقائيًا أو اختر بندًا</option>`;
+
+      for(const item of options){
+        const option = document.createElement("option");
+        option.value = item.label;
+        option.textContent = item.label;
+        select.appendChild(option);
+      }
+
+      if(current && options.some(x => x.label === current)){
+        select.value = current;
+      }
+    }
+  }
+
+  function loadTeachers(){
+    const select = el("teacherSelect");
+
+    select.innerHTML =
+      `<option value="">اختر المعلم</option>`;
+
+    teachers
+      .slice()
+      .sort((a,b) =>
+        String(a.name || "").localeCompare(
+          String(b.name || ""),
+          "ar"
+        )
+      )
+      .forEach(teacher => {
+        const option = document.createElement("option");
+
+        const id =
+          teacher.code ||
+          teacher.id ||
+          "";
+
+        option.value = String(id);
+
+        option.textContent =
+          teacher.name ||
+          teacher.fullName ||
+          id;
+
+        select.appendChild(option);
+      });
+  }
+
+  function getSelectedTeacher(){
+    const id = el("teacherSelect").value;
+
+    return teachers.find(t =>
+      String(t.code || t.id || "") === String(id)
+    ) || null;
+  }
+
+  function renderVisits(){
+    const box = el("visitsList");
+
+    if(!filteredVisits.length){
+      box.innerHTML =
+        `<div class="hint">لا توجد زيارات لهذا المعلم داخل الفترة المحددة.</div>`;
+      return;
+    }
+
+    box.innerHTML = "";
+
+    filteredVisits
+      .slice()
+      .sort((a,b) =>
+        dateValue(a.visitDate).localeCompare(dateValue(b.visitDate))
+      )
+      .forEach(visit => {
+        const item = document.createElement("div");
+        item.className = "visit-chip";
+
+        const score =
+          toNumber(visit.finalScore);
+
+        item.innerHTML = `
+          <strong>${dateValue(visit.visitDate) || "بدون تاريخ"}</strong>
+          <span>
+            درجة الزيارة:
+            ${score === null ? "—" : score.toFixed(2)}
+            ${visit.finalScore != null ? "" : ""}
+          </span>
+        `;
+
+        box.appendChild(item);
+      });
+  }
+
+  function escapeHtml(value){
+    return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
+  function renderSavedEvaluations(){
+    const body = el("savedEvaluationsBody");
+    const records = monthlyEvaluations.slice().sort((a,b)=>String(b.periodFrom||"").localeCompare(String(a.periodFrom||"")));
+    if(!records.length){ body.innerHTML = '<tr><td colspan="4" class="hint">لا توجد تقييمات شهرية محفوظة.</td></tr>'; return; }
+    body.innerHTML = records.map(item=>{
+      const month = item.periodFrom ? new Date(Number(item.periodFrom.slice(0,4)),Number(item.periodFrom.slice(5,7))-1,1).toLocaleDateString("ar-SA",{month:"long",year:"numeric"}) : "—";
+      const details = [1,2,3,4,5,6].map(n=>`البند ${n}: ${escapeHtml(item.manualScores?.[n] ?? "—")}`).concat([7,8,9,10].map(n=>`البند ${n}: ${escapeHtml(item.automaticScores?.[n] ?? "—")}`)).join(" | ");
+      return `<tr><td>${escapeHtml(month)}<br><span class="hint">${escapeHtml(item.periodFrom||"—")} إلى ${escapeHtml(item.periodTo||"—")}</span></td><td>${escapeHtml(item.teacherName||item.teacherCode||"—")}</td><td><strong>${Number(item.total).toFixed(2)} / 100</strong></td><td><button class="btn" data-eval-action="view" data-eval-id="${escapeHtml(item.id)}">عرض</button> <button class="btn gold" data-eval-action="print" data-eval-id="${escapeHtml(item.id)}">طباعة</button> <button class="btn" style="color:#a33b3b" data-eval-action="delete" data-eval-id="${escapeHtml(item.id)}">حذف</button></td></tr><tr id="savedEvalDetails_${escapeHtml(item.id)}" hidden><td colspan="4"><div class="hint">${details}</div></td></tr>`;
+    }).join("");
+  }
+
+  async function handleSavedEvaluationAction(event){
+    const button = event.target.closest("[data-eval-action]");
+    if(!button) return;
+    const item = monthlyEvaluations.find(x=>x.id===button.dataset.evalId);
+    if(!item) return;
+    if(button.dataset.evalAction === "view"){
+      const row=el(`savedEvalDetails_${item.id}`); row.hidden=!row.hidden; button.textContent=row.hidden?"عرض":"إخفاء"; return;
+    }
+    if(button.dataset.evalAction === "delete"){
+      if(!confirm(`هل تريد حذف تقييم ${item.teacherName||"المعلم"} عن الفترة ${item.periodFrom||""}؟`)) return;
+      try{ await deleteDoc(doc(db,"monthlyEvaluations",item.id)); monthlyEvaluations=monthlyEvaluations.filter(x=>x.id!==item.id); renderSavedEvaluations(); el("saveStatus").textContent="تم حذف التقييم الشهري."; }
+      catch(error){ console.error(error); el("saveStatus").textContent="تعذر حذف التقييم. تحقق من الصلاحيات."; }
+      return;
+    }
+    if(button.dataset.evalAction === "print"){
+      el("teacherSelect").value=String(item.teacherCode||"");
+      el("fromDate").value=item.periodFrom||""; el("toDate").value=item.periodTo||"";
+      syncMonthFromDates(); await calculate();
+      [1,2,3,4,5,6].forEach(n=>el(`manual${n}`).value=item.manualScores?.[n]??0);
+      [7,8,9,10].forEach(n=>el(`auto${n}`).textContent=`${Number(item.automaticScores?.[n]||0).toFixed(2)} / 10`);
+      el("summaryTeacher").textContent=item.teacherName||"—";
+      el("grandTotal").textContent=`${Number(item.total||0).toFixed(2)} / 100`;
+      el("printInfo").textContent=`المعلم: ${item.teacherName||"—"} | الفترة: ${item.periodFrom||"—"} إلى ${item.periodTo||"—"} | عدد الزيارات: ${item.visitCount||0}`;
+      window.print();
+    }
+  }
+  function evaluationStorageKey(teacherId,from,to){
+    return "al-falah-evaluation:" + encodeURIComponent(`${teacherId}|${from}|${to}`);
+  }
+
+  function saveCurrentEvaluation(){
+    if(!activeEvaluationKey) return;
+    const record = {
+      manual: Object.fromEntries([1,2,3,4,5,6].map(n => [n, el(`manual${n}`).value])),
+      mappings: Object.fromEntries([7,8,9].map(n => [n, el(`map${n}`).value])),
+      savedAt: new Date().toISOString()
+    };
+    try{ localStorage.setItem(activeEvaluationKey, JSON.stringify(record)); }
+    catch(error){ console.warn("تعذر حفظ التقييم محليًا", error); }
+  }
+
+  function evaluationDocId(teacherId,from,to){
+    return "monthly_eval_" + encodeURIComponent(`${supervisor.id}_${teacherId}_${from || "start"}_${to || "end"}`);
+  }
+
+  async function loadEvaluation(key,teacherId,from,to){
+    let record = null;
+    try{
+      const snap = await getDoc(doc(db,"monthlyEvaluations",evaluationDocId(teacherId,from,to)));
+      if(snap.exists() && snap.data().recordType === "monthly_evaluation") record = snap.data();
+    }catch(error){ console.warn("تعذر تحميل التقييم الشهري",error); }
+    if(!record){
+      try{ record = JSON.parse(localStorage.getItem(key) || "null"); }
+      catch(error){ record = null; }
+    }
+    [1,2,3,4,5,6].forEach(n => {
+      const input = el(`manual${n}`);
+      input.value = record?.manualScores?.[n] ?? record?.manual?.[n] ?? "0";
+    });
+    [7,8,9].forEach(n => {
+      el(`map${n}`).dataset.savedMapping = record?.mappings?.[n] || "";
+    });
+  }
+
+  async function calculate(){
+    clearError();
+
+    const teacher = getSelectedTeacher();
+
+    if(!teacher){
+      showError("اختر المعلم أولًا.");
+      return;
+    }
+
+    const from = el("fromDate").value;
+    const to = el("toDate").value;
+
+    if(from && to && from > to){
+      showError("تاريخ البداية يجب أن يكون قبل أو مساويًا لتاريخ النهاية.");
+      return;
+    }
+
+    const teacherId =
+      String(teacher.code || teacher.id || "");
+
+    const nextEvaluationKey = evaluationStorageKey(teacherId,from,to);
+    if(nextEvaluationKey !== activeEvaluationKey){
+      saveCurrentEvaluation();
+      activeEvaluationKey = nextEvaluationKey;
+      await loadEvaluation(activeEvaluationKey,teacherId,from,to);
+    }
+
+    filteredVisits = visits.filter(visit => {
+      const visitTeacher =
+        String(
+          visit.teacherCode ||
+          visit.teacherId ||
+          ""
+        );
+
+      if(visitTeacher !== teacherId) return false;
+
+      const d = dateValue(visit.visitDate);
+
+      if(from && (!d || d < from)) return false;
+      if(to && (!d || d > to)) return false;
+
+      return true;
+    });
+
+    el("summaryTeacher").textContent =
+      teacher.name || "—";
+
+    el("visitsCount").textContent =
+      filteredVisits.length;
+
+    let visitAverage = null;
+
+    if(filteredVisits.length){
+      const scores = filteredVisits
+        .map(v => toNumber(v.finalScore))
+        .filter(v => v !== null);
+
+      if(scores.length){
+        visitAverage =
+          scores.reduce((a,b) => a+b,0) / scores.length;
+      }
+    }
+
+    el("visitAverage").textContent =
+      visitAverage === null
+        ? "—"
+        : `${visitAverage.toFixed(2)}%`;
+
+    const visitCriterion =
+      visitAverage === null
+        ? null
+        : clamp((visitAverage / 100) * 10,0,10);
+
+    el("auto10").textContent =
+      visitCriterion === null
+        ? "—"
+        : `${visitCriterion.toFixed(2)} / 10`;
+
+    el("visitCriterion").textContent =
+      visitCriterion === null
+        ? "—"
+        : visitCriterion.toFixed(2);
+
+    fillMappingOptions();
+
+    for(const number of [7,8,9]){
+      const result = calculateCriterion(number);
+
+      el(`auto${number}`).textContent =
+        result
+          ? `${result.converted.toFixed(2)} / 10`
+          : "—";
+
+      el(`map${number}Hint`).textContent =
+        result
+          ? `متوسط المصدر: ${result.average.toFixed(2)} / ${result.sourceMax} — عدد الزيارات المحتسبة: ${result.count}`
+          : number === 7
+            ? "مصدره: الإدارة الصفية — لم يتم العثور على درجات."
+            : number === 8
+              ? "مصدره: استراتيجيات التعلم واستخدامها — لم يتم العثور على درجات."
+              : "مصدره: تفاعل الطلاب — لم يتم العثور على درجات.";
+    }
+
+    calculateGrandTotal();
+    renderVisits();
+
+    el("printInfo").textContent =
+      `المعلم: ${teacher.name || "—"} | الفترة: ${from || "—"} إلى ${to || "—"} | عدد الزيارات: ${filteredVisits.length}`;
+  }
+
+  function calculateGrandTotal(){
+    let total = 0;
+
+    for(let i=1;i<=6;i++){
+      const input = el(`manual${i}`);
+      const max =
+        [10,15,10,10,5,10][i-1];
+
+      let value = toNumber(input.value);
+
+      if(value === null) value = 0;
+
+      value = clamp(value,0,max);
+      input.value = value;
+      total += value;
+    }
+
+    for(const number of [7,8,9]){
+      const text = el(`auto${number}`).textContent;
+      const match = text.match(/([0-9]+(?:\.[0-9]+)?)/);
+
+      if(match){
+        total += Number(match[1]);
+      }
+    }
+
+    const text10 = el("auto10").textContent;
+    const match10 = text10.match(/([0-9]+(?:\.[0-9]+)?)/);
+
+    if(match10){
+      total += Number(match10[1]);
+    }
+
+    el("grandTotal").textContent =
+      `${total.toFixed(2)} / 100`;
+  }
+
+  async function saveMonthlyEvaluation(){
+    const teacher = getSelectedTeacher();
+    const status = el("saveStatus");
+    if(!teacher || !el("fromDate").value || !el("toDate").value){
+      status.textContent = "اختر المعلم وحدد بداية ونهاية الفترة أولًا.";
+      return;
+    }
+    if(el("fromDate").value > el("toDate").value){
+      status.textContent = "تحقق من تواريخ الفترة.";
+      return;
+    }
+    calculateGrandTotal();
+    const teacherId = String(teacher.code || teacher.id || "");
+    const payload = {
+      recordType: "monthly_evaluation",
+      teacherCode: teacherId,
+      teacherName: teacher.name || "",
+      supervisorId: String(supervisor.id || ""),
+      supervisorName: supervisor.name || "",
+      periodFrom: el("fromDate").value,
+      periodTo: el("toDate").value,
+      manualScores: Object.fromEntries([1,2,3,4,5,6].map(n => [n, Number(el(`manual${n}`).value || 0)])),
+      automaticScores: Object.fromEntries([7,8,9,10].map(n => { const match = el(`auto${n}`).textContent.match(/([0-9]+(?:\.[0-9]+)?)/); return [n, match ? Number(match[1]) : 0]; })),
+      mappings: Object.fromEntries([7,8,9].map(n => [n, el(`map${n}`).value || ""])),
+      total: Number(el("grandTotal").textContent.split("/")[0].trim()),
+      visitCount: filteredVisits.length,
+      updatedAt: serverTimestamp()
+    };
+    status.textContent = "جارٍ الحفظ...";
+    try{
+      const savedId = evaluationDocId(teacherId,payload.periodFrom,payload.periodTo);
+      await setDoc(doc(db,"monthlyEvaluations",savedId),payload,{merge:true});
+      monthlyEvaluations = monthlyEvaluations.filter(x=>x.id!==savedId);
+      monthlyEvaluations.push({id:savedId,...payload});
+      renderSavedEvaluations();
+      status.textContent = "تم حفظ التقييم الشهري وظهر في القائمة.";
+      saveCurrentEvaluation();
+    }catch(error){
+      console.error(error);
+      status.textContent = "تعذر الحفظ في قاعدة البيانات. تحقق من الاتصال والصلاحيات.";
+    }
+  }
+  async function loadData(){
+    try{
+      const teachersSnap = await getDocs(
+        query(
+          collection(db,"teachers"),
+          where("supervisorId","==",supervisor.id)
+        )
+      );
+
+      teachers = teachersSnap.docs.map(docSnap => ({
+        id:docSnap.id,
+        ...docSnap.data()
+      }));
+
+      loadTeachers();
+
+      const visitsSnap = await getDocs(query(collection(db,"visits"),where("supervisorId","==",supervisor.id)));
+      visits = visitsSnap.docs.map(docSnap=>({id:docSnap.id,...docSnap.data()})).filter(visit=>visit.recordType !== "monthly_evaluation");
+      const evaluationsSnap = await getDocs(query(collection(db,"monthlyEvaluations"),where("supervisorId","==",supervisor.id)));
+      monthlyEvaluations = evaluationsSnap.docs.map(docSnap=>({id:docSnap.id,...docSnap.data()}));
+      renderSavedEvaluations();
+
+    }catch(error){
+      console.error(error);
+      showError("تعذر تحميل بيانات المعلمين والزيارات.");
+    }
+  }
+
+  el("calculateBtn").addEventListener("click",calculate);
+  el("saveEvaluationBtn").addEventListener("click",saveMonthlyEvaluation);
+  el("savedEvaluationsBody").addEventListener("click",handleSavedEvaluationAction);
+
+  el("teacherSelect").addEventListener("change",calculate);
+
+  el("monthSelect").addEventListener("change",()=>{ setMonthPeriod(el("monthSelect").value); calculate(); });
+  el("fromDate").addEventListener("change",()=>{ syncMonthFromDates(); calculate(); });
+  el("toDate").addEventListener("change",()=>{ syncMonthFromDates(); calculate(); });
+
+  [1,2,3,4,5,6].forEach(number => {
+    el(`manual${number}`).addEventListener(
+      "input",
+      () => { calculateGrandTotal(); saveCurrentEvaluation(); }
+    );
+  });
+
+  [7,8,9].forEach(number => {
+    el(`map${number}`).addEventListener(
+      "change",
+      () => {
+        saveCurrentEvaluation();
+        for(const n of [7,8,9]){
+          const result = calculateCriterion(n);
+
+          el(`auto${n}`).textContent =
+            result
+              ? `${result.converted.toFixed(2)} / 10`
+              : "—";
+        }
+
+        calculateGrandTotal();
+      }
+    );
+  });
+
+  el("printBtn").addEventListener("click",() => {
+    calculateGrandTotal();
+    window.print();
+  });
+
+  const currentMonth = String(new Date().getMonth()+1);
+  el("monthSelect").value = currentMonth;
+  setMonthPeriod(currentMonth);
+  loadData();
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

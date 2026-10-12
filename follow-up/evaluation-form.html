@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>زيارة تربوية جديدة - مدارس الفلاح الأهلية</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --green:#0b4a3f;
+      --green-dark:#07372f;
+      --green-soft:#edf5f1;
+      --gold:#c89a3b;
+      --gold-dark:#a87921;
+      --gold-soft:#faf2e3;
+      --bg:#f7f8f6;
+      --white:#ffffff;
+      --text:#1f2926;
+      --muted:#727a76;
+      --border:#e1e5e2;
+      --red:#b3261e;
+      --shadow:0 12px 35px rgba(16,55,45,.08);
+    }
+
+    *{
+      box-sizing:border-box;
+      font-family:"Cairo",sans-serif;
+    }
+
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top right,rgba(200,154,59,.09),transparent 30%),
+        linear-gradient(180deg,#f8faf8,#f4f6f4);
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    button,
+    input,
+    textarea{
+      font-family:"Cairo",sans-serif;
+    }
+
+    button{
+      cursor:pointer;
+    }
+
+    .header{
+      position:sticky;
+      top:0;
+      z-index:50;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);
+      box-shadow:0 4px 18px rgba(0,0,0,.035);
+    }
+
+    .header-inner{
+      max-width:1450px;
+      margin:auto;
+      padding:10px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand img{
+      width:60px;
+      height:60px;
+      object-fit:contain;
+    }
+
+    .brand-text h1{
+      margin:0;
+      color:var(--green);
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .brand-text p{
+      margin:2px 0 0;
+      color:var(--gold-dark);
+      font-size:11px;
+      font-weight:700;
+    }
+
+    .top-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .btn{
+      border:0;
+      border-radius:11px;
+      padding:9px 14px;
+      font-size:12px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      text-decoration:none;
+      transition:.2s;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .btn-back{
+      background:#eef1ef;
+      color:#49524e;
+    }
+
+    .btn-save{
+      background:var(--green);
+      color:#fff;
+    }
+
+    .btn-whats{
+      background:#25a55f;
+      color:#fff;
+    }
+
+    .btn-whats:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .btn-clear{
+      background:var(--gold-soft);
+      color:var(--gold-dark);
+      border:1px solid rgba(200,154,59,.22);
+    }
+
+    .page{
+      max-width:1450px;
+      margin:auto;
+      padding:24px 18px 45px;
+    }
+
+    .page-title{
+      margin-bottom:18px;
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+      align-items:flex-end;
+      flex-wrap:wrap;
+    }
+
+    .page-title h2{
+      margin:0;
+      color:var(--green);
+      font-size:27px;
+      font-weight:900;
+    }
+
+    .page-title p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .status-chip{
+      padding:7px 12px;
+      border-radius:30px;
+      background:var(--green-soft);
+      color:var(--green);
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:330px minmax(0,1fr);
+      gap:17px;
+      align-items:start;
+    }
+
+    .card{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .sidebar{
+      padding:17px;
+      position:sticky;
+      top:92px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      margin-bottom:14px;
+    }
+
+    .section-icon{
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      background:var(--green-soft);
+      color:var(--green);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+    }
+
+    .section-head h3{
+      margin:0;
+      color:var(--green);
+      font-size:15px;
+      font-weight:900;
+    }
+
+    .field{
+      margin-top:11px;
+    }
+
+    .field label{
+      display:block;
+      margin-bottom:5px;
+      color:#333c38;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .field input,
+    .field textarea{
+      width:100%;
+      border:1px solid #dfe4e1;
+      background:#fff;
+      border-radius:10px;
+      padding:9px 10px;
+      outline:none;
+      font-size:12px;
+      color:var(--text);
+      transition:.2s;
+    }
+
+    .field input:focus,
+    .field textarea:focus{
+      border-color:var(--green);
+      box-shadow:0 0 0 3px rgba(11,74,63,.08);
+    }
+
+    .teacher-picker{
+      position:relative;
+    }
+
+    .teacher-search{
+      position:relative;
+    }
+
+    .teacher-search input{
+      padding-left:36px;
+    }
+
+    .teacher-search-icon{
+      position:absolute;
+      left:11px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#8b918e;
+      font-size:15px;
+      pointer-events:none;
+    }
+
+    .teacher-results{
+      position:absolute;
+      top:calc(100% + 6px);
+      right:0;
+      left:0;
+      z-index:30;
+      background:#fff;
+      border:1px solid var(--border);
+      box-shadow:0 15px 40px rgba(0,0,0,.13);
+      border-radius:12px;
+      max-height:270px;
+      overflow-y:auto;
+      display:none;
+    }
+
+    .teacher-results.show{
+      display:block;
+    }
+
+    .teacher-option{
+      padding:10px 11px;
+      cursor:pointer;
+      border-bottom:1px solid #f0f1f0;
+      transition:.15s;
+    }
+
+    .teacher-option:last-child{
+      border-bottom:0;
+    }
+
+    .teacher-option:hover{
+      background:var(--green-soft);
+    }
+
+    .teacher-option strong{
+      display:block;
+      font-size:12px;
+      color:var(--green);
+    }
+
+    .teacher-option small{
+      display:block;
+      margin-top:2px;
+      color:var(--muted);
+      font-size:10px;
+    }
+
+    .teacher-empty{
+      padding:18px 12px;
+      text-align:center;
+      color:var(--muted);
+      font-size:11px;
+    }
+
+    .selected-teacher{
+      display:none;
+      margin-top:10px;
+      border:1px solid rgba(11,74,63,.14);
+      background:var(--green-soft);
+      border-radius:12px;
+      padding:10px;
+    }
+
+    .selected-teacher.show{
+      display:block;
+    }
+
+    .selected-teacher-name{
+      color:var(--green);
+      font-weight:900;
+      font-size:13px;
+    }
+
+    .selected-teacher-meta{
+      margin-top:4px;
+      color:#56605b;
+      font-size:10px;
+      line-height:1.7;
+    }
+
+    .selected-teacher-code{
+      display:inline-block;
+      padding:2px 7px;
+      background:#fff;
+      border-radius:20px;
+      margin-top:5px;
+      color:var(--gold-dark);
+      font-size:9px;
+      font-weight:800;
+    }
+
+    .main-card{
+      padding:17px;
+      overflow:hidden;
+    }
+
+    .rubric-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+
+    .rubric-header h3{
+      margin:0;
+      color:var(--green);
+      font-size:17px;
+      font-weight:900;
+    }
+
+    .rubric-header p{
+      margin:2px 0 0;
+      color:var(--muted);
+      font-size:10px;
+    }
+
+    .rubricWrap{
+      overflow:auto;
+      border:1px solid #dce1de;
+      border-radius:13px;
+    }
+
+    table{
+      border-collapse:collapse;
+      width:100%;
+    }
+
+    .rubricTable{
+      min-width:920px;
+    }
+
+    th,
+    td{
+      border:1px solid #e2e5e3;
+      padding:7px;
+      font-size:11px;
+      vertical-align:middle;
+    }
+
+    th{
+      background:#f0f5f2;
+      color:var(--green);
+      font-weight:900;
+      text-align:center;
+    }
+
+    .domain-cell{
+      text-align:center;
+      background:#fafbf9;
+      font-weight:900;
+      color:var(--green);
+    }
+
+    .number-cell{
+      text-align:center;
+      font-weight:900;
+    }
+
+    .item-cell{
+      font-weight:800;
+      min-width:190px;
+    }
+
+    .evalGrid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:5px;
+    }
+
+    .choice{
+      position:relative;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      min-height:42px;
+      border:1px solid #e2e5e3;
+      border-radius:8px;
+      padding:5px;
+      font-size:9px;
+      font-weight:700;
+      color:#4a524e;
+      transition:.2s;
+      background:#fff;
+    }
+
+    .choice input{
+      position:absolute;
+      opacity:0;
+    }
+
+    .choice:has(input:checked){
+      background:var(--green-soft);
+      border-color:var(--green);
+      color:var(--green);
+      font-weight:900;
+    }
+
+    .scoreCell{
+      text-align:center;
+      font-size:14px;
+      color:var(--green);
+      font-weight:900;
+    }
+
+    .summary{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:9px;
+    }
+
+    .score-box{
+      border-radius:13px;
+      background:#fafbf9;
+      border:1px solid var(--border);
+      padding:11px;
+      text-align:center;
+    }
+
+    .score-box span{
+      display:block;
+      color:var(--muted);
+      font-size:9px;
+      font-weight:700;
+    }
+
+    .score-box strong{
+      display:block;
+      margin-top:2px;
+      color:var(--green);
+      font-size:23px;
+      font-weight:900;
+    }
+
+    .notes-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    textarea{
+      min-height:78px;
+      resize:vertical;
+    }
+
+    .work-overall{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin:12px 0 0;
+    }
+
+    .work-overall-box{
+      border:1px solid var(--border);
+      background:#fafbf9;
+      border-radius:12px;
+      padding:10px;
+    }
+
+    .work-overall-title{
+      color:var(--green);
+      font-size:10px;
+      font-weight:900;
+      margin-bottom:7px;
+    }
+
+    .work-overall-choices{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:6px;
+    }
+
+    .workOverallChoice{
+      position:relative;
+      padding:8px 6px;
+      border:1px solid var(--border);
+      border-radius:8px;
+      text-align:center;
+      cursor:pointer;
+      font-size:9px;
+      font-weight:800;
+      background:#fff;
+    }
+
+    .workOverallChoice input{
+      position:absolute;
+      opacity:0;
+    }
+
+    .workOverallChoice:has(input:checked){
+      background:var(--green-soft);
+      border-color:var(--green);
+      color:var(--green);
+      font-weight:900;
+    }
+
+    @media(max-width:650px){
+      .work-overall{grid-template-columns:1fr}
+    }
+
+    .save-message{
+      position:fixed;
+      left:20px;
+      bottom:20px;
+      z-index:200;
+      background:var(--green);
+      color:#fff;
+      border-radius:12px;
+      padding:12px 16px;
+      font-size:12px;
+      font-weight:800;
+      box-shadow:0 12px 35px rgba(0,0,0,.18);
+      opacity:0;
+      pointer-events:none;
+      transform:translateY(15px);
+      transition:.25s;
+    }
+
+    .save-message.show{
+      opacity:1;
+      transform:none;
+    }
+
+    @media(max-width:1000px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+
+      .sidebar{
+        position:static;
+      }
+    }
+
+    @media(max-width:700px){
+      .summary,
+      .notes-grid{
+        grid-template-columns:1fr;
+      }
+
+      .header-inner{
+        align-items:flex-start;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="mobile.css">
+</head>
+
+<body>
+
+<header class="header">
+  <div class="header-inner">
+
+    <div class="brand">
+      <img src="logo.jpeg" alt="شعار مدارس الفلاح">
+
+      <div class="brand-text">
+        <h1>مدارس الفلاح الأهلية</h1>
+        <p>نظام الإشراف التربوي</p>
+      </div>
+    </div>
+
+    <div class="top-actions">
+
+      <a href="supervisor-dashboard.html" class="btn btn-back" id="backBtn">
+        لوحة التحكم
+      </a>
+
+      <button class="btn btn-clear" id="btnClear">
+        تفريغ
+      </button>
+
+      <button class="btn btn-save" id="btnSave">
+        حفظ الزيارة
+      </button>
+
+      <button class="btn btn-whats" id="btnSendWhats" disabled>
+        واتساب
+      </button>
+
+    </div>
+
+  </div>
+</header>
+
+
+<main class="page">
+
+  <div class="page-title">
+
+    <div>
+      <h2>زيارة تربوية جديدة</h2>
+      <p>اختر المعلم وسجل بيانات الزيارة والتقييم.</p>
+    </div>
+
+    <div class="status-chip" id="formStatus">
+      زيارة جديدة
+    </div>
+
+  </div>
+
+
+  <div class="layout">
+
+    <aside class="card sidebar">
+
+      <div class="section-head">
+        <div class="section-icon">1</div>
+        <h3>بيانات الزيارة</h3>
+      </div>
+
+
+      <div class="field teacher-picker">
+
+        <label>المعلم</label>
+
+        <div class="teacher-search">
+
+          <input
+            type="text"
+            id="teacherSearch"
+            placeholder="ابحث باسم المعلم..."
+            autocomplete="off"
+          >
+
+          <span class="teacher-search-icon">⌕</span>
+
+        </div>
+
+        <div class="teacher-results" id="teacherResults"></div>
+
+
+        <div class="selected-teacher" id="selectedTeacherBox">
+
+          <div class="selected-teacher-name" id="selectedTeacherName"></div>
+
+          <div class="selected-teacher-meta" id="selectedTeacherMeta"></div>
+
+          <div class="selected-teacher-code" id="selectedTeacherCode"></div>
+
+        </div>
+
+      </div>
+
+
+      <div class="field">
+        <label>الصف</label>
+        <input type="text" id="grade">
+      </div>
+
+
+      <div class="field">
+        <label>المادة</label>
+        <input type="text" id="subject">
+      </div>
+
+
+      <div class="field">
+        <label>عنوان الدرس</label>
+        <input type="text" id="lessonTitle">
+      </div>
+
+
+      <div class="field">
+        <label>رقم الزيارة</label>
+        <input type="number" id="visitNumber" min="1">
+      </div>
+
+
+      <div class="field">
+        <label>اسم المشرف</label>
+        <input type="text" id="supervisorName" readonly>
+      </div>
+
+
+      <div class="field">
+        <label>تاريخ الزيارة</label>
+        <input type="date" id="visitDate">
+      </div>
+
+    </aside>
+
+
+    <section class="card main-card">
+
+      <div class="rubric-header">
+
+        <div>
+          <h3>نموذج تقييم الزيارة</h3>
+          <p>الدرجة القصوى 100 درجة</p>
+        </div>
+
+      </div>
+
+
+      <div class="rubricWrap">
+
+        <table class="rubricTable">
+
+          <thead>
+            <tr>
+              <th>م</th>
+              <th>المجال</th>
+              <th>العنصر</th>
+              <th>التقييم</th>
+              <th>الدرجة</th>
+            </tr>
+          </thead>
+
+          <tbody id="rubricBody"></tbody>
+
+        </table>
+
+      </div>
+
+
+      <div class="summary">
+
+        <div class="score-box">
+          <span>المجموع</span>
+          <strong id="rawTotal">0</strong>
+        </div>
+
+        <div class="score-box">
+          <span>الدرجة النهائية</span>
+          <strong id="finalScore">0</strong>
+        </div>
+
+        <div class="score-box">
+          <span>النسبة</span>
+          <strong id="percentage">0%</strong>
+        </div>
+
+      </div>
+
+
+      <div class="notes-grid">
+
+        <div class="field">
+          <label>إيجابيات الحصة</label>
+          <textarea id="positives"></textarea>
+        </div>
+
+        <div class="field">
+          <label>التوصيات والتوجيهات</label>
+          <textarea id="recommendations"></textarea>
+        </div>
+
+      </div>
+
+
+      <div class="work-overall">
+
+      <div class="work-overall-box">
+        <div class="work-overall-title">🗂️ مطابقة الخطة مع الشرح</div>
+        <div class="work-overall-choices">
+          <label class="workOverallChoice">
+            <input type="radio" name="planMatchStatus" value="matched">
+            ✓ الخطة مطابقة للشرح
+          </label>
+
+          <label class="workOverallChoice">
+            <input type="radio" name="planMatchStatus" value="not_matched">
+            ✕ الخطة غير مطابقة للشرح
+          </label>
+        </div>
+      </div>
+
+      <div class="work-overall-box">
+        <div class="work-overall-title">📚 حالة تصحيح الكتب</div>
+        <div class="work-overall-choices">
+          <label class="workOverallChoice">
+            <input type="radio" name="bookCorrectionStatus" value="corrected">
+            ✓ مصحح
+          </label>
+
+          <label class="workOverallChoice">
+            <input type="radio" name="bookCorrectionStatus" value="not_corrected">
+            ✕ غير مصحح
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    </section>
+
+  </div>
+
+</main>
+
+
+<div class="save-message" id="saveMessage">
+  تم حفظ الزيارة بنجاح
+</div>
+
+
+<script type="module">
+
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  doc,
+  serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+
+const el = id => document.getElementById(id);
+
+
+/* ======================================================
+   SESSION
+====================================================== */
+
+const rawSession =
+  localStorage.getItem("currentSupervisor") ||
+  sessionStorage.getItem("currentSupervisor");
+
+
+if(!rawSession){
+  location.href = "supervisor-login.html";
+  throw new Error("No session");
+}
+
+
+const currentUser = JSON.parse(rawSession);
+
+const isAdmin =
+  currentUser.role === "admin";
+
+let isGlobalSupervisor = currentUser.canVisitAllTeachers === true;
+if(!isAdmin && currentUser.id){
+  try{
+    const supervisorSnap = await getDoc(doc(db,"supervisors",currentUser.id));
+    if(supervisorSnap.exists()){
+      currentUser.canVisitAllTeachers =
+        supervisorSnap.data().canVisitAllTeachers === true;
+      isGlobalSupervisor = currentUser.canVisitAllTeachers;
+      const refreshedSession = JSON.stringify(currentUser);
+      localStorage.setItem("currentSupervisor",refreshedSession);
+      sessionStorage.setItem("currentSupervisor",refreshedSession);
+    }
+  }catch(error){
+    console.warn("تعذر تحديث صلاحية المشرف:",error);
+    isGlobalSupervisor = currentUser.canVisitAllTeachers === true;
+  }
+}
+
+
+el("supervisorName").value =
+  currentUser.name || "";
+
+
+el("backBtn").href =
+  isAdmin
+  ? "admin-dashboard.html"
+  : "supervisor-dashboard.html";
+
+
+/* ======================================================
+   TEACHERS
+====================================================== */
+
+let allTeachers = [];
+let visibleTeachers = [];
+let selectedTeacher = null;
+
+let lastSavedVisitId = null;
+let lastSavedVisitPayload = null;
+const editVisitId = new URLSearchParams(location.search).get("id") || "";
+let editVisitData = null;
+
+
+async function loadTeachers(){
+
+  try{
+
+    const snap =
+      await getDocs(
+        collection(db,"teachers")
+      );
+
+
+    allTeachers =
+      snap.docs.map(d=>({
+        id:d.id,
+        ...d.data()
+      }));
+
+
+    if(isAdmin || isGlobalSupervisor){
+
+      visibleTeachers =
+        [...allTeachers];
+
+    }else{
+
+      visibleTeachers =
+        allTeachers.filter(
+          teacher =>
+            String(teacher.supervisorId || "") ===
+            String(currentUser.id || "")
+        );
+
+    }
+
+
+    visibleTeachers.sort(
+      (a,b)=>
+        String(a.name || "")
+        .localeCompare(
+          String(b.name || ""),
+          "ar"
+        )
+    );
+
+
+    renderTeacherResults(
+      visibleTeachers
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+    el("teacherResults").innerHTML = `
+      <div class="teacher-empty">
+        تعذر تحميل المعلمين
+      </div>
+    `;
+
+  }
+
+}
+
+
+function renderTeacherResults(list){
+
+  const box =
+    el("teacherResults");
+
+
+  box.innerHTML = "";
+
+
+  if(!list.length){
+
+    box.innerHTML = `
+      <div class="teacher-empty">
+        لا يوجد معلمون مطابقون
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  list.forEach(teacher=>{
+
+    const item =
+      document.createElement("div");
+
+
+    item.className =
+      "teacher-option";
+
+
+    item.innerHTML = `
+
+      <strong>
+        ${escapeHtml(
+          teacher.name || ""
+        )}
+      </strong>
+
+      <small>
+        ${
+          teacher.phone
+          ? "الجوال: " +
+            escapeHtml(
+              teacher.phone
+            )
+          : ""
+        }
+      </small>
+
+    `;
+
+
+    item.addEventListener(
+      "click",
+      ()=>selectTeacher(teacher)
+    );
+
+
+    box.appendChild(item);
+
+  });
+
+}
+
+
+function selectTeacher(teacher){
+
+  if(
+    !isAdmin &&
+    !isGlobalSupervisor &&
+    String(teacher.supervisorId || "") !==
+    String(currentUser.id || "")
+  ){
+    alert("هذا المعلم غير تابع لك");
+    return;
+  }
+
+
+  selectedTeacher = teacher;
+
+
+  el("teacherSearch").value =
+    teacher.name || "";
+
+
+  el("selectedTeacherName").textContent =
+    teacher.name || "";
+
+
+  el("selectedTeacherMeta").textContent =
+    teacher.phone
+    ? "رقم الجوال: " + teacher.phone
+    : "لا يوجد رقم جوال";
+
+
+  el("selectedTeacherCode").textContent =
+    "رمز المعلم: " +
+    (teacher.code || teacher.id || "");
+
+
+  el("selectedTeacherBox")
+    .classList
+    .add("show");
+
+
+  el("teacherResults")
+    .classList
+    .remove("show");
+
+}
+
+
+/* ======================================================
+   SEARCH
+====================================================== */
+
+el("teacherSearch")
+  .addEventListener(
+    "focus",
+    ()=>{
+
+      el("teacherResults")
+        .classList
+        .add("show");
+
+      renderTeacherResults(
+        visibleTeachers
+      );
+
+    }
+  );
+
+
+el("teacherSearch")
+  .addEventListener(
+    "input",
+    ()=>{
+
+      selectedTeacher = null;
+
+      el("selectedTeacherBox")
+        .classList
+        .remove("show");
+
+
+      const term =
+        el("teacherSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+      const filtered =
+        visibleTeachers.filter(
+          teacher=>{
+
+            const text =
+              (
+                String(
+                  teacher.name || ""
+                )
+                +
+                " "
+                +
+                String(
+                  teacher.code || teacher.id || ""
+                )
+              )
+              .toLowerCase();
+
+
+            return text.includes(term);
+
+          }
+        );
+
+
+      renderTeacherResults(
+        filtered
+      );
+
+
+      el("teacherResults")
+        .classList
+        .add("show");
+
+    }
+  );
+
+
+document.addEventListener(
+  "click",
+  e=>{
+
+    if(
+      !e.target.closest(
+        ".teacher-picker"
+      )
+    ){
+
+      el("teacherResults")
+        .classList
+        .remove("show");
+
+    }
+
+  }
+);
+
+
+/* ======================================================
+   RUBRIC
+====================================================== */
+
+const domains = [
+
+  {
+    no:1,
+    name:"الرؤية",
+    items:[
+      {
+        label:"القيمة التربوية",
+        top:"مناسب",
+        mid:"إلى حد ما",
+        low:"غير مناسب"
+      }
+    ]
+  },
+
+  {
+    no:2,
+    name:"التخطيط للدرس",
+    items:[
+
+      {
+        label:"التحضير بمنصة مدرستي",
+        top:"مكتمل",
+        mid:"غير مكتمل",
+        low:"غير موجود"
+      },
+
+      {
+        label:"خطة الدرس",
+        top:"مكتملة ومفصلة",
+        mid:"غير مكتملة",
+        low:"غير موجودة"
+      },
+
+      {
+        label:"أهداف الدرس",
+        top:"واضحة قابلة للقياس",
+        mid:"أهداف عامة",
+        low:"غير موجودة"
+      },
+
+      {
+        label:"المفاهيم والمصطلحات الهامة",
+        top:"محددة وواضحة",
+        mid:"غير محددة بدقة",
+        low:"غير موجودة"
+      },
+
+      {
+        label:"تسلسل خطوات الدرس",
+        top:"متسلسلة ومعدة جيدا",
+        mid:"يوجد بعض خطوات",
+        low:"خطوات قليلة"
+      },
+
+      {
+        label:"إعدادات الفروق الفردية",
+        top:"موجود بقوة",
+        mid:"بعض الشواهد",
+        low:"لا توجد شواهد"
+      }
+
+    ]
+  },
+
+  {
+    no:3,
+    name:"إدارة الصف",
+    items:[
+
+      {
+        label:"تنظيم المقاعد",
+        top:"مجموعات",
+        mid:"خطوط",
+        low:"مزعج"
+      },
+
+      {
+        label:"نظافة الفصل",
+        top:"اهتمام عال بالنظافة",
+        mid:"اهتمام مناسب",
+        low:"لا يوجد اهتمام"
+      },
+
+      {
+        label:"البيئة الصفية",
+        top:"معززة وإيجابية",
+        mid:"مناسبة",
+        low:"غير مناسبة"
+      },
+
+      {
+        label:"تنظيم إجابات الطلاب",
+        top:"منظم",
+        mid:"إلى حد ما",
+        low:"غير منظم"
+      },
+
+      {
+        label:"الإدارة الصفية",
+        top:"جيدة وفعالة",
+        mid:"متوسطة",
+        low:"ضعيفة"
+      },
+
+      {
+        label:"تفعيل القوانين الصفية",
+        top:"مفعلة وفعالة",
+        mid:"مفعلة إلى حد ما",
+        low:"غير مفعلة"
+      }
+
+    ]
+  },
+
+  {
+    no:4,
+    name:"دعم السلوك",
+    items:[
+
+      {
+        label:"توجيهات المعلم",
+        top:"واضحة وإجرائية",
+        mid:"مبهمة",
+        low:"غير موجودة"
+      },
+
+      {
+        label:"سلوك الطلاب",
+        top:"ممتاز",
+        mid:"مقبول",
+        low:"ضعيف"
+      },
+
+      {
+        label:"تفاعل الطلاب",
+        top:"ممتاز وقوي",
+        mid:"إلى حد ما",
+        low:"ضعيف"
+      },
+
+      {
+        label:"صوت المعلم وتواصله مع الطلاب",
+        top:"فعال عال المستوى",
+        mid:"متوسط",
+        low:"محدود"
+      }
+
+    ]
+  },
+
+  {
+    no:5,
+    name:"استراتيجيات التدريس",
+    items:[
+
+      {
+        label:"خصائص الأسئلة حسب المنظومة",
+        top:"مطابقة",
+        mid:"إلى حد ما",
+        low:"غير مطابقة"
+      },
+
+      {
+        label:"تنفيذ استراتيجية التدريس",
+        top:"ينفذ",
+        mid:"إلى حد ما",
+        low:"لا ينفذ"
+      },
+
+      {
+        label:"ممارسة الفصحى",
+        top:"ممارسة ممتازة",
+        mid:"ممارسة متوسطة",
+        low:"ممارسة غير مناسبة"
+      },
+
+      {
+        label:"إعلان أهداف الدرس",
+        top:"معلنة وتناقش بداية الحصة",
+        mid:"إما مدونة أو تناقش",
+        low:"لا مدونة ولا تناقش"
+      }
+
+    ]
+  },
+
+  {
+    no:6,
+    name:"أدوات مساندة للتعلم",
+    items:[
+
+      {
+        label:"الوسيلة التعليمية",
+        top:"مستخدمة",
+        mid:"محدودة",
+        low:"غير مستخدمة"
+      },
+
+      {
+        label:"تفعيل السبورة التفاعلية",
+        top:"مناسب جدا",
+        mid:"محدود",
+        low:"لا يوجد تفعيل"
+      },
+
+      {
+        label:"تطبيق ما تم التدريب عليه",
+        top:"مستوى عال",
+        mid:"مستوى مناسب",
+        low:"مستوى ضعيف"
+      }
+
+    ]
+  },
+
+  {
+    no:7,
+    name:"التقويم الصفي",
+    items:[
+
+      {
+        label:"ملخص الدرس",
+        top:"خلاصة جيدة وواضحة",
+        mid:"خلاصة محدودة",
+        low:"لا توجد خلاصة"
+      }
+
+    ]
+  }
+
+];
+
+
+let qMeta = [];
+
+
+function buildRubric(){
+
+  const body =
+    el("rubricBody");
+
+
+  body.innerHTML = "";
+
+  qMeta = [];
+
+
+  let itemNumber = 1;
+
+
+  domains.forEach(domain=>{
+
+    domain.items.forEach(
+      (item,index)=>{
+
+        const qName =
+          "q_" + itemNumber;
+
+
+        qMeta.push({
+
+          name:qName,
+
+          domainNo:
+            domain.no,
+
+          domain:
+            domain.name,
+
+          label:
+            item.label,
+
+          optTop:
+            item.top,
+
+          optMid:
+            item.mid,
+
+          optLow:
+            item.low
+
+        });
+
+
+        const tr =
+          document.createElement("tr");
+
+
+        const no =
+          document.createElement("td");
+
+        no.className =
+          "number-cell";
+
+        no.textContent =
+          itemNumber;
+
+        tr.appendChild(no);
+
+
+        if(index === 0){
+
+          const domainTd =
+            document.createElement("td");
+
+
+          domainTd.className =
+            "domain-cell";
+
+
+          domainTd.rowSpan =
+            domain.items.length;
+
+
+          domainTd.textContent =
+            domain.name;
+
+
+          tr.appendChild(
+            domainTd
+          );
+
+        }
+
+
+        const itemTd =
+          document.createElement("td");
+
+        itemTd.className =
+          "item-cell";
+
+        itemTd.textContent =
+          item.label;
+
+        tr.appendChild(itemTd);
+
+
+        const evalTd =
+          document.createElement("td");
+
+
+        evalTd.innerHTML = `
+
+          <div class="evalGrid">
+
+            <label class="choice">
+
+              <input
+                type="radio"
+                name="${qName}"
+                value="4"
+              >
+
+              ${item.top}
+
+            </label>
+
+
+            <label class="choice">
+
+              <input
+                type="radio"
+                name="${qName}"
+                value="3"
+              >
+
+              ${item.mid}
+
+            </label>
+
+
+            <label class="choice">
+
+              <input
+                type="radio"
+                name="${qName}"
+                value="1"
+              >
+
+              ${item.low}
+
+            </label>
+
+          </div>
+
+        `;
+
+
+        tr.appendChild(evalTd);
+
+
+        const score =
+          document.createElement("td");
+
+
+        score.id =
+          "score_" + qName;
+
+
+        score.className =
+          "scoreCell";
+
+
+        score.textContent =
+          "0";
+
+
+        tr.appendChild(score);
+
+
+        body.appendChild(tr);
+
+
+        itemNumber++;
+
+      }
+    );
+
+  });
+
+
+  if(qMeta.length !== 25){
+
+    alert(
+      "خطأ: عدد عناصر التقييم ليس 25"
+    );
+
+  }
+
+}
+
+
+function selectedValue(name){
+
+  const input =
+    document.querySelector(
+      `input[name="${name}"]:checked`
+    );
+
+
+  if(!input){
+
+    return {
+      value:0,
+      text:""
+    };
+
+  }
+
+
+  const value =
+    Number(input.value);
+
+
+  const meta =
+    qMeta.find(
+      x=>x.name === name
+    );
+
+
+  let text = "";
+
+
+  if(value === 4)
+    text = meta.optTop;
+
+  else if(value === 3)
+    text = meta.optMid;
+
+  else if(value === 1)
+    text = meta.optLow;
+
+
+  return {
+    value,
+    text
+  };
+
+}
+
+
+function calculateScore(){
+
+  let total = 0;
+
+
+  qMeta.forEach(q=>{
+
+    const x =
+      selectedValue(q.name);
+
+
+    total +=
+      x.value;
+
+
+    el("score_" + q.name)
+      .textContent =
+      x.value;
+
+  });
+
+
+  el("rawTotal")
+    .textContent =
+    total;
+
+
+  el("finalScore")
+    .textContent =
+    total;
+
+
+  el("percentage")
+    .textContent =
+    total + "%";
+
+}
+
+
+/* ======================================================
+   SAVE VISIT
+====================================================== */
+
+async function saveVisit(){
+
+  if(!selectedTeacher){
+
+    alert("اختر المعلم أولاً");
+
+    el("teacherSearch").focus();
+
+    return;
+
+  }
+
+
+  if(
+    !isAdmin &&
+    !isGlobalSupervisor &&
+    String(selectedTeacher.supervisorId || "") !==
+    String(currentUser.id || "")
+  ){
+
+    alert("هذا المعلم غير تابع لحسابك");
+
+    selectedTeacher = null;
+
+    el("teacherSearch").value = "";
+
+    el("selectedTeacherBox")
+      .classList
+      .remove("show");
+
+    return;
+
+  }
+
+
+  const visitDate =
+    el("visitDate").value;
+
+
+  if(!visitDate){
+
+    alert("حدد تاريخ الزيارة");
+
+    return;
+
+  }
+
+
+  const answers =
+    qMeta.map(q=>{
+
+      const selected =
+        selectedValue(q.name);
+
+
+      return {
+
+        domainNo:q.domainNo,
+
+        domain:q.domain,
+
+        itemLabel:q.label,
+
+        optTop:q.optTop,
+
+        optMid:q.optMid,
+
+        optLow:q.optLow,
+
+        selected:
+          selected.value,
+
+        selectedText:
+          selected.text,
+
+        max:4
+
+      };
+
+    });
+
+
+  const payload = {
+
+    teacherCode:
+      selectedTeacher.code ||
+      selectedTeacher.id,
+
+    teacherName:
+      selectedTeacher.name || "",
+
+    teacherPhone:
+      selectedTeacher.phone || "",
+
+    grade:
+      el("grade")
+      .value
+      .trim(),
+
+    subject:
+      el("subject")
+      .value
+      .trim(),
+
+    lessonTitle:
+      el("lessonTitle")
+      .value
+      .trim(),
+
+    visitNumber:
+      Number(
+        el("visitNumber").value || 0
+      ),
+
+    supervisorId:
+      String(
+        editVisitData?.supervisorId ||
+        currentUser.id ||
+        ""
+      ),
+
+    supervisorName:
+      String(
+        editVisitData?.supervisorName ||
+        currentUser.name ||
+        ""
+      ),
+
+    visitDate,
+
+    positives:
+      el("positives").value,
+
+    recommendations:
+      el("recommendations").value,
+
+    rawTotal:
+      Number(
+        el("rawTotal").textContent || 0
+      ),
+
+    rawMax:100,
+
+    finalScore:
+      Number(
+        el("finalScore").textContent || 0
+      ),
+
+    answers,
+
+    planMatchStatus:
+      document.querySelector(
+        'input[name="planMatchStatus"]:checked'
+      )?.value || "",
+
+    bookCorrectionStatus:
+      document.querySelector(
+        'input[name="bookCorrectionStatus"]:checked'
+      )?.value || "",
+
+    teacherViewed:false,
+
+    teacherViewedAt:null,
+
+    createdAt:
+      serverTimestamp()
+
+  };
+
+
+  try{
+
+    let savedId = editVisitId;
+
+    if(editVisitId){
+
+      const updatePayload = {
+        ...payload,
+        updatedAt: serverTimestamp()
+      };
+
+      delete updatePayload.createdAt;
+      delete updatePayload.teacherViewed;
+      delete updatePayload.teacherViewedAt;
+
+      await updateDoc(
+        doc(db,"visits",editVisitId),
+        updatePayload
+      );
+
+    }else{
+
+      const ref =
+        await addDoc(
+          collection(db,"visits"),
+          payload
+        );
+
+      savedId = ref.id;
+
+    }
+
+
+    lastSavedVisitId =
+      savedId;
+
+
+    lastSavedVisitPayload =
+      payload;
+
+
+    el("btnSendWhats")
+      .disabled =
+      false;
+
+
+    el("formStatus")
+      .textContent =
+      editVisitId
+      ? "تم تحديث الزيارة"
+      : "تم الحفظ";
+
+
+    showSaveMessage();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "حدث خطأ أثناء حفظ الزيارة"
+    );
+
+  }
+
+}
+
+
+/* ======================================================
+   LOAD VISIT FOR EDITING
+====================================================== */
+
+async function loadVisitForEditing(){
+
+  if(!editVisitId)
+    return;
+
+  try{
+
+    const snap =
+      await getDoc(
+        doc(db,"visits",editVisitId)
+      );
+
+    if(!snap.exists()){
+      alert("الزيارة المطلوبة غير موجودة");
+      return;
+    }
+
+    editVisitData = {
+      id: snap.id,
+      ...snap.data()
+    };
+
+    if(
+      !isAdmin &&
+      String(editVisitData.supervisorId || "") !==
+      String(currentUser.id || "")
+    ){
+      alert("ليس لديك صلاحية تعديل هذه الزيارة");
+      location.href = "supervisor-dashboard.html";
+      return;
+    }
+
+    const teacher =
+      visibleTeachers.find(t =>
+        String(t.code || t.id || "") ===
+        String(editVisitData.teacherCode || "")
+      ) || {
+        id: editVisitData.teacherCode || "",
+        code: editVisitData.teacherCode || "",
+        name: editVisitData.teacherName || "",
+        phone: editVisitData.teacherPhone || "",
+        supervisorId: editVisitData.supervisorId || ""
+      };
+
+    selectTeacher(teacher);
+
+    el("grade").value = editVisitData.grade || "";
+    el("subject").value = editVisitData.subject || "";
+    el("lessonTitle").value = editVisitData.lessonTitle || "";
+    el("visitNumber").value = editVisitData.visitNumber || "";
+    el("visitDate").value = editVisitData.visitDate || "";
+    el("positives").value = editVisitData.positives || "";
+    el("recommendations").value = editVisitData.recommendations || "";
+
+    (editVisitData.answers || []).forEach((answer, index)=>{
+      const question = qMeta[index];
+      if(!question) return;
+      const input = document.querySelector(
+        `input[name="${question.name}"][value="${Number(answer.selected) || 0}"]`
+      );
+      if(input) input.checked = true;
+    });
+
+    const planMatchInput = document.querySelector(
+      `input[name="planMatchStatus"][value="${editVisitData.planMatchStatus || ""}"]`
+    );
+    if(planMatchInput) planMatchInput.checked = true;
+
+    const bookCorrectionInput = document.querySelector(
+      `input[name="bookCorrectionStatus"][value="${editVisitData.bookCorrectionStatus || ""}"]`
+    );
+    if(bookCorrectionInput) bookCorrectionInput.checked = true;
+
+    calculateScore();
+    document.querySelector(".page-title h2").textContent = "تعديل الزيارة التربوية";
+    document.querySelector(".page-title p").textContent = "عدّل بيانات الزيارة ثم احفظ التغييرات.";
+    el("formStatus").textContent = "وضع التعديل";
+    el("btnSave").textContent = "حفظ التعديلات";
+    el("btnSendWhats").disabled = false;
+
+  }catch(error){
+    console.error(error);
+    alert("تعذر تحميل بيانات الزيارة للتعديل");
+  }
+
+}
+
+
+/* ======================================================
+   WHATSAPP
+====================================================== */
+
+function normalizePhoneToWhatsApp(raw){
+
+  let digits =
+    String(raw || "")
+    .replace(/[^\d]/g,"");
+
+
+  if(!digits)
+    return "";
+
+
+  if(
+    digits.startsWith("00")
+  ){
+
+    digits =
+      digits.slice(2);
+
+  }
+
+
+  if(
+    digits.startsWith("0") &&
+    digits.length === 10
+  ){
+
+    digits =
+      "966" +
+      digits.slice(1);
+
+  }
+
+
+  if(
+    digits.startsWith("5") &&
+    digits.length === 9
+  ){
+
+    digits =
+      "966" +
+      digits;
+
+  }
+
+
+  return digits;
+
+}
+
+
+function buildWhatsMessage(p,id){
+
+  return `السلام عليكم ورحمة الله وبركاته
+
+أ/ ${p.teacherName || ""}
+
+تم تسجيل زيارة تربوية لكم على نظام الإشراف التربوي بمدارس الفلاح الأهلية.
+
+نأمل الدخول إلى النظام من خلال الرابط التالي للاطلاع على تفاصيل الزيارة والتقييم:
+${location.origin}/follow-up/teacher-portal.html?code=${encodeURIComponent(p.teacherCode)}
+
+وبعد الاطلاع، يرجى الضغط على زر «تم الاطلاع» لتأكيد اطلاعكم على الزيارة.
+
+مع خالص التقدير،
+المشرف التربوي: ${p.supervisorName || ""}
+مدارس الفلاح الأهلية`;
+
+}
+
+
+function sendWhats(){
+
+  if(
+    !lastSavedVisitPayload ||
+    !lastSavedVisitId
+  ){
+
+    alert(
+      "احفظ الزيارة أولاً"
+    );
+
+    return;
+
+  }
+
+
+  const phone =
+    normalizePhoneToWhatsApp(
+      lastSavedVisitPayload.teacherPhone
+    );
+
+
+  if(!phone){
+
+    alert(
+      "لا يوجد رقم جوال صحيح للمعلم"
+    );
+
+    return;
+
+  }
+
+
+  const text =
+    buildWhatsMessage(
+      lastSavedVisitPayload,
+      lastSavedVisitId
+    );
+
+
+  location.href =
+    "https://wa.me/" +
+    phone +
+    "?text=" +
+    encodeURIComponent(text);
+
+}
+
+
+/* ======================================================
+   CLEAR
+====================================================== */
+
+function clearForm(){
+
+  if(
+    !confirm(
+      "هل تريد تفريغ الاستمارة؟"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  selectedTeacher = null;
+
+
+  el("teacherSearch").value = "";
+
+
+  el("selectedTeacherBox")
+    .classList
+    .remove("show");
+
+
+  el("grade").value = "";
+
+  el("subject").value = "";
+
+  el("lessonTitle").value = "";
+
+  el("visitNumber").value = "";
+
+  el("positives").value = "";
+
+  el("recommendations").value = "";
+
+
+  document
+    .querySelectorAll(
+      'input[type="radio"]'
+    )
+    .forEach(
+      x=>x.checked=false
+    );
+
+
+  calculateScore();
+
+
+  lastSavedVisitPayload = null;
+
+  lastSavedVisitId = null;
+
+
+  el("btnSendWhats")
+    .disabled = true;
+
+
+  el("formStatus")
+    .textContent =
+    "زيارة جديدة";
+
+}
+
+
+/* ======================================================
+   HELPERS
+====================================================== */
+
+function escapeHtml(str){
+
+  return String(str || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+}
+
+
+function showSaveMessage(){
+
+  const box =
+    el("saveMessage");
+
+
+  box.classList.add("show");
+
+
+  setTimeout(()=>{
+
+    box.classList.remove("show");
+
+  },3000);
+
+}
+
+
+/* ======================================================
+   EVENTS
+====================================================== */
+
+document.addEventListener(
+  "change",
+  e=>{
+
+    if(
+      e.target.matches(
+        '.rubricTable input[type="radio"]'
+      )
+    ){
+
+      calculateScore();
+
+    }
+
+  }
+);
+
+
+el("btnSave")
+  .addEventListener(
+    "click",
+    saveVisit
+  );
+
+
+el("btnSendWhats")
+  .addEventListener(
+    "click",
+    sendWhats
+  );
+
+
+el("btnClear")
+  .addEventListener(
+    "click",
+    clearForm
+  );
+
+
+/* ======================================================
+   INITIALIZE
+====================================================== */
+
+buildRubric();
+
+
+calculateScore();
+
+await loadTeachers();
+await loadVisitForEditing();
+
+</script>
+
+</body>
+</html>
