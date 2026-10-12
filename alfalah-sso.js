@@ -104,7 +104,7 @@ async function rasedLogin(username,password,type){
   if(!data||String(data.password??"")!==String(password))throw new Error("اسم المستخدم أو كلمة المرور غير صحيحة.");
   const role=String(data.role||"").trim().toLowerCase();
   if(type==="teacher"&&role!=="teacher")throw new Error("هذا الحساب ليس حساب معلم.");
-  if(type==="supervision"&&!["supervisor","admin","superadmin"].includes(role))throw new Error("هذا الحساب لا يملك صلاحية المشرف.");
+  if(type==="supervision"&&!["supervisor","admin","superadmin","student_counselor","activity_leader","manager"].includes(role))throw new Error("هذا الحساب غير مفعّل ضمن بوابة الإشراف والإدارة.");
   let rasedRole=role;
   if(role==="admin")rasedRole="superadmin";
   return {
@@ -211,7 +211,10 @@ function rasedUrl(s){
   if(s.type==="teacher")return "rased/teacher.html";
   if(s.rasedRole==="manager")return "rased/manager.html";
   if(s.rasedRole==="superadmin")return "rased/admin.html";
-  return "rased/supervisor-dashboard.html";
+  if(s.rasedRole==="student_counselor")return "rased/student-counselor.html";
+  if(s.rasedRole==="activity_leader")return "rased/activity-leader.html";
+  if(s.rasedRole==="supervisor")return "rased/supervisor-dashboard.html";
+  return "rased/index.html";
 }
 function followupUrl(s){
   if(s.type==="teacher")return s.followupReady?"follow-up/teacher-portal.html":"follow-up/teacher-portal.html";
@@ -252,7 +255,7 @@ function renderServices(s){
 }
 function showLogin(type){
   const title=$("modalTitle"),list=$("systemList"),modal=$("portalModal");
-  title.textContent=type==="teacher"?"دخول المعلم":"دخول المشرف";
+  title.textContent=type==="teacher"?"دخول المعلم":"دخول الإشراف والإدارة";
   list.innerHTML='<div class="phone-area"><div class="phone-big-icon">🔐</div><h4>الدخول الموحد</h4><p>أدخل بيانات حساب راصد مرة واحدة للوصول إلى خدماتك.</p><input id="gateUsername" class="phone-input" type="text" autocomplete="username" placeholder="اسم المستخدم" style="direction:rtl"><input id="gatePassword" class="phone-input" type="password" autocomplete="current-password" placeholder="كلمة المرور" style="direction:rtl;margin-top:10px"><button id="gateLoginBtn" class="phone-btn" type="button">دخول</button><div id="gateMessage" class="message"></div></div>';
   modal.classList.add("open");
   const user=$("gateUsername"),pass=$("gatePassword"),btn=$("gateLoginBtn"),msg=$("gateMessage");
@@ -266,8 +269,13 @@ function showLogin(type){
       localStorage.removeItem("currentSupervisor");sessionStorage.removeItem("currentSupervisor");
       const s=await rasedLogin(username,password,type);
       seedRasedSession(s);
-      await linkWeekly(s,password);
-      if(type==="teacher")await linkTeacherVisits(s);else await linkSupervisorVisits(s,password);
+      if(type==="teacher"){
+        await linkWeekly(s,password);
+        await linkTeacherVisits(s);
+      }else if(["supervisor","superadmin","manager"].includes(s.rasedRole)){
+        await linkWeekly(s,password);
+        await linkSupervisorVisits(s,password);
+      }
       saveSession(s);
       showAccountChip(s);
       window.location.href=rasedUrl(s);
