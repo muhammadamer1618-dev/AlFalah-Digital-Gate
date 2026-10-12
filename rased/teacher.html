@@ -1370,6 +1370,14 @@ tbody tr:nth-child(even){
 📨 سجل رسائلي لأولياء الأمور
 </button>
 
+<button class="action-btn" style="background:#8a6d1d;color:#fff" onclick='openUnifiedWorkspace("weekly")'>
+📅 الخطة الأسبوعية
+</button>
+
+<button class="action-btn" style="background:#7c3aed;color:#fff" onclick='openUnifiedWorkspace("visits")'>
+📋 زياراتي الفنية
+</button>
+
 <button class="action-btn" style="background:#0f766e;color:#fff" onclick="location.href='teacher-training.html'">
 🎓 الدورات والاجتماعات
 </button>
@@ -4844,5 +4852,78 @@ start();
 
 </script>
 
+
+<style id="unifiedWorkspaceStyle">
+.unified-workspace{
+  position:fixed;inset:0;z-index:999999;background:#f4f7f5;display:none;flex-direction:column;
+  font-family:Tajawal,Cairo,Tahoma,Arial,sans-serif;
+}
+.unified-workspace.open{display:flex}
+.unified-workspace-head{
+  min-height:64px;background:linear-gradient(135deg,#004c3f,#006653);color:#fff;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;
+  box-shadow:0 5px 18px rgba(0,0,0,.16)
+}
+.unified-workspace-title{font-weight:900;font-size:18px}
+.unified-workspace-actions{display:flex;gap:8px;align-items:center}
+.unified-workspace-actions button{
+  border:0;border-radius:10px;padding:9px 13px;font:inherit;font-weight:800;cursor:pointer
+}
+.unified-workspace-back{background:#fff;color:#004c3f}
+.unified-workspace-home{background:#f0cf79;color:#17372f}
+.unified-workspace-frame{width:100%;flex:1;border:0;background:#fff}
+@media(max-width:650px){
+  .unified-workspace-head{min-height:58px;padding:8px 10px}
+  .unified-workspace-title{font-size:14px}
+  .unified-workspace-actions button{padding:8px 10px;font-size:12px}
+}
+</style>
+
+<div id="unifiedWorkspace" class="unified-workspace" aria-hidden="true">
+  <div class="unified-workspace-head">
+    <div id="unifiedWorkspaceTitle" class="unified-workspace-title">الخدمة</div>
+    <div class="unified-workspace-actions">
+      <button type="button" class="unified-workspace-home" onclick="reloadUnifiedWorkspace()">↻ تحديث</button>
+      <button type="button" class="unified-workspace-back" onclick="closeUnifiedWorkspace()">← رجوع إلى منصة المعلم</button>
+    </div>
+  </div>
+  <iframe id="unifiedWorkspaceFrame" class="unified-workspace-frame" title="الخدمة"></iframe>
+</div>
+
+<script>
+function openUnifiedWorkspace(kind){
+  const box=document.getElementById("unifiedWorkspace");
+  const frame=document.getElementById("unifiedWorkspaceFrame");
+  const title=document.getElementById("unifiedWorkspaceTitle");
+  let url="",label="";
+  if(kind==="weekly"){
+    url="../weekly/teacher.html";
+    label="الخطة الأسبوعية";
+  }else if(kind==="visits"){
+    url="../follow-up/teacher-portal.html"; label="زياراتي الفنية";
+  }
+  if(!url)return;
+  title.textContent=label;
+  frame.src=url;
+  box.classList.add("open");
+  box.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+function closeUnifiedWorkspace(){
+  const box=document.getElementById("unifiedWorkspace");
+  const frame=document.getElementById("unifiedWorkspaceFrame");
+  box.classList.remove("open");
+  box.setAttribute("aria-hidden","true");
+  frame.src="about:blank";
+  document.body.style.overflow="";
+}
+function reloadUnifiedWorkspace(){
+  const frame=document.getElementById("unifiedWorkspaceFrame");
+  if(frame&&frame.src&&frame.src!=="about:blank")frame.contentWindow.location.reload();
+}
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"&&document.getElementById("unifiedWorkspace")?.classList.contains("open"))closeUnifiedWorkspace();
+});
+</script>
 </body>
 </html>
