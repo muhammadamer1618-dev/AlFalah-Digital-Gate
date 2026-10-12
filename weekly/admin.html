@@ -1,0 +1,7353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>لوحة الإدارة | نظام الخطة الأسبوعية</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Tahoma,Arial,sans-serif;
+}
+
+body{
+  background:#f4f2e9;
+  color:#222;
+  min-height:100vh;
+}
+
+.topbar{
+  min-height:82px;
+  background:#0b4b3e;
+  border-bottom:4px solid #c9a548;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 30px;
+  gap:20px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:13px;
+}
+
+.brand img{
+  width:60px;
+  height:60px;
+  object-fit:contain;
+  background:#fff;
+  border-radius:12px;
+  padding:4px;
+}
+
+.brand h1{
+  font-size:21px;
+  margin-bottom:3px;
+}
+
+.brand p{
+  font-size:13px;
+  color:#e8e8e8;
+}
+
+.admin-info{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.admin-name{
+  font-size:14px;
+}
+
+.logout-btn{
+  border:1px solid #d2b45d;
+  background:transparent;
+  color:white;
+  padding:9px 15px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.logout-btn:hover{
+  background:#c9a548;
+  color:#073f34;
+}
+
+.container{
+  width:min(1350px,96%);
+  margin:28px auto;
+}
+
+.welcome{
+  margin-bottom:22px;
+}
+
+.welcome h2{
+  color:#0b4b3e;
+  font-size:27px;
+  margin-bottom:6px;
+}
+
+.welcome p{
+  color:#777;
+  font-size:14px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+  margin-bottom:22px;
+}
+
+.stat-card{
+  background:white;
+  border-radius:14px;
+  padding:18px;
+  box-shadow:0 4px 15px rgba(0,0,0,.06);
+  border-top:4px solid #c9a548;
+}
+
+.stat-card span{
+  color:#777;
+  font-size:13px;
+}
+
+.stat-card strong{
+  display:block;
+  color:#0b4b3e;
+  font-size:27px;
+  margin-top:5px;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:380px 1fr;
+  gap:22px;
+  align-items:start;
+}
+
+.card{
+  background:#fff;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(0,0,0,.08);
+}
+
+.card-header{
+  background:#0b4b3e;
+  border-bottom:4px solid #c9a548;
+  color:white;
+  padding:15px 18px;
+}
+
+.card-header h3{
+  font-size:18px;
+}
+
+.card-body{
+  padding:20px;
+}
+
+.form-group{
+  margin-bottom:14px;
+}
+
+label{
+  display:block;
+  font-size:14px;
+  font-weight:bold;
+  color:#0b4b3e;
+  margin-bottom:6px;
+}
+
+input,
+select{
+  width:100%;
+  padding:11px 12px;
+  border:1px solid #d5d5d5;
+  border-radius:9px;
+  outline:none;
+  background:white;
+  font-size:14px;
+}
+
+input:focus,
+select:focus{
+  border-color:#c9a548;
+  box-shadow:0 0 0 3px rgba(201,165,72,.13);
+}
+
+.password-note{
+  color:#888;
+  font-size:11px;
+  margin-top:5px;
+}
+
+.save-btn{
+  width:100%;
+  border:none;
+  border-radius:9px;
+  padding:12px;
+  background:#c9a548;
+  color:#073f34;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:15px;
+  margin-top:5px;
+}
+
+.save-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.message{
+  display:none;
+  padding:10px;
+  margin-top:13px;
+  border-radius:8px;
+  font-size:13px;
+  text-align:center;
+  font-weight:bold;
+}
+
+.message.success{
+  display:block;
+  color:#17652c;
+  background:#e8f6ec;
+}
+
+.message.error{
+  display:block;
+  color:#a11e1e;
+  background:#fdeaea;
+}
+
+.table-tools{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:15px;
+}
+
+.search-box{
+  max-width:310px;
+}
+
+.table-wrap{
+  overflow:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1100px;
+}
+
+th{
+  padding:12px 8px;
+  background:#f1ebd9;
+  color:#0b4b3e;
+  border-bottom:2px solid #c9a548;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+td{
+  padding:11px 8px;
+  border-bottom:1px solid #ececec;
+  text-align:center;
+  font-size:13px;
+}
+
+tr:hover td{
+  background:#faf9f4;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:bold;
+}
+
+.active{
+  background:#e2f5e7;
+  color:#19642c;
+}
+
+.inactive{
+  background:#f8e3e3;
+  color:#9c2424;
+}
+
+.action-btn{
+  border:none;
+  padding:7px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:11px;
+  margin:2px;
+}
+
+.edit-btn{
+  background:#d5b755;
+  color:#173e34;
+}
+
+.toggle-btn{
+  background:#0b4b3e;
+  color:white;
+}
+
+.delete-btn{
+  background:#b93232;
+  color:white;
+}
+
+.whatsapp-btn{
+  background:#25D366;
+  color:white;
+}
+
+.whatsapp-btn:disabled{
+  background:#bbb;
+  cursor:not-allowed;
+}
+
+.empty{
+  padding:35px;
+  color:#777;
+  text-align:center;
+}
+
+
+/* =========================================
+   متابعة الخطط الأسبوعية
+========================================= */
+
+.monitor-card{
+  margin-bottom:22px;
+}
+
+.monitor-toolbar{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:15px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+.monitor-select-box{
+  width:260px;
+}
+
+.monitor-select-box label{
+  margin-bottom:7px;
+}
+
+.monitor-actions{
+  display:flex;
+  gap:9px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.refresh-monitor-btn{
+  border:none;
+  background:#0b4b3e;
+  color:white;
+  padding:11px 18px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:13px;
+}
+
+.refresh-monitor-btn:hover{
+  background:#126653;
+}
+
+.monitor-summary{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.monitor-box{
+  border-radius:12px;
+  padding:15px;
+  text-align:center;
+  border:1px solid #e6e6e6;
+}
+
+.monitor-box span{
+  display:block;
+  font-size:12px;
+  margin-bottom:5px;
+  color:#666;
+}
+
+.monitor-box strong{
+  font-size:24px;
+}
+
+.monitor-total{
+  background:#f4f1e6;
+}
+
+.monitor-total strong{
+  color:#0b4b3e;
+}
+
+.monitor-done{
+  background:#e9f7ed;
+}
+
+.monitor-done strong{
+  color:#17813a;
+}
+
+.monitor-pending{
+  background:#fff0f0;
+}
+
+.monitor-pending strong{
+  color:#ba3030;
+}
+
+.plan-monitor-table{
+  min-width:800px;
+}
+
+.plan-status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:105px;
+  padding:7px 10px;
+  border-radius:20px;
+  font-weight:bold;
+  font-size:12px;
+}
+
+.plan-saved{
+  background:#dcf4e3;
+  color:#12672d;
+}
+
+.plan-missing{
+  background:#fde5e5;
+  color:#a92525;
+}
+
+.monitor-muted{
+  color:#999;
+}
+
+
+/* =========================================
+   إدارة جميع الخطط الأسبوعية
+========================================= */
+
+.plans-management-card{
+  margin-bottom:22px;
+}
+
+.plans-management-toolbar{
+  display:grid;
+  grid-template-columns:1.4fr .8fr .8fr .8fr auto;
+  gap:10px;
+  align-items:end;
+  margin-bottom:16px;
+}
+
+.plans-management-toolbar .form-group{
+  margin-bottom:0;
+}
+
+.manage-refresh-btn{
+  border:none;
+  background:#0b4b3e;
+  color:white;
+  padding:11px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  height:41px;
+}
+
+.manage-refresh-btn:hover{
+  background:#126653;
+}
+
+.plans-count-line{
+  margin-bottom:12px;
+  color:#666;
+  font-size:13px;
+}
+
+.plans-count-line strong{
+  color:#0b4b3e;
+  font-size:17px;
+}
+
+.all-plans-table{
+  min-width:1180px;
+}
+
+.plan-delete-btn{
+  background:#b93232;
+  color:white;
+}
+
+.plan-view-btn{
+  background:#d5b755;
+  color:#173e34;
+}
+
+.orphan-badge{
+  display:inline-block;
+  margin-top:4px;
+  padding:3px 7px;
+  border-radius:12px;
+  background:#fff0d8;
+  color:#93651d;
+  font-size:10px;
+  font-weight:bold;
+}
+
+.plan-details-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.plan-details-item{
+  background:#f8f7f2;
+  border:1px solid #e7e2d3;
+  border-radius:9px;
+  padding:10px;
+}
+
+.plan-details-item strong{
+  display:block;
+  color:#0b4b3e;
+  font-size:12px;
+  margin-bottom:4px;
+}
+
+.plan-details-wide{
+  grid-column:1 / -1;
+}
+
+.plan-days-summary{
+  margin-top:14px;
+}
+
+.plan-days-summary table{
+  min-width:700px;
+}
+
+@media(max-width:900px){
+
+  .plans-management-toolbar{
+    grid-template-columns:1fr;
+  }
+
+  .manage-refresh-btn{
+    width:100%;
+  }
+
+  .plan-details-grid{
+    grid-template-columns:1fr;
+  }
+
+  .plan-details-wide{
+    grid-column:auto;
+  }
+}
+
+
+/* ========================================= */
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:1000;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-box{
+  width:min(430px,100%);
+  background:white;
+  border-radius:15px;
+  overflow:hidden;
+}
+
+.modal-title{
+  background:#0b4b3e;
+  color:white;
+  padding:14px 18px;
+  border-bottom:4px solid #c9a548;
+}
+
+.modal-content{
+  padding:20px;
+  max-height:85vh;
+  overflow:auto;
+}
+
+.modal-actions{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+
+.modal-actions button{
+  flex:1;
+  border:none;
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.update-btn{
+  background:#c9a548;
+  color:#073f34;
+}
+
+.cancel-btn{
+  background:#eee;
+  color:#555;
+}
+
+footer{
+  padding:28px 10px;
+  text-align:center;
+  color:#777;
+  font-size:13px;
+  line-height:1.8;
+}
+
+footer strong{
+  color:#0b4b3e;
+}
+
+@media(max-width:900px){
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    grid-template-columns:1fr;
+  }
+
+  .monitor-summary{
+    grid-template-columns:1fr;
+  }
+
+  .monitor-toolbar{
+    align-items:stretch;
+  }
+
+  .monitor-select-box{
+    width:100%;
+  }
+
+  .refresh-monitor-btn{
+    width:100%;
+  }
+
+  .topbar{
+    padding:10px 14px;
+  }
+
+  .admin-name{
+    display:none;
+  }
+
+  .brand h1{
+    font-size:17px;
+  }
+
+  .brand img{
+    width:50px;
+    height:50px;
+  }
+}
+
+
+/* ======================================
+   جدول الحصص
+====================================== */
+
+.schedule-card{
+  margin-bottom:22px;
+}
+
+.schedule-toolbar{
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:14px;
+  align-items:end;
+  margin-bottom:16px;
+}
+
+.schedule-toolbar .form-group{
+  margin-bottom:0;
+}
+
+.schedule-open-btn{
+  border:none;
+  background:#c9a548;
+  color:#073f34;
+  padding:11px 20px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  height:42px;
+}
+
+.schedule-open-btn:hover{
+  background:#d7b75b;
+}
+
+.schedule-status{
+  display:none;
+  margin-top:12px;
+  padding:11px 13px;
+  border-radius:9px;
+  text-align:center;
+  font-size:13px;
+  font-weight:bold;
+}
+
+.schedule-status.show{
+  display:block;
+}
+
+.schedule-status.error{
+  background:#fdeaea;
+  color:#a11e1e;
+}
+
+.schedule-status.success{
+  background:#e8f6ec;
+  color:#17652c;
+}
+
+.schedule-result{
+  display:none;
+  margin-top:20px;
+}
+
+.schedule-result.show{
+  display:block;
+}
+
+.schedule-preview{
+  background:#fff;
+  border:1px solid #e3e3e3;
+  border-radius:14px;
+  padding:20px;
+  overflow:auto;
+}
+
+.schedule-print-sheet{
+  width:100%;
+  max-width:1100px;
+  margin:0 auto;
+  background:#fff;
+  color:#111;
+  font-family:Tahoma,Arial,sans-serif;
+}
+
+.schedule-school-head{
+  display:grid;
+  grid-template-columns:130px 1fr 130px;
+  align-items:center;
+  gap:10px;
+  border-bottom:3px solid #c9a548;
+  padding:4px 4px 10px;
+}
+
+.schedule-school-logo{
+  width:105px;
+  height:78px;
+  object-fit:contain;
+  background:#fff;
+  border-radius:8px;
+  padding:2px;
+}
+
+.schedule-school-name{
+  text-align:center;
+  color:#0b4b3e;
+  font-size:22px;
+  font-weight:800;
+  line-height:1.5;
+}
+
+.schedule-school-name small{
+  display:block;
+  color:#666;
+  font-size:13px;
+  font-weight:600;
+}
+
+.schedule-title{
+  margin:12px 0 10px;
+  text-align:center;
+  color:#111;
+  font-size:27px;
+  font-weight:900;
+}
+
+.schedule-week-note{
+  text-align:center;
+  color:#666;
+  font-size:12px;
+  margin-bottom:10px;
+}
+
+.schedule-table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  direction:rtl;
+  border-right:2px solid #111;
+  box-sizing:border-box;
+}
+
+.schedule-table th:first-child,
+.schedule-table td:first-child{
+  border-right:2px solid #111;
+}
+
+.schedule-table th,
+.schedule-table td{
+  border:1.5px solid #111;
+  text-align:center;
+  vertical-align:middle;
+}
+
+.schedule-table th{
+  background:#f1ebd9;
+  color:#0b4b3e;
+  font-size:15px;
+  font-weight:900;
+  padding:9px 4px;
+}
+
+.schedule-table th:first-child{
+  width:125px;
+}
+
+.schedule-table td{
+  min-height:52px;
+  height:52px;
+  padding:6px 4px;
+  font-size:15px;
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+
+.schedule-table .schedule-cell{
+  padding:0;
+  height:72px;
+  min-height:72px;
+  font-weight:700;
+}
+
+.schedule-cell-subject,
+.schedule-cell-teacher{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:35px;
+  padding:5px 3px;
+  line-height:1.25;
+  overflow-wrap:anywhere;
+}
+
+.schedule-cell-subject{
+  color:#111;
+  background:#fff;
+  border-bottom:1px solid #777;
+}
+
+.schedule-cell-teacher{
+  color:#0b4b3e;
+  background:#f8f5ea;
+  font-size:12px;
+  font-weight:600;
+}
+
+.schedule-cell-empty{
+  color:#999;
+  font-weight:500;
+}
+
+.schedule-table .schedule-day{
+  background:#789685;
+  color:#fff;
+  font-size:16px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.schedule-table .schedule-empty{
+  color:#999;
+  font-weight:500;
+}
+
+.schedule-signatures{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:45px;
+  margin-top:16px;
+}
+
+.schedule-signature{
+  text-align:center;
+  color:#111;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.8;
+}
+
+.schedule-signature-line{
+  width:180px;
+  max-width:80%;
+  border-bottom:1px solid #777;
+  margin:12px auto 0;
+}
+
+.schedule-credit{
+  text-align:center;
+  margin-top:14px;
+  color:#111;
+  font-size:12px;
+  font-weight:800;
+}
+
+.schedule-print-actions{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:15px;
+}
+
+.schedule-print-btn,
+.schedule-close-btn{
+  border:none;
+  border-radius:8px;
+  padding:11px 20px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.schedule-print-btn{
+  background:#0b4b3e;
+  color:#fff;
+}
+
+.schedule-close-btn{
+  background:#eee;
+  color:#555;
+}
+
+@media(max-width:900px){
+  .schedule-toolbar{
+    grid-template-columns:1fr;
+  }
+
+  .schedule-open-btn{
+    width:100%;
+  }
+
+  .schedule-school-head{
+    grid-template-columns:75px 1fr 20px;
+  }
+
+  .schedule-school-logo{
+    width:65px;
+    height:60px;
+  }
+
+  .schedule-school-name{
+    font-size:17px;
+  }
+
+  .schedule-title{
+    font-size:21px;
+  }
+
+  .schedule-table{
+    min-width:850px;
+  }
+}
+
+@media print{
+  @page{
+    size:A4 landscape;
+    margin:8mm;
+  }
+
+  body.schedule-printing *{
+    visibility:hidden !important;
+  }
+
+  body.schedule-printing #schedulePrintArea,
+  body.schedule-printing #schedulePrintArea *{
+    visibility:visible !important;
+  }
+
+  body.schedule-printing #schedulePrintArea{
+    position:absolute !important;
+    left:0 !important;
+    top:0 !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    background:#fff !important;
+    box-shadow:none !important;
+  }
+
+  body.schedule-printing .schedule-print-sheet{
+    max-width:none !important;
+    width:100% !important;
+  }
+
+  body.schedule-printing .schedule-print-actions,
+  body.schedule-printing .schedule-week-note{
+    display:none !important;
+  }
+
+  body.schedule-printing .schedule-school-head{
+    padding-bottom:6px !important;
+  }
+
+  body.schedule-printing .schedule-school-logo{
+    width:92px !important;
+    height:65px !important;
+  }
+
+  body.schedule-printing .schedule-school-name{
+    font-size:19px !important;
+  }
+
+  body.schedule-printing .schedule-school-name small{
+    font-size:11px !important;
+  }
+
+  body.schedule-printing .schedule-title{
+    font-size:23px !important;
+    margin:7px 0 !important;
+  }
+  body.schedule-printing .schedule-table{
+    width:100% !important;
+    border-right:2px solid #111 !important;
+    box-sizing:border-box !important;
+    overflow:visible !important;
+  }
+
+  body.schedule-printing .schedule-table th:first-child,
+  body.schedule-printing .schedule-table td:first-child{
+    border-right:2px solid #111 !important;
+  }
+
+  body.schedule-printing .schedule-table th{
+    padding:6px 3px !important;
+    font-size:13px !important;
+  }
+
+  body.schedule-printing .schedule-table td{
+    height:47px !important;
+    padding:4px 3px !important;
+    font-size:13px !important;
+  }
+
+  body.schedule-printing .schedule-signatures{
+    margin-top:9px !important;
+  }
+
+  body.schedule-printing .schedule-credit{
+    margin-top:7px !important;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+
+<div class="brand">
+
+<img src="logo.jpeg" alt="شعار مدارس الفلاح">
+
+<div>
+
+<h1>
+مدارس الفلاح الأهلية
+</h1>
+
+<p>
+نظام الخطة الأسبوعية
+</p>
+
+</div>
+
+</div>
+
+
+<div class="admin-info">
+
+<div
+class="admin-name"
+id="adminName">
+
+لوحة الإدارة
+
+</div>
+
+<button
+class="logout-btn"
+id="logoutBtn">
+
+تسجيل الخروج
+
+</button>
+
+</div>
+
+</header>
+
+
+<main class="container">
+
+<!-- ======================================
+     جدول الحصص
+====================================== -->
+
+<section class="card schedule-card">
+
+  <div class="card-header">
+    <h3>جدول الحصص</h3>
+  </div>
+
+  <div class="card-body">
+
+    <div class="schedule-toolbar">
+
+      <div class="form-group">
+        <label for="scheduleGrade">الصف</label>
+        <select id="scheduleGrade">
+          <option value="">اختر الصف</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="scheduleSection">الشعبة</label>
+        <select id="scheduleSection">
+          <option value="">اختر الشعبة</option>
+        </select>
+      </div>
+
+      <button
+        type="button"
+        class="schedule-open-btn"
+        id="loadScheduleBtn">
+        عرض جدول الحصص
+      </button>
+
+    </div>
+
+    <div id="scheduleStatus" class="schedule-status"></div>
+
+    <div id="scheduleResult" class="schedule-result">
+
+      <div id="schedulePrintArea" class="schedule-preview">
+
+        <div class="schedule-print-sheet">
+
+          <div class="schedule-school-head">
+
+            <div>
+              <img
+                src="logo.jpeg"
+                class="schedule-school-logo"
+                alt="شعار مدارس الفلاح">
+            </div>
+
+            <div class="schedule-school-name">
+              مدارس الفلاح الأهلية
+              <small>نظام الخطة الأسبوعية</small>
+            </div>
+
+            <div></div>
+
+          </div>
+
+          <div id="scheduleTitle" class="schedule-title">
+            جدول الحصص
+          </div>
+
+          <div id="scheduleWeekNote" class="schedule-week-note"></div>
+
+          <table class="schedule-table">
+
+            <thead>
+              <tr>
+                <th>اليوم</th>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>4</th>
+                <th>5</th>
+                <th>6</th>
+                <th>7</th>
+                <th>8</th>
+              </tr>
+            </thead>
+
+            <tbody id="scheduleTableBody"></tbody>
+
+          </table>
+
+          <div class="schedule-signatures">
+
+            <div class="schedule-signature">
+              رائد الصف حسب الخطة
+              <div id="scheduleLeaderName"></div>
+              <div class="schedule-signature-line"></div>
+            </div>
+
+            <div class="schedule-signature">
+              مدير المدرسة
+              <div id="schedulePrincipalName"></div>
+              <div class="schedule-signature-line"></div>
+            </div>
+
+          </div>
+
+          <div class="schedule-credit">
+            تصميم وتطوير: محمد عامر أحمد
+          </div>
+
+          <div class="schedule-print-actions">
+
+            <button
+              type="button"
+              class="schedule-print-btn"
+              id="printScheduleBtn">
+              طباعة
+            </button>
+
+            <button
+              type="button"
+              class="schedule-close-btn"
+              id="clearScheduleBtn">
+              إخفاء الجدول
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<div class="welcome">
+
+<h2>
+لوحة إدارة النظام
+</h2>
+
+<p>
+إدارة حسابات رواد الفصول وربط كل رائد بالفصل الخاص به.
+</p>
+
+</div>
+
+
+<div class="stats">
+
+<div class="stat-card">
+
+<span>
+إجمالي رواد الفصول
+</span>
+
+<strong id="totalCount">
+0
+</strong>
+
+</div>
+
+
+<div class="stat-card">
+
+<span>
+الحسابات المفعلة
+</span>
+
+<strong id="activeCount">
+0
+</strong>
+
+</div>
+
+
+<div class="stat-card">
+
+<span>
+الحسابات غير المفعلة
+</span>
+
+<strong id="inactiveCount">
+0
+</strong>
+
+</div>
+
+</div>
+
+
+<!-- ======================================
+     متابعة الخطط الأسبوعية
+====================================== -->
+
+<section class="card monitor-card">
+
+<div class="card-header">
+
+<h3>
+متابعة الخطط الأسبوعية
+</h3>
+
+</div>
+
+
+<div class="card-body">
+
+<div class="monitor-toolbar">
+
+<div class="monitor-select-box">
+
+<label>
+اختر الأسبوع للمتابعة
+</label>
+
+<select id="monitorWeek">
+
+<option value="1">الأسبوع الأول</option>
+<option value="2">الأسبوع الثاني</option>
+<option value="3">الأسبوع الثالث</option>
+<option value="4">الأسبوع الرابع</option>
+<option value="5">الأسبوع الخامس</option>
+<option value="6">الأسبوع السادس</option>
+<option value="7">الأسبوع السابع</option>
+<option value="8">الأسبوع الثامن</option>
+<option value="9">الأسبوع التاسع</option>
+<option value="10">الأسبوع العاشر</option>
+<option value="11">الأسبوع الحادي عشر</option>
+<option value="12">الأسبوع الثاني عشر</option>
+<option value="13">الأسبوع الثالث عشر</option>
+<option value="14">الأسبوع الرابع عشر</option>
+<option value="15">الأسبوع الخامس عشر</option>
+<option value="16">الأسبوع السادس عشر</option>
+<option value="17">الأسبوع السابع عشر</option>
+<option value="18">الأسبوع الثامن عشر</option>
+
+</select>
+
+</div>
+
+
+<div class="monitor-actions">
+
+<button
+class="refresh-monitor-btn"
+id="refreshMonitorBtn">
+
+تحديث المتابعة
+
+</button>
+
+</div>
+
+</div>
+
+
+<div class="monitor-summary">
+
+<div class="monitor-box monitor-total">
+
+<span>
+رواد الفصول المطلوب منهم الخطة
+</span>
+
+<strong id="monitorTotal">
+0
+</strong>
+
+</div>
+
+
+<div class="monitor-box monitor-done">
+
+<span>
+تم حفظ الخطة
+</span>
+
+<strong id="monitorSaved">
+0
+</strong>
+
+</div>
+
+
+<div class="monitor-box monitor-pending">
+
+<span>
+لم يحفظوا الخطة
+</span>
+
+<strong id="monitorMissing">
+0
+</strong>
+
+</div>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table class="plan-monitor-table">
+
+<thead>
+
+<tr>
+<th>م</th>
+<th>رائد الفصل</th>
+<th>المرحلة</th>
+<th>الصف</th>
+<th>الشعبة</th>
+<th>حالة الخطة</th>
+<th>آخر حفظ</th>
+</tr>
+
+</thead>
+
+
+<tbody id="planStatusTable">
+
+<tr>
+
+<td
+colspan="7"
+class="empty">
+
+جاري تحميل متابعة الخطط...
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- ======================================
+     إدارة جميع الخطط الأسبوعية
+====================================== -->
+
+<section class="card plans-management-card">
+
+<div class="card-header">
+
+<h3>
+إدارة جميع الخطط الأسبوعية
+</h3>
+
+</div>
+
+
+<div class="card-body">
+
+<div class="plans-management-toolbar">
+
+<div class="form-group">
+
+<label>
+بحث
+</label>
+
+<input
+id="planSearchInput"
+type="text"
+placeholder="اسم رائد الصف أو المرحلة أو الصف أو الشعبة...">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+الأسبوع
+</label>
+
+<select id="planWeekFilter">
+
+<option value="">
+كل الأسابيع
+</option>
+
+<option value="1">الأسبوع الأول</option>
+<option value="2">الأسبوع الثاني</option>
+<option value="3">الأسبوع الثالث</option>
+<option value="4">الأسبوع الرابع</option>
+<option value="5">الأسبوع الخامس</option>
+<option value="6">الأسبوع السادس</option>
+<option value="7">الأسبوع السابع</option>
+<option value="8">الأسبوع الثامن</option>
+<option value="9">الأسبوع التاسع</option>
+<option value="10">الأسبوع العاشر</option>
+<option value="11">الأسبوع الحادي عشر</option>
+<option value="12">الأسبوع الثاني عشر</option>
+<option value="13">الأسبوع الثالث عشر</option>
+<option value="14">الأسبوع الرابع عشر</option>
+<option value="15">الأسبوع الخامس عشر</option>
+<option value="16">الأسبوع السادس عشر</option>
+<option value="17">الأسبوع السابع عشر</option>
+<option value="18">الأسبوع الثامن عشر</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+المرحلة
+</label>
+
+<select id="planStageFilter">
+
+<option value="">
+كل المراحل
+</option>
+
+<option value="الابتدائية">
+الابتدائية
+</option>
+
+<option value="المتوسطة">
+المتوسطة
+</option>
+
+<option value="الثانوية">
+الثانوية
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+حالة الرائد
+</label>
+
+<select id="planLeaderStateFilter">
+
+<option value="">
+الكل
+</option>
+
+<option value="active">
+رائد موجود
+</option>
+
+<option value="deleted">
+رائد محذوف/غير موجود
+</option>
+
+</select>
+
+</div>
+
+
+<button
+class="manage-refresh-btn"
+id="refreshAllPlansBtn">
+
+تحديث الخطط
+
+</button>
+
+</div>
+
+
+<div class="plans-count-line">
+
+عدد الخطط الظاهرة:
+
+<strong id="allPlansCount">
+0
+</strong>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table class="all-plans-table">
+
+<thead>
+
+<tr>
+
+<th>م</th>
+<th>رائد الصف</th>
+<th>المرحلة</th>
+<th>الصف</th>
+<th>الشعبة</th>
+<th>الأسبوع</th>
+<th>من تاريخ</th>
+<th>إلى تاريخ</th>
+<th>آخر حفظ</th>
+<th>الإجراءات</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="allPlansTable">
+
+<tr>
+
+<td
+colspan="10"
+class="empty">
+
+جاري تحميل الخطط...
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<div class="layout">
+
+
+<section class="card">
+
+<div class="card-header">
+
+<h3>
+إضافة رائد فصل
+</h3>
+
+</div>
+
+
+<div class="card-body">
+
+<form id="leaderForm">
+
+
+<div class="form-group">
+
+<label>
+اسم رائد الفصل
+</label>
+
+<input
+id="name"
+type="text"
+placeholder="مثال: أحمد محمد علي"
+required>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+رقم الجوال
+</label>
+
+<input
+id="phone"
+type="tel"
+dir="ltr"
+inputmode="numeric"
+placeholder="مثال: 0591234567"
+required>
+
+<div class="password-note">
+
+يستخدم الرقم لإرسال بيانات الحساب لرائد الفصل عبر واتساب.
+
+</div>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+اسم المستخدم
+</label>
+
+<input
+id="username"
+type="text"
+dir="ltr"
+placeholder="مثال: ahmed6a"
+required>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+كلمة المرور
+</label>
+
+<input
+id="password"
+type="text"
+dir="ltr"
+minlength="6"
+placeholder="6 خانات على الأقل"
+required>
+
+<div class="password-note">
+
+أعطِ اسم المستخدم وكلمة المرور لرائد الفصل.
+
+</div>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+المرحلة
+</label>
+
+<select
+id="stage"
+required>
+
+<option value="">
+اختر المرحلة
+</option>
+
+<option value="الابتدائية">
+الابتدائية
+</option>
+
+<option value="المتوسطة">
+المتوسطة
+</option>
+
+<option value="الثانوية">
+الثانوية
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+الصف
+</label>
+
+<select
+id="grade"
+required>
+
+<option value="">
+اختر الصف
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+الشعبة
+</label>
+
+<select
+id="section"
+required>
+
+<option value="">
+اختر الشعبة
+</option>
+
+<option value="أ">
+أ
+</option>
+
+<option value="ب">
+ب
+</option>
+
+<option value="ج">
+ج
+</option>
+
+<option value="د">
+د
+</option>
+
+</select>
+
+</div>
+
+
+<button
+type="submit"
+class="save-btn"
+id="saveBtn">
+
+إنشاء حساب رائد الفصل
+
+</button>
+
+
+<div
+id="message"
+class="message">
+</div>
+
+</form>
+
+</div>
+
+</section>
+
+
+<section class="card">
+
+<div class="card-header">
+
+<h3>
+رواد الفصول المسجلون
+</h3>
+
+</div>
+
+
+<div class="card-body">
+
+<div class="table-tools">
+
+<input
+class="search-box"
+id="searchInput"
+type="text"
+placeholder="بحث بالاسم أو اسم المستخدم أو الجوال...">
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>م</th>
+<th>رائد الفصل</th>
+<th>الجوال</th>
+<th>اسم المستخدم</th>
+<th>المرحلة</th>
+<th>الصف</th>
+<th>الشعبة</th>
+<th>الحالة</th>
+<th>إجراء</th>
+</tr>
+
+</thead>
+
+
+<tbody id="leadersTable">
+
+<tr>
+
+<td
+colspan="9"
+class="empty">
+
+جاري تحميل البيانات...
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+</main>
+
+
+<!-- ======================================
+     تعديل رائد الفصل
+====================================== -->
+
+<div
+class="modal"
+id="editModal">
+
+<div class="modal-box">
+
+
+<div class="modal-title">
+
+تعديل بيانات رائد الفصل
+
+</div>
+
+
+<div class="modal-content">
+
+<input
+type="hidden"
+id="editId">
+
+
+<div class="form-group">
+
+<label>
+الاسم
+</label>
+
+<input id="editName">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+رقم الجوال
+</label>
+
+<input
+id="editPhone"
+type="tel"
+dir="ltr"
+inputmode="numeric"
+placeholder="05xxxxxxxx">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+المرحلة
+</label>
+
+<select id="editStage">
+
+<option value="الابتدائية">
+الابتدائية
+</option>
+
+<option value="المتوسطة">
+المتوسطة
+</option>
+
+<option value="الثانوية">
+الثانوية
+</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+الصف
+</label>
+
+<select id="editGrade">
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+الشعبة
+</label>
+
+<select id="editSection">
+
+<option value="أ">
+أ
+</option>
+
+<option value="ب">
+ب
+</option>
+
+<option value="ج">
+ج
+</option>
+
+<option value="د">
+د
+</option>
+
+</select>
+
+</div>
+
+
+<div class="modal-actions">
+
+<button
+class="update-btn"
+id="updateBtn">
+
+حفظ التعديل
+
+</button>
+
+<button
+class="cancel-btn"
+id="cancelEdit">
+
+إلغاء
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ======================================
+     تفاصيل الخطة
+====================================== -->
+
+<div
+class="modal"
+id="planDetailsModal">
+
+<div
+class="modal-box"
+style="width:min(900px,100%);">
+
+<div class="modal-title">
+
+تفاصيل الخطة الأسبوعية
+
+</div>
+
+
+<div class="modal-content">
+
+<div id="planDetailsContent">
+</div>
+
+
+<div class="modal-actions">
+
+<button
+class="cancel-btn"
+id="closePlanDetails">
+
+إغلاق
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<footer>
+
+مدارس الفلاح الأهلية
+
+<br>
+
+<strong>
+إعداد وتصميم محمد عامر أحمد
+</strong>
+
+</footer>
+
+
+<script type="module">
+
+
+import {
+  initializeApp
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signOut
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+  apiKey:
+  "AIzaSyBYxW_pdFvE1VZyDoTok4-EutPe6oigJhY",
+
+  authDomain:
+  "weekly-plan-3a743.firebaseapp.com",
+
+  projectId:
+  "weekly-plan-3a743",
+
+  storageBucket:
+  "weekly-plan-3a743.firebasestorage.app",
+
+  messagingSenderId:
+  "575884603803",
+
+  appId:
+  "1:575884603803:web:e8c4d82c69fd545bed313e"
+
+};
+
+
+const app =
+initializeApp(
+  firebaseConfig
+);
+
+
+const auth =
+getAuth(app);
+
+
+const db =
+getFirestore(app);
+
+const assignmentsFirebaseConfig = {
+
+  apiKey:
+  "AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",
+
+  authDomain:
+  "results2026-7c0dd.firebaseapp.com",
+
+  projectId:
+  "results2026-7c0dd",
+
+  storageBucket:
+  "results2026-7c0dd.firebasestorage.app",
+
+  messagingSenderId:
+  "241421115694",
+
+  appId:
+  "1:241421115694:web:96f55fd9fd1d5b18b31abf"
+
+};
+
+const assignmentsApp = initializeApp(
+  assignmentsFirebaseConfig,
+  "TeacherAssignmentsApp"
+);
+
+const assignmentsDb = getFirestore(
+  assignmentsApp
+);
+
+
+const secondaryApp =
+initializeApp(
+  firebaseConfig,
+  "SecondaryApp"
+);
+
+
+const secondaryAuth =
+getAuth(
+  secondaryApp
+);
+
+
+const leaderForm =
+document.getElementById(
+  "leaderForm"
+);
+
+
+const stage =
+document.getElementById(
+  "stage"
+);
+
+
+const grade =
+document.getElementById(
+  "grade"
+);
+
+
+const section =
+document.getElementById(
+  "section"
+);
+
+
+const phone =
+document.getElementById(
+  "phone"
+);
+
+
+const saveBtn =
+document.getElementById(
+  "saveBtn"
+);
+
+
+const message =
+document.getElementById(
+  "message"
+);
+
+
+const leadersTable =
+document.getElementById(
+  "leadersTable"
+);
+
+
+const totalCount =
+document.getElementById(
+  "totalCount"
+);
+
+
+const activeCount =
+document.getElementById(
+  "activeCount"
+);
+
+
+const inactiveCount =
+document.getElementById(
+  "inactiveCount"
+);
+
+
+const adminName =
+document.getElementById(
+  "adminName"
+);
+
+
+const logoutBtn =
+document.getElementById(
+  "logoutBtn"
+);
+
+
+const searchInput =
+document.getElementById(
+  "searchInput"
+);
+
+
+/* متابعة الخطط */
+
+const monitorWeek =
+document.getElementById(
+  "monitorWeek"
+);
+
+
+const refreshMonitorBtn =
+document.getElementById(
+  "refreshMonitorBtn"
+);
+
+
+const planStatusTable =
+document.getElementById(
+  "planStatusTable"
+);
+
+
+const monitorTotal =
+document.getElementById(
+  "monitorTotal"
+);
+
+
+const monitorSaved =
+document.getElementById(
+  "monitorSaved"
+);
+
+
+const monitorMissing =
+document.getElementById(
+  "monitorMissing"
+);
+
+
+/* إدارة جميع الخطط */
+
+const planSearchInput =
+document.getElementById(
+  "planSearchInput"
+);
+
+
+const planWeekFilter =
+document.getElementById(
+  "planWeekFilter"
+);
+
+
+const planStageFilter =
+document.getElementById(
+  "planStageFilter"
+);
+
+
+const planLeaderStateFilter =
+document.getElementById(
+  "planLeaderStateFilter"
+);
+
+
+const refreshAllPlansBtn =
+document.getElementById(
+  "refreshAllPlansBtn"
+);
+
+
+const allPlansTable =
+document.getElementById(
+  "allPlansTable"
+);
+
+
+const allPlansCount =
+document.getElementById(
+  "allPlansCount"
+);
+
+
+const planDetailsModal =
+document.getElementById(
+  "planDetailsModal"
+);
+
+
+const planDetailsContent =
+document.getElementById(
+  "planDetailsContent"
+);
+
+
+let leaders = [];
+
+let weeklyPlans = [];
+
+
+/* ======================================
+   الصفوف
+====================================== */
+
+const gradesByStage = {
+
+  "الابتدائية":[
+
+    "الأول الابتدائي",
+    "الثاني الابتدائي",
+    "الثالث الابتدائي",
+    "الرابع الابتدائي",
+    "الخامس الابتدائي",
+    "السادس الابتدائي"
+
+  ],
+
+
+  "المتوسطة":[
+
+    "الأول المتوسط",
+    "الثاني المتوسط",
+    "الثالث المتوسط"
+
+  ],
+
+
+  "الثانوية":[
+
+    "الأول الثانوي",
+    "الثاني الثانوي",
+    "الثالث الثانوي"
+
+  ]
+
+};
+
+
+function fillGrades(
+  stageValue,
+  target
+){
+
+  target.innerHTML =
+  `<option value="">اختر الصف</option>`;
+
+
+  if(!stageValue){
+
+    return;
+
+  }
+
+
+  gradesByStage[
+    stageValue
+  ]
+  .forEach(item=>{
+
+
+    const option =
+    document.createElement(
+      "option"
+    );
+
+
+    option.value =
+    item;
+
+
+    option.textContent =
+    item;
+
+
+    target.appendChild(
+      option
+    );
+
+
+  });
+
+}
+
+
+stage.addEventListener(
+  "change",
+  ()=>{
+
+
+    fillGrades(
+      stage.value,
+      grade
+    );
+
+
+  }
+);
+
+
+/* ======================================
+   AUTH
+====================================== */
+
+onAuthStateChanged(
+  auth,
+  async user=>{
+
+
+    if(!user){
+
+      window.location.href =
+      "index.html";
+
+      return;
+
+    }
+
+
+    try{
+
+
+      const userSnap =
+      await getDoc(
+
+        doc(
+          db,
+          "users",
+          user.uid
+        )
+
+      );
+
+
+      if(
+        !userSnap.exists()
+      ){
+
+        await signOut(
+          auth
+        );
+
+
+        window.location.href =
+        "index.html";
+
+        return;
+
+      }
+
+
+      const data =
+      userSnap.data();
+
+
+      if(
+        data.role !==
+        "admin" ||
+
+        data.active ===
+        false
+      ){
+
+        await signOut(
+          auth
+        );
+
+
+        window.location.href =
+        "index.html";
+
+        return;
+
+      }
+
+
+      adminName.textContent =
+      data.name ||
+      "مدير النظام";
+
+
+      await loadLeaders();
+
+
+      await loadWeeklyPlans(
+        true
+      );
+
+
+    }
+
+    catch(error){
+
+
+      console.error(
+        error
+      );
+
+
+      alert(
+        "تعذر التحقق من صلاحية الحساب."
+      );
+
+
+    }
+
+  }
+);
+
+
+/* ======================================
+   LOGOUT
+====================================== */
+
+logoutBtn.addEventListener(
+  "click",
+  async()=>{
+
+
+    await signOut(
+      auth
+    );
+
+
+    window.location.href =
+    "index.html";
+
+
+  }
+);
+
+
+/* ======================================
+   MESSAGE
+====================================== */
+
+function showMessage(
+  text,
+  type
+){
+
+  message.textContent =
+  text;
+
+
+  message.className =
+  "message " +
+  type;
+
+
+  setTimeout(
+    ()=>{
+
+      message.className =
+      "message";
+
+    },
+    5000
+  );
+
+}
+
+
+/* ======================================
+   PHONE
+====================================== */
+
+function normalizePhone(
+  value
+){
+
+  let number =
+  String(
+    value || ""
+  )
+  .replace(
+    /\D/g,
+    ""
+  );
+
+
+  if(
+    number.startsWith(
+      "05"
+    ) &&
+
+    number.length ===
+    10
+  ){
+
+    number =
+    "966" +
+    number.substring(1);
+
+  }
+
+
+  else if(
+    number.startsWith(
+      "5"
+    ) &&
+
+    number.length ===
+    9
+  ){
+
+    number =
+    "966" +
+    number;
+
+  }
+
+
+  else if(
+    number.startsWith(
+      "00966"
+    )
+  ){
+
+    number =
+    number.substring(2);
+
+  }
+
+
+  return number;
+
+}
+
+
+function validSaudiPhone(
+  value
+){
+
+  const number =
+  normalizePhone(
+    value
+  );
+
+
+  return /^9665\d{8}$/
+  .test(
+    number
+  );
+
+}
+
+
+/* ======================================
+   CREATE ACCOUNT
+====================================== */
+
+leaderForm.addEventListener(
+  "submit",
+  async event=>{
+
+
+    event.preventDefault();
+
+
+    const name =
+    document
+    .getElementById(
+      "name"
+    )
+    .value
+    .trim();
+
+
+    const phoneValue =
+    phone
+    .value
+    .trim();
+
+
+    const username =
+    document
+    .getElementById(
+      "username"
+    )
+    .value
+    .trim()
+    .toLowerCase()
+    .replace(
+      /\s+/g,
+      ""
+    );
+
+
+    const password =
+    document
+    .getElementById(
+      "password"
+    )
+    .value;
+
+
+    const stageValue =
+    stage.value;
+
+
+    const gradeValue =
+    grade.value;
+
+
+    const sectionValue =
+    section.value;
+
+
+    if(
+      !name ||
+      !phoneValue ||
+      !username ||
+      !password ||
+      !stageValue ||
+      !gradeValue ||
+      !sectionValue
+    ){
+
+      showMessage(
+        "برجاء استكمال جميع البيانات.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if(
+      !validSaudiPhone(
+        phoneValue
+      )
+    ){
+
+      showMessage(
+        "رقم الجوال غير صحيح. مثال: 0591234567",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if(
+      password.length <
+      6
+    ){
+
+      showMessage(
+        "كلمة المرور يجب ألا تقل عن 6 خانات.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if(
+      !/^[a-zA-Z0-9._-]+$/
+      .test(
+        username
+      )
+    ){
+
+      showMessage(
+        "اسم المستخدم يجب أن يكون باللغة الإنجليزية والأرقام فقط.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    try{
+
+
+      saveBtn.disabled =
+      true;
+
+
+      saveBtn.textContent =
+      "جاري إنشاء الحساب...";
+
+
+      const existingUsers =
+      await getDocs(
+
+        collection(
+          db,
+          "users"
+        )
+
+      );
+
+
+      let usernameExists =
+      false;
+
+
+      let classExists =
+      false;
+
+
+      existingUsers
+      .forEach(
+        item=>{
+
+
+          const data =
+          item.data();
+
+
+          if(
+            data.username &&
+
+            data.username
+            .toLowerCase() ===
+            username &&
+
+            data.deleted !==
+            true
+          ){
+
+            usernameExists =
+            true;
+
+          }
+
+
+          if(
+            data.role ===
+            "classLeader" &&
+
+            data.deleted !==
+            true &&
+
+            data.active !==
+            false &&
+
+            data.stage ===
+            stageValue &&
+
+            data.grade ===
+            gradeValue &&
+
+            data.section ===
+            sectionValue
+          ){
+
+            classExists =
+            true;
+
+          }
+
+
+        }
+      );
+
+
+      if(
+        usernameExists
+      ){
+
+        showMessage(
+          "اسم المستخدم مستخدم بالفعل.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if(
+        classExists
+      ){
+
+        showMessage(
+          "هذا الفصل مرتبط برائد فصل آخر بالفعل.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      const internalEmail =
+
+      username +
+      "@weeklyplan.local";
+
+
+      const credential =
+      await createUserWithEmailAndPassword(
+
+        secondaryAuth,
+
+        internalEmail,
+
+        password
+
+      );
+
+
+      const uid =
+      credential
+      .user
+      .uid;
+
+
+      await setDoc(
+
+        doc(
+          db,
+          "users",
+          uid
+        ),
+
+        {
+
+          name:
+          name,
+
+
+          phone:
+          normalizePhone(
+            phoneValue
+          ),
+
+
+          username:
+          username,
+
+
+          loginPassword:
+          password,
+
+
+          role:
+          "classLeader",
+
+
+          stage:
+          stageValue,
+
+
+          grade:
+          gradeValue,
+
+
+          section:
+          sectionValue,
+
+
+          active:
+          true,
+
+
+          deleted:
+          false,
+
+
+          email:
+          internalEmail,
+
+
+          createdAt:
+          serverTimestamp(),
+
+
+          createdBy:
+          auth.currentUser.uid
+
+        }
+
+      );
+
+
+      await signOut(
+        secondaryAuth
+      );
+
+
+      showMessage(
+        "تم إنشاء حساب رائد الفصل بنجاح ✅ ويمكنك الآن إرسال بياناته عبر واتساب.",
+        "success"
+      );
+
+
+      leaderForm.reset();
+
+
+      grade.innerHTML =
+      `<option value="">اختر الصف</option>`;
+
+
+      await loadLeaders();
+
+
+      renderPlanMonitoring();
+
+
+    }
+
+    catch(error){
+
+
+      console.error(
+        error
+      );
+
+
+      let text =
+      "حدث خطأ أثناء إنشاء الحساب.";
+
+
+      if(
+        error.code ===
+        "auth/email-already-in-use"
+      ){
+
+        text =
+        "اسم المستخدم مستخدم بالفعل في Authentication.";
+
+      }
+
+
+      else if(
+        error.code ===
+        "auth/weak-password"
+      ){
+
+        text =
+        "كلمة المرور ضعيفة.";
+
+      }
+
+
+      else if(
+        error.code ===
+        "auth/invalid-email"
+      ){
+
+        text =
+        "اسم المستخدم غير صالح.";
+
+      }
+
+
+      else if(
+        error.code ===
+        "auth/network-request-failed"
+      ){
+
+        text =
+        "تعذر الاتصال بالإنترنت.";
+
+      }
+
+
+      showMessage(
+        text,
+        "error"
+      );
+
+
+    }
+
+    finally{
+
+
+      saveBtn.disabled =
+      false;
+
+
+      saveBtn.textContent =
+      "إنشاء حساب رائد الفصل";
+
+
+    }
+
+  }
+);
+
+
+/* ======================================
+   LOAD LEADERS
+====================================== */
+
+async function loadLeaders(){
+
+  try{
+
+
+    leadersTable.innerHTML = `
+
+      <tr>
+
+        <td
+        colspan="9"
+        class="empty">
+
+          جاري تحميل البيانات...
+
+        </td>
+
+      </tr>
+
+    `;
+
+
+    const snapshot =
+    await getDocs(
+
+      collection(
+        db,
+        "users"
+      )
+
+    );
+
+
+    leaders =
+    [];
+
+
+    snapshot.forEach(
+      item=>{
+
+
+        const data =
+        item.data();
+
+
+        if(
+          data.role ===
+          "classLeader" &&
+
+          data.deleted !==
+          true
+        ){
+
+          leaders.push({
+
+            id:
+            item.id,
+
+            ...data
+
+          });
+
+        }
+
+
+      }
+    );
+
+
+    leaders.sort(
+      (a,b)=>
+
+        (a.name || "")
+        .localeCompare(
+          b.name || "",
+          "ar"
+        )
+    );
+
+
+    updateStats();
+
+
+    renderLeaders(
+      leaders
+    );
+
+
+    renderPlanMonitoring();
+
+    renderAllPlansManagement();
+
+
+  }
+
+  catch(error){
+
+
+    console.error(
+      error
+    );
+
+
+    leadersTable.innerHTML = `
+
+      <tr>
+
+        <td
+        colspan="9"
+        class="empty">
+
+          تعذر تحميل بيانات رواد الفصول.
+
+        </td>
+
+      </tr>
+
+    `;
+
+
+  }
+
+}
+
+
+/* ======================================
+   STATS
+====================================== */
+
+function updateStats(){
+
+  totalCount.textContent =
+  leaders.length;
+
+
+  const active =
+  leaders.filter(
+    item =>
+    item.active !== false
+  ).length;
+
+
+  activeCount.textContent =
+  active;
+
+
+  inactiveCount.textContent =
+  leaders.length -
+  active;
+
+}
+
+
+/* ======================================
+   RENDER LEADERS
+====================================== */
+
+function renderLeaders(
+  items
+){
+
+  if(
+    items.length ===
+    0
+  ){
+
+    leadersTable.innerHTML = `
+
+      <tr>
+
+        <td
+        colspan="9"
+        class="empty">
+
+          لا توجد حسابات حتى الآن.
+
+        </td>
+
+      </tr>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  leadersTable.innerHTML =
+  "";
+
+
+  items.forEach(
+    (item,index)=>{
+
+
+      const tr =
+      document.createElement(
+        "tr"
+      );
+
+
+      const isActive =
+      item.active !==
+      false;
+
+
+      const hasPhone =
+      !!item.phone;
+
+
+      tr.innerHTML = `
+
+
+        <td>
+
+          ${index + 1}
+
+        </td>
+
+
+        <td>
+
+          ${escapeHTML(
+            item.name || ""
+          )}
+
+        </td>
+
+
+        <td dir="ltr">
+
+          ${
+            item.phone
+            ?
+            formatPhone(
+              item.phone
+            )
+            :
+            "-"
+          }
+
+        </td>
+
+
+        <td dir="ltr">
+
+          ${escapeHTML(
+            item.username || ""
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${escapeHTML(
+            item.stage || ""
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${escapeHTML(
+            item.grade || ""
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${escapeHTML(
+            item.section || ""
+          )}
+
+        </td>
+
+
+        <td>
+
+          <span
+          class="badge ${
+            isActive
+            ?
+            "active"
+            :
+            "inactive"
+          }">
+
+            ${
+              isActive
+              ?
+              "مفعل"
+              :
+              "موقوف"
+            }
+
+          </span>
+
+        </td>
+
+
+        <td>
+
+
+          <button
+          class="action-btn whatsapp-btn"
+          data-whatsapp="${item.id}"
+          ${hasPhone ? "" : "disabled"}>
+
+            واتساب
+
+          </button>
+
+
+          <button
+          class="action-btn edit-btn"
+          data-edit="${item.id}">
+
+            تعديل
+
+          </button>
+
+
+          <button
+          class="action-btn toggle-btn"
+          data-toggle="${item.id}">
+
+            ${
+              isActive
+              ?
+              "إيقاف"
+              :
+              "تفعيل"
+            }
+
+          </button>
+
+
+          <button
+          class="action-btn delete-btn"
+          data-delete="${item.id}">
+
+            حذف
+
+          </button>
+
+
+        </td>
+
+
+      `;
+
+
+      leadersTable.appendChild(
+        tr
+      );
+
+
+    }
+  );
+
+
+  bindTableButtons();
+
+}
+
+
+/* ======================================
+   SEARCH
+====================================== */
+
+searchInput.addEventListener(
+  "input",
+  ()=>{
+
+
+    const text =
+    searchInput.value
+    .trim()
+    .toLowerCase();
+
+
+    const filtered =
+    leaders.filter(
+      item=>{
+
+
+        return (
+
+          (item.name || "")
+          .toLowerCase()
+          .includes(
+            text
+          )
+
+          ||
+
+          (item.username || "")
+          .toLowerCase()
+          .includes(
+            text
+          )
+
+          ||
+
+          (item.phone || "")
+          .includes(
+            text.replace(
+              /\D/g,
+              ""
+            )
+          )
+
+          ||
+
+          (item.grade || "")
+          .includes(
+            text
+          )
+
+        );
+
+
+      }
+    );
+
+
+    renderLeaders(
+      filtered
+    );
+
+
+  }
+);
+
+
+/* ======================================
+   WHATSAPP
+====================================== */
+
+function sendWhatsApp(
+  leader
+){
+
+  if(
+    !leader
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    !leader.phone
+  ){
+
+    alert(
+      "لا يوجد رقم جوال مسجل لرائد الفصل."
+    );
+
+    return;
+
+  }
+
+
+  const whatsappNumber =
+  normalizePhone(
+    leader.phone
+  );
+
+
+  if(
+    !/^9665\d{8}$/
+    .test(
+      whatsappNumber
+    )
+  ){
+
+    alert(
+      "رقم الجوال المسجل غير صحيح. قم بتعديله أولًا."
+    );
+
+    return;
+
+  }
+
+
+  const passwordText =
+  leader.loginPassword
+  ?
+  leader.loginPassword
+  :
+  "يرجى التواصل مع إدارة النظام";
+
+
+  const text =
+
+`السلام عليكم ورحمة الله وبركاته
+
+الأستاذ/ ${leader.name || ""}
+
+تم إنشاء حسابكم في نظام الخطة الأسبوعية بمدارس الفلاح الأهلية.
+
+بيانات الدخول:
+
+اسم المستخدم:
+${leader.username || ""}
+
+كلمة المرور:
+${passwordText}
+
+المرحلة:
+${leader.stage || ""}
+
+الصف:
+${leader.grade || ""}
+
+الشعبة:
+${leader.section || ""}
+
+رابط الدخول إلى النظام:
+https://muhammadamer1618-dev.github.io/Weekly-Plan/
+
+مع تمنياتنا لكم بالتوفيق.
+مدارس الفلاح الأهلية`;
+
+
+  const url =
+
+  "https://wa.me/" +
+  whatsappNumber +
+  "?text=" +
+  encodeURIComponent(
+    text
+  );
+
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
+
+/* ======================================
+   TABLE BUTTONS
+====================================== */
+
+function bindTableButtons(){
+
+
+  document
+  .querySelectorAll(
+    "[data-whatsapp]"
+  )
+  .forEach(
+    button=>{
+
+
+      button.addEventListener(
+        "click",
+        ()=>{
+
+
+          const leader =
+          leaders.find(
+            item =>
+            item.id ===
+            button.dataset.whatsapp
+          );
+
+
+          sendWhatsApp(
+            leader
+          );
+
+
+        }
+      );
+
+
+    }
+  );
+
+
+  document
+  .querySelectorAll(
+    "[data-toggle]"
+  )
+  .forEach(
+    button=>{
+
+
+      button.addEventListener(
+        "click",
+        async()=>{
+
+
+          const id =
+          button.dataset.toggle;
+
+
+          const leader =
+          leaders.find(
+            item =>
+            item.id ===
+            id
+          );
+
+
+          if(
+            !leader
+          ){
+
+            return;
+
+          }
+
+
+          const newStatus =
+          leader.active ===
+          false;
+
+
+          const text =
+          newStatus
+          ?
+          "هل تريد تفعيل هذا الحساب؟"
+          :
+          "هل تريد إيقاف هذا الحساب؟";
+
+
+          if(
+            !confirm(
+              text
+            )
+          ){
+
+            return;
+
+          }
+
+
+          try{
+
+
+            await updateDoc(
+
+              doc(
+                db,
+                "users",
+                id
+              ),
+
+              {
+
+                active:
+                newStatus
+
+              }
+
+            );
+
+
+            await loadLeaders();
+
+
+          }
+
+          catch(error){
+
+
+            console.error(
+              error
+            );
+
+
+            alert(
+              "حدث خطأ أثناء تغيير حالة الحساب."
+            );
+
+
+          }
+
+
+        }
+      );
+
+
+    }
+  );
+
+
+  document
+  .querySelectorAll(
+    "[data-edit]"
+  )
+  .forEach(
+    button=>{
+
+
+      button.addEventListener(
+        "click",
+        ()=>{
+
+
+          openEditModal(
+            button.dataset.edit
+          );
+
+
+        }
+      );
+
+
+    }
+  );
+
+
+  document
+  .querySelectorAll(
+    "[data-delete]"
+  )
+  .forEach(
+    button=>{
+
+
+      button.addEventListener(
+        "click",
+        async()=>{
+
+
+          const id =
+          button.dataset.delete;
+
+
+          const leader =
+          leaders.find(
+            item =>
+            item.id ===
+            id
+          );
+
+
+          if(
+            !leader
+          ){
+
+            return;
+
+          }
+
+
+          const confirmDelete =
+          confirm(
+            `هل تريد حذف رائد الفصل "${leader.name}" من النظام؟`
+          );
+
+
+          if(
+            !confirmDelete
+          ){
+
+            return;
+
+          }
+
+
+          const confirmAgain =
+          confirm(
+            "سيتم إخفاء الحساب ومنعه من الدخول. هل أنت متأكد؟"
+          );
+
+
+          if(
+            !confirmAgain
+          ){
+
+            return;
+
+          }
+
+
+          try{
+
+
+            await updateDoc(
+
+              doc(
+                db,
+                "users",
+                id
+              ),
+
+              {
+
+                active:
+                false,
+
+                deleted:
+                true,
+
+                deletedAt:
+                serverTimestamp()
+
+              }
+
+            );
+
+
+            await loadLeaders();
+
+
+            alert(
+              "تم حذف رائد الفصل من النظام."
+            );
+
+
+          }
+
+          catch(error){
+
+
+            console.error(
+              error
+            );
+
+
+            alert(
+              "حدث خطأ أثناء الحذف."
+            );
+
+
+          }
+
+
+        }
+      );
+
+
+    }
+  );
+
+}
+
+
+/* ======================================
+   EDIT MODAL
+====================================== */
+
+const editModal =
+document.getElementById(
+  "editModal"
+);
+
+
+const editId =
+document.getElementById(
+  "editId"
+);
+
+
+const editName =
+document.getElementById(
+  "editName"
+);
+
+
+const editPhone =
+document.getElementById(
+  "editPhone"
+);
+
+
+const editStage =
+document.getElementById(
+  "editStage"
+);
+
+
+const editGrade =
+document.getElementById(
+  "editGrade"
+);
+
+
+const editSection =
+document.getElementById(
+  "editSection"
+);
+
+
+function openEditModal(
+  id
+){
+
+  const leader =
+  leaders.find(
+    item =>
+    item.id ===
+    id
+  );
+
+
+  if(
+    !leader
+  ){
+
+    return;
+
+  }
+
+
+  editId.value =
+  leader.id;
+
+
+  editName.value =
+  leader.name || "";
+
+
+  editPhone.value =
+  displayPhoneForEdit(
+    leader.phone || ""
+  );
+
+
+  editStage.value =
+  leader.stage || "";
+
+
+  fillGrades(
+    editStage.value,
+    editGrade
+  );
+
+
+  editGrade.value =
+  leader.grade || "";
+
+
+  editSection.value =
+  leader.section || "";
+
+
+  editModal.classList.add(
+    "show"
+  );
+
+}
+
+
+editStage.addEventListener(
+  "change",
+  ()=>{
+
+
+    fillGrades(
+      editStage.value,
+      editGrade
+    );
+
+
+  }
+);
+
+
+document
+.getElementById(
+  "cancelEdit"
+)
+.addEventListener(
+  "click",
+  ()=>{
+
+
+    editModal.classList.remove(
+      "show"
+    );
+
+
+  }
+);
+
+
+/* ======================================
+   SAVE EDIT
+====================================== */
+
+document
+.getElementById(
+  "updateBtn"
+)
+.addEventListener(
+  "click",
+  async()=>{
+
+
+    const id =
+    editId.value;
+
+
+    const newPhone =
+    editPhone.value
+    .trim();
+
+
+    if(
+      !id ||
+      !editName.value.trim() ||
+      !newPhone ||
+      !editStage.value ||
+      !editGrade.value ||
+      !editSection.value
+    ){
+
+      alert(
+        "برجاء استكمال البيانات."
+      );
+
+      return;
+
+    }
+
+
+    if(
+      !validSaudiPhone(
+        newPhone
+      )
+    ){
+
+      alert(
+        "رقم الجوال غير صحيح. مثال: 0591234567"
+      );
+
+      return;
+
+    }
+
+
+    const duplicateClass =
+    leaders.some(
+      item=>{
+
+
+        return (
+
+          item.id !==
+          id &&
+
+          item.active !==
+          false &&
+
+          item.stage ===
+          editStage.value &&
+
+          item.grade ===
+          editGrade.value &&
+
+          item.section ===
+          editSection.value
+
+        );
+
+
+      }
+    );
+
+
+    if(
+      duplicateClass
+    ){
+
+      alert(
+        "هذا الفصل مرتبط برائد فصل آخر."
+      );
+
+      return;
+
+    }
+
+
+    try{
+
+
+      await updateDoc(
+
+        doc(
+          db,
+          "users",
+          id
+        ),
+
+        {
+
+          name:
+          editName.value
+          .trim(),
+
+
+          phone:
+          normalizePhone(
+            newPhone
+          ),
+
+
+          stage:
+          editStage.value,
+
+
+          grade:
+          editGrade.value,
+
+
+          section:
+          editSection.value,
+
+
+          updatedAt:
+          serverTimestamp()
+
+        }
+
+      );
+
+
+      editModal.classList.remove(
+        "show"
+      );
+
+
+      await loadLeaders();
+
+
+      alert(
+        "تم تحديث بيانات رائد الفصل بنجاح."
+      );
+
+
+    }
+
+    catch(error){
+
+
+      console.error(
+        error
+      );
+
+
+      alert(
+        "حدث خطأ أثناء حفظ التعديل."
+      );
+
+
+    }
+
+
+  }
+);
+
+
+/* ======================================
+   MODAL BACKGROUND
+====================================== */
+
+editModal.addEventListener(
+  "click",
+  event=>{
+
+
+    if(
+      event.target ===
+      editModal
+    ){
+
+      editModal.classList.remove(
+        "show"
+      );
+
+    }
+
+
+  }
+);
+
+
+/* ======================================
+   متابعة الخطط الأسبوعية
+====================================== */
+
+async function loadWeeklyPlans(
+  chooseLatestWeek = false
+){
+
+  try{
+
+
+    refreshMonitorBtn.disabled =
+    true;
+
+
+    refreshMonitorBtn.textContent =
+    "جاري التحديث...";
+
+
+    planStatusTable.innerHTML = `
+
+      <tr>
+
+        <td
+        colspan="7"
+        class="empty">
+
+          جاري تحميل متابعة الخطط...
+
+        </td>
+
+      </tr>
+
+    `;
+
+
+    const snapshot =
+    await getDocs(
+
+      collection(
+        db,
+        "weeklyPlans"
+      )
+
+    );
+
+
+    weeklyPlans =
+    [];
+
+
+    snapshot.forEach(
+      item=>{
+
+
+        weeklyPlans.push({
+
+          id:
+          item.id,
+
+          ...item.data()
+
+        });
+
+
+      }
+    );
+
+
+
+    if(
+      typeof refreshScheduleSelectors ===
+      "function"
+    ){
+
+      refreshScheduleSelectors();
+
+    }
+
+    if(
+      chooseLatestWeek &&
+      weeklyPlans.length >
+      0
+    ){
+
+      const weekNumbers =
+      weeklyPlans
+
+      .map(
+        item =>
+        Number(
+          item.weekNumber
+        )
+      )
+
+      .filter(
+        item =>
+        Number.isFinite(
+          item
+        ) &&
+        item >= 1 &&
+        item <= 18
+      );
+
+
+      if(
+        weekNumbers.length >
+        0
+      ){
+
+        const latestWeek =
+        Math.max(
+          ...weekNumbers
+        );
+
+
+        monitorWeek.value =
+        String(
+          latestWeek
+        );
+
+      }
+
+    }
+
+
+    renderPlanMonitoring();
+
+    renderAllPlansManagement();
+
+
+  }
+
+  catch(error){
+
+
+    console.error(
+      "خطأ تحميل الخطط:",
+      error
+    );
+
+
+    planStatusTable.innerHTML = `
+
+      <tr>
+
+        <td
+        colspan="7"
+        class="empty">
+
+          تعذر تحميل متابعة الخطط الأسبوعية.
+
+        </td>
+
+      </tr>
+
+    `;
+
+
+    if(
+      allPlansTable
+    ){
+
+      allPlansTable.innerHTML = `
+
+        <tr>
+
+          <td
+          colspan="10"
+          class="empty">
+
+            تعذر تحميل الخطط الأسبوعية.
+
+          </td>
+
+        </tr>
+
+      `;
+
+    }
+
+
+  }
+
+  finally{
+
+
+    refreshMonitorBtn.disabled =
+    false;
+
+
+    refreshMonitorBtn.textContent =
+    "تحديث المتابعة";
+
+
+  }
+
+}
+
+
+/* ======================================
+   رسم حالة الحفظ
+====================================== */
+
+function renderPlanMonitoring(){
+
+  if(
+    !planStatusTable ||
+    !monitorWeek
+  ){
+
+    return;
+
+  }
+
+
+  const week =
+  Number(
+    monitorWeek.value
+  );
+
+
+  const activeLeaders =
+  leaders.filter(
+    leader =>
+    leader.active !== false
+  );
+
+
+  monitorTotal.textContent =
+  activeLeaders.length;
+
+
+  if(
+    activeLeaders.length ===
+    0
+  ){
+
+    monitorSaved.textContent =
+    "0";
+
+
+    monitorMissing.textContent =
+    "0";
+
+
+    planStatusTable.innerHTML = `
+
+      <tr>
+
+        <td
+        colspan="7"
+        class="empty">
+
+          لا توجد حسابات مفعلة حاليًا.
+
+        </td>
+
+      </tr>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  let savedCount =
+  0;
+
+
+  const result =
+  activeLeaders
+  .map(
+    leader=>{
+
+
+      const matchingPlans =
+      weeklyPlans
+
+      .filter(
+        plan =>
+
+          plan.documentType !==
+          "fixedSchedule" &&
+
+          plan.leaderUid ===
+          leader.id &&
+
+          Number(
+            plan.weekNumber
+          ) ===
+          week
+      )
+
+      .sort(
+        (
+          a,
+          b
+        ) =>
+
+        getPlanTime(
+          b
+        ) -
+
+        getPlanTime(
+          a
+        )
+      );
+
+
+      const plan =
+      matchingPlans[0] ||
+      null;
+
+
+      if(
+        plan
+      ){
+
+        savedCount++;
+
+      }
+
+
+      return {
+
+        leader,
+        plan
+
+      };
+
+
+    }
+  );
+
+
+  monitorSaved.textContent =
+  savedCount;
+
+
+  monitorMissing.textContent =
+  activeLeaders.length -
+  savedCount;
+
+
+  result.sort(
+    (a,b)=>{
+
+
+      if(
+        !a.plan &&
+        b.plan
+      ){
+
+        return -1;
+
+      }
+
+
+      if(
+        a.plan &&
+        !b.plan
+      ){
+
+        return 1;
+
+      }
+
+
+      return (
+        a.leader.name ||
+        ""
+      )
+      .localeCompare(
+        b.leader.name ||
+        "",
+        "ar"
+      );
+
+    }
+  );
+
+
+  planStatusTable.innerHTML =
+  "";
+
+
+  result.forEach(
+    (
+      item,
+      index
+    )=>{
+
+
+      const leader =
+      item.leader;
+
+
+      const plan =
+      item.plan;
+
+
+      const tr =
+      document.createElement(
+        "tr"
+      );
+
+
+      tr.innerHTML = `
+
+
+        <td>
+
+          ${index + 1}
+
+        </td>
+
+
+        <td>
+
+          ${escapeHTML(
+            leader.name ||
+            ""
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${escapeHTML(
+            leader.stage ||
+            ""
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${escapeHTML(
+            leader.grade ||
+            ""
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${escapeHTML(
+            leader.section ||
+            ""
+          )}
+
+        </td>
+
+
+        <td>
+
+          ${
+            plan
+            ?
+
+            `
+
+              <span
+              class="plan-status plan-saved">
+
+                ✓ تم الحفظ
+
+              </span>
+
+            `
+
+            :
+
+            `
+
+              <span
+              class="plan-status plan-missing">
+
+                ✕ لم يحفظ
+
+              </span>
+
+            `
+          }
+
+        </td>
+
+
+        <td>
+
+          ${
+            plan
+            ?
+            formatPlanTimestamp(
+              plan.updatedAt ||
+              plan.createdAt
+            )
+            :
+            `<span class="monitor-muted">-</span>`
+          }
+
+        </td>
+
+
+      `;
+
+
+      planStatusTable.appendChild(
+        tr
+      );
+
+
+    }
+  );
+
+}
+
+
+/* ======================================
+   تغيير الأسبوع
+====================================== */
+
+monitorWeek.addEventListener(
+  "change",
+  ()=>{
+
+
+    renderPlanMonitoring();
+
+
+  }
+);
+
+
+/* ======================================
+   زر تحديث المتابعة
+====================================== */
+
+refreshMonitorBtn.addEventListener(
+  "click",
+  async()=>{
+
+
+    await loadWeeklyPlans(
+      false
+    );
+
+
+  }
+);
+
+
+/* ======================================
+   وقت الخطة للمقارنة
+====================================== */
+
+function getPlanTime(
+  plan
+){
+
+  const value =
+  plan.updatedAt ||
+  plan.createdAt;
+
+
+  if(
+    !value
+  ){
+
+    return 0;
+
+  }
+
+
+  try{
+
+
+    if(
+      typeof value.toDate ===
+      "function"
+    ){
+
+      return value
+      .toDate()
+      .getTime();
+
+    }
+
+
+    if(
+      typeof value.seconds ===
+      "number"
+    ){
+
+      return value.seconds *
+      1000;
+
+    }
+
+
+    return 0;
+
+
+  }
+
+  catch{
+
+    return 0;
+
+  }
+
+}
+
+
+/* ======================================
+   عرض آخر حفظ
+====================================== */
+
+function formatPlanTimestamp(
+  value
+){
+
+  if(
+    !value
+  ){
+
+    return "-";
+
+  }
+
+
+  try{
+
+
+    let date;
+
+
+    if(
+      typeof value.toDate ===
+      "function"
+    ){
+
+      date =
+      value.toDate();
+
+    }
+
+
+    else if(
+      typeof value.seconds ===
+      "number"
+    ){
+
+      date =
+      new Date(
+        value.seconds *
+        1000
+      );
+
+    }
+
+
+    else{
+
+      return "-";
+
+    }
+
+
+    return new Intl.DateTimeFormat(
+      "ar-SA",
+      {
+
+        year:
+        "numeric",
+
+        month:
+        "2-digit",
+
+        day:
+        "2-digit",
+
+        hour:
+        "2-digit",
+
+        minute:
+        "2-digit"
+
+      }
+
+    )
+    .format(
+      date
+    );
+
+
+  }
+
+  catch(error){
+
+
+    console.error(
+      error
+    );
+
+
+    return "-";
+
+
+  }
+
+}
+
+
+/* ======================================
+   إدارة جميع الخطط الأسبوعية
+====================================== */
+
+function isRealWeeklyPlan(
+  plan
+){
+
+  const week =
+  Number(
+    plan?.weekNumber
+  );
+
+
+  return (
+
+    Number.isFinite(
+      week
+    ) &&
+
+    week >= 1 &&
+
+    week <= 18 &&
+
+    plan?.documentType !==
+    "fixedSchedule"
+
+  );
+
+}
+
+
+function getLeaderForPlan(
+  plan
+){
+
+  if(
+    !plan?.leaderUid
+  ){
+
+    return null;
+
+  }
+
+
+  return leaders.find(
+    leader =>
+    leader.id ===
+    plan.leaderUid
+  ) || null;
+
+}
+
+
+/* ======================================
+   رسم جميع الخطط
+====================================== */
+
+function renderAllPlansManagement(){
+
+  if(
+    !allPlansTable
+  ){
+
+    return;
+
+  }
+
+
+  const searchText =
+  String(
+    planSearchInput?.value ||
+    ""
+  )
+  .trim()
+  .toLowerCase();
+
+
+  const weekValue =
+  String(
+    planWeekFilter?.value ||
+    ""
+  );
+
+
+  const stageValue =
+  String(
+    planStageFilter?.value ||
+    ""
+  );
+
+
+  const leaderState =
+  String(
+    planLeaderStateFilter?.value ||
+    ""
+  );
+
+
+  let plans =
+  weeklyPlans
+  .filter(
+    plan =>
+    isRealWeeklyPlan(
+      plan
+    )
+  );
+
+
+  plans =
+  plans.filter(
+    plan=>{
+
+
+      const leader =
+      getLeaderForPlan(
+        plan
+      );
+
+
+      const leaderExists =
+      !!leader;
+
+
+      if(
+        leaderState ===
+        "active" &&
+
+        !leaderExists
+      ){
+
+        return false;
+
+      }
+
+
+      if(
+        leaderState ===
+        "deleted" &&
+
+        leaderExists
+      ){
+
+        return false;
+
+      }
+
+
+      if(
+        weekValue &&
+
+        Number(
+          plan.weekNumber
+        ) !==
+        Number(
+          weekValue
+        )
+      ){
+
+        return false;
+
+      }
+
+
+      if(
+        stageValue &&
+
+        String(
+          plan.stage ||
+          ""
+        ) !==
+        stageValue
+      ){
+
+        return false;
+
+      }
+
+
+      if(
+        searchText
+      ){
+
+        const searchable = [
+
+          plan.leaderName || "",
+          leader?.name || "",
+          plan.stage || "",
+          plan.grade || "",
+          plan.section || "",
+          String(
+            plan.weekNumber ||
+            ""
+          )
+
+        ]
+        .join(
+          " "
+        )
+        .toLowerCase();
+
+
+        if(
+          !searchable.includes(
+            searchText
+          )
+        ){
+
+          return false;
+
+        }
+
+      }
+
+
+      return true;
+
+    }
+  );
+
+
+  plans.sort(
+    (a,b)=>{
+
+
+      const weekDiff =
+
+      Number(
+        b.weekNumber
+      ) -
+
+      Number(
+        a.weekNumber
+      );
+
+
+      if(
+        weekDiff !== 0
+      ){
+
+        return weekDiff;
+
+      }
+
+
+      return (
+
+        getPlanTime(
+          b
+        ) -
+
+        getPlanTime(
+          a
+        )
+
+      );
+
+    }
+  );
+
+
+  allPlansCount.textContent =
+  plans.length;
+
+
+  if(
+    plans.length ===
+    0
+  ){
+
+    allPlansTable.innerHTML = `
+
+      <tr>
+
+        <td
+        colspan="10"
+        class="empty">
+
+          لا توجد خطط مطابقة للبحث.
+
+        </td>
+
+      </tr>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  allPlansTable.innerHTML =
+  "";
+
+
+  plans.forEach(
+    (
+      plan,
+      index
+    )=>{
+
+
+      const leader =
+      getLeaderForPlan(
+        plan
+      );
+
+
+      const tr =
+      document.createElement(
+        "tr"
+      );
+
+
+      tr.innerHTML = `
+
+        <td>
+          ${index + 1}
+        </td>
+
+        <td>
+
+          ${escapeHTML(
+            plan.leaderName ||
+            leader?.name ||
+            "رائد صف غير موجود"
+          )}
+
+          ${
+            !leader
+            ?
+            `
+              <div class="orphan-badge">
+                الحساب محذوف أو غير موجود
+              </div>
+            `
+            :
+            ""
+          }
+
+        </td>
+
+        <td>
+          ${escapeHTML(
+            plan.stage ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            plan.grade ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            plan.section ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          الأسبوع ${escapeHTML(
+            plan.weekNumber
+          )}
+        </td>
+
+        <td>
+          ${formatSimpleDate(
+            plan.startDate
+          )}
+        </td>
+
+        <td>
+          ${formatSimpleDate(
+            plan.endDate
+          )}
+        </td>
+
+        <td>
+          ${formatPlanTimestamp(
+            plan.updatedAt ||
+            plan.createdAt
+          )}
+        </td>
+
+        <td>
+
+          <button
+          class="action-btn plan-view-btn"
+          data-plan-view="${escapeHTML(plan.id)}">
+
+            عرض
+
+          </button>
+
+          <button
+          class="action-btn plan-delete-btn"
+          data-plan-delete="${escapeHTML(plan.id)}">
+
+            حذف الخطة
+
+          </button>
+
+        </td>
+
+      `;
+
+
+      allPlansTable.appendChild(
+        tr
+      );
+
+
+    }
+  );
+
+
+  bindAllPlanButtons();
+
+}
+
+
+/* ======================================
+   أزرار إدارة الخطط
+====================================== */
+
+function bindAllPlanButtons(){
+
+
+  document
+  .querySelectorAll(
+    "[data-plan-view]"
+  )
+  .forEach(
+    button=>{
+
+
+      button.addEventListener(
+        "click",
+        ()=>{
+
+
+          const plan =
+          weeklyPlans.find(
+            item =>
+            item.id ===
+            button.dataset.planView
+          );
+
+
+          if(
+            plan
+          ){
+
+            openPlanDetails(
+              plan
+            );
+
+          }
+
+
+        }
+      );
+
+
+    }
+  );
+
+
+  document
+  .querySelectorAll(
+    "[data-plan-delete]"
+  )
+  .forEach(
+    button=>{
+
+
+      button.addEventListener(
+        "click",
+        async()=>{
+
+
+          const plan =
+          weeklyPlans.find(
+            item =>
+            item.id ===
+            button.dataset.planDelete
+          );
+
+
+          if(
+            !plan
+          ){
+
+            return;
+
+          }
+
+
+          const firstConfirm =
+          confirm(
+
+            `هل تريد حذف خطة الأسبوع ${plan.weekNumber} الخاصة بـ "${plan.leaderName || "رائد الصف"}"؟`
+
+          );
+
+
+          if(
+            !firstConfirm
+          ){
+
+            return;
+
+          }
+
+
+          const secondConfirm =
+          confirm(
+
+            "سيتم حذف الخطة نهائيًا من قاعدة البيانات وستختفي من بوابة ولي الأمر. هل أنت متأكد؟"
+
+          );
+
+
+          if(
+            !secondConfirm
+          ){
+
+            return;
+
+          }
+
+
+          try{
+
+
+            button.disabled =
+            true;
+
+
+            button.textContent =
+            "جاري الحذف...";
+
+
+            await deleteDoc(
+
+              doc(
+                db,
+                "weeklyPlans",
+                plan.id
+              )
+
+            );
+
+
+            weeklyPlans =
+            weeklyPlans.filter(
+              item =>
+              item.id !==
+              plan.id
+            );
+
+
+            renderPlanMonitoring();
+
+
+            renderAllPlansManagement();
+
+
+            await loadWeeklyPlans(
+              false
+            );
+
+
+            alert(
+              "تم حذف الخطة نهائيًا، ولن تظهر لولي الأمر بعد الآن."
+            );
+
+
+          }
+
+          catch(error){
+
+
+            console.error(
+              "خطأ حذف الخطة:",
+              error
+            );
+
+
+            alert(
+              "تعذر حذف الخطة. تأكد من صلاحيات الأدمن في Firestore."
+            );
+
+
+            button.disabled =
+            false;
+
+
+            button.textContent =
+            "حذف الخطة";
+
+
+          }
+
+
+        }
+      );
+
+
+    }
+  );
+
+}
+
+
+/* ======================================
+   تفاصيل الخطة
+====================================== */
+
+function openPlanDetails(
+  plan
+){
+
+  const dayNames = {
+
+    sunday:
+    "الأحد",
+
+    monday:
+    "الاثنين",
+
+    tuesday:
+    "الثلاثاء",
+
+    wednesday:
+    "الأربعاء",
+
+    thursday:
+    "الخميس"
+
+  };
+
+
+  const detailsDays =
+  Object.keys(
+    dayNames
+  )
+  .map(
+    day=>{
+
+
+      const rows =
+      Array.isArray(
+        plan.days?.[day]
+      )
+      ?
+      plan.days[day]
+      :
+      [];
+
+
+      const rowsHtml =
+      rows
+      .map(
+        (
+          row,
+          index
+        )=>{
+
+
+          const homework =
+          row?.homework ||
+          buildOldHomeworkText(
+            row
+          );
+
+
+          return `
+
+            <tr>
+
+              <td>
+                ${index + 1}
+              </td>
+
+              <td>
+                ${escapeHTML(
+                  row?.subject ||
+                  ""
+                )}
+              </td>
+
+              <td>
+                ${escapeHTML(
+                  row?.topic ||
+                  ""
+                )}
+              </td>
+
+              <td>
+                ${escapeHTML(
+                  homework ||
+                  ""
+                )}
+              </td>
+
+            </tr>
+
+          `;
+
+
+        }
+      )
+      .join(
+        ""
+      );
+
+
+      return `
+
+        <h4
+        style="
+          color:#0b4b3e;
+          margin:16px 0 8px;
+        ">
+
+          ${dayNames[day]}
+
+        </h4>
+
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  الحصة
+                </th>
+
+                <th>
+                  المادة
+                </th>
+
+                <th>
+                  موضوع الدرس
+                </th>
+
+                <th>
+                  الواجب
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              ${
+                rowsHtml ||
+                `
+                  <tr>
+
+                    <td
+                    colspan="4"
+                    class="empty">
+
+                      لا توجد بيانات.
+
+                    </td>
+
+                  </tr>
+                `
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      `;
+
+
+    }
+  )
+  .join(
+    ""
+  );
+
+
+  planDetailsContent.innerHTML = `
+
+    <div class="plan-details-grid">
+
+      <div class="plan-details-item">
+
+        <strong>
+          رائد الصف
+        </strong>
+
+        ${escapeHTML(
+          plan.leaderName ||
+          "-"
+        )}
+
+      </div>
+
+
+      <div class="plan-details-item">
+
+        <strong>
+          الأسبوع
+        </strong>
+
+        الأسبوع ${escapeHTML(
+          plan.weekNumber ||
+          "-"
+        )}
+
+      </div>
+
+
+      <div class="plan-details-item">
+
+        <strong>
+          المرحلة
+        </strong>
+
+        ${escapeHTML(
+          plan.stage ||
+          "-"
+        )}
+
+      </div>
+
+
+      <div class="plan-details-item">
+
+        <strong>
+          الصف / الشعبة
+        </strong>
+
+        ${escapeHTML(
+          plan.grade ||
+          "-"
+        )}
+
+        -
+
+        ${escapeHTML(
+          plan.section ||
+          "-"
+        )}
+
+      </div>
+
+
+      <div class="plan-details-item">
+
+        <strong>
+          من تاريخ
+        </strong>
+
+        ${formatSimpleDate(
+          plan.startDate
+        )}
+
+      </div>
+
+
+      <div class="plan-details-item">
+
+        <strong>
+          إلى تاريخ
+        </strong>
+
+        ${formatSimpleDate(
+          plan.endDate
+        )}
+
+      </div>
+
+
+      <div class="plan-details-item">
+
+        <strong>
+          القيمة التربوية
+        </strong>
+
+        ${escapeHTML(
+          plan.educationalValue ||
+          "-"
+        )}
+
+      </div>
+
+
+      <div class="plan-details-item">
+
+        <strong>
+          شخصية الأسبوع
+        </strong>
+
+        ${escapeHTML(
+          plan.weekPersonality ||
+          "-"
+        )}
+
+      </div>
+
+
+      <div class="plan-details-item plan-details-wide">
+
+        <strong>
+          مدير المدرسة
+        </strong>
+
+        ${escapeHTML(
+          plan.principalName ||
+          "-"
+        )}
+
+      </div>
+
+    </div>
+
+
+    <div class="plan-days-summary">
+
+      ${detailsDays}
+
+    </div>
+
+  `;
+
+
+  planDetailsModal
+  .classList
+  .add(
+    "show"
+  );
+
+}
+
+
+/* ======================================
+   إغلاق تفاصيل الخطة
+====================================== */
+
+document
+.getElementById(
+  "closePlanDetails"
+)
+.addEventListener(
+  "click",
+  ()=>{
+
+
+    planDetailsModal
+    .classList
+    .remove(
+      "show"
+    );
+
+
+  }
+);
+
+
+planDetailsModal.addEventListener(
+  "click",
+  event=>{
+
+
+    if(
+      event.target ===
+      planDetailsModal
+    ){
+
+      planDetailsModal
+      .classList
+      .remove(
+        "show"
+      );
+
+    }
+
+
+  }
+);
+
+
+/* ======================================
+   فلاتر إدارة الخطط
+====================================== */
+
+[
+  planSearchInput,
+  planWeekFilter,
+  planStageFilter,
+  planLeaderStateFilter
+]
+.forEach(
+  element=>{
+
+
+    if(
+      !element
+    ){
+
+      return;
+
+    }
+
+
+    element.addEventListener(
+
+      element.tagName ===
+      "INPUT"
+      ?
+      "input"
+      :
+      "change",
+
+      ()=>{
+
+
+        renderAllPlansManagement();
+
+
+      }
+
+    );
+
+
+  }
+);
+
+
+refreshAllPlansBtn.addEventListener(
+  "click",
+  async()=>{
+
+
+    await loadWeeklyPlans(
+      false
+    );
+
+
+  }
+);
+
+
+/* ======================================
+   واجب قديم
+====================================== */
+
+function buildOldHomeworkText(
+  row
+){
+
+  if(
+    !row
+  ){
+
+    return "";
+
+  }
+
+
+  const parts = [];
+
+
+  if(
+    row.book &&
+    String(
+      row.book
+    ).trim()
+  ){
+
+    parts.push(
+      String(
+        row.book
+      ).trim()
+    );
+
+  }
+
+
+  if(
+    row.page &&
+    String(
+      row.page
+    ).trim()
+  ){
+
+    parts.push(
+
+      "ص " +
+      String(
+        row.page
+      ).trim()
+
+    );
+
+  }
+
+
+  if(
+    row.exercise &&
+    String(
+      row.exercise
+    ).trim()
+  ){
+
+    parts.push(
+
+      "تمرين " +
+      String(
+        row.exercise
+      ).trim()
+
+    );
+
+  }
+
+
+  if(
+    row.madrasati ===
+    true
+  ){
+
+    parts.push(
+      "منصة مدرستي"
+    );
+
+  }
+
+
+  return parts.join(
+    " - "
+  );
+
+}
+
+
+/* ======================================
+   تنسيق تاريخ بسيط
+====================================== */
+
+function formatSimpleDate(
+  value
+){
+
+  if(
+    !value
+  ){
+
+    return "-";
+
+  }
+
+
+  const parts =
+  String(
+    value
+  )
+  .split(
+    "-"
+  );
+
+
+  if(
+    parts.length ===
+    3
+  ){
+
+    return (
+
+      parts[2] +
+      "/" +
+      parts[1] +
+      "/" +
+      parts[0]
+
+    );
+
+  }
+
+
+  return escapeHTML(
+    value
+  );
+
+}
+
+
+/* ======================================
+   HELPERS
+====================================== */
+
+function formatPhone(
+  value
+){
+
+  const number =
+  normalizePhone(
+    value
+  );
+
+
+  if(
+    number.startsWith(
+      "966"
+    )
+  ){
+
+    return (
+
+      "0" +
+      number.substring(
+        3
+      )
+
+    );
+
+  }
+
+
+  return value;
+
+}
+
+
+function displayPhoneForEdit(
+  value
+){
+
+  if(
+    !value
+  ){
+
+    return "";
+
+  }
+
+
+  return formatPhone(
+    value
+  );
+
+}
+
+
+function escapeHTML(
+  value
+){
+
+  return String(
+    value ||
+    ""
+  )
+
+  .replaceAll(
+    "&",
+    "&amp;"
+  )
+
+  .replaceAll(
+    "<",
+    "&lt;"
+  )
+
+  .replaceAll(
+    ">",
+    "&gt;"
+  )
+
+  .replaceAll(
+    '"',
+    "&quot;"
+  )
+
+  .replaceAll(
+    "'",
+    "&#039;"
+  );
+
+}
+
+
+/* ======================================
+   جدول الحصص - آخر خطة محفوظة للصف والشعبة
+====================================== */
+
+const scheduleGrade =
+  document.getElementById("scheduleGrade");
+
+const scheduleSection =
+  document.getElementById("scheduleSection");
+
+const loadScheduleBtn =
+  document.getElementById("loadScheduleBtn");
+
+const scheduleStatus =
+  document.getElementById("scheduleStatus");
+
+const scheduleResult =
+  document.getElementById("scheduleResult");
+
+const scheduleTitle =
+  document.getElementById("scheduleTitle");
+
+const scheduleWeekNote =
+  document.getElementById("scheduleWeekNote");
+
+const scheduleTableBody =
+  document.getElementById("scheduleTableBody");
+
+const scheduleLeaderName =
+  document.getElementById("scheduleLeaderName");
+
+const schedulePrincipalName =
+  document.getElementById("schedulePrincipalName");
+
+const printScheduleBtn =
+  document.getElementById("printScheduleBtn");
+
+const clearScheduleBtn =
+  document.getElementById("clearScheduleBtn");
+
+let scheduleTeacherAssignments = [];
+let scheduleTeacherAssignmentsLoaded = false;
+
+async function loadScheduleTeacherAssignments(){
+
+  if(scheduleTeacherAssignmentsLoaded){
+    return;
+  }
+
+  const snapshot = await getDocs(
+    collection(assignmentsDb, "teachers")
+  );
+
+  scheduleTeacherAssignments = [];
+
+  snapshot.forEach(teacherDoc=>{
+
+    const teacher = teacherDoc.data() || {};
+    const assignments = Array.isArray(teacher.assignments)
+      ? teacher.assignments
+      : [];
+
+    assignments.forEach(assignment=>{
+
+      scheduleTeacherAssignments.push({
+        teacherName: teacher.name || teacherDoc.id,
+        subjectId: String(assignment.subjectId || "").trim(),
+        subjectName: String(
+          assignment.subjectName || assignment.subject || ""
+        ).trim(),
+        grade: String(assignment.grade || "").trim(),
+        section: String(assignment.section || "").trim()
+      });
+
+    });
+
+  });
+
+  scheduleTeacherAssignmentsLoaded = true;
+
+}
+
+
+function showScheduleStatus(text, type){
+
+  if(!scheduleStatus){
+    return;
+  }
+
+  scheduleStatus.textContent = text;
+  scheduleStatus.className =
+    "schedule-status show " + type;
+
+}
+
+
+function hideScheduleStatus(){
+
+  if(!scheduleStatus){
+    return;
+  }
+
+  scheduleStatus.textContent = "";
+  scheduleStatus.className = "schedule-status";
+
+}
+
+
+function getScheduleTime(plan){
+
+  const value =
+    plan?.updatedAt ||
+    plan?.createdAt;
+
+  if(!value){
+    return 0;
+  }
+
+  try{
+
+    if(
+      typeof value.toDate ===
+      "function"
+    ){
+
+      return value.toDate().getTime();
+
+    }
+
+    if(
+      typeof value.seconds ===
+      "number"
+    ){
+
+      return value.seconds * 1000;
+
+    }
+
+    if(
+      typeof value ===
+      "number"
+    ){
+
+      return value;
+
+    }
+
+    const parsed =
+      Date.parse(String(value));
+
+    return Number.isFinite(parsed)
+      ? parsed
+      : 0;
+
+  }
+  catch(error){
+
+    return 0;
+
+  }
+
+}
+
+
+function normalizeScheduleSection(value){
+
+  return String(
+    value ?? ""
+  )
+  .trim()
+  .replace(
+    /^(الشعبة|شعبة)\s*/i,
+    ""
+  )
+  .trim()
+  .replace(/[أإآٱ]/g, "ا")
+  .replace(/ى/g, "ي")
+  .replace(/\s+/g, "")
+  .toLowerCase();
+
+}
+
+
+function scheduleSectionsMatch(a,b){
+
+  return (
+    normalizeScheduleSection(a) ===
+    normalizeScheduleSection(b)
+  );
+
+}
+
+
+function populateScheduleGrades(){
+
+  if(!scheduleGrade){
+    return;
+  }
+
+  const grades = [
+    ...new Set(
+      weeklyPlans
+      .filter(
+        plan =>
+          isRealWeeklyPlan(plan) &&
+          String(plan.grade || "").trim()
+      )
+      .map(
+        plan =>
+          String(plan.grade).trim()
+      )
+    )
+  ];
+
+  const current =
+    scheduleGrade.value;
+
+  scheduleGrade.innerHTML =
+    '<option value="">اختر الصف</option>';
+
+  grades
+  .sort(
+    (a,b)=>
+      a.localeCompare(
+        b,
+        "ar"
+      )
+  )
+  .forEach(
+    gradeValue=>{
+
+      const option =
+        document.createElement("option");
+
+      option.value =
+        gradeValue;
+
+      option.textContent =
+        gradeValue;
+
+      scheduleGrade.appendChild(option);
+
+    }
+  );
+
+  if(
+    grades.includes(current)
+  ){
+
+    scheduleGrade.value =
+      current;
+
+  }
+
+}
+
+
+function populateScheduleSections(){
+
+  if(!scheduleSection){
+    return;
+  }
+
+  const gradeValue =
+    String(
+      scheduleGrade?.value || ""
+    ).trim();
+
+  const sections = [
+    ...new Set(
+      weeklyPlans
+      .filter(
+        plan =>
+          isRealWeeklyPlan(plan) &&
+          String(plan.grade || "").trim() ===
+          gradeValue &&
+          String(plan.section || "").trim()
+      )
+      .map(
+        plan =>
+          String(plan.section).trim()
+      )
+    )
+  ];
+
+  const current =
+    scheduleSection.value;
+
+  scheduleSection.innerHTML =
+    '<option value="">اختر الشعبة</option>';
+
+  sections
+  .sort(
+    (a,b)=>
+      normalizeScheduleSection(a)
+      .localeCompare(
+        normalizeScheduleSection(b),
+        "ar"
+      )
+  )
+  .forEach(
+    sectionValue=>{
+
+      const option =
+        document.createElement("option");
+
+      option.value =
+        sectionValue;
+
+      option.textContent =
+        sectionValue;
+
+      scheduleSection.appendChild(option);
+
+    }
+  );
+
+  if(
+    sections.includes(current)
+  ){
+
+    scheduleSection.value =
+      current;
+
+  }
+
+}
+
+
+function getLatestSchedulePlan(
+  gradeValue,
+  sectionValue
+){
+
+  const matching =
+    weeklyPlans
+    .filter(
+      plan =>
+        isRealWeeklyPlan(plan) &&
+        String(plan.grade || "").trim() ===
+        String(gradeValue || "").trim() &&
+        scheduleSectionsMatch(
+          plan.section,
+          sectionValue
+        )
+    );
+
+  if(
+    matching.length === 0
+  ){
+
+    return null;
+
+  }
+
+  matching.sort(
+    (a,b)=>{
+
+      const timeA =
+        getScheduleTime(a);
+
+      const timeB =
+        getScheduleTime(b);
+
+      if(timeA !== timeB){
+
+        return timeB - timeA;
+
+      }
+
+      const weekA =
+        Number(a.weekNumber);
+
+      const weekB =
+        Number(b.weekNumber);
+
+      if(
+        Number.isFinite(weekA) &&
+        Number.isFinite(weekB) &&
+        weekA !== weekB
+      ){
+
+        return weekB - weekA;
+
+      }
+
+      return String(a.id || "")
+        .localeCompare(
+          String(b.id || "")
+        );
+
+    }
+  );
+
+  return matching[0];
+
+}
+
+
+function normalizeScheduleMatchValue(value){
+
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[ًٌٍَُِّْـ]/g, "")
+    .replace(/\s+/g, "")
+    .replace(/[\u200e\u200f\-_/()\[\]{}،,:;.]/g, "");
+
+}
+
+
+function scheduleComparableGrade(value){
+
+  const normalized = normalizeScheduleMatchValue(value)
+    .replace(/المتوسط/g, "متوسط")
+    .replace(/الابتدائي/g, "ابتدائي")
+    .replace(/الثانوي/g, "ثانوي");
+  const ordinalMap = {
+    "الاول": "1",
+    "الثاني": "2",
+    "الثالث": "3",
+    "الرابع": "4",
+    "الخامس": "5",
+    "السادس": "6"
+  };
+
+  for(const [word, number] of Object.entries(ordinalMap)){
+    if(normalized.startsWith(word)){
+      return number + normalized.slice(word.length);
+    }
+  }
+
+  return normalized;
+
+}
+
+
+function scheduleSubjectVariants(value){
+
+  const normalized = normalizeScheduleMatchValue(value);
+  const aliases = {
+    "اجتماعيات": ["الدراساتالاجتماعية"],
+    "لغتي": ["اللغةالعربية"],
+    "رقمية": ["المهاراتالرقمية"],
+    "حياتية": ["المهاراتالحياتية"],
+    "فنية": ["التربيةالفنية"],
+    "بدنية": ["التربيةالبدنية"],
+    "قران": ["القرانالكريم"],
+    "قراءة": ["القرانالكريم"],
+    "علوم": ["العلوم", "science"],
+    "تفسير": ["الدراساتالاسلامية"],
+    "توحيد": ["الدراساتالاسلامية"],
+    "حديث": ["الدراساتالاسلامية"],
+    "فقه": ["الدراساتالاسلامية"],
+    "اسلاميات": ["الدراساتالاسلامية"],
+    "e": ["اللغةالانجليزية", "لغةانجليزية", "انجليزي", "english"],
+    "روبوت": ["robot"],
+    "robot": ["روبوت"]
+  };
+
+  return new Set([
+    normalized,
+    ...(aliases[normalized] || [])
+  ]);
+
+}
+
+
+function scheduleSubjectFromRow(row){
+
+  if(!row){
+    return "";
+  }
+
+  return String(
+    row.subject ??
+    row.material ??
+    ""
+  ).trim();
+
+}
+
+
+function scheduleTeacherFromRow(row, plan){
+
+  if(!row){
+    return "";
+  }
+
+  const directTeacher = String(
+    row.teacherName ??
+    row.teacher ??
+    row.instructorName ??
+    row.instructor ??
+    row["اسم المعلم"] ??
+    row["المعلم"] ??
+    ""
+  ).trim();
+
+  if(directTeacher){
+    return directTeacher;
+  }
+
+  const subjectId = String(
+    row.subjectId ?? row.materialId ?? ""
+  ).trim();
+
+  const subjectName = scheduleSubjectFromRow(row);
+  const grade = String(plan?.grade || "").trim();
+  const section = String(plan?.section || "").trim();
+
+  const normalizedSubjectId =
+    normalizeScheduleMatchValue(subjectId);
+
+  const subjectVariants =
+    scheduleSubjectVariants(subjectName);
+
+  const normalizedGrade =
+    scheduleComparableGrade(grade);
+
+  const matched = scheduleTeacherAssignments.find(assignment=>{
+
+    const sameClass =
+      scheduleComparableGrade(assignment.grade) ===
+      normalizedGrade &&
+      scheduleSectionsMatch(assignment.section, section);
+
+    const assignmentSubjectId =
+      normalizeScheduleMatchValue(assignment.subjectId);
+
+    const assignmentSubjectName =
+      normalizeScheduleMatchValue(assignment.subjectName);
+
+    const sameSubject =
+      (normalizedSubjectId &&
+        assignmentSubjectId === normalizedSubjectId) ||
+      subjectVariants.has(assignmentSubjectName) ||
+      subjectVariants.has(assignmentSubjectId);
+
+    return sameClass && sameSubject;
+
+  });
+
+  return matched?.teacherName || "";
+
+}
+
+
+function renderScheduleTable(plan){
+
+  if(!scheduleTableBody){
+    return;
+  }
+
+  const dayNames = {
+    sunday:"الأحد",
+    monday:"الاثنين",
+    tuesday:"الثلاثاء",
+    wednesday:"الأربعاء",
+    thursday:"الخميس"
+  };
+
+  scheduleTableBody.innerHTML = "";
+
+  Object.keys(dayNames)
+  .forEach(
+    day=>{
+
+      const tr =
+        document.createElement("tr");
+
+      const dayCell =
+        document.createElement("td");
+
+      dayCell.className =
+        "schedule-day";
+
+      dayCell.textContent =
+        dayNames[day];
+
+      tr.appendChild(dayCell);
+
+      const rows =
+        Array.isArray(
+          plan?.days?.[day]
+        )
+        ? plan.days[day]
+        : [];
+
+      for(
+        let period = 1;
+        period <= 8;
+        period++
+      ){
+
+        const td =
+          document.createElement("td");
+
+        const row =
+          rows.find(
+            item =>
+              Number(
+                item?.period
+              ) === period
+          )
+          ||
+          rows[period - 1]
+          ||
+          null;
+
+        const subject =
+          scheduleSubjectFromRow(row);
+
+        const teacher =
+          scheduleTeacherFromRow(row, plan);
+
+        td.className =
+          "schedule-cell";
+
+        const subjectDiv =
+          document.createElement("div");
+
+        subjectDiv.className =
+          "schedule-cell-subject";
+
+        subjectDiv.textContent =
+          subject || "—";
+
+        if(!subject){
+          subjectDiv.classList.add(
+            "schedule-cell-empty"
+          );
+        }
+
+        const teacherDiv =
+          document.createElement("div");
+
+        teacherDiv.className =
+          "schedule-cell-teacher";
+
+        teacherDiv.textContent = "";
+        teacherDiv.contentEditable = "true";
+        teacherDiv.title = "اكتب اسم المعلم يدويًا";
+
+        td.appendChild(subjectDiv);
+        td.appendChild(teacherDiv);
+
+
+        tr.appendChild(td);
+
+      }
+
+      scheduleTableBody.appendChild(tr);
+
+    }
+  );
+
+}
+
+
+function renderSelectedSchedule(plan){
+
+  const gradeValue =
+    String(
+      plan?.grade || ""
+    ).trim();
+
+  const sectionValue =
+    String(
+      plan?.section || ""
+    ).trim();
+
+  scheduleTitle.textContent =
+    `جدول الحصص للصف ${gradeValue} ${sectionValue}`;
+
+  const week =
+    Number(plan?.weekNumber);
+
+  scheduleWeekNote.textContent =
+    Number.isFinite(week)
+      ? `معتمد على آخر خطة أسبوعية محفوظة (الأسبوع ${week})`
+      : "معتمد على آخر خطة أسبوعية محفوظة";
+
+  scheduleLeaderName.textContent =
+    plan?.leaderName || "—";
+
+  schedulePrincipalName.textContent =
+    plan?.principalName || "—";
+
+  renderScheduleTable(plan);
+
+  scheduleResult.classList.add("show");
+
+}
+
+
+function refreshScheduleSelectors(){
+
+  populateScheduleGrades();
+  populateScheduleSections();
+
+}
+
+
+scheduleGrade?.addEventListener(
+  "change",
+  ()=>{
+
+    populateScheduleSections();
+
+    scheduleResult?.classList.remove("show");
+
+    hideScheduleStatus();
+
+  }
+);
+
+
+scheduleSection?.addEventListener(
+  "change",
+  ()=>{
+
+    scheduleResult?.classList.remove("show");
+    hideScheduleStatus();
+
+  }
+);
+
+
+loadScheduleBtn?.addEventListener(
+  "click",
+  async()=>{
+
+    const gradeValue =
+      String(
+        scheduleGrade?.value || ""
+      ).trim();
+
+    const sectionValue =
+      String(
+        scheduleSection?.value || ""
+      ).trim();
+
+    if(!gradeValue){
+
+      showScheduleStatus(
+        "اختر الصف أولًا.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    if(!sectionValue){
+
+      showScheduleStatus(
+        "اختر الشعبة أولًا.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    try{
+
+      await loadScheduleTeacherAssignments();
+
+    }
+    catch(error){
+
+      console.error("تعذر تحميل إسنادات المعلمين:", error);
+
+      showScheduleStatus(
+        "تعذر تحميل إسنادات المعلمين من قاعدة البيانات.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    const plan =
+      getLatestSchedulePlan(
+        gradeValue,
+        sectionValue
+      );
+
+    if(!plan){
+
+      scheduleResult.classList.remove("show");
+
+      showScheduleStatus(
+        "لا توجد خطة أسبوعية محفوظة لهذا الصف والشعبة.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    renderSelectedSchedule(plan);
+
+    showScheduleStatus(
+      "تم تحميل جدول الحصص من آخر خطة أسبوعية محفوظة.",
+      "success"
+    );
+
+  }
+);
+
+
+printScheduleBtn?.addEventListener(
+  "click",
+  ()=>{
+
+    if(
+      !scheduleResult?.classList.contains("show")
+    ){
+
+      showScheduleStatus(
+        "اعرض جدول الحصص أولًا ثم اضغط طباعة.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    document.body.classList.add(
+      "schedule-printing"
+    );
+
+    window.print();
+
+  }
+);
+
+
+window.addEventListener(
+  "afterprint",
+  ()=>{
+
+    document.body.classList.remove(
+      "schedule-printing"
+    );
+
+  }
+);
+
+
+clearScheduleBtn?.addEventListener(
+  "click",
+  ()=>{
+
+    scheduleResult?.classList.remove("show");
+    hideScheduleStatus();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
