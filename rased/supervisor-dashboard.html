@@ -481,7 +481,21 @@ async function ensureVisitSupervisorSession(){
         if(byName.length===1)d=byName[0];
       }
     }
-    if(!d)return null;
+    if(!d){
+      const rasedType=String(rasedAuthGet("currentUserType")||currentSupervisorType||"supervisor").toLowerCase();
+      const createRole=rasedType==="general_supervisor"?"general_supervisor":"supervisor";
+      const payload={
+        name:rasedAuthGet("currentUserName")||username,
+        username,
+        role:createRole,
+        active:true,
+        canVisitAllTeachers:createRole==="general_supervisor",
+        createdFromRasedSSO:true,
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      };
+      const ref=await visitDb.collection("supervisors").add(payload);
+      d={id:ref.id,data:()=>payload};
+    }
     const data=d.data()||{};
     if(data.active===false)return null;
     const session={
