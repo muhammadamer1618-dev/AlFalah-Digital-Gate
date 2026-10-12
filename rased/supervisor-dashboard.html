@@ -440,6 +440,7 @@ document.addEventListener("keydown",function(e){
 
 async function ensureVisitSupervisorSession(){
   const gateUsername=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
+  const gateName=String(rasedAuthGet("currentUserName")||"").trim();
   if(!gateUsername)return null;
 
   const toEnglishDigits=value=>String(value||"")
@@ -462,6 +463,13 @@ async function ensureVisitSupervisorSession(){
     const noZero=p.slice(3);
     return [...new Set([local,noZero,p,"+"+p,"00"+p])];
   };
+
+  const normalizeName=value=>String(value||"")
+    .trim()
+    .replace(/\s+/g," ")
+    .replace(/[أإآ]/g,"ا")
+    .replace(/ى/g,"ي")
+    .toLowerCase();
 
   let wantedPhone=normalizePhone(currentSupervisorPhone);
 
@@ -507,8 +515,9 @@ async function ensureVisitSupervisorSession(){
 
     const visitDb=app.firestore();
     let d=null;
+    let matchedBy="";
 
-    // نظام الزيارات يستخدم رقم الجوال كاسم مستخدم للمشرف.
+    // 1) المطابقة الأساسية: رقم الجوال هو اسم المستخدم في نظام الزيارات.
     for(const candidate of phoneVariants(wantedPhone)){
       const snap=await visitDb.collection("supervisors")
         .where("username","==",candidate)
@@ -517,11 +526,12 @@ async function ensureVisitSupervisorSession(){
 
       if(!snap.empty){
         d=snap.docs[0];
+        matchedBy="username";
         break;
       }
     }
 
-    // توافق احتياطي مع أي حساب قديم خزّن الجوال في phone أو mobile.
+    // 2) توافق احتياطي مع حقول جوال قديمة.
     if(!d){
       for(const field of ["phone","mobile"]){
         for(const candidate of phoneVariants(wantedPhone)){
@@ -531,6 +541,7 @@ async function ensureVisitSupervisorSession(){
             .get();
           if(!snap.empty){
             d=snap.docs[0];
+            matchedBy=field;
             break;
           }
         }
@@ -538,8 +549,39 @@ async function ensureVisitSupervisorSession(){
       }
     }
 
+    // 3) لو الرقم موجود بصيغة غير متوقعة، نربط بالاسم المطابق بشكل فريد.
+    if(!d && gateName){
+      const exactName=await visitDb.collection("supervisors")
+        .where("name","==",gateName)
+        .limit(3)
+        .get();
+
+      if(exactName.size===1){
+        d=exactName.docs[0];
+        matchedBy="name";
+      }
+    }
+
+    // 4) آخر محاولة: قراءة الحسابات ومقارنة الاسم بعد التطبيع إذا كانت القواعد تسمح بذلك.
+    if(!d && gateName){
+      try{
+        const all=await visitDb.collection("supervisors").get();
+        const wantedName=normalizeName(gateName);
+        const nameMatches=all.docs.filter(doc=>normalizeName(doc.data()?.name)===wantedName);
+        if(nameMatches.length===1){
+          d=nameMatches[0];
+          matchedBy="normalized-name";
+        }
+      }catch(e){}
+    }
+
     if(!d){
-      alert("لم يتم العثور على حساب الزيارات المرتبط برقم الجوال المسجل للمشرف.");
+      alert(
+        "لم يتم العثور على حساب الزيارات المطابق لهذا المشرف.\n\n"+
+        "رقم الجوال المسجل في راصد: "+currentSupervisorPhone+"\n"+
+        "اسم المشرف: "+(gateName||"غير مسجل")+"\n\n"+
+        "تأكد أن حساب المشرف في الزيارات يحمل نفس رقم الجوال كاسم مستخدم."
+      );
       return null;
     }
 
@@ -549,9 +591,23 @@ async function ensureVisitSupervisorSession(){
       return null;
     }
 
+    // عند الربط بالاسم، نخزن الجوال صراحة في حساب الزيارات لتحسين الربط المستقبلي.
+    if(matchedBy==="name" || matchedBy==="normalized-name"){
+      try{
+        await d.ref.set({
+          phone:"0"+wantedPhone.slice(3),
+          mobile:"0"+wantedPhone.slice(3),
+          rasedIdentity:gateUsername,
+          linkedFromRasedAt:firebase.firestore.FieldValue.serverTimestamp()
+        },{merge:true});
+      }catch(e){
+        console.warn("VISIT LINK PATCH ERROR",e);
+      }
+    }
+
     const session={
       id:d.id,
-      name:data.name||rasedAuthGet("currentUserName")||gateUsername,
+      name:data.name||gateName||gateUsername,
       username:data.username||currentSupervisorPhone,
       phone:currentSupervisorPhone,
       gateUsername,
@@ -566,7 +622,7 @@ async function ensureVisitSupervisorSession(){
 
   }catch(e){
     console.warn("VISIT SUPERVISOR BRIDGE ERROR",e);
-    alert("تعذر الاتصال بحساب الزيارات الفنية. حاول مرة أخرى.");
+    alert("تعذر الاتصال بحساب الزيارات الفنية: "+(e?.message||e));
     return null;
   }
 }
