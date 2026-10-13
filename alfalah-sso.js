@@ -22,12 +22,12 @@ const weeklyConfig={
   appId:"1:575884603803:web:e8c4d82c69fd545bed313e"
 };
 const visitConfig={
-  apiKey:"AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
-  authDomain:"visit-2026.firebaseapp.com",
-  projectId:"visit-2026",
-  storageBucket:"visit-2026.firebasestorage.app",
-  messagingSenderId:"355064530699",
-  appId:"1:355064530699:web:26ad1710ff493c76ce840e"
+  apiKey:"AIzaSyBNFrPNCuQefOXHTCmiiKSBjgPLUy5Ug4U",
+  authDomain:"follow-up-2026.firebaseapp.com",
+  projectId:"follow-up-2026",
+  storageBucket:"follow-up-2026.firebasestorage.app",
+  messagingSenderId:"1077131515114",
+  appId:"1:1077131515114:web:d10d9c5228382d7cfdb393"
 };
 
 function getOrInit(config,name){
@@ -148,25 +148,61 @@ async function linkTeacherVisits(s){
     let teacher=null;
     const rasedTeacher=await getDoc(doc(rasedDb,"teachers",s.username));
     const phone=normalizePhone(rasedTeacher.exists()?(rasedTeacher.data().phone||""):"");
+
     if(phone){
-      const q=await getDocs(query(collection(visitDb,"teachers"),where("phone","==",phone),limit(5)));
-      q.forEach(d=>{if(!teacher&&(d.data().active!==false))teacher={id:d.id,...d.data()}});
+      const local="0"+phone.slice(3);
+      const noZero=phone.slice(3);
+      const variants=[...new Set([local,noZero,phone,"+"+phone,"00"+phone])];
+
+      for(const candidate of variants){
+        const q=await getDocs(query(
+          collection(visitDb,"teachers"),
+          where("phone","==",candidate),
+          limit(5)
+        ));
+        q.forEach(d=>{
+          if(!teacher&&(d.data().active!==false))teacher={id:d.id,...d.data()};
+        });
+        if(teacher)break;
+      }
     }
+
     if(!teacher){
       const direct=await getDoc(doc(visitDb,"teachers",s.username));
       if(direct.exists()&&direct.data().active!==false)teacher={id:direct.id,...direct.data()};
     }
+
     if(!teacher){
-      const q=await getDocs(query(collection(visitDb,"teachers"),where("code","==",s.username),limit(1)));
-      if(!q.empty){const d=q.docs[0];teacher={id:d.id,...d.data()}}
+      const q=await getDocs(query(
+        collection(visitDb,"teachers"),
+        where("code","==",s.username),
+        limit(1)
+      ));
+      if(!q.empty){
+        const d=q.docs[0];
+        teacher={id:d.id,...d.data()};
+      }
     }
+
     if(!teacher)throw new Error("teacher not linked");
-    const value=JSON.stringify({id:teacher.id,code:teacher.code||teacher.id,name:teacher.name||s.name||""});
+
+    const value=JSON.stringify({
+      id:teacher.id,
+      code:teacher.code||teacher.id,
+      name:teacher.name||s.name||"",
+      sourceProject:"follow-up-2026"
+    });
+
     sessionStorage.setItem("currentTeacher",value);
     localStorage.setItem("currentTeacher",value);
     s.followupReady=true;
     s.followupRole="teacher";
-  }catch(e){s.followupReady=false}
+    return true;
+  }catch(e){
+    console.warn("TEACHER FOLLOW-UP SSO LINK ERROR",e);
+    s.followupReady=false;
+    return false;
+  }
 }
 async function linkSupervisorVisits(s){
   try{
@@ -220,7 +256,8 @@ async function linkSupervisorVisits(s){
       phone:s.phone||"",
       gateUsername:s.username,
       role:data.role||"supervisor",
-      canVisitAllTeachers:data.canVisitAllTeachers===true
+      canVisitAllTeachers:data.canVisitAllTeachers===true,
+      sourceProject:"follow-up-2026"
     });
 
     sessionStorage.setItem("currentSupervisor",value);
@@ -260,21 +297,35 @@ async function refreshLinkedState(s){
     }
   }catch{}
   if(s.type==="teacher"){
-    const raw=sessionStorage.getItem("currentTeacher")||localStorage.getItem("currentTeacher");
-    if(raw)s.followupReady=true;
+    let linked=false;
+    try{
+      const x=JSON.parse(sessionStorage.getItem("currentTeacher")||localStorage.getItem("currentTeacher")||"null");
+      if(x?.sourceProject==="follow-up-2026"){
+        s.followupReady=true;
+        linked=true;
+      }
+    }catch{}
+    if(!linked){
+      localStorage.removeItem("currentTeacher");
+      sessionStorage.removeItem("currentTeacher");
+      await linkTeacherVisits(s);
+    }
   }else{
     let linked=false;
     try{
       const x=JSON.parse(localStorage.getItem("currentSupervisor")||sessionStorage.getItem("currentSupervisor")||"null");
       const sameGate=String(x?.gateUsername||"")===String(s.username||"");
       const samePhone=normalizePhone(x?.phone||x?.username||"")===normalizePhone(s.phone||"") && !!normalizePhone(s.phone||"");
-      if(x&&(sameGate||samePhone)){
+      const correctProject=x?.sourceProject==="follow-up-2026";
+      if(x&&correctProject&&(sameGate||samePhone)){
         s.followupReady=true;
         s.followupRole=x.role||"supervisor";
         linked=true;
       }
     }catch{}
     if(!linked){
+      localStorage.removeItem("currentSupervisor");
+      sessionStorage.removeItem("currentSupervisor");
       await linkSupervisorVisits(s);
     }
   }
