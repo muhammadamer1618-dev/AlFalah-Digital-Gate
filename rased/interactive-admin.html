@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إدارة الأنشطة التفاعلية - راصد</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--green:#004c3f;--green2:#08725e;--gold:#c9972c;--ink:#17372f;--line:#d8e3df;--muted:#6a7b74;--red:#b42318;--blue:#1769aa}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f4f7f5;color:var(--ink)}
+button,input,select{font:inherit}
+header{background:linear-gradient(135deg,#003f35,#08725e);color:#fff;padding:17px 15px;box-shadow:0 3px 12px rgba(0,0,0,.16)}
+.head{width:min(1220px,96%);margin:auto;display:flex;align-items:center;gap:14px}
+.logo{width:62px;height:62px;border-radius:50%;object-fit:contain;background:#fff;border:3px solid var(--gold);padding:3px}
+.head-copy{flex:1}.head-copy h1{margin:0;font-size:25px}.head-copy p{margin:5px 0 0;color:#f0d98d;font-size:12px;font-weight:bold}
+.back{border:0;border-radius:9px;background:#fff;color:var(--green);padding:10px 14px;font-weight:bold;cursor:pointer}
+.wrap{width:min(1220px,96%);margin:18px auto 45px}
+.note{background:#fff9e7;border:1px solid #e3cf85;border-radius:12px;padding:12px 14px;line-height:1.8;font-size:12px;color:#6c5a17;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px;text-align:center;box-shadow:0 2px 9px rgba(0,0,0,.05)}
+.stat b{display:block;font-size:30px;color:var(--green);margin-bottom:3px}.stat span{font-size:12px;color:var(--muted)}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 13px rgba(0,0,0,.06);overflow:hidden}
+.card-title{padding:14px 16px;background:#edf5f1;color:var(--green);font-weight:bold;font-size:18px}
+.body{padding:15px}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:12px}
+input,select{width:100%;min-height:44px;border:1px solid #bdcec7;border-radius:9px;padding:9px 11px;background:#fff}
+.table-wrap{overflow:auto;border:1px solid #dce5e1;border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:1040px}
+th{background:#0b5d4e;color:#fff;padding:10px 8px;font-size:12px;position:sticky;top:0}
+td{padding:10px 8px;border-bottom:1px solid #e3eae7;text-align:center;font-size:12px;vertical-align:middle}
+tr:nth-child(even){background:#fafcfb}
+.title-cell{text-align:right}.title-cell b{display:block;color:var(--green);font-size:13px}.title-cell small{color:#6f817a}
+.badge{display:inline-flex;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:bold;background:#eef2f0;color:#5d7069}
+.badge.on{background:#e4f6ea;color:#14723a}.badge.off{background:#f3f3f3;color:#6a6a6a}
+.actions{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.btn{border:0;border-radius:7px;padding:7px 9px;font-weight:bold;font-size:10px;cursor:pointer}
+.green{background:var(--green);color:#fff}.blue{background:var(--blue);color:#fff}.gold{background:var(--gold);color:#fff}.light{background:#e9efec;color:#29483f}.red{background:var(--red);color:#fff}
+.empty{padding:30px;text-align:center;color:#73857e}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr}.head-copy h1{font-size:20px}.logo{width:52px;height:52px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="head">
+    <img src="logo.jpeg" class="logo" alt="شعار مدارس الفلاح">
+    <div class="head-copy">
+      <h1>🎮 إدارة الأنشطة التفاعلية</h1>
+      <p>متابعة المحتوى والنشر والإدارة العامة</p>
+    </div>
+    <button class="back" onclick="location.href='admin.html'">← لوحة الإدارة</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="note">
+    هذه الصفحة تتابع <b>الأنشطة نفسها فقط</b>: المنشئ، المادة، حالة النشر، الفصول والرابط.
+    لا يجمع نظام الأنشطة التفاعلية درجات الطلاب أو عدد المحاولات أو سجل اللعب، حتى يظل النشاط اختياريًا وغير مرتبط بالتقييم.
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="sTotal">0</b><span>إجمالي الأنشطة</span></div>
+    <div class="stat"><b id="sPublished">0</b><span>منشور للطلاب</span></div>
+    <div class="stat"><b id="sDrafts">0</b><span>مسودات / غير منشور</span></div>
+    <div class="stat"><b id="sTeachers">0</b><span>معلمون لديهم أنشطة</span></div>
+  </div>
+
+  <section class="card">
+    <div class="card-title">🗂️ جميع الأنشطة التفاعلية</div>
+    <div class="body">
+      <div class="filters">
+        <input id="search" placeholder="بحث باسم النشاط أو المعلم أو المادة أو كود النشاط" oninput="render()">
+        <select id="statusFilter" onchange="render()">
+          <option value="">كل حالات النشر</option>
+          <option value="published">منشور</option>
+          <option value="draft">غير منشور</option>
+        </select>
+        <select id="teacherFilter" onchange="render()"><option value="">كل المعلمين</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>النشاط</th><th>المعلم</th><th>المادة</th><th>النمط</th>
+              <th>الأسئلة</th><th>النشر</th><th>الفصول</th><th>الكود</th><th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="body"><tr><td colspan="10">جاري التحميل...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const firebaseConfig={
+  apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",
+  authDomain:"results2026-7c0dd.firebaseapp.com",
+  projectId:"results2026-7c0dd",
+  storageBucket:"results2026-7c0dd.firebasestorage.app",
+  messagingSenderId:"241421115694",
+  appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+let rows=[];
+
+function esc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function templateName(v){return {quiz:"تحدي الأسئلة",cards:"بطاقات",wheel:"عجلة الأسئلة",random:"عشوائي"}[v]||v||"نشاط"}
+function playUrl(a){return location.origin+"/rased/interactive-play.html?c="+encodeURIComponent(a.publicCode||a.id||"")}
+function protect(){
+  const role=String(localStorage.getItem("currentUserRole")||"").toLowerCase();
+  if(role!=="admin"&&role!=="superadmin"){
+    alert("هذه الصفحة للإدارة فقط.");
+    location.href="index.html";
+    return false;
+  }
+  return true;
+}
+async function load(){
+  if(!protect())return;
+  try{
+    const snap=await db.collection("interactiveActivities").get();
+    rows=snap.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})});
+    rows.sort(function(a,b){
+      const aa=a.updatedAt&&a.updatedAt.toMillis?a.updatedAt.toMillis():0;
+      const bb=b.updatedAt&&b.updatedAt.toMillis?b.updatedAt.toMillis():0;
+      return bb-aa;
+    });
+    updateStats();
+    fillTeachers();
+    render();
+  }catch(e){
+    console.error(e);
+    document.getElementById("body").innerHTML='<tr><td colspan="10" class="empty">تعذر تحميل الأنشطة.</td></tr>';
+  }
+}
+function updateStats(){
+  document.getElementById("sTotal").textContent=rows.length;
+  document.getElementById("sPublished").textContent=rows.filter(function(x){return x.published===true}).length;
+  document.getElementById("sDrafts").textContent=rows.filter(function(x){return x.published!==true}).length;
+  const teachers=new Set(rows.map(function(x){return String(x.teacherId||x.teacherEmail||x.teacherUsername||x.teacherName||"").trim()}).filter(Boolean));
+  document.getElementById("sTeachers").textContent=teachers.size;
+}
+function fillTeachers(){
+  const sel=document.getElementById("teacherFilter");
+  const map=new Map();
+  rows.forEach(function(x){
+    const key=String(x.teacherId||x.teacherEmail||x.teacherUsername||x.teacherName||"").trim();
+    if(key&&!map.has(key))map.set(key,String(x.teacherName||key));
+  });
+  sel.innerHTML='<option value="">كل المعلمين</option>'+
+    Array.from(map.entries()).sort(function(a,b){return a[1].localeCompare(b[1],"ar")})
+    .map(function(x){return '<option value="'+esc(x[0])+'">'+esc(x[1])+'</option>'}).join("");
+}
+function filtered(){
+  const s=String(document.getElementById("search").value||"").trim().toLowerCase();
+  const st=document.getElementById("statusFilter").value;
+  const tf=document.getElementById("teacherFilter").value;
+  return rows.filter(function(x){
+    if(st==="published"&&x.published!==true)return false;
+    if(st==="draft"&&x.published===true)return false;
+    const key=String(x.teacherId||x.teacherEmail||x.teacherUsername||x.teacherName||"").trim();
+    if(tf&&key!==tf)return false;
+    if(s){
+      const hay=[x.title,x.teacherName,x.subjectName,x.publicCode,x.sourceExamName].map(function(v){return String(v||"").toLowerCase()}).join(" ");
+      if(!hay.includes(s))return false;
+    }
+    return true;
+  });
+}
+function render(){
+  const list=filtered(),body=document.getElementById("body");
+  if(!list.length){body.innerHTML='<tr><td colspan="10" class="empty">لا توجد أنشطة مطابقة.</td></tr>';return}
+  body.innerHTML=list.map(function(a,i){
+    const cls=Array.isArray(a.classes)?a.classes:[];
+    const classes=cls.length?cls.map(function(c){return String(c.grade||"")+" / "+String(c.section||"")}).join("، "):"—";
+    const items=Array.isArray(a.items)?a.items.length:0;
+    return '<tr>'+
+      '<td>'+(i+1)+'</td>'+
+      '<td class="title-cell"><b>'+esc(a.title||"نشاط تفاعلي")+'</b><small>'+esc(a.sourceExamName?("من اختبار: "+a.sourceExamName):"إنشاء يدوي")+'</small></td>'+
+      '<td>'+esc(a.teacherName||a.teacherUsername||"—")+'</td>'+
+      '<td>'+esc(a.subjectName||"—")+'</td>'+
+      '<td>'+esc(templateName(a.template))+'</td>'+
+      '<td>'+items+'</td>'+
+      '<td><span class="badge '+(a.published?"on":"off")+'">'+(a.published?"منشور":"غير منشور")+'</span></td>'+
+      '<td>'+esc(classes)+'</td>'+
+      '<td style="direction:ltr;font-weight:bold">'+esc(a.publicCode||"—")+'</td>'+
+      '<td><div class="actions">'+
+        '<button class="btn green" onclick="play(\''+esc(a.id)+'\')">تشغيل</button>'+
+        '<button class="btn blue" onclick="copyLink(\''+esc(a.id)+'\')">نسخ الرابط</button>'+
+        (a.published?'<button class="btn light" onclick="setPublished(\''+esc(a.id)+'\',false)">إيقاف النشر</button>':
+          (cls.length?'<button class="btn gold" onclick="setPublished(\''+esc(a.id)+'\',true)">إعادة النشر</button>':''))+
+        '<button class="btn red" onclick="removeActivity(\''+esc(a.id)+'\')">حذف</button>'+
+      '</div></td>'+
+    '</tr>';
+  }).join("");
+}
+function find(id){return rows.find(function(x){return x.id===id})}
+function play(id){const a=find(id);if(a)window.open(playUrl(a),"_blank")}
+async function copyLink(id){
+  const a=find(id);if(!a)return;const url=playUrl(a);
+  try{await navigator.clipboard.writeText(url);alert("تم نسخ الرابط ✅")}catch(e){prompt("انسخ الرابط:",url)}
+}
+async function setPublished(id,value){
+  const a=find(id);if(!a)return;
+  if(value&&(!Array.isArray(a.classes)||!a.classes.length))return alert("لا توجد فصول محفوظة للنشاط. يجب أن يحدد المعلم الفصول من صفحته أولًا.");
+  const msg=value?"إعادة نشر النشاط للطلاب المحددين؟":"إيقاف ظهور النشاط للطلاب؟";
+  if(!confirm(msg))return;
+  try{
+    await db.collection("interactiveActivities").doc(id).set({
+      published:!!value,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    await load();
+  }catch(e){console.error(e);alert("تعذر تنفيذ العملية.")}
+}
+async function removeActivity(id){
+  const a=find(id);if(!a)return;
+  if(!confirm("حذف النشاط نهائيًا من النظام؟\n\n"+(a.title||"")))return;
+  try{
+    await db.collection("interactiveActivities").doc(id).delete();
+    await load();
+  }catch(e){console.error(e);alert("تعذر حذف النشاط.")}
+}
+load();
+</script>
+</body>
+</html>
