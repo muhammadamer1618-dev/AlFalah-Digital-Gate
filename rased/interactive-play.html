@@ -47,6 +47,18 @@ h1{font-size:clamp(28px,4vw,48px);margin:8px 0;color:var(--green)}
 .wheel-wrap{text-align:center}.wheel{width:min(360px,70vw);aspect-ratio:1;border-radius:50%;margin:10px auto 18px;background:conic-gradient(#0b7461 0 45deg,#d4a42b 45deg 90deg,#1769aa 90deg 135deg,#8b5cf6 135deg 180deg,#0b7461 180deg 225deg,#d4a42b 225deg 270deg,#1769aa 270deg 315deg,#8b5cf6 315deg 360deg);border:10px solid #fff;outline:5px solid var(--gold);box-shadow:0 15px 35px rgba(0,0,0,.18);position:relative;transition:transform 1s cubic-bezier(.15,.7,.15,1)}
 .wheel:after{content:"?";position:absolute;inset:35%;display:grid;place-items:center;border-radius:50%;background:#fff;color:var(--green);font-size:60px;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .pointer{font-size:38px;color:#9a6b08;margin-bottom:-20px;position:relative;z-index:3}
+.mystery-head{text-align:center;margin-bottom:18px}
+.mystery-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;max-width:900px;margin:16px auto}
+.mystery-btn{border:0;min-height:150px;border-radius:22px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-weight:900;box-shadow:0 10px 24px rgba(0,0,0,.14);transition:.16s}
+.mystery-btn:hover{transform:translateY(-5px) scale(1.025)}
+.mystery-btn .bigicon{font-size:58px;line-height:1}
+.mystery-btn .num{font-size:22px}
+.mystery-btn.box{background:linear-gradient(145deg,#f7cc55,#c9972c);color:#fff;border:4px solid #fff;outline:2px solid #c9972c}
+.mystery-btn.star{background:linear-gradient(145deg,#6745d6,#9b79ff);color:#fff;border:4px solid #fff;outline:2px solid #6d50c7}
+.mystery-empty{text-align:center;padding:24px;color:#6c7e76}
+.design-credit{text-align:center;color:#6c7e76;font-size:12px;font-weight:bold;padding:5px 10px 14px}
+@media(max-width:850px){.mystery-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mystery-btn{min-height:125px}}
+@media(max-width:560px){.mystery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.mystery-btn{min-height:105px;border-radius:16px}.mystery-btn .bigicon{font-size:42px}.mystery-btn .num{font-size:17px}}
 .score{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:760px;margin:18px auto}.score div{background:#f2f7f5;border:1px solid #d5e2dc;border-radius:14px;padding:16px}.score b{display:block;color:var(--green);font-size:34px}
 .error{color:#a51f1f;text-align:center;padding:35px;font-weight:bold}
 @media(max-width:700px){.panel{padding:16px;border-radius:16px}.options{grid-template-columns:1fr}.opt{min-height:66px}.question{font-size:25px}.topbar{padding:8px}.brand span{display:none}.logo{width:44px;height:44px}.answer-row{flex-direction:column}.match-row{grid-template-columns:1fr}.score{grid-template-columns:1fr 1fr}.topbtn{padding:8px;font-size:12px}}
@@ -64,6 +76,7 @@ h1{font-size:clamp(28px,4vw,48px);margin:8px 0;color:var(--green)}
   <main class="stage">
     <div id="panel" class="panel"><div class="center">جاري تحميل النشاط...</div></div>
   </main>
+  <div class="design-credit">تصميم محمد عامر أحمد</div>
 </div>
 
 <script>
@@ -157,8 +170,15 @@ function startActivity(){
   if(!items.length){showError("هذا النشاط لا يحتوي أسئلة بعد.");return}
   if(activity.template==="random")items=shuffle(items);
   index=0;score=0;answered=0;wheelPool=items.map(function(_,i){return i});
-  if(activity.template==="wheel")renderWheel();
-  else renderCurrent();
+  if(activity.template==="wheel"){
+    wheelPool=shuffle(wheelPool);
+    renderWheel();
+  }else if(activity.template==="boxes"||activity.template==="stars"){
+    wheelPool=shuffle(wheelPool);
+    renderMysteryBoard();
+  }else{
+    renderCurrent();
+  }
 }
 function restartActivity(){
   if(!activity){loadActivity();return}
@@ -174,8 +194,9 @@ function renderCurrent(){
   if(activity.template==="cards"){renderCard(q);return}
   const t=String(q.type||"mcq");
   const dir=(q.textDirection==="ltr"||q.textDirection==="rtl")?q.textDirection:(/[\u0600-\u06FF]/.test(String(q.text||""))?"rtl":"ltr");
-  let body=progressHtml()+
-    '<div class="qtop"><span class="pill">السؤال '+(index+1)+' من '+items.length+'</span><span class="pill">'+esc(typeName(t))+'</span></div>'+
+  const specialLabel=activity.template==="wheel"?"🎡 سؤال من العجلة":(activity.template==="boxes"?"📦 سؤال من الصندوق":(activity.template==="stars"?"⭐ سؤال من النجمة":"السؤال "+(index+1)+" من "+items.length));
+  let body=(["wheel","boxes","stars"].includes(activity.template)?"":progressHtml())+
+    '<div class="qtop"><span class="pill">'+esc(specialLabel)+'</span><span class="pill">'+esc(typeName(t))+'</span></div>'+
     (q.passage?'<div class="passage" dir="'+dir+'">'+esc(q.passage)+'</div>':'')+
     (q.imageUrl?'<img class="qimage" src="'+esc(q.imageUrl)+'" alt="صورة السؤال">':'')+
     '<div class="question" dir="'+dir+'">'+esc(q.text||"")+'</div>';
@@ -280,23 +301,60 @@ function checkOrder(){
   setFeedback(ok,ok?"الترتيب صحيح!":("الترتيب الصحيح: "+correctText(q)));
 }
 function nextQuestion(){
+  if(activity.template==="wheel"){
+    renderWheel();
+    return;
+  }
+  if(activity.template==="boxes"||activity.template==="stars"){
+    renderMysteryBoard();
+    return;
+  }
   index++;
   if(index>=items.length)finishActivity();
   else renderCurrent();
 }
 function renderCard(q){
+  const t=String(q.type||"mcq");
+  const objective=["mcq","truefalse","reading"].includes(t);
   const answer=correctText(q)||"فكر في الإجابة ثم ناقشها مع معلمك.";
-  document.getElementById("panel").innerHTML=
-    progressHtml()+
+
+  let html=progressHtml()+
     '<div class="qtop"><span class="pill">بطاقة '+(index+1)+' من '+items.length+'</span><span class="pill">'+esc(typeName(q.type))+'</span></div>'+
     '<div class="card-reveal">'+
+      (q.passage?'<div class="passage">'+esc(q.passage)+'</div>':'')+
       (q.imageUrl?'<img class="qimage" src="'+esc(q.imageUrl)+'" alt="صورة السؤال">':'')+
-      '<div class="question">'+esc(q.text||"")+'</div>'+
-      '<button class="bigbtn gold" onclick="document.getElementById(\'cardAnswer\').classList.add(\'show\')">👁️ إظهار الإجابة</button>'+
+      '<div class="question">'+esc(q.text||"")+'</div>';
+
+  if(objective){
+    const opts=Array.isArray(q.options)?q.options:[];
+    html+='<div class="options" style="width:100%">'+opts.map(function(o,i){
+      return '<button class="opt cardOpt" data-i="'+i+'" onclick="chooseCardOption('+i+')">'+esc(o)+'</button>';
+    }).join("")+'</div>'+
+    '<div id="feedback" class="feedback" style="width:100%"></div>'+
+    '<div id="nextWrap" class="next-wrap"></div>';
+  }else{
+    html+='<button class="bigbtn gold" onclick="document.getElementById(\'cardAnswer\').classList.add(\'show\')">💡 إظهار الحل بعد المحاولة</button>'+
       '<div id="cardAnswer" class="card-answer">'+esc(answer)+'</div>'+
-    '</div>'+
-    '<div class="next-wrap"><button class="bigbtn" onclick="nextQuestion()">البطاقة التالية ←</button></div>';
+      '<div class="next-wrap"><button class="bigbtn" onclick="nextQuestion()">البطاقة التالية ←</button></div>';
+  }
+
+  html+='</div>';
+  document.getElementById("panel").innerHTML=html;
 }
+
+function chooseCardOption(i){
+  const q=current();if(!q)return;
+  const ok=Number(i)===Number(q.correctIndex);
+  answered++;if(ok)score++;
+  document.querySelectorAll(".cardOpt").forEach(function(b){
+    b.disabled=true;
+    const j=Number(b.dataset.i);
+    if(j===Number(q.correctIndex))b.classList.add("correct");
+    if(j===Number(i)&&j!==Number(q.correctIndex))b.classList.add("wrong");
+  });
+  setFeedback(ok,ok?"إجابة صحيحة!":("الإجابة الصحيحة: "+correctText(q)));
+}
+
 function renderWheel(){
   if(!wheelPool.length){finishActivity();return}
   document.getElementById("panel").innerHTML=
@@ -318,21 +376,34 @@ function spinWheel(){
   },1050);
 }
 function renderWheelQuestion(){
-  const q=current();if(!q){renderWheel();return}
-  const answer=correctText(q);
+  renderCurrent();
+}
+
+function renderMysteryBoard(){
+  if(!wheelPool.length){finishActivity();return}
+  const isStar=activity.template==="stars";
+  const icon=isStar?"⭐":"📦";
+  const title=isStar?"نجوم الحظ":"صناديق المفاجآت";
+  const hint=isStar?"اختر نجمة واكتشف السؤال المختبئ خلفها":"اختر صندوقًا واكتشف السؤال الموجود بداخله";
+
   document.getElementById("panel").innerHTML=
-    '<div class="center"><span class="pill">🎡 سؤال من العجلة</span>'+
-    (q.imageUrl?'<img class="qimage" src="'+esc(q.imageUrl)+'" alt="صورة السؤال">':'')+
-    '<div class="question">'+esc(q.text||"")+'</div>'+
-    '<button class="bigbtn gold" onclick="showWheelAnswer()">👁️ إظهار الإجابة</button>'+
-    '<div id="wheelAnswer" class="card-answer">'+esc(answer||"ناقش الإجابة مع معلمك")+'</div>'+
-    '<div><button class="bigbtn" onclick="renderWheel()">🎡 لف مرة أخرى</button></div></div>';
+    '<div class="mystery-head"><h1 style="font-size:34px;margin-bottom:5px">'+icon+' '+title+'</h1>'+
+    '<div class="subtitle">'+hint+'</div><div class="soft-note">المتبقي '+wheelPool.length+' سؤال / مهمة</div></div>'+
+    '<div class="mystery-grid">'+wheelPool.map(function(itemIndex,pos){
+      return '<button class="mystery-btn '+(isStar?"star":"box")+'" onclick="openMysteryItem('+itemIndex+')">'+
+        '<span class="bigicon">'+icon+'</span><span class="num">'+(isStar?"نجمة ":"صندوق ")+(pos+1)+'</span></button>';
+    }).join("")+'</div>';
 }
-function showWheelAnswer(){
-  const a=document.getElementById("wheelAnswer");if(a)a.classList.add("show");
+
+function openMysteryItem(itemIndex){
+  const pos=wheelPool.indexOf(itemIndex);
+  if(pos>=0)wheelPool.splice(pos,1);
+  index=itemIndex;
+  renderCurrent();
 }
+
 function finishActivity(){
-  const trackScore=activity.template!=="cards"&&activity.template!=="wheel";
+  const trackScore=answered>0;
   const pct=answered?Math.round(score/answered*100):0;
   document.getElementById("panel").innerHTML=
     '<div class="center"><div style="font-size:76px">🎉</div><h1>أحسنت!</h1>'+
