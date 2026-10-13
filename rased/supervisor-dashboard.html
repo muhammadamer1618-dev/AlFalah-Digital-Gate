@@ -139,7 +139,7 @@
       <button class="supervisor-dashboard-tool" data-perm="monitoringView" onclick="location.href='monitoring.html'"><span>📋</span><strong>حالة الرصد</strong><small>متابعة تقدم رصد الدرجات</small></button>
       <button class="supervisor-dashboard-tool" data-perm="supportStudentsView" onclick="location.href='support-students.html'"><span>👥</span><strong>الطلاب المحتاجون للدعم</strong><small>متابعة الدعم الأكاديمي</small></button>
       <button class="supervisor-dashboard-tool" data-perm="examMonitoringView" onclick="location.href='exam-monitoring.html'"><span>📝</span><strong>متابعة الاختبارات الإلكترونية</strong><small>متابعة تنفيذ الاختبارات</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="onlineExamsManage" onclick="location.href='exam-admin.html'"><span>🧪</span><strong>الاختبارات الإلكترونية</strong><small>إنشاء وإدارة الاختبارات</small></button>
+      <button class="supervisor-dashboard-tool" data-perm="onlineExamsManage" onclick="location.href='exam-admin.html'"><span>🧪</span><strong>إنشاء وإدارة الاختبارات</strong><small>الاختبارات الإلكترونية للمشرف</small></button>
       <button class="supervisor-dashboard-tool" data-perm="topStudentsView" onclick="location.href='top10.html'"><span>🏆</span><strong>أوائل الطلاب</strong><small>عرض الطلاب المتفوقين</small></button>
       <button class="supervisor-dashboard-tool" data-perm="studentReportView" onclick="location.href='student-report.html'"><span>📄</span><strong>تقرير الطالب الشامل</strong><small>عرض التقرير الكامل للطالب</small></button>
       <button class="supervisor-dashboard-tool" data-perm="archiveView" onclick="location.href='archive.html'"><span>🗂️</span><strong>الأرشيف</strong><small>السجلات والبيانات المؤرشفة</small></button>
@@ -256,7 +256,6 @@ const t=String(type||"").toLowerCase();
 return t==="manager"?"مدير":(t==="supervisor"?"مشرف":"مشرف عام");
 }
 function hasPerm(key){
-if(key==="onlineExamsManage")return currentPermissions[key]===true;
 return currentPermissions[key]!==false;
 }
 function applyPermissions(){
