@@ -397,6 +397,20 @@ function ownerAliases(){
 function examBelongsToCurrentUser(e){
  if(!["teacher","supervisor"].includes(role))return true;
 
+ /*
+   فصل ملكية الاختبارات بين حساب المعلم وحساب المشرف.
+   لا نعتمد على الاسم إطلاقًا لأن الشخص نفسه قد يملك الحسابين.
+ */
+ const savedRole=String(e?.createdByRole||"").trim().toLowerCase();
+
+ if(
+   savedRole &&
+   ["teacher","supervisor"].includes(savedRole) &&
+   savedRole!==role
+ ){
+   return false;
+ }
+
  const aliases=ownerAliases();
  const ownerCandidates=[
    e?.teacherEmail,
@@ -411,13 +425,10 @@ function examBelongsToCurrentUser(e){
    if(x && aliases.has(x))return true;
  }
 
- // توافق مع الاختبارات الأقدم التي كان يُحفظ فيها اسم المعلم فقط.
- if(role==="teacher" && currentTeacher){
-   const savedName=String(e?.teacherName||"").trim();
-   const myName=String(currentTeacher?.name||"").trim();
-   if(savedName && myName && savedName===myName)return true;
- }
-
+ /*
+   الاختبارات القديمة التي لا تحتوي createdByRole تظل مدعومة
+   بشرط وجود معرف حساب مطابق فعليًا، وليس مجرد تطابق الاسم.
+ */
  return false;
 }
 
@@ -917,11 +928,27 @@ async function saveExam(){
  };
 
  if(["teacher","supervisor"].includes(role) && !editingId.value){
-   data.teacherEmail=currentUser;
+   data.teacherEmail=
+     role==="teacher"
+       ?(currentTeacher?.email||currentUser)
+       :currentUser;
+
+   data.teacherId=
+     role==="teacher"
+       ?(currentTeacher?.id||"")
+       :"";
+
+   data.teacherUsername=
+     role==="teacher"
+       ?(currentTeacher?.username||currentTeacher?.user||currentUser)
+       :currentUser;
+
    data.teacherName=
      role==="teacher"
      ?(currentTeacher?.name||localStorage.getItem("currentUserName")||currentUser)
      :(localStorage.getItem("currentUserName")||currentUser);
+
+   data.createdBy=currentUser;
    data.createdByRole=role;
  }else if(!["teacher","supervisor"].includes(role) && !editingId.value){
    data.teacherEmail=currentUser||"";
