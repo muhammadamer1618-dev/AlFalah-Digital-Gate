@@ -794,7 +794,8 @@ function renderActivities(){
       '<br>'+esc(target)+'</div>'+
       '<div class="linkbox">'+esc(url)+'</div>'+
       '<div class="actions">'+
-        '<button class="btn primary small" onclick="openTemplatePicker(\''+esc(a.id)+'\')">🎨 تغيير طريقة العرض</button>'+
+        '<button class="btn primary small" onclick="playActivity(\''+esc(a.id)+'\')">▶️ بدء النشاط</button>'+
+        '<button class="btn light small" onclick="openTemplatePicker(\''+esc(a.id)+'\')">🎨 تغيير طريقة العرض</button>'+
         '<button class="btn blue small" onclick="copyActivityLink(\''+esc(a.id)+'\')">🔗 نسخ الرابط</button>'+
         '<button class="btn gold small" onclick="openPublish(\''+esc(a.id)+'\')">📢 '+(a.published?"تعديل النشر":"نشر للطلاب")+'</button>'+
         (a.published?'<button class="btn light small" onclick="unpublishActivity(\''+esc(a.id)+'\')">إيقاف النشر</button>':'')+
@@ -839,7 +840,9 @@ async function selectActivityTemplate(template){
   }
 }
 function playActivity(id){
-  openTemplatePicker(id,false);
+  const a=activities.find(function(x){return x.id===id});
+  if(!a)return;
+  window.open(playUrl(a),"_blank");
 }
 async function copyActivityLink(id){
   const a=activities.find(function(x){return x.id===id});
