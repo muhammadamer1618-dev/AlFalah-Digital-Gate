@@ -53,22 +53,13 @@ function classKey(grade,section){return normArabic(grade)+"||"+normArabic(sectio
 async function protect(){const r=role();if(!["admin","superadmin","supervisor"].includes(r)){alert("هذه الصفحة للإدارة والإشراف فقط.");location.href="index.html";return false}if(r==="supervisor"){const d=await db.collection("users").doc(user()).get();if(!d.exists||String(d.data().role||"").toLowerCase()!=="supervisor"){alert("حساب الإشراف غير صالح.");location.href="index.html";return false}currentUserData={id:d.id,...d.data()};const p=currentUserData.permissions||{};if(p.studentReportView===false){alert("لا تملك صلاحية تقرير الطالب الشامل.");location.href="supervisor-dashboard.html";return false}}return true}
 async function load(){const [ss,ts,gs,trs]=await Promise.all([db.collection("students").get(),db.collection("tests").get(),db.collection("grades").get(),db.collection("teachers").get()]);students=ss.docs.map(d=>({code:String(d.data().code||d.id),...d.data()}));tests=ts.docs.map(d=>({id:d.id,...d.data()}));grades=gs.docs.map(d=>({id:d.id,...d.data()}));teachers=trs.docs.map(d=>({email:d.id,...d.data()}));applySupervisorScope();fillGrades();refreshStudentOptions()}
 function applySupervisorScope(){
-  if(role()!=="supervisor"||!currentUserData)return;
-  const type=String(currentUserData.supervisorType||"general_supervisor").toLowerCase();
-  if(type!=="supervisor")return;
-
-  const allowed=new Set((currentUserData.assignedTeacherEmails||[]).map(x=>String(x).trim().toLowerCase()));
-  const classKeys=new Set();
-
-  teachers
-    .filter(t=>allowed.has(String(t.email||"").trim().toLowerCase()))
-    .forEach(t=>{
-      (Array.isArray(t.assignments)?t.assignments:[]).forEach(a=>{
-        if(a.grade&&a.section)classKeys.add(classKey(a.grade,a.section));
-      });
-    });
-
-  students=students.filter(s=>classKeys.has(classKey(s.grade,s.section)));
+  /*
+    التقرير الشامل للمشرف يتبع نفس منطق صفحات التحليل والأوائل:
+    إذا كان المشرف يملك صلاحية studentReportView فإنه يرى جميع الطلاب والشعب،
+    ولا يتم تضييق القائمة حسب assignedTeacherEmails حتى لا تختفي شعب صحيحة
+    مثل خامس أ عند وجود إسناد معلم مختلف عن خامس ب.
+  */
+  return;
 }
 function fillGrades(){const map=new Map();students.forEach(s=>{if(s.grade&&!map.has(normArabic(s.grade)))map.set(normArabic(s.grade),s.grade)});const list=[...map.values()].sort((a,b)=>String(a).localeCompare(String(b),"ar",{numeric:true}));gradeFilter.innerHTML='<option value="">كل الصفوف</option>'+list.map(x=>`<option>${esc(x)}</option>`).join("")}
 function gradeChanged(){const g=gradeFilter.value;const map=new Map();students.filter(s=>!g||sameGrade(s.grade,g)).forEach(s=>{if(s.section&&!map.has(normArabic(s.section)))map.set(normArabic(s.section),s.section)});const secs=[...map.values()].sort((a,b)=>String(a).localeCompare(String(b),"ar",{numeric:true}));sectionFilter.innerHTML='<option value="">كل الفصول</option>'+secs.map(x=>`<option>${esc(x)}</option>`).join("");refreshStudentOptions()}
