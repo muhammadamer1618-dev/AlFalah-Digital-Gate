@@ -392,7 +392,7 @@
       </span>
     </a>
     <a
-      href="evaluation-form.html"
+      href="evaluation-form.html?v=20261013-2"
       class="card gold"
     >
       <div class="icon">
@@ -410,7 +410,7 @@
       </span>
     </a>
     <a
-      href="teacher-visits.html"
+      href="teacher-visits.html?v=20261013-2"
       class="card"
     >
       <div class="icon">
@@ -566,7 +566,7 @@
   el("teachersCount").previousElementSibling.textContent =
     isGlobalSupervisor ? "إجمالي معلمي المدرسة" : "المعلمون التابعون لك";
 
-  const visitDescription = document.querySelector('a[href="evaluation-form.html"] p');
+  const visitDescription = document.querySelector('a[href="evaluation-form.html?v=20261013-2"] p');
   if(visitDescription && isGlobalSupervisor){
     visitDescription.textContent = "تنفيذ زيارة صفية لأي معلم في المدرسة.";
   }
