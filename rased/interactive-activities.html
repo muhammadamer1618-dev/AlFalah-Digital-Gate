@@ -78,6 +78,7 @@ textarea{min-height:88px;resize:vertical}
   <div class="hero-note">
     <b>نشاط للتعلّم والمتعة، وليس واجبًا.</b>
     لا يتم هنا حفظ درجات الطلاب أو عدد المحاولات أو سجل اللعب. يمكن تشغيل النشاط على السبورة مباشرة، أو نشره للطلاب ليستخدموه اختياريًا.
+    <br><b>ملاحظة:</b> تظهر لك فقط المادة والصفوف والشُعب المسندة لك في راصد.
   </div>
 
   <div class="grid2">
@@ -293,6 +294,53 @@ function examBelongsToMe(x){
     return key&&aliases.has(key);
   });
 }
+
+function assignedSubjectIds(){
+  const assignments=
+    currentTeacher &&
+    Array.isArray(currentTeacher.assignments)
+      ?currentTeacher.assignments
+      :[];
+
+  return new Set(
+    assignments
+      .map(function(a){return String(a.subjectId||"").trim()})
+      .filter(Boolean)
+  );
+}
+
+function assignedClassesForSubject(subjectId){
+  const assignments=
+    currentTeacher &&
+    Array.isArray(currentTeacher.assignments)
+      ?currentTeacher.assignments
+      :[];
+
+  const seen=new Set();
+  const out=[];
+
+  assignments
+    .filter(function(a){
+      return !subjectId ||
+        String(a.subjectId||"")===String(subjectId||"");
+    })
+    .forEach(function(a){
+      const grade=String(a.grade||"").trim();
+      const section=String(a.section||"").trim();
+      const key=grade+"|"+section;
+
+      if(
+        grade &&
+        section &&
+        !seen.has(key)
+      ){
+        seen.add(key);
+        out.push({grade:grade,section:section});
+      }
+    });
+
+  return out;
+}
 function playUrl(a){
   const code=String(a.publicCode||a.id||"");
   return location.origin+"/rased/interactive-play.html?c="+encodeURIComponent(code);
@@ -336,18 +384,97 @@ async function loadBase(){
   }
 
   const ss=await db.collection("subjects").get();
-  subjects=ss.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})});
-  subjects.sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""),"ar")});
-  const sub=document.getElementById("manualSubject");
-  sub.innerHTML='<option value="">بدون مادة محددة</option>'+
-    subjects.map(function(s){return '<option value="'+esc(s.id)+'">'+esc(s.name||"المادة")+'</option>'}).join("");
+  const allSubjects=
+    ss.docs.map(function(d){
+      return Object.assign({id:d.id},d.data()||{});
+    });
 
-  const es=await db.collection("onlineExams").get();
-  exams=es.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})}).filter(examBelongsToMe);
-  exams.sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""),"ar")});
-  const exsel=document.getElementById("examSelect");
-  exsel.innerHTML='<option value="">اختر اختبارًا</option>'+
-    exams.map(function(e){return '<option value="'+esc(e.id)+'">'+esc(e.name||"اختبار")+' — '+esc(e.subjectName||"")+'</option>'}).join("");
+  const allowedSubjectIds=
+    assignedSubjectIds();
+
+  subjects=
+    allSubjects
+      .filter(function(s){
+        return allowedSubjectIds.has(String(s.id||""));
+      })
+      .sort(function(a,b){
+        return String(a.name||"")
+          .localeCompare(
+            String(b.name||""),
+            "ar"
+          );
+      });
+
+  const sub=
+    document.getElementById("manualSubject");
+
+  if(subjects.length===1){
+    sub.innerHTML=
+      '<option value="'+
+      esc(subjects[0].id)+
+      '">'+
+      esc(subjects[0].name||"المادة")+
+      '</option>';
+
+    sub.value=
+      subjects[0].id;
+
+    sub.disabled=true;
+  }else{
+    sub.disabled=false;
+    sub.innerHTML=
+      '<option value="">اختر المادة</option>'+
+      subjects.map(function(s){
+        return '<option value="'+
+          esc(s.id)+
+          '">'+
+          esc(s.name||"المادة")+
+          '</option>';
+      }).join("");
+  }
+
+  const es=
+    await db
+      .collection("onlineExams")
+      .get();
+
+  exams=
+    es.docs
+      .map(function(d){
+        return Object.assign(
+          {id:d.id},
+          d.data()||{}
+        );
+      })
+      .filter(examBelongsToMe)
+      .filter(function(e){
+        return allowedSubjectIds.has(
+          String(e.subjectId||"")
+        );
+      });
+
+  exams.sort(function(a,b){
+    return String(a.name||"")
+      .localeCompare(
+        String(b.name||""),
+        "ar"
+      );
+  });
+
+  const exsel=
+    document.getElementById("examSelect");
+
+  exsel.innerHTML=
+    '<option value="">اختر اختبارًا</option>'+
+    exams.map(function(e){
+      return '<option value="'+
+        esc(e.id)+
+        '">'+
+        esc(e.name||"اختبار")+
+        ' — '+
+        esc(e.subjectName||"")+
+        '</option>';
+    }).join("");
 
   renderManualAnswerFields();
   await loadActivities();
@@ -499,7 +626,20 @@ async function saveManualActivity(){
   if(!title)return alert("اكتب اسم النشاط.");
   if(!manualItems.length)return alert("أضف سؤالًا واحدًا على الأقل.");
   const sid=document.getElementById("manualSubject").value;
-  const sub=subjects.find(function(s){return s.id===sid});
+  const allowedSubjectIds=assignedSubjectIds();
+
+  if(
+    !sid ||
+    !allowedSubjectIds.has(String(sid))
+  ){
+    return alert("اختر المادة المسندة لك فقط.");
+  }
+
+  const sub=
+    subjects.find(function(s){
+      return s.id===sid;
+    });
+
   setStatus("manualStatus","جاري حفظ النشاط...","");
   try{
     await createActivityDoc({
@@ -578,19 +718,11 @@ async function copyActivityLink(id){
   }
 }
 function availableClassesFor(a){
-  const assignments=Array.isArray(currentTeacher.assignments)?currentTeacher.assignments:[];
-  let arr=assignments;
-  if(a&&a.subjectId){
-    const filtered=assignments.filter(function(x){return String(x.subjectId||"")===String(a.subjectId)});
-    if(filtered.length)arr=filtered;
-  }
-  const out=[],seen=new Set();
-  arr.forEach(function(x){
-    const grade=String(x.grade||"").trim(),section=String(x.section||"").trim();
-    const key=grade+"|"+section;
-    if(grade&&section&&!seen.has(key)){seen.add(key);out.push({grade:grade,section:section})}
-  });
-  return out;
+  return assignedClassesForSubject(
+    a&&a.subjectId
+      ?a.subjectId
+      :""
+  );
 }
 function openPublish(id){
   const a=activities.find(function(x){return x.id===id});
