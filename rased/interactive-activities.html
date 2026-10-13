@@ -52,6 +52,11 @@ textarea{min-height:88px;resize:vertical}
 .publish-box.show{display:flex}
 .modal{width:min(620px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:16px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.3)}
 .modal h2{margin:0 0 6px;color:var(--green)}
+.template-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0}
+.template-choice{border:2px solid #d7e2dd;border-radius:13px;background:#fff;padding:16px 12px;cursor:pointer;text-align:center;font-weight:bold;color:var(--green);transition:.15s}
+.template-choice:hover{border-color:var(--gold);transform:translateY(-2px);background:#fffaf0}
+.template-choice .ico{display:block;font-size:31px;margin-bottom:7px}
+.template-choice small{display:block;color:#6b7d75;font-weight:normal;margin-top:5px;line-height:1.5}
 .classes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
 .class-chip{display:flex;align-items:center;gap:7px;border:1px solid #d4dfda;border-radius:9px;padding:10px;cursor:pointer}
 .class-chip input{width:auto;min-height:auto}
@@ -59,7 +64,7 @@ textarea{min-height:88px;resize:vertical}
 .status{font-size:12px;font-weight:bold;min-height:18px;margin-top:8px}
 .status.ok{color:#14743b}.status.err{color:#b42318}
 @media(max-width:850px){.grid2,.activity-list{grid-template-columns:1fr}.row{grid-template-columns:1fr 1fr}}
-@media(max-width:560px){.row,.classes{grid-template-columns:1fr}.head{align-items:flex-start}.logo{width:55px;height:55px}.head-copy h1{font-size:21px}.back{padding:8px 10px}.wrap{width:94%}.actions .btn{flex:1 1 140px}}
+@media(max-width:560px){.row,.classes,.template-grid{grid-template-columns:1fr}.head{align-items:flex-start}.logo{width:55px;height:55px}.head-copy h1{font-size:21px}.back{padding:8px 10px}.wrap{width:94%}.actions .btn{flex:1 1 140px}}
 </style>
 </head>
 <body>
@@ -99,14 +104,9 @@ textarea{min-height:88px;resize:vertical}
           </div>
           <div class="field">
             <label>طريقة العرض</label>
-            <select id="examTemplate">
-              <option value="quiz">🎯 تحدي الأسئلة</option>
-              <option value="cards">🃏 بطاقات سؤال وجواب</option>
-              <option value="wheel">🎡 عجلة الأسئلة</option>
-              <option value="boxes">📦 صناديق المفاجآت</option>
-              <option value="stars">⭐ نجوم الحظ</option>
-              <option value="random">🎲 أسئلة عشوائية</option>
-            </select>
+            <div class="note" style="margin:0;padding:11px;border:1px dashed #b9cbc3;border-radius:9px;background:#f8fbfa">
+              🎨 تختار طريقة العرض بعد حفظ النشاط
+            </div>
           </div>
           <div class="field">
             <label>الأسئلة</label>
@@ -135,14 +135,9 @@ textarea{min-height:88px;resize:vertical}
           </div>
           <div class="field">
             <label>طريقة العرض</label>
-            <select id="manualTemplate">
-              <option value="quiz">🎯 تحدي الأسئلة</option>
-              <option value="cards">🃏 بطاقات سؤال وجواب</option>
-              <option value="wheel">🎡 عجلة الأسئلة</option>
-              <option value="boxes">📦 صناديق المفاجآت</option>
-              <option value="stars">⭐ نجوم الحظ</option>
-              <option value="random">🎲 أسئلة عشوائية</option>
-            </select>
+            <div class="note" style="margin:0;padding:11px;border:1px dashed #b9cbc3;border-radius:9px;background:#f8fbfa">
+              🎨 تختار طريقة العرض بعد حفظ النشاط
+            </div>
           </div>
         </div>
 
@@ -193,6 +188,24 @@ textarea{min-height:88px;resize:vertical}
   <div style="text-align:center;color:#6b7d75;font-size:12px;font-weight:bold;padding:8px 0 2px">تصميم محمد عامر أحمد</div>
 </div>
 
+<div id="templateBox" class="publish-box">
+  <div class="modal">
+    <h2>🎨 اختر طريقة عرض النشاط</h2>
+    <div class="note" id="templateLabel">اختر الشكل الذي تريد تشغيل النشاط به الآن. يمكنك تغيير الشكل في أي وقت بدون إنشاء النشاط من جديد.</div>
+    <div class="template-grid">
+      <button class="template-choice" onclick="selectActivityTemplate('quiz')"><span class="ico">🎯</span>تحدي الأسئلة<small>سؤال واختيارات وتصحيح مباشر</small></button>
+      <button class="template-choice" onclick="selectActivityTemplate('cards')"><span class="ico">🃏</span>بطاقات تفاعلية<small>بطاقة سؤال مع اختيارات للطالب</small></button>
+      <button class="template-choice" onclick="selectActivityTemplate('wheel')"><span class="ico">🎡</span>عجلة الأسئلة<small>لف العجلة ثم يظهر السؤال واختياراته</small></button>
+      <button class="template-choice" onclick="selectActivityTemplate('boxes')"><span class="ico">📦</span>صناديق المفاجآت<small>اختر صندوقًا واكتشف السؤال</small></button>
+      <button class="template-choice" onclick="selectActivityTemplate('stars')"><span class="ico">⭐</span>نجوم الحظ<small>اختر نجمة عشوائية وابدأ التحدي</small></button>
+      <button class="template-choice" onclick="selectActivityTemplate('random')"><span class="ico">🎲</span>أسئلة عشوائية<small>ترتيب مختلف للأسئلة كل مرة</small></button>
+    </div>
+    <div class="actions">
+      <button class="btn light" onclick="closeTemplatePicker()">إغلاق بدون تشغيل</button>
+    </div>
+  </div>
+</div>
+
 <div id="publishBox" class="publish-box">
   <div class="modal">
     <h2>📢 نشر النشاط للطلاب</h2>
@@ -226,6 +239,7 @@ let examQuestionsCache=[];
 let manualItems=[];
 let activities=[];
 let publishingId="";
+let templateActivityId="";
 
 function esc(v){
   return String(v==null?"":v)
@@ -422,9 +436,12 @@ function updateTeacherScopeSummary(){
 
   el.textContent="نطاقك الحالي: "+subjectNames.join("، ")+(allClasses.length?" — "+allClasses.join("، "):"");
 }
-function playUrl(a){
+function playUrl(a,templateOverride){
   const code=String(a.publicCode||a.id||"");
-  return location.origin+"/rased/interactive-play.html?c="+encodeURIComponent(code);
+  let url=location.origin+"/rased/interactive-play.html?c="+encodeURIComponent(code);
+  const t=String(templateOverride||"").trim();
+  if(t)url+="&t="+encodeURIComponent(t);
+  return url;
 }
 function normalizeItem(q){
   const x={
@@ -620,9 +637,9 @@ async function createFromExam(){
   const title=document.getElementById("examActivityTitle").value.trim()||((ex.name||"اختبار")+" — نشاط تفاعلي");
   setStatus("examStatus","جاري إنشاء النشاط...","");
   try{
-    await createActivityDoc({
+    const created=await createActivityDoc({
       title:title,
-      template:document.getElementById("examTemplate").value||"quiz",
+      template:"quiz",
       subjectId:ex.subjectId||"",
       subjectName:ex.subjectName||"",
       sourceType:"exam",
@@ -630,8 +647,9 @@ async function createFromExam(){
       sourceExamName:ex.name||"",
       items:items
     });
-    setStatus("examStatus","تم إنشاء النشاط من الاختبار بنجاح ✅","ok");
+    setStatus("examStatus","تم إنشاء النشاط من الاختبار بنجاح ✅ — اختر الآن طريقة العرض","ok");
     await loadActivities();
+    openTemplatePicker(created.id,true);
   }catch(e){
     console.error(e);
     setStatus("examStatus","تعذر إنشاء النشاط: "+(e.message||e),"err");
@@ -721,9 +739,9 @@ async function saveManualActivity(){
 
   setStatus("manualStatus","جاري حفظ النشاط...","");
   try{
-    await createActivityDoc({
+    const created=await createActivityDoc({
       title:title,
-      template:document.getElementById("manualTemplate").value||"quiz",
+      template:"quiz",
       subjectId:sid||"",
       subjectName:sub?sub.name||"":"",
       sourceType:"manual",
@@ -731,9 +749,10 @@ async function saveManualActivity(){
       sourceExamName:"",
       items:manualItems.map(function(x){return Object.assign({},x)})
     });
-    setStatus("manualStatus","تم حفظ النشاط بنجاح ✅","ok");
     clearManualBuilder();
+    setStatus("manualStatus","تم حفظ النشاط بنجاح ✅ — اختر الآن طريقة العرض","ok");
     await loadActivities();
+    openTemplatePicker(created.id,true);
   }catch(e){
     console.error(e);
     setStatus("manualStatus","تعذر الحفظ: "+(e.message||e),"err");
@@ -769,13 +788,13 @@ function renderActivities(){
     return '<article class="activity">'+
       '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><h3>'+esc(a.title||"نشاط تفاعلي")+'</h3>'+
       '<span class="badge '+(a.published?"on":"off")+'">'+(a.published?"منشور للطلاب":"مسودة")+'</span></div>'+
-      '<div class="activity-meta">'+esc(a.subjectName||"بدون مادة محددة")+' · '+esc(templateName(a.template))+
+      '<div class="activity-meta">'+esc(a.subjectName||"بدون مادة محددة")+' · آخر عرض: '+esc(templateName(a.template))+
       '<br>الأسئلة: '+((Array.isArray(a.items)?a.items.length:0))+
       (a.sourceExamName?'<br>المصدر: '+esc(a.sourceExamName):'')+
       '<br>'+esc(target)+'</div>'+
       '<div class="linkbox">'+esc(url)+'</div>'+
       '<div class="actions">'+
-        '<button class="btn primary small" onclick="playActivity(\''+esc(a.id)+'\')">▶️ تشغيل على السبورة</button>'+
+        '<button class="btn primary small" onclick="openTemplatePicker(\''+esc(a.id)+'\')">🎨 اختر طريقة العرض</button>'+
         '<button class="btn blue small" onclick="copyActivityLink(\''+esc(a.id)+'\')">🔗 نسخ الرابط</button>'+
         '<button class="btn gold small" onclick="openPublish(\''+esc(a.id)+'\')">📢 '+(a.published?"تعديل النشر":"نشر للطلاب")+'</button>'+
         (a.published?'<button class="btn light small" onclick="unpublishActivity(\''+esc(a.id)+'\')">إيقاف النشر</button>':'')+
@@ -783,9 +802,44 @@ function renderActivities(){
       '</div></article>';
   }).join("");
 }
-function playActivity(id){
+function openTemplatePicker(id,afterSave){
   const a=activities.find(function(x){return x.id===id});
-  if(a)window.open(playUrl(a),"_blank");
+  if(!a)return;
+  templateActivityId=id;
+  const label=document.getElementById("templateLabel");
+  if(label){
+    label.textContent=(afterSave?"تم حفظ النشاط ✅ — ":"")+
+      (a.title||"النشاط")+
+      " — اختر طريقة العرض. يمكنك الرجوع وتغييرها في أي وقت.";
+  }
+  document.getElementById("templateBox").classList.add("show");
+}
+function closeTemplatePicker(){
+  templateActivityId="";
+  document.getElementById("templateBox").classList.remove("show");
+}
+async function selectActivityTemplate(template){
+  const allowed=["quiz","cards","wheel","boxes","stars","random"];
+  if(!allowed.includes(template))return;
+  const a=activities.find(function(x){return x.id===templateActivityId});
+  if(!a)return;
+  try{
+    await db.collection("interactiveActivities").doc(a.id).set({
+      template:template,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    a.template=template;
+    const url=playUrl(a,template);
+    closeTemplatePicker();
+    await loadActivities();
+    window.open(url,"_blank");
+  }catch(e){
+    console.error(e);
+    alert("تعذر تغيير طريقة العرض: "+(e.message||e));
+  }
+}
+function playActivity(id){
+  openTemplatePicker(id,false);
 }
 async function copyActivityLink(id){
   const a=activities.find(function(x){return x.id===id});
