@@ -190,7 +190,7 @@ textarea{min-height:88px;resize:vertical}
 
 <div id="templateBox" class="publish-box">
   <div class="modal">
-    <h2>🎨 اختر طريقة عرض النشاط</h2>
+    <h2>🎨 تغيير طريقة عرض النشاط</h2>
     <div class="note" id="templateLabel">اختر الشكل الذي تريد تشغيل النشاط به الآن. يمكنك تغيير الشكل في أي وقت بدون إنشاء النشاط من جديد.</div>
     <div class="template-grid">
       <button class="template-choice" onclick="selectActivityTemplate('quiz')"><span class="ico">🎯</span>تحدي الأسئلة<small>سؤال واختيارات وتصحيح مباشر</small></button>
@@ -794,7 +794,7 @@ function renderActivities(){
       '<br>'+esc(target)+'</div>'+
       '<div class="linkbox">'+esc(url)+'</div>'+
       '<div class="actions">'+
-        '<button class="btn primary small" onclick="openTemplatePicker(\''+esc(a.id)+'\')">🎨 اختر طريقة العرض</button>'+
+        '<button class="btn primary small" onclick="openTemplatePicker(\''+esc(a.id)+'\')">🎨 تغيير طريقة العرض</button>'+
         '<button class="btn blue small" onclick="copyActivityLink(\''+esc(a.id)+'\')">🔗 نسخ الرابط</button>'+
         '<button class="btn gold small" onclick="openPublish(\''+esc(a.id)+'\')">📢 '+(a.published?"تعديل النشر":"نشر للطلاب")+'</button>'+
         (a.published?'<button class="btn light small" onclick="unpublishActivity(\''+esc(a.id)+'\')">إيقاف النشر</button>':'')+
