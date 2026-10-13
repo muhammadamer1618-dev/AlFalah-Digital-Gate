@@ -246,9 +246,19 @@ function ownerAliases(){
 }
 function belongsToMe(x){
   const aliases=ownerAliases();
-  const values=[x.ownerId,x.teacherId,x.teacherEmail,x.teacherUsername,x.createdBy,x.username];
-  return values.some(function(v){return aliases.has(norm(v))}) ||
-    (!!currentTeacher && String(x.teacherName||"").trim()===String(currentTeacher.name||"").trim());
+  const values=[
+    x&&x.ownerId,
+    x&&x.teacherId,
+    x&&x.teacherEmail,
+    x&&x.teacherUsername,
+    x&&x.createdBy,
+    x&&x.username
+  ];
+
+  return values.some(function(v){
+    const key=norm(v);
+    return key&&aliases.has(key);
+  });
 }
 function examBelongsToMe(x){
   /*
