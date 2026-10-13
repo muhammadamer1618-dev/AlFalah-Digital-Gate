@@ -101,6 +101,8 @@ textarea{min-height:88px;resize:vertical}
               <option value="quiz">🎯 تحدي الأسئلة</option>
               <option value="cards">🃏 بطاقات سؤال وجواب</option>
               <option value="wheel">🎡 عجلة الأسئلة</option>
+              <option value="boxes">📦 صناديق المفاجآت</option>
+              <option value="stars">⭐ نجوم الحظ</option>
               <option value="random">🎲 أسئلة عشوائية</option>
             </select>
           </div>
@@ -135,6 +137,8 @@ textarea{min-height:88px;resize:vertical}
               <option value="quiz">🎯 تحدي الأسئلة</option>
               <option value="cards">🃏 بطاقات سؤال وجواب</option>
               <option value="wheel">🎡 عجلة الأسئلة</option>
+              <option value="boxes">📦 صناديق المفاجآت</option>
+              <option value="stars">⭐ نجوم الحظ</option>
               <option value="random">🎲 أسئلة عشوائية</option>
             </select>
           </div>
@@ -184,6 +188,7 @@ textarea{min-height:88px;resize:vertical}
       <div id="activityList" class="activity-list"><div class="empty">جاري تحميل الأنشطة...</div></div>
     </div>
   </section>
+  <div style="text-align:center;color:#6b7d75;font-size:12px;font-weight:bold;padding:8px 0 2px">تصميم محمد عامر أحمد</div>
 </div>
 
 <div id="publishBox" class="publish-box">
@@ -233,7 +238,7 @@ function setStatus(id,text,type){
   el.textContent=text||"";
 }
 function templateName(v){
-  return {quiz:"تحدي الأسئلة",cards:"بطاقات سؤال وجواب",wheel:"عجلة الأسئلة",random:"أسئلة عشوائية"}[v]||v||"نشاط";
+  return {quiz:"تحدي الأسئلة",cards:"بطاقات تفاعلية",wheel:"عجلة الأسئلة",boxes:"صناديق المفاجآت",stars:"نجوم الحظ",random:"أسئلة عشوائية"}[v]||v||"نشاط";
 }
 function typeName(v){
   return {mcq:"اختيار من متعدد",truefalse:"صح / خطأ",fill:"إجابة قصيرة",short:"إجابة قصيرة",order:"ترتيب",matching:"مطابقة",reading:"قراءة + سؤال"}[v]||v||"سؤال";
