@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>نشاط تفاعلي - مدارس الفلاح الأهلية</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--green:#004c3f;--green2:#08725e;--gold:#c9972c;--cream:#fffaf0;--ink:#17372f;--blue:#1769aa;--red:#b42318;--ok:#15803d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#f8f2e5,#ffffff 48%,#eef7f3);color:var(--ink)}
+button,input,select{font:inherit}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:linear-gradient(135deg,#003f35,#08725e);color:#fff;padding:10px 15px;display:flex;align-items:center;gap:12px;box-shadow:0 3px 12px rgba(0,0,0,.15);position:sticky;top:0;z-index:20}
+.logo{width:50px;height:50px;border-radius:50%;object-fit:contain;background:#fff;border:2px solid var(--gold);padding:2px}
+.brand{flex:1}.brand b{font-size:18px}.brand span{display:block;font-size:11px;color:#f3db8e;margin-top:3px}
+.topbtn{border:0;background:#fff;color:var(--green);border-radius:9px;padding:9px 11px;font-weight:bold;cursor:pointer}
+.stage{flex:1;width:min(1180px,96%);margin:0 auto;display:flex;align-items:center;justify-content:center;padding:22px 0 35px}
+.panel{width:min(980px,100%);background:rgba(255,255,255,.94);border:1px solid #d9e3df;border-radius:22px;box-shadow:0 18px 45px rgba(0,76,63,.11);padding:26px}
+.center{text-align:center}
+.start-logo{width:110px;height:110px;object-fit:contain;margin:0 auto 12px;background:#fff;border:5px solid var(--gold);border-radius:50%;padding:5px;box-shadow:0 10px 24px rgba(0,0,0,.12)}
+h1{font-size:clamp(28px,4vw,48px);margin:8px 0;color:var(--green)}
+.subtitle{font-size:clamp(14px,1.7vw,20px);color:#5e746c;line-height:1.7}
+.soft-note{display:inline-block;margin:12px auto;padding:8px 13px;background:#fff5cf;border:1px solid #e5c862;border-radius:999px;font-size:12px;color:#745900;font-weight:bold}
+.bigbtn{border:0;border-radius:14px;padding:15px 24px;font-size:clamp(17px,2vw,23px);font-weight:bold;cursor:pointer;background:var(--green);color:#fff;box-shadow:0 7px 18px rgba(0,76,63,.2);margin:8px}
+.bigbtn.gold{background:var(--gold)}.bigbtn.light{background:#e9f0ed;color:var(--green)}.bigbtn.blue{background:var(--blue)}
+.progress{height:9px;background:#e7eeeb;border-radius:99px;overflow:hidden;margin:0 0 18px}.progress>div{height:100%;background:linear-gradient(90deg,var(--gold),#08725e);transition:.25s}
+.qtop{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.pill{background:#eef4f1;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:bold;color:#526b62}
+.question{font-size:clamp(24px,3.2vw,44px);line-height:1.5;font-weight:900;color:#153d34;margin:15px 0 20px;text-align:center}
+.passage{padding:15px 18px;border:1px solid #cadbd4;border-radius:13px;background:#f7faf9;font-size:clamp(16px,1.8vw,22px);line-height:1.9;margin-bottom:14px}
+.qimage{display:block;max-width:90%;max-height:360px;object-fit:contain;margin:10px auto 18px;border-radius:12px;border:1px solid #d6e1dd;background:#fff}
+.options{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.opt{min-height:82px;border:2px solid #d3dfda;border-radius:16px;background:#fff;padding:14px;font-size:clamp(18px,2vw,26px);font-weight:bold;color:#193e35;cursor:pointer;transition:.15s}
+.opt:hover{transform:translateY(-2px);border-color:#97b7aa}.opt.correct{background:#e7f7eb;border-color:#2c9b52;color:#146b32}.opt.wrong{background:#fdeaea;border-color:#d74d4d;color:#9a1f1f}.opt:disabled{cursor:default;transform:none}
+.feedback{min-height:54px;margin-top:15px;border-radius:12px;padding:12px 15px;font-size:18px;font-weight:bold;text-align:center;display:none}.feedback.show{display:block}.feedback.ok{background:#e7f7eb;color:#126a30}.feedback.bad{background:#fdeaea;color:#9c1c1c}
+.next-wrap{text-align:center;margin-top:12px}
+.answer-row{display:flex;gap:9px;align-items:stretch;max-width:760px;margin:0 auto}.answer-row input{flex:1;border:2px solid #c6d7d0;border-radius:13px;padding:14px;font-size:22px;text-align:center;min-width:0}
+.match-list{display:grid;gap:10px;max-width:850px;margin:auto}.match-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center;background:#f7faf9;border:1px solid #d5e0dc;border-radius:12px;padding:10px}.match-row b{font-size:20px}.match-row select{width:100%;border:1px solid #afc7bd;border-radius:9px;padding:11px;background:#fff;font-size:18px}
+.word-bank,.built-order{min-height:86px;border:2px dashed #bdcdc6;border-radius:14px;padding:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;justify-content:center;margin:10px 0}.built-order{border-style:solid;background:#f8fbfa}
+.word{border:0;border-radius:10px;padding:10px 14px;background:#0d6b59;color:#fff;font-size:20px;font-weight:bold;cursor:pointer}.built-order .word{background:#c9972c}
+.card-reveal{min-height:250px;border:3px solid var(--gold);border-radius:22px;background:linear-gradient(145deg,#fff,#f8f2e1);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.card-answer{display:none;margin-top:18px;padding:14px;border-radius:12px;background:#e7f7eb;color:#146b32;font-size:clamp(20px,2.5vw,32px);font-weight:bold}.card-answer.show{display:block}
+.wheel-wrap{text-align:center}.wheel{width:min(360px,70vw);aspect-ratio:1;border-radius:50%;margin:10px auto 18px;background:conic-gradient(#0b7461 0 45deg,#d4a42b 45deg 90deg,#1769aa 90deg 135deg,#8b5cf6 135deg 180deg,#0b7461 180deg 225deg,#d4a42b 225deg 270deg,#1769aa 270deg 315deg,#8b5cf6 315deg 360deg);border:10px solid #fff;outline:5px solid var(--gold);box-shadow:0 15px 35px rgba(0,0,0,.18);position:relative;transition:transform 1s cubic-bezier(.15,.7,.15,1)}
+.wheel:after{content:"?";position:absolute;inset:35%;display:grid;place-items:center;border-radius:50%;background:#fff;color:var(--green);font-size:60px;font-weight:900;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.pointer{font-size:38px;color:#9a6b08;margin-bottom:-20px;position:relative;z-index:3}
+.score{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:760px;margin:18px auto}.score div{background:#f2f7f5;border:1px solid #d5e2dc;border-radius:14px;padding:16px}.score b{display:block;color:var(--green);font-size:34px}
+.error{color:#a51f1f;text-align:center;padding:35px;font-weight:bold}
+@media(max-width:700px){.panel{padding:16px;border-radius:16px}.options{grid-template-columns:1fr}.opt{min-height:66px}.question{font-size:25px}.topbar{padding:8px}.brand span{display:none}.logo{width:44px;height:44px}.answer-row{flex-direction:column}.match-row{grid-template-columns:1fr}.score{grid-template-columns:1fr 1fr}.topbtn{padding:8px;font-size:12px}}
+@media(orientation:landscape) and (min-width:900px){.stage{padding:12px 0 20px}.panel{padding:22px 30px}.question{margin:8px 0 14px}.opt{min-height:72px}.topbar{position:relative}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <img src="logo.jpeg" class="logo" alt="شعار مدارس الفلاح">
+    <div class="brand"><b>الأنشطة التفاعلية</b><span>مدارس الفلاح الأهلية</span></div>
+    <button class="topbtn" onclick="toggleFullscreen()">⛶ ملء الشاشة</button>
+    <button class="topbtn" onclick="restartActivity()">↻ إعادة</button>
+  </div>
+  <main class="stage">
+    <div id="panel" class="panel"><div class="center">جاري تحميل النشاط...</div></div>
+  </main>
+</div>
+
+<script>
+const firebaseConfig={
+  apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",
+  authDomain:"results2026-7c0dd.firebaseapp.com",
+  projectId:"results2026-7c0dd",
+  storageBucket:"results2026-7c0dd.firebasestorage.app",
+  messagingSenderId:"241421115694",
+  appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+
+let activity=null;
+let items=[];
+let index=0;
+let score=0;
+let answered=0;
+let wheelRotation=0;
+let wheelPool=[];
+let orderAvailable=[];
+let orderBuilt=[];
+
+function esc(v){
+  return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}
+  return a;
+}
+function normalizeText(v){
+  return String(v||"").trim().toLowerCase().replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[\u064B-\u065F\u0670]/g,"").replace(/\s+/g," ");
+}
+function current(){return items[index]||null}
+function typeName(v){return {mcq:"اختيار من متعدد",truefalse:"صح / خطأ",fill:"إجابة قصيرة",short:"إجابة قصيرة",order:"ترتيب الكلمات",matching:"مطابقة",reading:"قراءة + سؤال"}[v]||"سؤال"}
+function correctText(q){
+  const t=String(q.type||"mcq");
+  if(["mcq","truefalse","reading"].includes(t)){
+    return (Array.isArray(q.options)?q.options:[])[Number(q.correctIndex)]||"";
+  }
+  if(t==="matching"){
+    return (Array.isArray(q.pairs)?q.pairs:[]).map(function(p){return String(p.left||"")+" ↔ "+String(p.right||"")}).join(" | ");
+  }
+  return String(q.correctText||"");
+}
+function toggleFullscreen(){
+  try{
+    if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+    else{document.exitFullscreen&&document.exitFullscreen()}
+  }catch(e){}
+}
+async function loadActivity(){
+  const p=new URLSearchParams(location.search);
+  const code=String(p.get("c")||p.get("code")||p.get("id")||"").trim();
+  if(!code){showError("رابط النشاط غير مكتمل.");return}
+  try{
+    let doc=await db.collection("interactiveActivities").doc(code).get();
+    if(doc.exists){
+      activity=Object.assign({id:doc.id},doc.data()||{});
+    }else{
+      const q=await db.collection("interactiveActivities").where("publicCode","==",code).limit(1).get();
+      if(!q.empty){const d=q.docs[0];activity=Object.assign({id:d.id},d.data()||{})}
+    }
+    if(!activity){showError("لم يتم العثور على النشاط.");return}
+    showStart();
+  }catch(e){
+    console.error(e);
+    showError("تعذر تحميل النشاط. تحقق من الاتصال ثم أعد المحاولة.");
+  }
+}
+function showError(msg){
+  document.getElementById("panel").innerHTML='<div class="error">'+esc(msg)+'</div>';
+}
+function showStart(){
+  const n=Array.isArray(activity.items)?activity.items.length:0;
+  document.title=(activity.title||"نشاط تفاعلي")+" - مدارس الفلاح";
+  document.getElementById("panel").innerHTML=
+    '<div class="center">'+
+      '<img src="logo.jpeg" class="start-logo" alt="شعار المدرسة">'+
+      '<h1>'+esc(activity.title||"نشاط تفاعلي")+'</h1>'+
+      '<div class="subtitle">'+esc(activity.subjectName||"نشاط تعليمي تفاعلي")+'<br>عدد الأسئلة / المهام: '+n+'</div>'+
+      '<div class="soft-note">🎈 نشاط اختياري للتدريب والمتعة — لا تُحفظ نتيجتك ولا محاولاتك</div>'+
+      '<div><button class="bigbtn" onclick="startActivity()">▶️ ابدأ النشاط</button>'+
+      '<button class="bigbtn light" onclick="toggleFullscreen()">⛶ تشغيل على السبورة</button></div>'+
+    '</div>';
+}
+function startActivity(){
+  items=(Array.isArray(activity.items)?activity.items:[]).map(function(x){return Object.assign({},x)});
+  if(!items.length){showError("هذا النشاط لا يحتوي أسئلة بعد.");return}
+  if(activity.template==="random")items=shuffle(items);
+  index=0;score=0;answered=0;wheelPool=items.map(function(_,i){return i});
+  if(activity.template==="wheel")renderWheel();
+  else renderCurrent();
+}
+function restartActivity(){
+  if(!activity){loadActivity();return}
+  showStart();
+}
+function progressHtml(){
+  const pct=items.length?Math.round((index/items.length)*100):0;
+  return '<div class="progress"><div style="width:'+pct+'%"></div></div>';
+}
+function renderCurrent(){
+  const q=current();
+  if(!q){finishActivity();return}
+  if(activity.template==="cards"){renderCard(q);return}
+  const t=String(q.type||"mcq");
+  const dir=(q.textDirection==="ltr"||q.textDirection==="rtl")?q.textDirection:(/[\u0600-\u06FF]/.test(String(q.text||""))?"rtl":"ltr");
+  let body=progressHtml()+
+    '<div class="qtop"><span class="pill">السؤال '+(index+1)+' من '+items.length+'</span><span class="pill">'+esc(typeName(t))+'</span></div>'+
+    (q.passage?'<div class="passage" dir="'+dir+'">'+esc(q.passage)+'</div>':'')+
+    (q.imageUrl?'<img class="qimage" src="'+esc(q.imageUrl)+'" alt="صورة السؤال">':'')+
+    '<div class="question" dir="'+dir+'">'+esc(q.text||"")+'</div>';
+
+  if(["mcq","truefalse","reading"].includes(t)){
+    const opts=Array.isArray(q.options)?q.options:[];
+    body+='<div class="options">'+opts.map(function(o,i){
+      return '<button class="opt" data-i="'+i+'" onclick="chooseOption('+i+')">'+esc(o)+'</button>';
+    }).join("")+'</div>';
+  }else if(t==="matching"){
+    const pairs=Array.isArray(q.pairs)?q.pairs:[];
+    const rights=shuffle(pairs.map(function(p){return String(p.right||"")}));
+    body+='<div class="match-list">'+pairs.map(function(p,i){
+      return '<div class="match-row"><b>'+esc(p.left||"")+'</b><select class="matchSelect" data-i="'+i+'"><option value="">اختر المطابقة</option>'+
+        rights.map(function(r){return '<option value="'+esc(r)+'">'+esc(r)+'</option>'}).join("")+
+        '</select></div>';
+    }).join("")+'</div><div class="next-wrap"><button class="bigbtn blue" onclick="checkMatching()">تحقق من المطابقة</button></div>';
+  }else if(t==="order"){
+    orderAvailable=shuffle(String(q.correctText||"").split(/\s+/).filter(Boolean).map(function(w,i){return {id:i+"_"+Math.random().toString(36).slice(2,6),word:w}}));
+    orderBuilt=[];
+    body+='<div id="orderArea"></div>';
+  }else{
+    body+='<div class="answer-row"><input id="textAnswer" autocomplete="off" placeholder="اكتب إجابتك"><button class="bigbtn blue" onclick="checkTextAnswer()">تحقق</button></div>';
+  }
+  body+='<div id="feedback" class="feedback"></div><div id="nextWrap" class="next-wrap"></div>';
+  document.getElementById("panel").innerHTML=body;
+  if(t==="order")renderOrderArea();
+  const inp=document.getElementById("textAnswer");
+  if(inp){inp.addEventListener("keydown",function(e){if(e.key==="Enter")checkTextAnswer()});setTimeout(function(){inp.focus()},50)}
+}
+function setFeedback(ok,text){
+  const f=document.getElementById("feedback");
+  if(!f)return;
+  f.className="feedback show "+(ok?"ok":"bad");
+  f.innerHTML=(ok?"✅ ":"💡 ")+esc(text);
+  const n=document.getElementById("nextWrap");
+  if(n)n.innerHTML='<button class="bigbtn" onclick="nextQuestion()">التالي ←</button>';
+}
+function lockOptions(correctIndex,chosenIndex){
+  document.querySelectorAll(".opt").forEach(function(b){
+    b.disabled=true;
+    const i=Number(b.dataset.i);
+    if(i===Number(correctIndex))b.classList.add("correct");
+    if(i===Number(chosenIndex)&&i!==Number(correctIndex))b.classList.add("wrong");
+  });
+}
+function chooseOption(i){
+  const q=current();if(!q)return;
+  const ok=Number(i)===Number(q.correctIndex);
+  answered++;if(ok)score++;
+  lockOptions(q.correctIndex,i);
+  setFeedback(ok,ok?"إجابة صحيحة!":("الإجابة الصحيحة: "+correctText(q)));
+}
+function checkTextAnswer(){
+  const q=current();if(!q)return;
+  const input=document.getElementById("textAnswer");if(!input)return;
+  const answer=normalizeText(input.value);
+  if(!answer)return;
+  const accepted=String(q.correctText||"").split("|").map(normalizeText).filter(Boolean);
+  const ok=accepted.includes(answer);
+  answered++;if(ok)score++;
+  input.disabled=true;
+  const btn=input.parentElement&&input.parentElement.querySelector("button");if(btn)btn.disabled=true;
+  setFeedback(ok,ok?"إجابة صحيحة!":("الإجابة الصحيحة: "+correctText(q)));
+}
+function checkMatching(){
+  const q=current();if(!q)return;
+  const pairs=Array.isArray(q.pairs)?q.pairs:[];
+  const sels=Array.from(document.querySelectorAll(".matchSelect"));
+  if(sels.some(function(s){return !s.value}))return alert("أكمل جميع عناصر المطابقة أولًا.");
+  let ok=true;
+  sels.forEach(function(s){
+    const i=Number(s.dataset.i);const expected=String((pairs[i]||{}).right||"");
+    if(normalizeText(s.value)!==normalizeText(expected))ok=false;
+    s.disabled=true;
+  });
+  answered++;if(ok)score++;
+  setFeedback(ok,ok?"مطابقة ممتازة!":("راجع المطابقة الصحيحة: "+correctText(q)));
+}
+function renderOrderArea(){
+  const box=document.getElementById("orderArea");if(!box)return;
+  box.innerHTML=
+    '<div class="built-order">'+(orderBuilt.length?orderBuilt.map(function(x){return '<button class="word" onclick="returnWord(\''+esc(x.id)+'\')">'+esc(x.word)+'</button>'}).join(""):'<span style="color:#7a8c84">اضغط الكلمات بالترتيب الصحيح</span>')+'</div>'+
+    '<div class="word-bank">'+orderAvailable.map(function(x){return '<button class="word" onclick="pickWord(\''+esc(x.id)+'\')">'+esc(x.word)+'</button>'}).join("")+'</div>'+
+    '<div class="next-wrap"><button class="bigbtn blue" onclick="checkOrder()">تحقق من الترتيب</button></div>';
+}
+function pickWord(id){
+  const i=orderAvailable.findIndex(function(x){return x.id===id});if(i<0)return;
+  orderBuilt.push(orderAvailable.splice(i,1)[0]);renderOrderArea();
+}
+function returnWord(id){
+  const i=orderBuilt.findIndex(function(x){return x.id===id});if(i<0)return;
+  orderAvailable.push(orderBuilt.splice(i,1)[0]);renderOrderArea();
+}
+function checkOrder(){
+  const q=current();if(!q)return;
+  if(orderAvailable.length)return alert("رتب كل الكلمات أولًا.");
+  const answer=orderBuilt.map(function(x){return x.word}).join(" ");
+  const ok=normalizeText(answer)===normalizeText(q.correctText||"");
+  answered++;if(ok)score++;
+  document.querySelectorAll("#orderArea button").forEach(function(b){b.disabled=true});
+  setFeedback(ok,ok?"الترتيب صحيح!":("الترتيب الصحيح: "+correctText(q)));
+}
+function nextQuestion(){
+  index++;
+  if(index>=items.length)finishActivity();
+  else renderCurrent();
+}
+function renderCard(q){
+  const answer=correctText(q)||"فكر في الإجابة ثم ناقشها مع معلمك.";
+  document.getElementById("panel").innerHTML=
+    progressHtml()+
+    '<div class="qtop"><span class="pill">بطاقة '+(index+1)+' من '+items.length+'</span><span class="pill">'+esc(typeName(q.type))+'</span></div>'+
+    '<div class="card-reveal">'+
+      (q.imageUrl?'<img class="qimage" src="'+esc(q.imageUrl)+'" alt="صورة السؤال">':'')+
+      '<div class="question">'+esc(q.text||"")+'</div>'+
+      '<button class="bigbtn gold" onclick="document.getElementById(\'cardAnswer\').classList.add(\'show\')">👁️ إظهار الإجابة</button>'+
+      '<div id="cardAnswer" class="card-answer">'+esc(answer)+'</div>'+
+    '</div>'+
+    '<div class="next-wrap"><button class="bigbtn" onclick="nextQuestion()">البطاقة التالية ←</button></div>';
+}
+function renderWheel(){
+  if(!wheelPool.length){finishActivity();return}
+  document.getElementById("panel").innerHTML=
+    '<div class="wheel-wrap"><div class="pointer">▼</div><div id="wheel" class="wheel"></div>'+
+    '<h1 style="font-size:32px">عجلة الأسئلة</h1>'+
+    '<div class="subtitle">المتبقي '+wheelPool.length+' سؤال / مهمة</div>'+
+    '<button class="bigbtn gold" onclick="spinWheel()">🎡 لف العجلة</button></div>';
+}
+function spinWheel(){
+  if(!wheelPool.length){finishActivity();return}
+  const button=document.querySelector(".wheel-wrap .bigbtn");if(button)button.disabled=true;
+  const pos=Math.floor(Math.random()*wheelPool.length);
+  const selected=wheelPool.splice(pos,1)[0];
+  wheelRotation+=720+Math.floor(Math.random()*360);
+  const w=document.getElementById("wheel");if(w)w.style.transform="rotate("+wheelRotation+"deg)";
+  setTimeout(function(){
+    index=selected;
+    renderWheelQuestion();
+  },1050);
+}
+function renderWheelQuestion(){
+  const q=current();if(!q){renderWheel();return}
+  const answer=correctText(q);
+  document.getElementById("panel").innerHTML=
+    '<div class="center"><span class="pill">🎡 سؤال من العجلة</span>'+
+    (q.imageUrl?'<img class="qimage" src="'+esc(q.imageUrl)+'" alt="صورة السؤال">':'')+
+    '<div class="question">'+esc(q.text||"")+'</div>'+
+    '<button class="bigbtn gold" onclick="showWheelAnswer()">👁️ إظهار الإجابة</button>'+
+    '<div id="wheelAnswer" class="card-answer">'+esc(answer||"ناقش الإجابة مع معلمك")+'</div>'+
+    '<div><button class="bigbtn" onclick="renderWheel()">🎡 لف مرة أخرى</button></div></div>';
+}
+function showWheelAnswer(){
+  const a=document.getElementById("wheelAnswer");if(a)a.classList.add("show");
+}
+function finishActivity(){
+  const trackScore=activity.template!=="cards"&&activity.template!=="wheel";
+  const pct=answered?Math.round(score/answered*100):0;
+  document.getElementById("panel").innerHTML=
+    '<div class="center"><div style="font-size:76px">🎉</div><h1>أحسنت!</h1>'+
+    '<div class="subtitle">انتهى النشاط. يمكنك اللعب مرة أخرى في أي وقت.</div>'+
+    (trackScore?'<div class="score"><div>إجابات صحيحة<b>'+score+'</b></div><div>تمت الإجابة<b>'+answered+'</b></div><div>النسبة داخل هذه الجولة<b>'+pct+'%</b></div></div>':'')+
+    '<div class="soft-note">هذه النتيجة للعرض الآن فقط، ولا يتم حفظها في راصد.</div>'+
+    '<div><button class="bigbtn" onclick="startActivity()">↻ العب مرة أخرى</button>'+
+    '<button class="bigbtn light" onclick="toggleFullscreen()">⛶ ملء الشاشة</button></div></div>';
+}
+
+loadActivity();
+</script>
+</body>
+</html>
