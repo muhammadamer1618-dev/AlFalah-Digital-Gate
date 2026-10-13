@@ -494,18 +494,21 @@ async function ensureVisitSupervisorSession(){
       const x=JSON.parse(raw);
       const sameGate=String(x?.gateUsername||"").trim().toLowerCase()===gateUsername;
       const samePhone=normalizePhone(x?.phone||x?.username||"")===wantedPhone;
-      if(x&&(sameGate||samePhone))return x;
+      if(x?.sourceProject==="follow-up-2026"&&(sameGate||samePhone))return x;
     }
   }catch(e){}
 
   try{
+    localStorage.removeItem("currentSupervisor");
+    sessionStorage.removeItem("currentSupervisor");
+
     const visitConfig={
-      apiKey:"AIzaSyBbUryd9blqEG60L15-L_wU8-NORoHq4r4",
-      authDomain:"visit-2026.firebaseapp.com",
-      projectId:"visit-2026",
-      storageBucket:"visit-2026.firebasestorage.app",
-      messagingSenderId:"355064530699",
-      appId:"1:355064530699:web:26ad1710ff493c76ce840e"
+      apiKey:"AIzaSyBNFrPNCuQefOXHTCmiiKSBjgPLUy5Ug4U",
+      authDomain:"follow-up-2026.firebaseapp.com",
+      projectId:"follow-up-2026",
+      storageBucket:"follow-up-2026.firebasestorage.app",
+      messagingSenderId:"1077131515114",
+      appId:"1:1077131515114:web:d10d9c5228382d7cfdb393"
     };
 
     let app;
@@ -611,7 +614,8 @@ async function ensureVisitSupervisorSession(){
       phone:currentSupervisorPhone,
       gateUsername,
       role:data.role||"supervisor",
-      canVisitAllTeachers:data.canVisitAllTeachers===true
+      canVisitAllTeachers:data.canVisitAllTeachers===true,
+      sourceProject:"follow-up-2026"
     };
 
     const value=JSON.stringify(session);
