@@ -4,6 +4,9 @@
 <head>
 
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 
 <meta
   name="viewport"
@@ -1136,6 +1139,15 @@ tbody tr:hover{
   background:#eaf1ff;
 
   color:#2458a6;
+
+}
+
+
+.whatsapp-btn{
+
+  background:#e7f7ed;
+
+  color:#167a3f;
 
 }
 
@@ -2539,6 +2551,140 @@ function renderStats(list){
 
 
 /* =====================================
+   WHATSAPP
+===================================== */
+
+function normalizePhoneToWhatsApp(raw){
+
+  let digits =
+    String(raw || "")
+    .replace(/[^\d]/g,"");
+
+  if(!digits) return "";
+
+  if(digits.startsWith("00")){
+    digits = digits.slice(2);
+  }
+
+  if(digits.startsWith("0") && digits.length === 10){
+    digits = "966" + digits.slice(1);
+  }
+
+  if(digits.startsWith("5") && digits.length === 9){
+    digits = "966" + digits;
+  }
+
+  return digits;
+}
+
+
+function buildVisitWhatsMessage(visit,teacher){
+
+  const teacherCode =
+    visit.teacherCode ||
+    teacher?.code ||
+    teacher?.id ||
+    "";
+
+  return `السلام عليكم ورحمة الله وبركاته
+
+أ/ ${visit.teacherName || teacher?.name || ""}
+
+تم تسجيل زيارة تربوية لكم على نظام الإشراف التربوي بمدارس الفلاح الأهلية.
+
+نأمل الدخول إلى النظام من خلال الرابط التالي للاطلاع على تفاصيل الزيارة والتقييم:
+${location.origin}/follow-up/teacher-portal.html?code=${encodeURIComponent(teacherCode)}
+
+وبعد الاطلاع، يرجى الضغط على زر «تم الاطلاع» لتأكيد اطلاعكم على الزيارة.
+
+مع خالص التقدير،
+المشرف التربوي: ${visit.supervisorName || currentUser.name || ""}
+مدارس الفلاح الأهلية`;
+}
+
+
+function openWhatsAppExternal(url){
+
+  try{
+    if(window.top && window.top !== window.self){
+      const opened = window.top.open(url,"_blank");
+      if(opened) return;
+      window.top.location.href = url;
+      return;
+    }
+
+    const opened = window.open(url,"_blank");
+    if(opened) return;
+
+    window.location.href = url;
+
+  }catch(error){
+
+    console.warn("WHATSAPP OPEN ERROR",error);
+
+    try{
+      if(window.top && window.top !== window.self){
+        window.top.location.href = url;
+      }else{
+        window.location.href = url;
+      }
+    }catch{
+      window.location.href = url;
+    }
+  }
+}
+
+
+function sendVisitWhatsApp(visitId){
+
+  const visit =
+    visibleVisits.find(
+      item=>String(item.id)===String(visitId)
+    );
+
+  if(!visit){
+    alert("تعذر العثور على بيانات الزيارة.");
+    return;
+  }
+
+  const teacher =
+    visibleTeachers.find(
+      item=>
+        String(item.code || item.id || "") ===
+        String(visit.teacherCode || "")
+    )
+    || selectedTeacher;
+
+  const rawPhone =
+    visit.teacherPhone ||
+    teacher?.phone ||
+    "";
+
+  const phone =
+    normalizePhoneToWhatsApp(rawPhone);
+
+  if(!phone){
+    alert("لا يوجد رقم جوال صحيح للمعلم.");
+    return;
+  }
+
+  const text =
+    buildVisitWhatsMessage(
+      visit,
+      teacher
+    );
+
+  const whatsappUrl =
+    "https://wa.me/" +
+    phone +
+    "?text=" +
+    encodeURIComponent(text);
+
+  openWhatsAppExternal(whatsappUrl);
+}
+
+
+/* =====================================
    RENDER VISITS
 ===================================== */
 
@@ -2770,10 +2916,19 @@ function renderVisits(){
 
             <a
               class="action-btn edit-btn"
-              href="evaluation-form.html?id=${encodeURIComponent(visit.id)}"
+              href="evaluation-form.html?id=${encodeURIComponent(visit.id)}&v=20261013-2"
             >
               تعديل
             </a>
+
+
+            <button
+              type="button"
+              class="action-btn whatsapp-btn"
+              data-whatsapp="${esc(visit.id)}"
+            >
+              📲 إرسال واتساب
+            </button>
 
 
             <button
@@ -2797,6 +2952,28 @@ function renderVisits(){
 
     }
   );
+
+
+  tbody
+    .querySelectorAll(
+      "[data-whatsapp]"
+    )
+    .forEach(
+      button=>{
+
+        button.addEventListener(
+          "click",
+          ()=>{
+
+            sendVisitWhatsApp(
+              button.dataset.whatsapp
+            );
+
+          }
+        );
+
+      }
+    );
 
 
   tbody
