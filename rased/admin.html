@@ -1514,6 +1514,15 @@ onclick="downloadExcelTemplate()">
 
 </button>
 
+
+<button
+class="btn-gold"
+onclick="exportStudentsBackup()">
+
+📥 تصدير نسخة احتياطية للطلاب
+
+</button>
+
 </div>
 
 
@@ -1529,6 +1538,12 @@ code - name - grade - section - phone
 
 إذا كان كود الطالب موجودًا بالفعل،
 سيتم تحديث بياناته بدل تكراره.
+
+<br><br>
+
+<strong>قبل أي استيراد جماعي:</strong>
+اضغط «تصدير نسخة احتياطية للطلاب».
+الملف الناتج يحتوي على شيت أول جاهز لإعادة الاستيراد والاسترجاع، وشيت ثانٍ لنسخة موسعة من البيانات الحالية.
 
 </div>
 
@@ -4574,6 +4589,260 @@ error.message
 
 reader.readAsArrayBuffer(
 input.files[0]
+);
+
+}
+
+
+function backupCellValue(value){
+
+if(
+value===null ||
+value===undefined
+){
+return "";
+}
+
+if(
+typeof value==="string" ||
+typeof value==="number" ||
+typeof value==="boolean"
+){
+return value;
+}
+
+try{
+
+if(
+typeof value.toDate==="function"
+){
+return value.toDate().toISOString();
+}
+
+return JSON.stringify(
+auditSafe(value)
+);
+
+}catch(error){
+
+return String(value);
+
+}
+
+}
+
+
+function exportStudentsBackup(){
+
+if(
+!students.length
+){
+
+alert(
+"لا توجد بيانات طلاب لتصديرها."
+);
+
+return;
+
+}
+
+
+/*
+الشيت الأول متوافق مباشرة مع الاستيراد الحالي
+حتى يمكن استرجاع البيانات الأساسية بسرعة.
+*/
+const restoreRows=
+students.map(student=>({
+
+code:String(student.code||""),
+name:String(student.name||""),
+grade:String(student.grade||""),
+section:String(student.section||""),
+phone:String(
+student.guardianPhone ||
+student.phone ||
+""
+)
+
+}));
+
+
+/*
+الشيت الثاني نسخة موسعة من كل الحقول الحالية
+للمراجعة والاحتياط.
+*/
+const fieldSet=
+new Set([
+"code",
+"name",
+"grade",
+"section",
+"guardianPhone",
+"phone"
+]);
+
+
+students.forEach(student=>{
+
+Object.keys(
+student||{}
+)
+.forEach(key=>
+fieldSet.add(key)
+);
+
+});
+
+
+const preferred=[
+"code",
+"name",
+"grade",
+"section",
+"guardianPhone",
+"phone"
+];
+
+
+const remaining=
+[...fieldSet]
+.filter(key=>
+!preferred.includes(key)
+)
+.sort((a,b)=>
+String(a)
+.localeCompare(
+String(b),
+"en"
+)
+);
+
+
+const fullFields=[
+...preferred,
+...remaining
+];
+
+
+const fullRows=
+students.map(student=>{
+
+const row={};
+
+fullFields.forEach(key=>{
+
+row[key]=
+backupCellValue(
+student[key]
+);
+
+});
+
+return row;
+
+});
+
+
+const wb=
+XLSX.utils.book_new();
+
+
+const restoreSheet=
+XLSX.utils.json_to_sheet(
+restoreRows,
+{
+header:[
+"code",
+"name",
+"grade",
+"section",
+"phone"
+]
+}
+);
+
+
+restoreSheet["!cols"]=[
+{wch:18},
+{wch:34},
+{wch:18},
+{wch:12},
+{wch:18}
+];
+
+
+const fullSheet=
+XLSX.utils.json_to_sheet(
+fullRows,
+{
+header:fullFields
+}
+);
+
+
+fullSheet["!cols"]=
+fullFields.map(key=>({
+
+wch:
+["name"].includes(key)
+?34
+:
+[
+"code",
+"guardianPhone",
+"phone"
+].includes(key)
+?18
+:
+20
+
+}));
+
+
+XLSX.utils.book_append_sheet(
+wb,
+restoreSheet,
+"students_restore"
+);
+
+
+XLSX.utils.book_append_sheet(
+wb,
+fullSheet,
+"students_full_backup"
+);
+
+
+const now=
+new Date();
+
+
+const stamp=
+[
+now.getFullYear(),
+String(now.getMonth()+1).padStart(2,"0"),
+String(now.getDate()).padStart(2,"0")
+].join("-")
++
+"_"
++
+[
+String(now.getHours()).padStart(2,"0"),
+String(now.getMinutes()).padStart(2,"0")
+].join("-");
+
+
+XLSX.writeFile(
+wb,
+"Rased_Students_Backup_"+stamp+".xlsx"
+);
+
+
+alert(
+"تم تجهيز نسخة احتياطية لـ "+
+students.length+
+" طالب ✅\n\n"+
+"احتفظ بالملف قبل رفع التحديث الجديد."
 );
 
 }
