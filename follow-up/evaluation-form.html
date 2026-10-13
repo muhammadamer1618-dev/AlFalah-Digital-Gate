@@ -2,6 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>زيارة تربوية جديدة - مدارس الفلاح الأهلية</title>
 
@@ -2175,6 +2178,39 @@ ${location.origin}/follow-up/teacher-portal.html?code=${encodeURIComponent(p.tea
 }
 
 
+function openWhatsAppExternal(url){
+
+  try{
+    if(window.top && window.top !== window.self){
+      const opened = window.top.open(url,"_blank");
+      if(opened) return;
+      window.top.location.href = url;
+      return;
+    }
+
+    const opened = window.open(url,"_blank");
+    if(opened) return;
+
+    window.location.href = url;
+
+  }catch(error){
+
+    console.warn("WHATSAPP OPEN ERROR",error);
+
+    try{
+      if(window.top && window.top !== window.self){
+        window.top.location.href = url;
+      }else{
+        window.location.href = url;
+      }
+    }catch{
+      window.location.href = url;
+    }
+  }
+
+}
+
+
 function sendWhats(){
 
   if(
@@ -2221,35 +2257,12 @@ function sendWhats(){
     "?text=" +
     encodeURIComponent(text);
 
-  /*
-    الزيارات تُفتح داخل iframe في منصة المشرف.
-    wa.me يرفض العرض داخل iframe، لذلك نفتح واتساب خارج الإطار.
-  */
-  try{
-    const opened = window.open(
-      whatsappUrl,
-      "_blank"
-    );
 
-    if(!opened){
-      if(window.top && window.top !== window.self){
-        window.top.location.href = whatsappUrl;
-      }else{
-        window.location.href = whatsappUrl;
-      }
-    }
-  }catch(error){
-    console.warn("WHATSAPP OPEN ERROR",error);
-
-    if(window.top && window.top !== window.self){
-      window.top.location.href = whatsappUrl;
-    }else{
-      window.location.href = whatsappUrl;
-    }
-  }
+  openWhatsAppExternal(
+    whatsappUrl
+  );
 
 }
-
 
 /* ======================================================
    CLEAR
