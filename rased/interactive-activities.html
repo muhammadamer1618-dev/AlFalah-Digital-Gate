@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>الأنشطة التفاعلية - منصة المعلم</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--green:#004c3f;--green2:#08725e;--gold:#c9972c;--cream:#fffaf0;--ink:#17372f;--muted:#687b76;--line:#d9e4df;--red:#b42318;--blue:#1769aa}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f4f7f5;color:var(--ink)}
+button,input,select,textarea{font:inherit}
+header{background:linear-gradient(135deg,#003f35,#08725e);color:#fff;padding:18px 16px;box-shadow:0 3px 12px rgba(0,0,0,.18)}
+.head{width:min(1180px,96%);margin:auto;display:flex;align-items:center;gap:14px}
+.logo{width:66px;height:66px;object-fit:contain;background:#fff;border:3px solid var(--gold);border-radius:50%;padding:3px}
+.head-copy{flex:1}.head-copy h1{margin:0;font-size:26px}.head-copy p{margin:5px 0 0;color:#f0d98d;font-weight:bold;font-size:13px}
+.back{border:0;background:#fff;color:var(--green);border-radius:9px;padding:10px 14px;font-weight:bold;cursor:pointer}
+.wrap{width:min(1180px,96%);margin:18px auto 45px}
+.hero-note{background:linear-gradient(135deg,#fffdf8,#f7f1df);border:1px solid #dfc979;border-radius:14px;padding:14px 16px;line-height:1.8;margin-bottom:15px}
+.hero-note b{color:var(--green)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 13px rgba(0,0,0,.06);overflow:hidden;margin-bottom:14px}
+.card-title{padding:14px 17px;background:#edf5f1;color:var(--green);font-size:18px;font-weight:bold;border-bottom:1px solid var(--line)}
+.card-body{padding:16px}
+label{display:block;font-size:12px;font-weight:bold;margin:0 0 6px}
+.field{margin-bottom:11px}
+input,select,textarea{width:100%;border:1px solid #bfcfc8;border-radius:9px;padding:10px 11px;background:#fff;color:#111;min-height:44px}
+textarea{min-height:88px;resize:vertical}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:bold;cursor:pointer}
+.primary{background:var(--green);color:#fff}.blue{background:var(--blue);color:#fff}.gold{background:var(--gold);color:#fff}.light{background:#eaf0ed;color:#24433b}.red{background:#b42318;color:#fff}
+.small{padding:7px 10px;font-size:12px}
+.note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:7px}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:bold;background:#eef3f1;color:#365c51}
+.badge.on{background:#e2f5e9;color:#14743b}.badge.off{background:#f3f3f3;color:#6a6a6a}
+#examQuestions,#manualItems{display:grid;gap:8px;margin-top:10px;max-height:420px;overflow:auto}
+.qrow{border:1px solid #d8e2de;border-radius:10px;padding:10px;background:#fbfdfc}
+.qrow-head{display:flex;gap:8px;align-items:flex-start}.qrow-head input{width:auto;min-height:auto;margin-top:3px}
+.qmeta{font-size:10px;color:#73877f;margin-top:5px}
+.activity-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.activity{border:1px solid #d5e1dc;border-radius:13px;padding:14px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.activity h3{margin:0 0 5px;color:var(--green);font-size:17px}
+.activity-meta{font-size:12px;color:#63776f;line-height:1.8;margin-bottom:8px}
+.linkbox{direction:ltr;text-align:left;background:#f6f8f7;border:1px dashed #b7c9c2;border-radius:8px;padding:8px;font-size:10px;overflow-wrap:anywhere;margin:7px 0}
+.empty{padding:26px;text-align:center;color:#71837c;border:1px dashed #c8d5d0;border-radius:12px}
+.publish-box{position:fixed;inset:0;background:rgba(0,36,30,.68);display:none;align-items:center;justify-content:center;padding:16px;z-index:99}
+.publish-box.show{display:flex}
+.modal{width:min(620px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:16px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+.modal h2{margin:0 0 6px;color:var(--green)}
+.classes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.class-chip{display:flex;align-items:center;gap:7px;border:1px solid #d4dfda;border-radius:9px;padding:10px;cursor:pointer}
+.class-chip input{width:auto;min-height:auto}
+.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+.status{font-size:12px;font-weight:bold;min-height:18px;margin-top:8px}
+.status.ok{color:#14743b}.status.err{color:#b42318}
+@media(max-width:850px){.grid2,.activity-list{grid-template-columns:1fr}.row{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.row,.classes{grid-template-columns:1fr}.head{align-items:flex-start}.logo{width:55px;height:55px}.head-copy h1{font-size:21px}.back{padding:8px 10px}.wrap{width:94%}.actions .btn{flex:1 1 140px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="head">
+    <img src="logo.jpeg" class="logo" alt="شعار مدارس الفلاح">
+    <div class="head-copy">
+      <h1>🎮 الأنشطة التفاعلية</h1>
+      <p>إنشاء · سحب من الاختبارات · نشر · تشغيل على السبورة</p>
+    </div>
+    <button class="back" onclick="location.href='teacher.html'">← منصة المعلم</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero-note">
+    <b>نشاط للتعلّم والمتعة، وليس واجبًا.</b>
+    لا يتم هنا حفظ درجات الطلاب أو عدد المحاولات أو سجل اللعب. يمكن تشغيل النشاط على السبورة مباشرة، أو نشره للطلاب ليستخدموه اختياريًا.
+  </div>
+
+  <div class="grid2">
+    <section class="card">
+      <div class="card-title">📥 إنشاء نشاط من اختبار إلكتروني</div>
+      <div class="card-body">
+        <div class="field">
+          <label>اختر اختبارًا من اختباراتك</label>
+          <select id="examSelect" onchange="loadSelectedExamQuestions()">
+            <option value="">جاري تحميل الاختبارات...</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>اسم النشاط</label>
+            <input id="examActivityTitle" placeholder="مثال: مراجعة Unit 2">
+          </div>
+          <div class="field">
+            <label>طريقة العرض</label>
+            <select id="examTemplate">
+              <option value="quiz">🎯 تحدي الأسئلة</option>
+              <option value="cards">🃏 بطاقات سؤال وجواب</option>
+              <option value="wheel">🎡 عجلة الأسئلة</option>
+              <option value="random">🎲 أسئلة عشوائية</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>الأسئلة</label>
+            <button class="btn light" type="button" style="width:100%" onclick="setAllExamQuestions(true)">تحديد الكل</button>
+          </div>
+        </div>
+        <div id="examQuestions"><div class="empty">اختر اختبارًا لعرض أسئلته.</div></div>
+        <div class="actions">
+          <button class="btn primary" onclick="createFromExam()">✨ إنشاء النشاط من المحدد</button>
+        </div>
+        <div id="examStatus" class="status"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">✍️ إنشاء نشاط يدوي</div>
+      <div class="card-body">
+        <div class="row">
+          <div class="field">
+            <label>اسم النشاط</label>
+            <input id="manualTitle" placeholder="اسم النشاط">
+          </div>
+          <div class="field">
+            <label>المادة</label>
+            <select id="manualSubject"><option value="">بدون مادة محددة</option></select>
+          </div>
+          <div class="field">
+            <label>طريقة العرض</label>
+            <select id="manualTemplate">
+              <option value="quiz">🎯 تحدي الأسئلة</option>
+              <option value="cards">🃏 بطاقات سؤال وجواب</option>
+              <option value="wheel">🎡 عجلة الأسئلة</option>
+              <option value="random">🎲 أسئلة عشوائية</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid #e3ebe7;margin:4px 0 12px;padding-top:12px">
+          <div class="row">
+            <div class="field">
+              <label>نوع السؤال</label>
+              <select id="manualType" onchange="renderManualAnswerFields()">
+                <option value="mcq">اختيار من متعدد</option>
+                <option value="truefalse">صح / خطأ</option>
+                <option value="fill">كلمة / إجابة قصيرة</option>
+                <option value="order">ترتيب كلمات</option>
+                <option value="matching">مطابقة</option>
+              </select>
+            </div>
+            <div class="field" style="grid-column:span 2">
+              <label>نص السؤال / المهمة</label>
+              <input id="manualQuestion" placeholder="اكتب السؤال هنا">
+            </div>
+          </div>
+          <div id="manualAnswerFields"></div>
+          <button class="btn blue" type="button" onclick="addManualItem()">➕ إضافة للسؤال للنشاط</button>
+        </div>
+
+        <div id="manualItems"><div class="empty">لم تتم إضافة أسئلة بعد.</div></div>
+        <div class="actions">
+          <button class="btn primary" onclick="saveManualActivity()">💾 حفظ النشاط</button>
+          <button class="btn light" onclick="clearManualBuilder()">تفريغ</button>
+        </div>
+        <div id="manualStatus" class="status"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="card-title">🗂️ أنشطتي التفاعلية</div>
+    <div class="card-body">
+      <div class="toolbar">
+        <div>
+          <span class="badge" id="activityCount">0 نشاط</span>
+          <span class="note">يمكن تشغيل النشاط على السبورة حتى قبل نشره للطلاب.</span>
+        </div>
+        <button class="btn light small" onclick="loadActivities()">🔄 تحديث</button>
+      </div>
+      <div id="activityList" class="activity-list"><div class="empty">جاري تحميل الأنشطة...</div></div>
+    </div>
+  </section>
+</div>
+
+<div id="publishBox" class="publish-box">
+  <div class="modal">
+    <h2>📢 نشر النشاط للطلاب</h2>
+    <div class="note" id="publishLabel"></div>
+    <div class="note">اختر الفصول التي سيظهر لها النشاط في بطاقة «الأنشطة التفاعلية». اللعب اختياري ولا تُحفظ نتيجة الطالب.</div>
+    <div id="classChoices" class="classes"></div>
+    <div class="actions">
+      <button class="btn primary" onclick="savePublication()">📢 نشر للمحدد</button>
+      <button class="btn light" onclick="closePublish()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig={
+  apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",
+  authDomain:"results2026-7c0dd.firebaseapp.com",
+  projectId:"results2026-7c0dd",
+  storageBucket:"results2026-7c0dd.firebasestorage.app",
+  messagingSenderId:"241421115694",
+  appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+
+let currentUser="";
+let currentTeacher=null;
+let subjects=[];
+let exams=[];
+let examQuestionsCache=[];
+let manualItems=[];
+let activities=[];
+let publishingId="";
+
+function esc(v){
+  return String(v==null?"":v)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+function norm(v){return String(v||"").trim().toLowerCase()}
+function setStatus(id,text,type){
+  const el=document.getElementById(id);
+  el.className="status "+(type||"");
+  el.textContent=text||"";
+}
+function templateName(v){
+  return {quiz:"تحدي الأسئلة",cards:"بطاقات سؤال وجواب",wheel:"عجلة الأسئلة",random:"أسئلة عشوائية"}[v]||v||"نشاط";
+}
+function typeName(v){
+  return {mcq:"اختيار من متعدد",truefalse:"صح / خطأ",fill:"إجابة قصيرة",short:"إجابة قصيرة",order:"ترتيب",matching:"مطابقة",reading:"قراءة + سؤال"}[v]||v||"سؤال";
+}
+function ownerAliases(){
+  const s=new Set();
+  [currentUser,currentTeacher&&currentTeacher.id,currentTeacher&&currentTeacher.email,currentTeacher&&currentTeacher.username,currentTeacher&&currentTeacher.user]
+    .forEach(function(v){v=norm(v);if(v)s.add(v)});
+  return s;
+}
+function belongsToMe(x){
+  const aliases=ownerAliases();
+  const values=[x.ownerId,x.teacherId,x.teacherEmail,x.teacherUsername,x.createdBy,x.username];
+  return values.some(function(v){return aliases.has(norm(v))}) ||
+    (!!currentTeacher && String(x.teacherName||"").trim()===String(currentTeacher.name||"").trim());
+}
+function examBelongsToMe(x){
+  const aliases=ownerAliases();
+  const values=[x.teacherEmail,x.teacherId,x.teacherUsername,x.createdBy,x.username];
+  return values.some(function(v){return aliases.has(norm(v))}) ||
+    (!!currentTeacher && String(x.teacherName||"").trim()===String(currentTeacher.name||"").trim());
+}
+function playUrl(a){
+  const code=String(a.publicCode||a.id||"");
+  return location.origin+"/rased/interactive-play.html?c="+encodeURIComponent(code);
+}
+function normalizeItem(q){
+  const x={
+    type:String(q.type||"mcq"),
+    text:String(q.text||""),
+    textDirection:String(q.textDirection||"auto"),
+    order:Number(q.order||0),
+    passage:String(q.passage||""),
+    imageUrl:String(q.imageUrl||""),
+    options:Array.isArray(q.options)?q.options.map(function(v){return String(v)}):[],
+    correctIndex:Number.isFinite(Number(q.correctIndex))?Number(q.correctIndex):null,
+    correctText:String(q.correctText||""),
+    pairs:Array.isArray(q.pairs)?q.pairs.map(function(p){return {left:String((p&&p.left)||""),right:String((p&&p.right)||"")}}):[]
+  };
+  return x;
+}
+async function findTeacher(){
+  const snap=await db.collection("teachers").get();
+  const list=snap.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})});
+  const u=norm(currentUser);
+  currentTeacher=list.find(function(t){
+    return [t.id,t.email,t.username,t.user].some(function(v){return norm(v)===u});
+  })||null;
+}
+async function loadBase(){
+  const role=norm(localStorage.getItem("currentUserRole"));
+  currentUser=localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"";
+  if(role!=="teacher"){
+    alert("هذه الصفحة مخصصة للمعلم.");
+    location.href="index.html";
+    return;
+  }
+  await findTeacher();
+  if(!currentTeacher){
+    alert("تعذر العثور على بيانات المعلم.");
+    location.href="teacher.html";
+    return;
+  }
+
+  const ss=await db.collection("subjects").get();
+  subjects=ss.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})});
+  subjects.sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""),"ar")});
+  const sub=document.getElementById("manualSubject");
+  sub.innerHTML='<option value="">بدون مادة محددة</option>'+
+    subjects.map(function(s){return '<option value="'+esc(s.id)+'">'+esc(s.name||"المادة")+'</option>'}).join("");
+
+  const es=await db.collection("onlineExams").get();
+  exams=es.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})}).filter(examBelongsToMe);
+  exams.sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""),"ar")});
+  const exsel=document.getElementById("examSelect");
+  exsel.innerHTML='<option value="">اختر اختبارًا</option>'+
+    exams.map(function(e){return '<option value="'+esc(e.id)+'">'+esc(e.name||"اختبار")+' — '+esc(e.subjectName||"")+'</option>'}).join("");
+
+  renderManualAnswerFields();
+  await loadActivities();
+}
+async function loadSelectedExamQuestions(){
+  const id=document.getElementById("examSelect").value;
+  examQuestionsCache=[];
+  const box=document.getElementById("examQuestions");
+  if(!id){box.innerHTML='<div class="empty">اختر اختبارًا لعرض أسئلته.</div>';return}
+  const ex=exams.find(function(x){return x.id===id});
+  if(ex && !document.getElementById("examActivityTitle").value.trim()){
+    document.getElementById("examActivityTitle").value=(ex.name||"اختبار")+" — نشاط تفاعلي";
+  }
+  box.innerHTML='<div class="empty">جاري تحميل الأسئلة...</div>';
+  try{
+    const snap=await db.collection("onlineExams").doc(id).collection("questions").get();
+    examQuestionsCache=snap.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})})
+      .sort(function(a,b){return Number(a.order||0)-Number(b.order||0)});
+    if(!examQuestionsCache.length){
+      box.innerHTML='<div class="empty">لا توجد أسئلة في هذا الاختبار.</div>';
+      return;
+    }
+    box.innerHTML=examQuestionsCache.map(function(q,i){
+      return '<label class="qrow"><div class="qrow-head">'+
+        '<input type="checkbox" class="examQCheck" value="'+esc(q.id)+'" checked>'+
+        '<div><b>'+(i+1)+') '+esc(q.text||"سؤال")+'</b>'+
+        '<div class="qmeta">'+esc(typeName(q.type))+'</div></div></div></label>';
+    }).join("");
+  }catch(e){
+    console.error(e);
+    box.innerHTML='<div class="empty">تعذر تحميل الأسئلة.</div>';
+  }
+}
+function setAllExamQuestions(value){
+  document.querySelectorAll(".examQCheck").forEach(function(x){x.checked=!!value});
+}
+async function createActivityDoc(data){
+  const ref=db.collection("interactiveActivities").doc();
+  const code=ref.id.replace(/[^a-zA-Z0-9]/g,"").slice(0,7).toUpperCase();
+  const payload=Object.assign({},data,{
+    publicCode:code,
+    ownerId:currentUser,
+    teacherId:currentTeacher.id||"",
+    teacherEmail:currentTeacher.email||"",
+    teacherUsername:currentTeacher.username||currentTeacher.user||"",
+    teacherName:currentTeacher.name||"",
+    published:false,
+    classes:[],
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await ref.set(payload);
+  return Object.assign({id:ref.id},payload);
+}
+async function createFromExam(){
+  const examId=document.getElementById("examSelect").value;
+  if(!examId)return alert("اختر اختبارًا أولًا.");
+  if(!examQuestionsCache.length)return alert("لا توجد أسئلة محملة.");
+  const selected=new Set(Array.from(document.querySelectorAll(".examQCheck:checked")).map(function(x){return x.value}));
+  const items=examQuestionsCache.filter(function(q){return selected.has(q.id)}).map(normalizeItem);
+  if(!items.length)return alert("حدد سؤالًا واحدًا على الأقل.");
+  const ex=exams.find(function(x){return x.id===examId});
+  if(!ex||!examBelongsToMe(ex))return alert("لا يمكنك استخدام اختبار لا يخصك.");
+  const title=document.getElementById("examActivityTitle").value.trim()||((ex.name||"اختبار")+" — نشاط تفاعلي");
+  setStatus("examStatus","جاري إنشاء النشاط...","");
+  try{
+    await createActivityDoc({
+      title:title,
+      template:document.getElementById("examTemplate").value||"quiz",
+      subjectId:ex.subjectId||"",
+      subjectName:ex.subjectName||"",
+      sourceType:"exam",
+      sourceExamId:ex.id,
+      sourceExamName:ex.name||"",
+      items:items
+    });
+    setStatus("examStatus","تم إنشاء النشاط من الاختبار بنجاح ✅","ok");
+    await loadActivities();
+  }catch(e){
+    console.error(e);
+    setStatus("examStatus","تعذر إنشاء النشاط: "+(e.message||e),"err");
+  }
+}
+
+function renderManualAnswerFields(){
+  const t=document.getElementById("manualType").value;
+  const box=document.getElementById("manualAnswerFields");
+  if(t==="mcq"){
+    box.innerHTML='<div class="row"><div class="field" style="grid-column:span 2"><label>الاختيارات — افصل بينها بعلامة |</label><input id="manualOptions" placeholder="القاهرة | الرياض | جدة | مكة"></div><div class="field"><label>الإجابة الصحيحة كما كتبتها</label><input id="manualCorrect" placeholder="الرياض"></div></div>';
+  }else if(t==="truefalse"){
+    box.innerHTML='<div class="field"><label>الإجابة الصحيحة</label><select id="manualTrueFalse"><option value="0">صح</option><option value="1">خطأ</option></select></div>';
+  }else if(t==="matching"){
+    box.innerHTML='<div class="field"><label>أزواج المطابقة — كل زوج في سطر بالشكل: كلمة = معنى</label><textarea id="manualPairs" placeholder="Book = كتاب&#10;School = مدرسة"></textarea></div>';
+  }else if(t==="order"){
+    box.innerHTML='<div class="field"><label>الترتيب الصحيح كاملًا</label><input id="manualCorrect" placeholder="اكتب الجملة بالترتيب الصحيح"></div>';
+  }else{
+    box.innerHTML='<div class="field"><label>الإجابة الصحيحة</label><input id="manualCorrect" placeholder="يمكن فصل إجابات بديلة بعلامة |"></div>';
+  }
+}
+function addManualItem(){
+  const type=document.getElementById("manualType").value;
+  const text=document.getElementById("manualQuestion").value.trim();
+  if(!text)return alert("اكتب نص السؤال.");
+  const item={type:type,text:text,textDirection:/[\u0600-\u06FF]/.test(text)?"rtl":"ltr",order:manualItems.length+1,options:[],correctIndex:null,correctText:"",pairs:[],passage:"",imageUrl:""};
+  if(type==="mcq"){
+    const opts=String((document.getElementById("manualOptions")||{}).value||"").split("|").map(function(x){return x.trim()}).filter(Boolean);
+    const correct=String((document.getElementById("manualCorrect")||{}).value||"").trim();
+    const idx=opts.findIndex(function(x){return x===correct});
+    if(opts.length<2)return alert("أدخل اختيارين على الأقل.");
+    if(idx<0)return alert("اكتب الإجابة الصحيحة بنفس نص أحد الاختيارات.");
+    item.options=opts;item.correctIndex=idx;
+  }else if(type==="truefalse"){
+    item.options=["صح","خطأ"];
+    item.correctIndex=Number(document.getElementById("manualTrueFalse").value||0);
+  }else if(type==="matching"){
+    const lines=String((document.getElementById("manualPairs")||{}).value||"").split(/\n+/).map(function(x){return x.trim()}).filter(Boolean);
+    item.pairs=lines.map(function(line){
+      const p=line.split("=");
+      return {left:String(p.shift()||"").trim(),right:String(p.join("=")||"").trim()};
+    }).filter(function(p){return p.left&&p.right});
+    if(item.pairs.length<2)return alert("أدخل زوجين على الأقل للمطابقة.");
+  }else{
+    item.correctText=String((document.getElementById("manualCorrect")||{}).value||"").trim();
+    if(!item.correctText)return alert("اكتب الإجابة الصحيحة.");
+  }
+  manualItems.push(item);
+  document.getElementById("manualQuestion").value="";
+  renderManualItems();
+}
+function renderManualItems(){
+  const box=document.getElementById("manualItems");
+  if(!manualItems.length){box.innerHTML='<div class="empty">لم تتم إضافة أسئلة بعد.</div>';return}
+  box.innerHTML=manualItems.map(function(q,i){
+    return '<div class="qrow"><b>'+(i+1)+') '+esc(q.text)+'</b>'+
+      '<div class="qmeta">'+esc(typeName(q.type))+'</div>'+
+      '<div class="actions"><button class="btn red small" type="button" onclick="removeManualItem('+i+')">حذف</button></div></div>';
+  }).join("");
+}
+function removeManualItem(i){manualItems.splice(i,1);manualItems.forEach(function(x,j){x.order=j+1});renderManualItems()}
+function clearManualBuilder(){
+  manualItems=[];
+  document.getElementById("manualTitle").value="";
+  document.getElementById("manualQuestion").value="";
+  renderManualItems();
+  setStatus("manualStatus","","");
+}
+async function saveManualActivity(){
+  const title=document.getElementById("manualTitle").value.trim();
+  if(!title)return alert("اكتب اسم النشاط.");
+  if(!manualItems.length)return alert("أضف سؤالًا واحدًا على الأقل.");
+  const sid=document.getElementById("manualSubject").value;
+  const sub=subjects.find(function(s){return s.id===sid});
+  setStatus("manualStatus","جاري حفظ النشاط...","");
+  try{
+    await createActivityDoc({
+      title:title,
+      template:document.getElementById("manualTemplate").value||"quiz",
+      subjectId:sid||"",
+      subjectName:sub?sub.name||"":"",
+      sourceType:"manual",
+      sourceExamId:"",
+      sourceExamName:"",
+      items:manualItems.map(function(x){return Object.assign({},x)})
+    });
+    setStatus("manualStatus","تم حفظ النشاط بنجاح ✅","ok");
+    clearManualBuilder();
+    await loadActivities();
+  }catch(e){
+    console.error(e);
+    setStatus("manualStatus","تعذر الحفظ: "+(e.message||e),"err");
+  }
+}
+async function loadActivities(){
+  const box=document.getElementById("activityList");
+  box.innerHTML='<div class="empty">جاري تحميل الأنشطة...</div>';
+  try{
+    const snap=await db.collection("interactiveActivities").get();
+    activities=snap.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})}).filter(belongsToMe);
+    activities.sort(function(a,b){
+      const aa=a.updatedAt&&a.updatedAt.toMillis?a.updatedAt.toMillis():0;
+      const bb=b.updatedAt&&b.updatedAt.toMillis?b.updatedAt.toMillis():0;
+      return bb-aa;
+    });
+    document.getElementById("activityCount").textContent=activities.length+" نشاط";
+    renderActivities();
+  }catch(e){
+    console.error(e);
+    box.innerHTML='<div class="empty">تعذر تحميل الأنشطة.</div>';
+  }
+}
+function renderActivities(){
+  const box=document.getElementById("activityList");
+  if(!activities.length){box.innerHTML='<div class="empty">لا توجد أنشطة بعد. أنشئ أول نشاط من اختبار جاهز أو يدويًا.</div>';return}
+  box.innerHTML=activities.map(function(a){
+    const cls=Array.isArray(a.classes)?a.classes:[];
+    const target=cls.length?cls.map(function(c){return String(c.grade||"")+" / "+String(c.section||"")}).join("، "):"غير منشور لفصول";
+    const url=playUrl(a);
+    return '<article class="activity">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><h3>'+esc(a.title||"نشاط تفاعلي")+'</h3>'+
+      '<span class="badge '+(a.published?"on":"off")+'">'+(a.published?"منشور للطلاب":"مسودة")+'</span></div>'+
+      '<div class="activity-meta">'+esc(a.subjectName||"بدون مادة محددة")+' · '+esc(templateName(a.template))+
+      '<br>الأسئلة: '+((Array.isArray(a.items)?a.items.length:0))+
+      (a.sourceExamName?'<br>المصدر: '+esc(a.sourceExamName):'')+
+      '<br>'+esc(target)+'</div>'+
+      '<div class="linkbox">'+esc(url)+'</div>'+
+      '<div class="actions">'+
+        '<button class="btn primary small" onclick="playActivity(\''+esc(a.id)+'\')">▶️ تشغيل على السبورة</button>'+
+        '<button class="btn blue small" onclick="copyActivityLink(\''+esc(a.id)+'\')">🔗 نسخ الرابط</button>'+
+        '<button class="btn gold small" onclick="openPublish(\''+esc(a.id)+'\')">📢 '+(a.published?"تعديل النشر":"نشر للطلاب")+'</button>'+
+        (a.published?'<button class="btn light small" onclick="unpublishActivity(\''+esc(a.id)+'\')">إيقاف النشر</button>':'')+
+        '<button class="btn red small" onclick="deleteActivity(\''+esc(a.id)+'\')">حذف</button>'+
+      '</div></article>';
+  }).join("");
+}
+function playActivity(id){
+  const a=activities.find(function(x){return x.id===id});
+  if(a)window.open(playUrl(a),"_blank");
+}
+async function copyActivityLink(id){
+  const a=activities.find(function(x){return x.id===id});
+  if(!a)return;
+  const url=playUrl(a);
+  try{
+    await navigator.clipboard.writeText(url);
+    alert("تم نسخ رابط النشاط ✅");
+  }catch(e){
+    prompt("انسخ رابط النشاط:",url);
+  }
+}
+function availableClassesFor(a){
+  const assignments=Array.isArray(currentTeacher.assignments)?currentTeacher.assignments:[];
+  let arr=assignments;
+  if(a&&a.subjectId){
+    const filtered=assignments.filter(function(x){return String(x.subjectId||"")===String(a.subjectId)});
+    if(filtered.length)arr=filtered;
+  }
+  const out=[],seen=new Set();
+  arr.forEach(function(x){
+    const grade=String(x.grade||"").trim(),section=String(x.section||"").trim();
+    const key=grade+"|"+section;
+    if(grade&&section&&!seen.has(key)){seen.add(key);out.push({grade:grade,section:section})}
+  });
+  return out;
+}
+function openPublish(id){
+  const a=activities.find(function(x){return x.id===id});
+  if(!a)return;
+  publishingId=id;
+  document.getElementById("publishLabel").textContent=a.title||"النشاط";
+  const selected=new Set((Array.isArray(a.classes)?a.classes:[]).map(function(c){return String(c.grade||"")+"|"+String(c.section||"")}));
+  const arr=availableClassesFor(a);
+  const box=document.getElementById("classChoices");
+  if(!arr.length){
+    box.innerHTML='<div class="empty">لا توجد فصول مسندة لك لهذه المادة. راجع إسناد المواد والفصول.</div>';
+  }else{
+    box.innerHTML=arr.map(function(c){
+      const key=c.grade+"|"+c.section;
+      return '<label class="class-chip"><input type="checkbox" class="publishClass" data-grade="'+esc(c.grade)+'" data-section="'+esc(c.section)+'" '+(selected.has(key)?"checked":"")+'><span>'+esc(c.grade)+' / '+esc(c.section)+'</span></label>';
+    }).join("");
+  }
+  document.getElementById("publishBox").classList.add("show");
+}
+function closePublish(){publishingId="";document.getElementById("publishBox").classList.remove("show")}
+async function savePublication(){
+  const a=activities.find(function(x){return x.id===publishingId});
+  if(!a)return;
+  const classes=Array.from(document.querySelectorAll(".publishClass:checked")).map(function(x){return {grade:x.dataset.grade||"",section:x.dataset.section||""}});
+  if(!classes.length)return alert("اختر فصلًا واحدًا على الأقل.");
+  try{
+    await db.collection("interactiveActivities").doc(a.id).set({
+      published:true,
+      classes:classes,
+      publishedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    closePublish();
+    await loadActivities();
+    alert("تم نشر النشاط للطلاب المحددين ✅");
+  }catch(e){console.error(e);alert("تعذر النشر: "+(e.message||e))}
+}
+async function unpublishActivity(id){
+  if(!confirm("إيقاف ظهور هذا النشاط للطلاب؟ سيظل النشاط محفوظًا ويمكنك تشغيله من حسابك."))return;
+  try{
+    await db.collection("interactiveActivities").doc(id).set({published:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    await loadActivities();
+  }catch(e){console.error(e);alert("تعذر إيقاف النشر.")}
+}
+async function deleteActivity(id){
+  const a=activities.find(function(x){return x.id===id});
+  if(!a)return;
+  if(!confirm("حذف النشاط نهائيًا؟\n\n"+(a.title||"")))return;
+  try{
+    await db.collection("interactiveActivities").doc(id).delete();
+    await loadActivities();
+  }catch(e){console.error(e);alert("تعذر حذف النشاط.")}
+}
+
+loadBase().catch(function(e){
+  console.error(e);
+  alert("تعذر فتح الأنشطة التفاعلية: "+(e.message||e));
+});
+</script>
+</body>
+</html>
