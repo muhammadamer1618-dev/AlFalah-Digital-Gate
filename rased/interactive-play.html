@@ -133,6 +133,7 @@ function toggleFullscreen(){
 async function loadActivity(){
   const p=new URLSearchParams(location.search);
   const code=String(p.get("c")||p.get("code")||p.get("id")||"").trim();
+  const requestedTemplate=String(p.get("t")||"").trim();
   if(!code){showError("رابط النشاط غير مكتمل.");return}
   try{
     let doc=await db.collection("interactiveActivities").doc(code).get();
@@ -143,6 +144,9 @@ async function loadActivity(){
       if(!q.empty){const d=q.docs[0];activity=Object.assign({id:d.id},d.data()||{})}
     }
     if(!activity){showError("لم يتم العثور على النشاط.");return}
+    if(["quiz","cards","wheel","boxes","stars","random"].includes(requestedTemplate)){
+      activity.template=requestedTemplate;
+    }
     showStart();
   }catch(e){
     console.error(e);
