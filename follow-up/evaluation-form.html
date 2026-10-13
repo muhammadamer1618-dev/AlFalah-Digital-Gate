@@ -2215,11 +2215,38 @@ function sendWhats(){
     );
 
 
-  location.href =
+  const whatsappUrl =
     "https://wa.me/" +
     phone +
     "?text=" +
     encodeURIComponent(text);
+
+  /*
+    الزيارات تُفتح داخل iframe في منصة المشرف.
+    wa.me يرفض العرض داخل iframe، لذلك نفتح واتساب خارج الإطار.
+  */
+  try{
+    const opened = window.open(
+      whatsappUrl,
+      "_blank"
+    );
+
+    if(!opened){
+      if(window.top && window.top !== window.self){
+        window.top.location.href = whatsappUrl;
+      }else{
+        window.location.href = whatsappUrl;
+      }
+    }
+  }catch(error){
+    console.warn("WHATSAPP OPEN ERROR",error);
+
+    if(window.top && window.top !== window.self){
+      window.top.location.href = whatsappUrl;
+    }else{
+      window.location.href = whatsappUrl;
+    }
+  }
 
 }
 
