@@ -79,6 +79,7 @@ textarea{min-height:88px;resize:vertical}
     <b>نشاط للتعلّم والمتعة، وليس واجبًا.</b>
     لا يتم هنا حفظ درجات الطلاب أو عدد المحاولات أو سجل اللعب. يمكن تشغيل النشاط على السبورة مباشرة، أو نشره للطلاب ليستخدموه اختياريًا.
     <br><b>ملاحظة:</b> تظهر لك فقط المادة والصفوف والشُعب المسندة لك في راصد.
+    <div id="teacherScopeSummary" style="margin-top:8px;padding-top:8px;border-top:1px solid #e4d49b;color:#004c3f;font-weight:bold">جاري تحميل نطاق إسنادك...</div>
   </div>
 
   <div class="grid2">
@@ -341,6 +342,86 @@ function assignedClassesForSubject(subjectId){
 
   return out;
 }
+
+function classBelongsToAssignedScope(subjectId,grade,section){
+  const key=String(grade||"").trim()+"|"+String(section||"").trim();
+  if(key==="|")return false;
+  return assignedClassesForSubject(subjectId).some(function(c){
+    return (c.grade+"|"+c.section)===key;
+  });
+}
+
+function examWithinAssignedScope(e){
+  const allowedSubjectIds=assignedSubjectIds();
+  const subjectId=String(e&&e.subjectId||"").trim();
+  if(!subjectId||!allowedSubjectIds.has(subjectId))return false;
+
+  const targets=[];
+
+  if(Array.isArray(e&&e.classes)){
+    e.classes.forEach(function(c){
+      if(c&&c.grade&&c.section)targets.push({grade:c.grade,section:c.section});
+    });
+  }
+
+  if(Array.isArray(e&&e.targetStudents)){
+    e.targetStudents.forEach(function(s){
+      if(s&&s.grade&&s.section)targets.push({grade:s.grade,section:s.section});
+    });
+  }
+
+  if(e&&e.targetStudentGrade&&e.targetStudentSection){
+    targets.push({grade:e.targetStudentGrade,section:e.targetStudentSection});
+  }
+
+  if(!targets.length)return true;
+
+  return targets.every(function(c){
+    return classBelongsToAssignedScope(subjectId,c.grade,c.section);
+  });
+}
+
+function activityWithinAssignedScope(a){
+  const allowedSubjectIds=assignedSubjectIds();
+  const subjectId=String(a&&a.subjectId||"").trim();
+  if(!subjectId||!allowedSubjectIds.has(subjectId))return false;
+
+  const classes=Array.isArray(a&&a.classes)?a.classes:[];
+  if(!classes.length)return true;
+
+  return classes.every(function(c){
+    return classBelongsToAssignedScope(subjectId,c&&c.grade,c&&c.section);
+  });
+}
+
+function updateTeacherScopeSummary(){
+  const el=document.getElementById("teacherScopeSummary");
+  if(!el)return;
+
+  const subjectNames=subjects.map(function(s){
+    return String(s.name||"").trim();
+  }).filter(Boolean);
+
+  const allClasses=[];
+  const seen=new Set();
+
+  subjects.forEach(function(s){
+    assignedClassesForSubject(s.id).forEach(function(c){
+      const key=c.grade+"|"+c.section;
+      if(!seen.has(key)){
+        seen.add(key);
+        allClasses.push(c.grade+" / "+c.section);
+      }
+    });
+  });
+
+  if(!subjectNames.length){
+    el.textContent="⚠️ لا توجد مادة مسندة لهذا الحساب.";
+    return;
+  }
+
+  el.textContent="نطاقك الحالي: "+subjectNames.join("، ")+(allClasses.length?" — "+allClasses.join("، "):"");
+}
 function playUrl(a){
   const code=String(a.publicCode||a.id||"");
   return location.origin+"/rased/interactive-play.html?c="+encodeURIComponent(code);
@@ -433,6 +514,8 @@ async function loadBase(){
       }).join("");
   }
 
+  updateTeacherScopeSummary();
+
   const es=
     await db
       .collection("onlineExams")
@@ -447,11 +530,7 @@ async function loadBase(){
         );
       })
       .filter(examBelongsToMe)
-      .filter(function(e){
-        return allowedSubjectIds.has(
-          String(e.subjectId||"")
-        );
-      });
+      .filter(examWithinAssignedScope);
 
   exams.sort(function(a,b){
     return String(a.name||"")
@@ -537,7 +616,7 @@ async function createFromExam(){
   const items=examQuestionsCache.filter(function(q){return selected.has(q.id)}).map(normalizeItem);
   if(!items.length)return alert("حدد سؤالًا واحدًا على الأقل.");
   const ex=exams.find(function(x){return x.id===examId});
-  if(!ex||!examBelongsToMe(ex))return alert("لا يمكنك استخدام اختبار لا يخصك.");
+  if(!ex||!examBelongsToMe(ex)||!examWithinAssignedScope(ex))return alert("هذا الاختبار خارج نطاق المادة أو الصفوف المسندة لك.");
   const title=document.getElementById("examActivityTitle").value.trim()||((ex.name||"اختبار")+" — نشاط تفاعلي");
   setStatus("examStatus","جاري إنشاء النشاط...","");
   try{
@@ -665,7 +744,9 @@ async function loadActivities(){
   box.innerHTML='<div class="empty">جاري تحميل الأنشطة...</div>';
   try{
     const snap=await db.collection("interactiveActivities").get();
-    activities=snap.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})}).filter(belongsToMe);
+    activities=snap.docs
+      .map(function(d){return Object.assign({id:d.id},d.data()||{})})
+      .filter(function(a){return belongsToMe(a)&&activityWithinAssignedScope(a)});
     activities.sort(function(a,b){
       const aa=a.updatedAt&&a.updatedAt.toMillis?a.updatedAt.toMillis():0;
       const bb=b.updatedAt&&b.updatedAt.toMillis?b.updatedAt.toMillis():0;
@@ -748,6 +829,12 @@ async function savePublication(){
   if(!a)return;
   const classes=Array.from(document.querySelectorAll(".publishClass:checked")).map(function(x){return {grade:x.dataset.grade||"",section:x.dataset.section||""}});
   if(!classes.length)return alert("اختر فصلًا واحدًا على الأقل.");
+
+  const allAllowed=classes.every(function(c){
+    return classBelongsToAssignedScope(a.subjectId,c.grade,c.section);
+  });
+  if(!allAllowed)return alert("لا يمكن نشر النشاط خارج الصفوف والشُعب المسندة لك.");
+
   try{
     await db.collection("interactiveActivities").doc(a.id).set({
       published:true,
