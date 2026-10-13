@@ -94,6 +94,7 @@ tr:nth-child(even){background:#fafcfb}
       </div>
     </div>
   </section>
+  <div style="text-align:center;color:#6b7d75;font-size:12px;font-weight:bold;padding:12px 0 0">تصميم محمد عامر أحمد</div>
 </div>
 
 <script>
@@ -110,7 +111,7 @@ const db=firebase.firestore();
 let rows=[];
 
 function esc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
-function templateName(v){return {quiz:"تحدي الأسئلة",cards:"بطاقات",wheel:"عجلة الأسئلة",random:"عشوائي"}[v]||v||"نشاط"}
+function templateName(v){return {quiz:"تحدي الأسئلة",cards:"بطاقات تفاعلية",wheel:"عجلة الأسئلة",boxes:"صناديق المفاجآت",stars:"نجوم الحظ",random:"عشوائي"}[v]||v||"نشاط"}
 function playUrl(a){return location.origin+"/rased/interactive-play.html?c="+encodeURIComponent(a.publicCode||a.id||"")}
 function protect(){
   const role=String(localStorage.getItem("currentUserRole")||"").toLowerCase();
