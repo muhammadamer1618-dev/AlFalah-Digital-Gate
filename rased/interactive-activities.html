@@ -442,12 +442,12 @@ function normalizeItem(q){
   return x;
 }
 async function findTeacher(){
-  const snap=await db.collection("teachers").get();
-  const list=snap.docs.map(function(d){return Object.assign({id:d.id},d.data()||{})});
-  const u=norm(currentUser);
-  currentTeacher=list.find(function(t){
-    return [t.id,t.email,t.username,t.user].some(function(v){return norm(v)===u});
-  })||null;
+  // نفس مفتاح حساب المعلم المستخدم في صفحة teacher.html.
+  // لا نبحث بالاسم أو بحساب المشرف/الإدارة.
+  const key=String(currentUser||"").trim().toLowerCase();
+  if(!key){currentTeacher=null;return;}
+  const doc=await db.collection("teachers").doc(key).get();
+  currentTeacher=doc.exists?Object.assign({id:doc.id},doc.data()||{}):null;
 }
 async function loadBase(){
   const role=norm(localStorage.getItem("currentUserRole"));
