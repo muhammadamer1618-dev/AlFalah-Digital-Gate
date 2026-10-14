@@ -200,8 +200,10 @@ textarea{min-height:88px;resize:vertical}
       <button class="template-choice" onclick="selectActivityTemplate('stars')"><span class="ico">⭐</span>نجوم الحظ<small>اختر نجمة عشوائية وابدأ التحدي</small></button>
       <button class="template-choice" onclick="selectActivityTemplate('random')"><span class="ico">🎲</span>أسئلة عشوائية<small>ترتيب مختلف للأسئلة كل مرة</small></button>
     </div>
+    <div id="templateChangeStatus" class="status" style="margin-top:12px"></div>
     <div class="actions">
-      <button class="btn light" onclick="closeTemplatePicker()">إغلاق بدون تشغيل</button>
+      <button id="templateStartBtn" class="btn primary" style="display:none;flex:1 1 220px;font-size:16px;padding:13px 16px" onclick="startSelectedTemplateActivity()">▶️ بدء النشاط الآن</button>
+      <button class="btn light" onclick="closeTemplatePicker()">إغلاق</button>
     </div>
   </div>
 </div>
@@ -795,7 +797,7 @@ function renderActivities(){
       '<br>'+esc(target)+'</div>'+
       '<div class="linkbox">'+esc(url)+'</div>'+
       '<div class="actions">'+
-        '<button class="btn primary small" onclick="playActivity(\''+esc(a.id)+'\')">▶️ بدء النشاط</button>'+
+        '<button class="btn primary small" style="font-size:14px;padding:10px 14px" onclick="playActivity(\''+esc(a.id)+'\')">▶️ بدء النشاط</button>'+
         '<button class="btn light small" onclick="openTemplatePicker(\''+esc(a.id)+'\')">🎨 تغيير طريقة العرض</button>'+
         '<button class="btn blue small" onclick="copyActivityLink(\''+esc(a.id)+'\')">🔗 نسخ الرابط</button>'+
         '<button class="btn gold small" onclick="openPublish(\''+esc(a.id)+'\')">📢 '+(a.published?"تعديل النشر":"نشر للطلاب")+'</button>'+
@@ -808,36 +810,73 @@ function openTemplatePicker(id,afterSave){
   const a=activities.find(function(x){return x.id===id});
   if(!a)return;
   templateActivityId=id;
+
   const label=document.getElementById("templateLabel");
   if(label){
     label.textContent=(afterSave?"تم حفظ النشاط ✅ — ":"")+
       (a.title||"النشاط")+
       " — اختر طريقة العرض. يمكنك الرجوع وتغييرها في أي وقت.";
   }
+
+  const status=document.getElementById("templateChangeStatus");
+  if(status){
+    status.className="status";
+    status.textContent="";
+  }
+
+  const startBtn=document.getElementById("templateStartBtn");
+  if(startBtn)startBtn.style.display="none";
+
   document.getElementById("templateBox").classList.add("show");
 }
 function closeTemplatePicker(){
   templateActivityId="";
   document.getElementById("templateBox").classList.remove("show");
 }
+function startSelectedTemplateActivity(){
+  const a=activities.find(function(x){return x.id===templateActivityId});
+  if(!a)return;
+  window.open(playUrl(a),"_blank");
+}
 async function selectActivityTemplate(template){
   const allowed=["quiz","cards","wheel","boxes","stars","random"];
   if(!allowed.includes(template))return;
+
   const a=activities.find(function(x){return x.id===templateActivityId});
   if(!a)return;
+
+  const status=document.getElementById("templateChangeStatus");
+  const startBtn=document.getElementById("templateStartBtn");
+
   try{
+    if(status){
+      status.className="status";
+      status.textContent="جاري تغيير طريقة العرض...";
+    }
+    if(startBtn)startBtn.style.display="none";
+
     await db.collection("interactiveActivities").doc(a.id).set({
       template:template,
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     },{merge:true});
+
     a.template=template;
-    const url=playUrl(a,template);
-    closeTemplatePicker();
+
+    if(status){
+      status.className="status ok";
+      status.textContent="تم تغيير طريقة العرض إلى «"+templateName(template)+"» ✅";
+    }
+    if(startBtn)startBtn.style.display="inline-flex";
+
     await loadActivities();
-    window.open(url,"_blank");
   }catch(e){
     console.error(e);
-    alert("تعذر تغيير طريقة العرض: "+(e.message||e));
+    if(status){
+      status.className="status err";
+      status.textContent="تعذر تغيير طريقة العرض: "+(e.message||e);
+    }else{
+      alert("تعذر تغيير طريقة العرض: "+(e.message||e));
+    }
   }
 }
 function playActivity(id){
