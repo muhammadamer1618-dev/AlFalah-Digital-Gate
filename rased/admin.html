@@ -1841,7 +1841,14 @@ onclick="deleteAllTeachers()">
 <div class="box-body">
 
 <div class="note">
-حدد المعلمين من جدول إدارة المعلمين بالأعلى، ثم أرسل بيانات الدخول الخاصة بكل معلم عبر إضافة Rased Sender.
+حدد المعلمين من القائمة التالية مباشرة، ثم أرسل بيانات الدخول الخاصة بكل معلم عبر إضافة <strong>Rased Sender</strong>.
+</div>
+
+<div style="margin-top:12px">
+  <input
+    id="bulkTeacherSearch"
+    placeholder="🔎 بحث باسم المعلم أو اسم المستخدم أو رقم الجوال"
+    oninput="renderBulkTeacherSelectionList()">
 </div>
 
 <div class="actions" style="margin-top:14px">
@@ -1851,6 +1858,11 @@ onclick="deleteAllTeachers()">
 </div>
 
 <div id="bulkTeacherCount" style="margin-top:12px;font-weight:700">تم تحديد: 0 معلم</div>
+
+<div
+  id="bulkTeacherSelectionList"
+  style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px">
+</div>
 
 <div id="bulkTeacherProgress" class="note" style="display:none;margin-top:12px">
 <div id="bulkTeacherProgressText">جاهز للإرسال.</div>
@@ -5548,6 +5560,8 @@ renderTeachers();
 
 renderTeacherCards();
 
+renderBulkTeacherSelectionList();
+
 fillMessageTeacherFilter();
 if(document.getElementById("supervisorTeacherList")){
   renderSupervisorTeacherAssignmentList();
@@ -5690,10 +5704,103 @@ updateBulkTeacherCount();
 }
 
 
+function renderBulkTeacherSelectionList(){
+
+const box=document.getElementById("bulkTeacherSelectionList");
+if(!box) return;
+
+const search=String(document.getElementById("bulkTeacherSearch")?.value||"")
+.trim()
+.toLowerCase();
+
+const selectedBefore=new Set(
+  Array.from(document.querySelectorAll(".bulkTeacherSendCheck:checked"))
+  .map(el=>String(el.value||""))
+);
+
+const list=teachers.filter(teacher=>{
+  if(!search) return true;
+  const haystack=[
+    teacher.name,
+    teacher.email,
+    teacher.phone
+  ]
+  .map(v=>String(v||"").toLowerCase())
+  .join(" ");
+  return haystack.includes(search);
+});
+
+if(!list.length){
+  box.innerHTML='<div class="note" style="grid-column:1/-1;text-align:center">لا يوجد معلمون مطابقون للبحث.</div>';
+  updateBulkTeacherCount();
+  return;
+}
+
+box.innerHTML=list.map((teacher,index)=>{
+  const username=String(teacher.email||"");
+  const checked=selectedBefore.has(username) ? " checked" : "";
+  const phone=String(teacher.phone||"").trim();
+
+  return `
+    <label
+      style="
+        display:flex;
+        align-items:flex-start;
+        gap:10px;
+        padding:11px 12px;
+        border:1px solid #d7e0dc;
+        border-radius:10px;
+        background:#fff;
+        cursor:pointer
+      ">
+      <input
+        type="checkbox"
+        class="bulkTeacherSendCheck"
+        value="${escapeHtml(username)}"
+        ${checked}
+        onchange="syncBulkTeacherCheckboxes(this);updateBulkTeacherCount()"
+        style="width:auto;margin-top:3px">
+      <span style="min-width:0">
+        <strong style="display:block;color:#123c63">${escapeHtml(teacher.name||username)}</strong>
+        <small style="display:block;color:#64748b;margin-top:3px">${escapeHtml(username)}</small>
+        <small style="display:block;color:${phone?'#198754':'#b42318'};margin-top:3px">
+          ${phone?'📱 '+escapeHtml(phone):'⚠ لا يوجد رقم جوال'}
+        </small>
+      </span>
+    </label>
+  `;
+}).join("");
+
+updateBulkTeacherCount();
+
+}
+
+
+function syncBulkTeacherCheckboxes(source){
+
+const username=String(source?.value||"");
+const checked=!!source?.checked;
+
+document.querySelectorAll(".bulkTeacherCheck").forEach(el=>{
+  if(String(el.value||"")===username) el.checked=checked;
+});
+
+document.querySelectorAll(".bulkTeacherSendCheck").forEach(el=>{
+  if(el!==source && String(el.value||"")===username) el.checked=checked;
+});
+
+}
+
+
 function getSelectedBulkTeachers(){
 
-return Array.from(document.querySelectorAll(".bulkTeacherCheck:checked"))
-.map(el=>el.value);
+const direct=Array.from(document.querySelectorAll(".bulkTeacherSendCheck:checked"))
+.map(el=>String(el.value||""));
+
+const legacy=Array.from(document.querySelectorAll(".bulkTeacherCheck:checked"))
+.map(el=>String(el.value||""));
+
+return [...new Set([...direct,...legacy])];
 
 }
 
@@ -5710,7 +5817,7 @@ el.textContent="تم تحديد: "+getSelectedBulkTeachers().length+" معلم";
 
 function selectAllBulkTeachers(checked){
 
-document.querySelectorAll(".bulkTeacherCheck").forEach(el=>{
+document.querySelectorAll(".bulkTeacherCheck,.bulkTeacherSendCheck").forEach(el=>{
 el.checked=checked;
 });
 
