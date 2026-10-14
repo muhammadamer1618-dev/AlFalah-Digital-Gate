@@ -1854,7 +1854,6 @@ onclick="deleteAllTeachers()">
 <div class="actions" style="margin-top:14px">
 <button class="btn-light" onclick="selectAllBulkTeachers(true)">☑️ تحديد الكل</button>
 <button class="btn-light" onclick="selectAllBulkTeachers(false)">⬜ إلغاء التحديد</button>
-<button class="btn-primary" onclick="bulkSendTeacherCredentials()">📲 إرسال بيانات الدخول للمحددين</button>
 </div>
 
 <div id="bulkTeacherCount" style="margin-top:12px;font-weight:700">تم تحديد: 0 معلم</div>
@@ -1862,6 +1861,15 @@ onclick="deleteAllTeachers()">
 <div
   id="bulkTeacherSelectionList"
   style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px">
+</div>
+
+<div style="display:flex;justify-content:center;margin-top:18px">
+  <button
+    class="btn-success"
+    style="font-size:17px;padding:14px 34px;min-width:280px"
+    onclick="bulkSendTeacherCredentials()">
+    🚀 بدء الإرسال الجماعي للمحددين
+  </button>
 </div>
 
 <div id="bulkTeacherProgress" class="note" style="display:none;margin-top:12px">
