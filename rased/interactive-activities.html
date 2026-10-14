@@ -212,9 +212,10 @@ textarea{min-height:88px;resize:vertical}
     <div class="note" id="publishLabel"></div>
     <div class="note">اختر الفصول التي سيظهر لها النشاط في بطاقة «الأنشطة التفاعلية». اللعب اختياري ولا تُحفظ نتيجة الطالب.</div>
     <div id="classChoices" class="classes"></div>
+    <div id="publishStatus" class="status"></div>
     <div class="actions">
-      <button class="btn primary" onclick="savePublication()">📢 نشر للمحدد</button>
-      <button class="btn light" onclick="closePublish()">إلغاء</button>
+      <button id="publishSendBtn" type="button" class="btn primary" onclick="savePublication()">📢 إرسال النشاط للطلاب</button>
+      <button type="button" class="btn light" onclick="closePublish()">إلغاء</button>
     </div>
   </div>
 </div>
@@ -864,45 +865,152 @@ function availableClassesFor(a){
 }
 function openPublish(id){
   const a=activities.find(function(x){return x.id===id});
-  if(!a)return;
+  if(!a){
+    alert("تعذر العثور على النشاط. اضغط تحديث ثم حاول مرة أخرى.");
+    return;
+  }
+
   publishingId=id;
-  document.getElementById("publishLabel").textContent=a.title||"النشاط";
-  const selected=new Set((Array.isArray(a.classes)?a.classes:[]).map(function(c){return String(c.grade||"")+"|"+String(c.section||"")}));
+
+  const label=document.getElementById("publishLabel");
+  if(label)label.textContent=a.title||"النشاط";
+
+  const status=document.getElementById("publishStatus");
+  if(status){
+    status.className="status";
+    status.textContent="";
+  }
+
+  const selected=new Set(
+    (Array.isArray(a.classes)?a.classes:[])
+      .map(function(c){
+        return String(c.grade||"")+"|"+String(c.section||"");
+      })
+  );
+
   const arr=availableClassesFor(a);
   const box=document.getElementById("classChoices");
+  const sendBtn=document.getElementById("publishSendBtn");
+
   if(!arr.length){
-    box.innerHTML='<div class="empty">لا توجد فصول مسندة لك لهذه المادة. راجع إسناد المواد والفصول.</div>';
+    box.innerHTML='<div class="empty">⚠️ لا توجد صفوف أو شُعب مسندة لك لهذه المادة، لذلك لا يمكن إرسال النشاط للطلاب.</div>';
+    if(sendBtn)sendBtn.disabled=true;
   }else{
+    /*
+      في أول نشر نحدد كل الفصول المسندة لهذه المادة تلقائيًا.
+      عند تعديل النشر نحتفظ بالاختيارات السابقة.
+    */
+    const firstPublish=selected.size===0;
+
     box.innerHTML=arr.map(function(c){
       const key=c.grade+"|"+c.section;
-      return '<label class="class-chip"><input type="checkbox" class="publishClass" data-grade="'+esc(c.grade)+'" data-section="'+esc(c.section)+'" '+(selected.has(key)?"checked":"")+'><span>'+esc(c.grade)+' / '+esc(c.section)+'</span></label>';
+      const checked=firstPublish||selected.has(key);
+      return '<label class="class-chip"><input type="checkbox" class="publishClass" data-grade="'+esc(c.grade)+'" data-section="'+esc(c.section)+'" '+(checked?"checked":"")+'><span>'+esc(c.grade)+' / '+esc(c.section)+'</span></label>';
     }).join("");
+
+    if(sendBtn){
+      sendBtn.disabled=false;
+      sendBtn.textContent=a.published===true
+        ?"📢 حفظ تعديل النشر"
+        :"📢 إرسال النشاط للطلاب";
+    }
   }
+
   document.getElementById("publishBox").classList.add("show");
 }
-function closePublish(){publishingId="";document.getElementById("publishBox").classList.remove("show")}
+
+function closePublish(){
+  publishingId="";
+  const box=document.getElementById("publishBox");
+  if(box)box.classList.remove("show");
+}
 async function savePublication(){
+  const status=document.getElementById("publishStatus");
+  const sendBtn=document.getElementById("publishSendBtn");
   const a=activities.find(function(x){return x.id===publishingId});
-  if(!a)return;
-  const classes=Array.from(document.querySelectorAll(".publishClass:checked")).map(function(x){return {grade:x.dataset.grade||"",section:x.dataset.section||""}});
-  if(!classes.length)return alert("اختر فصلًا واحدًا على الأقل.");
+
+  if(!a){
+    if(status){
+      status.className="status err";
+      status.textContent="تعذر العثور على النشاط. أغلق النافذة واضغط تحديث.";
+    }
+    return;
+  }
+
+  const classes=Array
+    .from(document.querySelectorAll(".publishClass:checked"))
+    .map(function(x){
+      return {
+        grade:String(x.dataset.grade||"").trim(),
+        section:String(x.dataset.section||"").trim()
+      };
+    })
+    .filter(function(c){return c.grade&&c.section});
+
+  if(!classes.length){
+    if(status){
+      status.className="status err";
+      status.textContent="اختر فصلًا واحدًا على الأقل.";
+    }
+    return;
+  }
 
   const allAllowed=classes.every(function(c){
     return classBelongsToAssignedScope(a.subjectId,c.grade,c.section);
   });
-  if(!allAllowed)return alert("لا يمكن نشر النشاط خارج الصفوف والشُعب المسندة لك.");
+
+  if(!allAllowed){
+    if(status){
+      status.className="status err";
+      status.textContent="لا يمكن إرسال النشاط خارج الصفوف والشُعب المسندة لك.";
+    }
+    return;
+  }
 
   try{
+    if(sendBtn){
+      sendBtn.disabled=true;
+      sendBtn.textContent="جاري الإرسال...";
+    }
+    if(status){
+      status.className="status";
+      status.textContent="جاري إرسال النشاط للطلاب...";
+    }
+
     await db.collection("interactiveActivities").doc(a.id).set({
       published:true,
       classes:classes,
       publishedAt:firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     },{merge:true});
-    closePublish();
+
+    a.published=true;
+    a.classes=classes;
+
+    if(status){
+      status.className="status ok";
+      status.textContent="تم إرسال النشاط للطلاب بنجاح ✅";
+    }
+
     await loadActivities();
-    alert("تم نشر النشاط للطلاب المحددين ✅");
-  }catch(e){console.error(e);alert("تعذر النشر: "+(e.message||e))}
+
+    setTimeout(function(){
+      closePublish();
+    },650);
+
+  }catch(e){
+    console.error("INTERACTIVE PUBLISH ERROR",e);
+
+    if(status){
+      status.className="status err";
+      status.textContent="تعذر إرسال النشاط: "+(e&&e.message?e.message:"خطأ غير معروف");
+    }
+
+    if(sendBtn){
+      sendBtn.disabled=false;
+      sendBtn.textContent="📢 إعادة محاولة الإرسال";
+    }
+  }
 }
 async function unpublishActivity(id){
   if(!confirm("إيقاف ظهور هذا النشاط للطلاب؟ سيظل النشاط محفوظًا ويمكنك تشغيله من حسابك."))return;
