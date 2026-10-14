@@ -1536,11 +1536,26 @@ function assignmentSubjectName(teacher,assignment){
 }
 
 function teacherMatchesGradeRow(teacher,row){
-  const email=String(row.teacherEmail||"").trim().toLowerCase();
-  const teacherEmail=String(teacher.email||"").trim().toLowerCase();
-  if(email)return email===teacherEmail;
-  const name=String(row.teacherName||"").trim();
-  return !!name && name===String(teacher.name||"").trim();
+  const normalized=v=>String(v||"").trim().toLowerCase();
+  const rowId=normalized(row.teacherId);
+  const teacherId=normalized(teacher.teacherId);
+  if(rowId && teacherId && rowId===teacherId)return true;
+  const email=normalized(row.teacherEmail);
+  const current=normalized(teacher.email);
+  if(email && email===current)return true;
+  const name=normalized(row.teacherName);
+  if(name && name===normalized(teacher.name))return true;
+  // Old grades may contain a previous login email. Only use the
+  // assignment fallback if exactly one teacher owns this test/class.
+  const candidates=teachers.filter(t=>teacherAssignments(t).some(a=>
+    String(a.subjectId||"")===String(row.subjectId||"") &&
+    String(a.grade||"")===String(row.grade||"") &&
+    String(a.section||"")===String(row.section||"") &&
+    tests.some(test=>String(test.id)===String(row.testId) &&
+      String(test.subjectId||"")===String(a.subjectId||"") &&
+      testMatchesClass(test,a.grade,a.section))
+  ));
+  return candidates.length===1 && normalized(candidates[0].email)===current;
 }
 
 function latestStudentRows(rows,validCodes){
@@ -1811,23 +1826,12 @@ async function generateReport(){
       .where("testId","==",String(testId))
       .get();
 
-    const teacherEmail=String(teacher.email||"").trim().toLowerCase();
-    const teacherName=String(teacher.name||"").trim();
-
     const gradeRows=snap.docs
       .map(d=>({id:d.id,...d.data()}))
-      .filter(r=>{
-        const email=String(r.teacherEmail||"").trim().toLowerCase();
-        const name=String(r.teacherName||"").trim();
-        const teacherMatch=email
-          ? email===teacherEmail
-          : (!!teacherName && name===teacherName);
-
-        return teacherMatch &&
-          String(r.subjectId||"")===String(subjectId) &&
-          String(r.grade||"")===String(grade) &&
-          String(r.section||"")===String(section);
-      });
+      .filter(r=>teacherMatchesGradeRow(teacher,r) &&
+        String(r.subjectId||"")===String(subjectId) &&
+        String(r.grade||"")===String(grade) &&
+        String(r.section||"")===String(section));
 
     const currentCodes=new Set(classStudents.map(s=>String(s.code)));
     const byStudent=new Map();
