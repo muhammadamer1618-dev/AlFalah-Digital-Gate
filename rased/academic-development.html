@@ -1,1 +1,60 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>راصد | التطوير الأكاديمي</title><style>*{box-sizing:border-box}body{margin:0;background:#f2f6f9;font-family:Tahoma,Arial;color:#17364a}header{background:linear-gradient(120deg,#073b68,#08745e);color:white;padding:25px 7%}h1{margin:0 0 8px;font-size:27px}header p{margin:0;line-height:1.8}main{max-width:1100px;margin:26px auto;padding:0 18px}.notice{background:#fff8e5;border-right:4px solid #d49a24;padding:15px;border-radius:12px;line-height:1.9;margin-bottom:20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:16px}.card{background:white;padding:23px;border-radius:17px;box-shadow:0 5px 20px #16384a12;min-height:230px}.card h2{font-size:20px;color:#064c70;margin:0 0 12px}.card p{line-height:1.9;color:#4b6270}.tag{display:inline-block;border-radius:40px;padding:5px 12px;background:#edf3f6;color:#476273;font-size:12px}a.btn{display:inline-block;margin-top:10px;background:#075d75;color:white;padding:10px 15px;text-decoration:none;border-radius:9px}footer{text-align:center;padding:28px;color:#60717e}</style></head><body><header><h1>منظومة التطوير الأكاديمي — راصد</h1><p>التحليل الذكي · ملف إنجاز الطالب · الخطط العلاجية · متابعة أداء المعلمين</p></header><main><div class="notice"><strong>مرحلة التأسيس:</strong> هذه لوحة تجميع أولية للوحدات الأربع، وليست إعلانًا عن اكتمال وظائفها. لا تعرض بيانات الطلاب أو المعلمين خارج صلاحياتهم. سيجري ربط البيانات بعد مراجعة قواعد الوصول والاختبارات.</div><div class="grid"><article class="card"><h2>📊 التحليل الذكي</h2><span class="tag">المرحلة الأولى</span><p>تحليل درجات الطلاب واكتشاف التحسن والتعثر. التحليلات الحالية متاحة حسب صلاحيات حسابك.</p><a class="btn" id="analysisLink" href="analysis.html">فتح التحليل الحالي</a></article><article class="card"><h2>📁 ملف إنجاز الطالب</h2><span class="tag">قيد التطوير</span><p>جمع النتائج والشهادات والأنشطة والتقارير والخطط العلاجية في ملف واحد قابل للطباعة.</p></article><article class="card"><h2>🎯 الخطط العلاجية</h2><span class="tag">قيد التطوير</span><p>تحديد المهارات الضعيفة وتوثيق التدخلات وقياس أثرها قبل الخطة وبعدها.</p></article><article class="card"><h2>👨‍🏫 متابعة المعلمين</h2><span class="tag">قيد التطوير</span><p>مؤشرات اكتمال الرصد وتنفيذ الأنشطة والخطط والتقارير حسب الدور والصلاحية.</p></article></div><p style="margin-top:22px"><a id="back" href="teacher.html">← العودة للوحة الرئيسية</a></p></main><footer>مدارس الفلاح الأهلية — تصميم محمد عامر أحمد</footer><script>const origin=new URLSearchParams(location.search).get("from");const destinations={teacher:"teacher.html",admin:"admin.html",supervisor:"supervisor-dashboard.html"};document.getElementById("back").href=destinations[origin]||"teacher.html";if(origin==="teacher"){const a=document.getElementById("analysisLink");a.removeAttribute("href");a.style.opacity=".6";a.textContent="التحليل الفردي متاح من أدوات المعلم الحالية";}</script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>راصد | منظومة التطوير الأكاديمي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#073b68;--blue:#0b618d;--green:#087461;--gold:#d5aa56;--ink:#17384d;--muted:#617789;--line:#e1eaf0}
+*{box-sizing:border-box}
+body{margin:0;background:#f2f6fa;color:var(--ink);font-family:Cairo,Tahoma,Arial,sans-serif}
+header{background:linear-gradient(115deg,#073b68 0%,#075d76 52%,#087461 100%);color:#fff;padding:24px max(20px,calc((100vw - 1170px)/2));border-bottom:4px solid var(--gold)}
+.head-inner{display:flex;align-items:center;gap:22px}
+.logo{width:98px;height:98px;object-fit:contain;background:white;border:3px solid #f0d8a0;border-radius:20px;padding:7px;box-shadow:0 6px 20px #001c3038;flex-shrink:0}
+.head-copy{flex:1}.eyebrow{color:#f6db9e;font-weight:800;font-size:13px;letter-spacing:.1px}
+h1{font-size:clamp(22px,3vw,32px);margin:3px 0 6px;font-weight:900;line-height:1.5}
+.head-copy p{margin:0;color:#e6f4f4;font-size:14px}
+main{max-width:1170px;margin:30px auto;padding:0 18px}
+.section-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.section-top h2{font-size:22px;margin:0;color:var(--navy)}
+.section-top span{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.card{background:white;border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;min-height:300px;box-shadow:0 8px 24px #153d5d0c;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 28px #153d5d17}
+.card:before{content:"";position:absolute;inset:0 0 auto;height:5px;background:var(--accent)}
+.icon-box{width:57px;height:57px;border-radius:17px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:27px;margin-bottom:14px}
+.card h3{font-size:19px;color:var(--navy);margin:0 0 7px;font-weight:800;line-height:1.6}
+.card p{color:#597083;font-size:13px;line-height:2;margin:7px 0 18px;flex:1}
+.status{display:inline-flex;align-self:flex-start;background:#f1f5f8;color:#667b89;border:1px solid #e2e9ee;border-radius:30px;font-size:11px;padding:2px 10px;font-weight:700}
+.status.ready{background:#e7f6ef;color:#14765a;border-color:#cce9dc}
+.action{display:block;text-align:center;text-decoration:none;border-radius:11px;background:var(--accent);color:white;font-weight:800;font-size:13px;padding:10px 9px;margin-top:auto}
+.action.disabled{background:#eef2f5;color:#80929f;cursor:default}
+.note{display:flex;align-items:flex-start;gap:12px;background:#fff;border:1px solid #dce8ed;border-right:4px solid var(--gold);padding:16px 18px;border-radius:13px;margin:23px 0;line-height:1.9;font-size:13px;color:#516d7f}
+.note strong{color:var(--navy)}
+.bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 0 26px}
+.back{display:inline-flex;text-decoration:none;color:var(--blue);font-weight:800;border:1px solid #c8dce7;background:white;border-radius:10px;padding:9px 15px}
+footer{border-top:1px solid #e0e9ee;text-align:center;padding:19px;color:#708597;font-size:12px}
+@media(max-width:950px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){header{padding:18px}.head-inner{gap:12px}.logo{width:70px;height:70px;border-radius:14px}.head-copy p{font-size:11px}.grid{grid-template-columns:1fr}.card{min-height:245px}main{margin-top:22px}}
+</style></head>
+<body>
+<header><div class="head-inner"><img class="logo" src="logo.jpeg" alt="شعار مدارس الفلاح الأهلية"><div class="head-copy"><div class="eyebrow">مدارس الفلاح الأهلية | نظام راصد</div><h1>منظومة التطوير الأكاديمي</h1><p>متابعة التحصيل الدراسي وتطوير الأداء التعليمي</p></div></div></header>
+<main>
+<div class="section-top"><h2>الوحدات الأكاديمية</h2><span>أربع وحدات مترابطة لخدمة الإدارة والمشرف والمعلم</span></div>
+<div class="grid">
+<article class="card" style="--accent:#087b80;--soft:#e5f5f3"><div class="icon-box">📊</div><h3>التحليل الذكي</h3><span class="status">التحليل المتقدم قيد التطوير</span><p>اكتشاف التعثر والتراجع والتحسن في نتائج الطلاب، وإعداد مؤشرات وتوصيات تساعد في التدخل المبكر.</p><a id="analysisLink" class="action" href="analysis.html">فتح تحليل النتائج الحالي ←</a></article>
+<article class="card" style="--accent:#2864aa;--soft:#eaf1fb"><div class="icon-box">📁</div><h3>ملف إنجاز الطالب</h3><span class="status">قيد التطوير</span><p>ملف موحد يجمع نتائج الطالب وشهاداته وأنشطته وتقاريره وخططه العلاجية، مع إعداد نسخة للطباعة.</p><span class="action disabled">سيُتاح بعد الربط</span></article>
+<article class="card" style="--accent:#c68a2c;--soft:#fcf3e4"><div class="icon-box">🎯</div><h3>الخطط العلاجية</h3><span class="status">قيد التطوير</span><p>تحديد الطلاب المستهدفين والمهارات التي تحتاج دعمًا، وتوثيق إجراءات التدخل وقياس التحسن.</p><span class="action disabled">سيُتاح بعد الربط</span></article>
+<article class="card" style="--accent:#7b5aaa;--soft:#f2edfa"><div class="icon-box">👨‍🏫</div><h3>متابعة أداء المعلمين</h3><span class="status">قيد التطوير</span><p>متابعة اكتمال الرصد والأنشطة والخطط والتقارير، وعرض مؤشرات الأداء وفق الصلاحيات.</p><span class="action disabled">سيُتاح بعد الربط</span></article>
+</div>
+<div class="note"><span style="font-size:23px">💡</span><div><strong>ملاحظة حول مرحلة التنفيذ:</strong> هذه واجهة الوحدات الأكاديمية الجديدة. زر تحليل النتائج يفتح النظام الحالي، أما التحليل الذكي المتقدم والوحدات الأخرى فلم تُربط بالبيانات بعد. ستُطبَّق صلاحيات كل مستخدم عند تطوير الوظائف الفعلية.</div></div>
+<div class="bottom"><a id="back" class="back" href="teacher.html">← العودة للوحة الرئيسية</a><span style="font-size:12px;color:#738695">معًا نحو تعليم قائم على البيانات والتحسين المستمر</span></div>
+</main><footer>مدارس الفلاح الأهلية — تصميم محمد عامر أحمد</footer>
+<script>
+const origin=new URLSearchParams(location.search).get("from");
+const destinations={teacher:"teacher.html",admin:"admin.html",supervisor:"supervisor-dashboard.html"};
+document.getElementById("back").href=destinations[origin]||"teacher.html";
+if(origin==="teacher"){const a=document.getElementById("analysisLink");a.removeAttribute("href");a.classList.add("disabled");a.textContent="التحليل الحالي متاح من أدوات المعلم";}
+</script></body></html>
