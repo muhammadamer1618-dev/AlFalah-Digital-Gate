@@ -1,11 +1,129 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>راصد | متابعة أداء المعلمين</title><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><style>:root{--green:#087461;--navy:#073b68;--line:#dce6ec}*{box-sizing:border-box}body{margin:0;background:#f3f7fa;font-family:Tahoma,Arial;color:#17384d}header{background:linear-gradient(110deg,#073b68,#087461);color:white;text-align:center;padding:20px}header img{width:74px;height:74px;object-fit:contain}header h1{margin:8px 0}main{max-width:1200px;margin:24px auto;padding:0 16px}.panel{background:white;border:1px solid var(--line);border-radius:15px;padding:20px;margin:15px 0;box-shadow:0 4px 15px #1432}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px}label{font-weight:bold;font-size:13px}input,select,textarea{display:block;width:100%;margin-top:7px;padding:11px;border:1px solid #cadce5;border-radius:9px;font:inherit;background:white}textarea{min-height:85px}button,.back{display:inline-block;background:var(--green);color:white;border:0;border-radius:9px;padding:11px 16px;font:inherit;cursor:pointer;text-decoration:none}.secondary{background:#e9f1f4;color:#17485b}.danger{background:#a92e3c}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.criteria{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.criterion{padding:12px;background:#f6fafb;border:1px solid var(--line);border-radius:10px}.criterion label{display:block;margin-bottom:6px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.stat{background:#eaf5f1;padding:15px;border-radius:12px}.stat strong{display:block;font-size:23px;color:#075b4c}.record{padding:14px;border:1px solid var(--line);border-radius:11px;margin:9px 0}.muted{color:#657e8c;font-size:13px}table{border-collapse:collapse;width:100%}td,th{border:1px solid var(--line);padding:10px;text-align:right}th{background:#eaf3f1}footer{text-align:center;color:#69808e;padding:25px}@media print{.no-print,button,.actions,.back{display:none!important}body{background:white}.panel{box-shadow:none;break-inside:avoid}header{background:white;color:#073b68}}@page{size:A4;margin:12mm}@media print{.no-print{display:none!important}header{background:white;color:#073b68}.panel{box-shadow:none}body{background:white}}</style></head><body><header><img src="logo.jpeg" alt="شعار المدرسة"><h1>متابعة وتقييم أداء المعلمين داخل نظام راصد</h1><p>تقييم الأعمال الرقمية الفعلية دون زيارات صفية أو تقييم يدوي</p></header><main><a class="back no-print" href="academic-development.html">↩ العودة للتطوير الأكاديمي</a><section class="panel"><div class="grid no-print"><label>المعلم<select id="teacher"></select></label><label>من تاريخ<input id="from" type="date"></label><label>إلى تاريخ<input id="to" type="date"></label></div><div class="actions no-print"><button onclick="run()">عرض الأداء</button><button onclick="window.print()">طباعة التقرير</button></div><h2 id="heading">تقرير أداء المعلم</h2><p id="period" class="muted"></p><p id="status" class="muted"></p></section><section class="panel"><h2>مؤشرات الأداء الرقمية</h2><div class="stats" id="digital"></div></section><section class="panel"><h2>تفاصيل الإنجاز والقياس</h2><div style="overflow-x:auto"><table><thead><tr><th>المجال</th><th>الأعمال المنفذة</th><th>الجودة والاكتمال</th><th>مصدر البيانات</th></tr></thead><tbody id="details"></tbody></table></div><p class="muted">لا يتم احتساب نسبة أداء إجمالية دون معايير وأهداف معتمدة. المؤشرات التي لا تملك سجلات موثوقة تظهر «غير متاح للقياس» ولا تحتسب صفرًا.</p></section></main><footer>مدارس الفلاح الأهلية — تصميم محمد عامر أحمد</footer><script>
-const firebaseConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};firebase.initializeApp(firebaseConfig);const db=firebase.firestore(),E=id=>document.getElementById(id),role=localStorage.getItem("currentUserRole")||sessionStorage.getItem("currentUserRole")||"",actor=String(localStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||sessionStorage.getItem("currentUser")||"").trim().toLowerCase(),admin=["admin","superadmin","manager"].includes(role);let teachers=[],assigned=[];
-const norm=v=>String(v||"").trim().toLowerCase(),escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function inPeriod(x){const start=E("from").value,end=E("to").value;if(!start&&!end)return true;const raw=x.createdAt||x.date||x.createdDate||x.timestamp;if(!raw)return false;const d=typeof raw.toDate==="function"?raw.toDate():new Date(raw);if(isNaN(d.getTime()))return false;const day=d.toISOString().slice(0,10);return(!start||day>=start)&&(!end||day<=end)}
-function belongs(x,id){return[x.createdBy,x.teacherEmail,x.teacherUsername,x.createdByEmail,x.teacherId].some(v=>norm(v)===id)}
-function display(items){E("digital").innerHTML=items.map(x=>'<div class="stat">'+escapeHtml(x.title)+'<strong style="font-size:18px">'+escapeHtml(x.value)+'</strong></div>').join("");E("details").innerHTML=items.map(x=>'<tr><td>'+escapeHtml(x.title)+'</td><td>'+escapeHtml(x.value)+'</td><td>'+escapeHtml(x.quality)+'</td><td>'+escapeHtml(x.source)+'</td></tr>').join("")}
-const missing=(title,source)=>({title,value:"غير متاح للقياس",quality:"لا توجد بيانات موثوقة كافية",source});
-async function init(){if(!["admin","superadmin","manager","teacher","supervisor"].includes(role)||!actor){E("status").textContent="يجب تسجيل الدخول أولًا.";return}try{if(role==="supervisor"){const snap=await db.collection("users").get(),me=snap.docs.find(d=>norm(d.id)===actor||norm(d.data().email)===actor);if(!me)throw Error("تعذر التحقق من صلاحيات المشرف");assigned=(me.data().assignedTeacherEmails||[]).map(norm)}const snap=await db.collection("teachers").get();teachers=snap.docs.map(d=>({id:norm(d.id),...d.data()})).filter(t=>admin||role==="teacher"&&t.id===actor||role==="supervisor"&&assigned.includes(t.id));E("teacher").innerHTML='<option value="">اختر المعلم</option>';for(const t of teachers){const o=document.createElement("option");o.value=t.id;o.textContent=t.name||t.fullName||t.id;E("teacher").append(o)}if(role==="teacher"&&teachers.length){E("teacher").value=teachers[0].id;E("teacher").disabled=true;await run()}if(!teachers.length)E("status").textContent="لا يوجد معلمون ضمن صلاحيات حسابك."}catch(e){E("status").textContent="تعذر تحميل البيانات: "+e.message}}
-async function run(){const id=norm(E("teacher").value),t=teachers.find(x=>x.id===id);if(!t){E("status").textContent="اختر المعلم.";return}if(E("from").value&&E("to").value&&E("from").value>E("to").value){E("status").textContent="راجع الفترة الزمنية.";return}E("heading").textContent="تقرير أداء المعلم: "+(t.name||t.fullName||id);E("period").textContent="الفترة: "+(E("from").value||"جميع السجلات")+" — "+(E("to").value||"الآن");E("status").textContent="جارٍ قراءة السجلات...";const [ts,gs,ps]=await Promise.allSettled([db.collection("tests").get(),db.collection("grades").get(),db.collection("academicRemedialPlans").get()]);const items=[];if(ts.status==="fulfilled"){const tests=ts.value.docs.map(d=>({id:d.id,...d.data()})).filter(x=>belongs(x,id)&&inPeriod(x));items.push({title:"الاختبارات والتقويم",value:tests.length+" اختبار",quality:"تم قياس الإنشاء فقط، لا يُعد دليلًا على مشاركة الطلاب",source:"tests"});if(gs.status==="fulfilled"){const ids=new Set(tests.map(x=>x.id)),grades=gs.value.docs.map(d=>d.data()).filter(x=>ids.has(String(x.testId))&&inPeriod(x));items.push({title:"رصد الدرجات",value:grades.filter(x=>x.mark!==null&&x.mark!==undefined&&x.mark!==""&&x.attendance!=="absent").length+" درجة",quality:"نسبة اكتمال الرصد غير متاحة دون العدد المتوقع",source:"grades / tests"})}else items.push(missing("رصد الدرجات","grades"))}else{items.push(missing("الاختبارات والتقويم","tests"));items.push(missing("رصد الدرجات","grades"))}if(ps.status==="fulfilled"){const plans=ps.value.docs.map(d=>d.data()).filter(x=>norm(x.createdBy)===id&&inPeriod(x)),unique=new Set(plans.map(x=>[x.subjectId,x.baselineTestId,JSON.stringify(x.skillItems||[]),x.startDate].join("|")));items.push({title:"الخطط العلاجية",value:unique.size+" خطة / "+plans.length+" طالب",quality:"العدد يوثق الإنشاء ولا يثبت أثر الخطة",source:"academicRemedialPlans"})}else items.push(missing("الخطط العلاجية","academicRemedialPlans"));items.push(missing("الاختبارات الإلكترونية","بيانات النشر والمشاركة لم تربط بعد"),missing("الأنشطة التفاعلية","مصدر الأنشطة غير موصول"),missing("التحليل الذكي","لا يوجد سجل موثوق للتحليلات المنفذة"),missing("التقارير","لا يوجد مصدر موحد مؤكد للتقارير"),missing("متابعة الطلاب","مصدر الإجراءات لم يربط بعد"),missing("بقية أدوات راصد","تحتاج سجلات نشاط موثوقة"));display(items);E("status").textContent="تم عرض البيانات المتاحة. المؤشرات غير الموصولة لم تُحسب صفرًا."}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>راصد | لوحة أداء المعلمين</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--navy:#073b68;--green:#087461;--gold:#d5aa56;--ink:#19384c;--muted:#64798a;--line:#dfebf0;--bg:#f2f6f9;--white:#fff;--red:#aa3846}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,Arial,sans-serif}
+header{background:linear-gradient(110deg,#073b68,#0a5879 52%,#087461);color:white;padding:22px max(16px,calc((100% - 1240px)/2));border-bottom:4px solid var(--gold)}
+.brand{display:flex;align-items:center;gap:17px}.brand img{width:85px;height:85px;background:white;border-radius:18px;object-fit:contain;padding:7px}.brand h1{font-size:clamp(21px,3vw,30px);margin:0}.brand p{margin:4px 0;color:#e1f2ed}
+main{max-width:1240px;padding:0 16px;margin:24px auto 50px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;border:0;border-radius:10px;padding:10px 18px;background:var(--green);color:white;font:700 13px Cairo,Tahoma;cursor:pointer}
+.btn.alt{background:#e5eef2;color:#21475a}.btn:disabled{opacity:.5;cursor:wait}
+.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 5px 22px #113d5809}
+.panel h2{margin:0 0 14px;font-size:19px;color:var(--navy)}.hint{color:var(--muted);font-size:12px}
+.filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}
+label{display:block;font-weight:800;font-size:12px;color:#365366}select,input{margin-top:5px;display:block;width:100%;height:43px;border:1px solid #ccdbe4;border-radius:10px;padding:7px 10px;font:500 13px Cairo,Tahoma;color:var(--ink);background:white}
+.filters-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.status{padding:12px 15px;border-radius:10px;background:#eaf4f5;color:#165b6c;font-size:13px;margin-top:13px;border:1px solid #d4e8e9}
+.status.error{background:#fff0f1;color:#922e42;border-color:#f3cbd1}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.stat{border:1px solid var(--line);background:linear-gradient(145deg,#fff,#f5fafa);padding:17px;border-radius:14px;min-height:116px}
+.stat span{display:block;color:#607789;font-size:12px;font-weight:700}.stat strong{display:block;color:var(--navy);font-size:27px;margin-top:7px;line-height:1.45}.stat small{color:var(--muted);font-size:11px}
+.layout{display:grid;grid-template-columns:1.6fr 1fr;gap:18px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:660px}th,td{text-align:right;padding:13px;border-bottom:1px solid var(--line);font-size:12px;vertical-align:middle}th{background:#edf4f7;color:#284e62;font-weight:900}tr:last-child td{border:0}
+.pill{display:inline-block;border-radius:30px;padding:3px 9px;background:#e6f4ee;color:#126149;font-weight:800;font-size:11px}.pill.none{background:#f1f3f5;color:#75838c}.pill.warn{background:#fff4dc;color:#956420}
+.bars{display:grid;gap:13px}.bar-label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:700;margin-bottom:6px}.track{height:10px;background:#ebf1f4;border-radius:12px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--green),#37a3a0);border-radius:12px}
+.empty{text-align:center;padding:35px 15px;color:var(--muted)}.empty strong{display:block;color:var(--navy);margin:8px}
+.notice{border-right:4px solid var(--gold);background:#fffaf0;border-radius:9px;padding:13px 16px;font-size:12px;color:#755b27}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+@media(max-width:950px){.filters{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.brand img{width:60px;height:60px}.brand h1{font-size:20px}.panel{padding:15px}.filters{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:11px}.stat strong{font-size:22px}}
+@media print{@page{size:A4 landscape;margin:12mm}body{background:white}header{background:white;color:var(--navy);padding:10px;border-bottom:2px solid var(--gold)}header p{color:var(--ink)!important}.no-print{display:none!important}.panel{box-shadow:none;break-inside:avoid;border:1px solid #bbb}.layout{grid-template-columns:1fr 1fr}main{margin:8px auto}.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head><body>
+<header><div class="brand"><img src="logo.jpeg" alt="شعار مدارس الفلاح"><div><div style="font-size:12px;color:#f2d695;font-weight:800">مدارس الفلاح الأهلية · منظومة التطوير الأكاديمي</div><h1>لوحة متابعة أداء المعلمين</h1><p>مؤشرات الإنجاز الرقمي المستندة إلى سجلات راصد الفعلية</p></div></div></header>
+<main>
+<div class="toolbar no-print"><a class="btn alt" href="academic-development.html">↩ العودة لمنظومة التطوير</a><div><button class="btn alt" id="reload">↻ تحديث البيانات</button> <button class="btn" id="print">▣ طباعة التقرير</button></div></div>
+<section class="panel no-print"><h2>تحديد نطاق التقرير</h2><div class="filters">
+<label>المعلم<select id="teacher"><option value="">جارٍ تحميل المعلمين...</option></select></label>
+<label>المرحلة<select id="stage"><option value="">جميع المراحل</option></select></label>
+<label>المادة<select id="subject"><option value="">جميع المواد</option></select></label>
+<label>من تاريخ<input id="from" type="date"></label><label>إلى تاريخ<input id="to" type="date"></label>
+</div><div class="filters-actions"><button class="btn" id="apply">عرض وتحليل الأداء</button><button class="btn alt" id="reset">إلغاء الفلاتر</button></div><div class="status" id="status" role="status">جارٍ التحقق من الصلاحيات وجلب المعلمين...</div></section>
+<section class="panel"><h2 id="reportTitle">التقرير الإشرافي لأداء المعلمين</h2><p id="period" class="hint">اختر المعلم أو اعرض جميع المعلمين المصرح لك بهم.</p><div class="stats" id="stats"><div class="empty">جاري التحميل...</div></div></section>
+<div class="layout">
+<section class="panel"><h2>تفاصيل مؤشرات الإنجاز</h2><div class="table-wrap"><table><thead><tr><th>المؤشر</th><th>الإنجاز المرصود</th><th>حالة القياس</th><th>مصدر البيانات</th></tr></thead><tbody id="details"><tr><td colspan="4" class="empty">لم يتم تحميل البيانات بعد</td></tr></tbody></table></div></section>
+<section class="panel"><h2>توزيع الأعمال المرصودة</h2><div id="bars" class="bars"><div class="empty">سيظهر التوزيع بعد تحميل البيانات</div></div><p class="hint">هذا مخطط لأعداد السجلات، وليس نسبة تقييم للمعلم.</p></section>
+</div>
+<section class="panel"><h2>ملاحظات إشرافية</h2><div class="notice" id="notes">لا يتم استنتاج جودة التدريس من عدد الاختبارات أو الخطط وحده، ولا تُحسب مؤشرات غير مربوطة على أنها صفر. تعكس هذه اللوحة ما يمكن التحقق منه من سجلات النظام فقط.</div></section>
+</main><footer>مدارس الفلاح الأهلية — تصميم محمد عامر أحمد</footer>
+<script>
+"use strict";
+const firebaseConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};
+firebase.initializeApp(firebaseConfig);const db=firebase.firestore();
+const E=id=>document.getElementById(id),norm=v=>String(v??"").trim().toLowerCase(),safe=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const role=norm(localStorage.getItem("currentUserRole")||sessionStorage.getItem("currentUserRole"));
+const actor=norm(localStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||sessionStorage.getItem("currentUser"));
+const privileged=["admin","superadmin","manager"].includes(role);
+let teachers=[],assigned=[],loaded={},busy=false;
+function notify(message,error=false){E("status").textContent=message;E("status").classList.toggle("error",error)}
+function teacherId(t){return norm(t.id)}
+function teacherName(t){return t.name||t.fullName||t.teacherName||t.id}
+function records(t){return [t.id,t.email,t.username,t.teacherEmail,t.teacherUsername].map(norm).filter(Boolean)}
+function belongs(x,t){const candidates=[x.createdBy,x.teacherEmail,x.teacherUsername,x.createdByEmail,x.teacherId,x.email,x.userEmail,x.createdByUsername].map(norm);return candidates.some(s=>records(t).includes(s))}
+function timeValue(v){if(!v)return null;try{const d=typeof v.toDate==="function"?v.toDate():new Date(v);return Number.isNaN(d.getTime())?null:d}catch(_){return null}}
+function inPeriod(x){const from=E("from").value,to=E("to").value;if(!from&&!to)return true;const v=x.createdAt||x.date||x.createdDate||x.timestamp||x.startDate;const d=timeValue(v);if(!d)return false;const day=[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");return(!from||day>=from)&&(!to||day<=to)}
+function unique(list){return [...new Set(list.filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),"ar"))}
+function fillOptions(id,values,label){const el=E(id),value=el.value;el.replaceChildren(new Option(label,""));values.forEach(x=>el.add(new Option(String(x),String(x))));if(values.includes(value))el.value=value}
+function pick(x,keys){for(const k of keys){if(x[k])return String(x[k])}return ""}
+function filteredTeachers(){const stage=E("stage").value,subject=E("subject").value,id=E("teacher").value;return teachers.filter(t=>(!id||t.id===id)&&(!stage||pick(t,["stage","level","schoolStage","stageName"])===stage)&&(!subject||[t.subject,t.subjectName,t.material,t.specialization].some(v=>norm(v)===norm(subject))))}
+function setSummary(values){E("stats").innerHTML=values.map(v=>'<article class="stat"><span>'+safe(v.name)+'</span><strong>'+safe(v.value)+'</strong><small>'+safe(v.description||"")+'</small></article>').join("")}
+function row(title,value,status,source,kind){return '<tr><td><b>'+safe(title)+'</b></td><td>'+safe(value)+'</td><td><span class="pill '+(kind||"")+'">'+safe(status)+'</span></td><td class="hint">'+safe(source)+'</td></tr>'}
+function renderBars(items){const max=Math.max(1,...items.map(x=>x.value));E("bars").innerHTML=items.map(x=>'<div><div class="bar-label"><span>'+safe(x.name)+'</span><span>'+x.value+'</span></div><div class="track"><div class="fill" style="width:'+(x.value/max*100).toFixed(1)+'%"></div></div></div>').join("")}
+async function getCollection(name){if(!loaded[name])loaded[name]=db.collection(name).get().then(s=>s.docs.map(d=>({id:d.id,...d.data()}))).catch(e=>{delete loaded[name];throw e});return loaded[name]}
+async function init(){
+ if(!["admin","superadmin","manager","teacher","supervisor"].includes(role)||!actor){notify("تعذر تحديد جلسة مستخدم صالحة. افتح الصفحة من داخل حسابك في راصد.",true);E("teacher").innerHTML='<option value="">لا توجد جلسة</option>';return}
+ try{
+  if(role==="supervisor"){const users=await getCollection("users"),me=users.find(x=>norm(x.id)===actor||norm(x.email)===actor||norm(x.username)===actor);if(!me)throw Error("تعذر مطابقة حساب المشرف بسجل المستخدمين");assigned=(me.assignedTeacherEmails||[]).map(norm)}
+  const all=await getCollection("teachers");teachers=all.map(x=>({...x,id:norm(x.id)})).filter(t=>privileged||(role==="teacher"&&records(t).includes(actor))||(role==="supervisor"&&records(t).some(v=>assigned.includes(v))));
+  teachers.sort((a,b)=>teacherName(a).localeCompare(teacherName(b),"ar"));
+  E("teacher").replaceChildren(new Option("جميع المعلمين المصرح بهم",""));teachers.forEach(t=>E("teacher").add(new Option(teacherName(t),t.id)));
+  fillOptions("stage",unique(teachers.map(t=>pick(t,["stage","level","schoolStage","stageName"]))),"جميع المراحل");
+  fillOptions("subject",unique(teachers.map(t=>pick(t,["subject","subjectName","material","specialization"]))),"جميع المواد");
+  if(role==="teacher"&&teachers.length===1){E("teacher").value=teachers[0].id;E("teacher").disabled=true}
+  if(!teachers.length){notify("لم يتم العثور على معلمين ضمن صلاحيات هذا الحساب. تحقق من سجل teachers وربط حساب المعلم.",true);setSummary([{name:"المعلمون المتاحون",value:"0",description:"تحقق من الربط والصلاحيات"}]);return}
+  notify("تم تحميل "+teachers.length+" معلم. يجري حساب المؤشرات...");await run();
+ }catch(e){notify("تعذر تحميل المعلمين: "+e.message,true);E("teacher").innerHTML='<option value="">خطأ في تحميل البيانات</option>'}
+}
+async function run(){
+ if(busy)return;
+ if(E("from").value&&E("to").value&&E("from").value>E("to").value){notify("تاريخ البداية يجب أن يسبق تاريخ النهاية.",true);return}
+ const scope=filteredTeachers();E("reportTitle").textContent=scope.length===1?"تقرير أداء المعلم: "+teacherName(scope[0]):"تقرير أداء المعلمين ("+scope.length+")";
+ E("period").textContent="الفترة: "+(E("from").value||"بداية السجلات")+" إلى "+(E("to").value||"اليوم")+" · بيانات رقمية موثقة";
+ busy=true;E("apply").disabled=true;notify("جارٍ فحص السجلات وحساب المؤشرات...");
+ try{
+  const names=["tests","grades","academicRemedialPlans"],result=await Promise.allSettled(names.map(getCollection));
+  const sources={};result.forEach((r,i)=>{sources[names[i]]=r.status==="fulfilled"?r.value:null});
+  const unavailable=names.filter(n=>sources[n]===null);
+  const tests=sources.tests?sources.tests.filter(x=>scope.some(t=>belongs(x,t))&&inPeriod(x)):null;
+  const grades=sources.grades&&tests?sources.grades.filter(x=>new Set(tests.map(y=>String(y.id))).has(String(x.testId))&&inPeriod(x)):null;
+  const plans=sources.academicRemedialPlans?sources.academicRemedialPlans.filter(x=>scope.some(t=>belongs(x,t))&&inPeriod(x)):null;
+  const planKeys=plans?new Set(plans.map(x=>[x.createdBy,x.subjectId,x.baselineTestId,JSON.stringify(x.skillItems||[]),x.startDate].join("|"))):null;
+  const marks=grades?grades.filter(x=>x.mark!==null&&x.mark!==undefined&&x.mark!==""&&x.attendance!=="absent").length:null;
+  const metrics=[{name:"المعلمون في التقرير",value:String(scope.length),description:"وفق الصلاحيات والفلاتر"},{name:"الاختبارات المنشأة",value:tests?String(tests.length):"غير متاح",description:"سجلات إنشاء الاختبارات"},{name:"الدرجات المرصودة",value:marks!==null?String(marks):"غير متاح",description:"درجات مثبتة بالسجلات"},{name:"الخطط العلاجية",value:planKeys?String(planKeys.size):"غير متاح",description:plans?plans.length+" سجل مرتبط بالطلاب":"المصدر غير متاح"}];
+  setSummary(metrics);
+  let html="";
+  html+=row("الاختبارات والتقويم",tests?tests.length+" اختبار":"غير متاح للقياس",tests?"بيانات مرصودة":"تعذر قراءة المصدر","tests",tests?"":"none");
+  html+=row("درجات الطلاب",marks!==null?marks+" درجة":"غير متاح للقياس",marks!==null?"بيانات مرصودة":"تعذر ربط البيانات","grades / tests",marks!==null?"":"none");
+  html+=row("الخطط العلاجية",plans?planKeys.size+" خطة / "+plans.length+" سجل طلابي":"غير متاح للقياس",plans?"بيانات مرصودة":"تعذر قراءة المصدر","academicRemedialPlans",plans?"":"none");
+  ["الأنشطة التفاعلية","الاختبارات الإلكترونية المنشورة","التحليل الذكي","التقارير والمتابعات"].forEach(name=>html+=row(name,"غير مربوط بمصدر موثوق","بانتظار الربط","لم يتم اعتماد مجموعة بيانات","none"));
+  E("details").innerHTML=html;
+  renderBars([{name:"الاختبارات",value:tests?tests.length:0},{name:"الدرجات المرصودة",value:marks||0},{name:"الخطط العلاجية",value:planKeys?planKeys.size:0}]);
+  E("notes").textContent="الأعداد المعروضة مأخوذة من السجلات التي أمكن قراءتها، ولا تعني وحدها جودة الأداء أو اكتماله. "+(unavailable.length?"تعذر الوصول إلى المصادر التالية: "+unavailable.join("، ")+"؛ تحقق من قواعد Firestore وصلاحيات الحساب.":"تم الوصول إلى المصادر الثلاثة المتصلة. المؤشرات الأخرى تحتاج ربطًا موثقًا قبل القياس.")+" لا يتم منح درجة نهائية دون معايير تقييم وأوزان معتمدة.";
+  notify(scope.length?"اكتمل العرض لـ "+scope.length+" معلم. "+(unavailable.length?"بعض المصادر غير متاحة؛ راجع ملاحظات التقرير.":"يمكن طباعة التقرير الآن."):"لا يوجد معلمون يطابقون التصفية.");
+ }catch(e){notify("حدث خطأ أثناء عرض التقرير: "+e.message,true)}
+ finally{busy=false;E("apply").disabled=false}
+}
+E("apply").addEventListener("click",run);
+E("reload").addEventListener("click",()=>{loaded={};teachers=[];init()});
+E("print").addEventListener("click",()=>window.print());
+E("reset").addEventListener("click",()=>{E("stage").value="";E("subject").value="";if(role!=="teacher")E("teacher").value="";E("from").value="";E("to").value="";run()});
 init();
 </script></body></html>
