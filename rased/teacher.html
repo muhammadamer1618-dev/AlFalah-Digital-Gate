@@ -1000,6 +1000,158 @@ tbody tr:nth-child(even){
 }
 
 </style>
+<style id="teacherDashboardTheme">
+:root{
+  --falah-green:#004c3f;
+  --falah-green2:#006653;
+  --falah-gold:#c9972c;
+  --falah-cream:#f8f3e8;
+}
+body{
+  font-family:Tahoma,Arial,sans-serif;
+  background:#f4f7f5;
+}
+.teacher-hero{
+  min-height:180px;
+  padding:20px 34px;
+  background:linear-gradient(135deg,#004c3f 0%,#006653 62%,#00463b 100%);
+  color:#fff;
+  border-bottom:5px solid var(--falah-gold);
+  box-shadow:0 8px 24px rgba(0,76,63,.18);
+}
+.teacher-hero-brand{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:22px;
+  width:min(850px,100%);
+  margin:auto;
+}
+.teacher-logo-shell{
+  width:105px;height:105px;flex:0 0 105px;
+  border-radius:50%;
+  padding:6px;
+  display:grid;place-items:center;
+  background:#fff;
+  border:4px solid var(--falah-gold);
+  box-shadow:0 0 0 5px rgba(255,255,255,.12),0 10px 26px rgba(0,0,0,.18);
+}
+.teacher-hero-logo{width:100%!important;height:100%!important;padding:0!important;border:0!important;object-fit:contain!important}
+.teacher-hero-copy{text-align:right}
+.teacher-school-name{font-size:15px;font-weight:800;color:#f3df9f;margin-bottom:3px}
+.teacher-hero-copy h1{margin:0;font-size:34px;color:#fff}
+.teacher-gold-line{width:95px;height:3px;background:var(--falah-gold);border-radius:99px;margin:9px 0}
+.teacher-welcome{display:flex;gap:7px;align-items:center;flex-wrap:wrap;font-size:15px}
+.teacher-welcome strong{color:#f4d56f;font-size:19px}
+.teacher-hero-copy p{margin:6px 0 0;color:rgba(255,255,255,.74);font-size:12px}
+.hero-logout{
+  position:absolute!important;left:22px!important;top:22px!important;
+  background:#fff!important;color:#004c3f!important;border:0!important;
+  border-radius:10px!important;padding:10px 16px!important
+}
+.container{width:min(1280px,96%);margin:18px auto 42px}
+.teacher-dashboard{margin-bottom:12px}
+.dashboard-heading{display:none!important}
+.dashboard-section-title{
+  margin:4px 2px 9px;
+  color:#004c3f;
+  font-size:13px;
+  font-weight:bold;
+}
+.dashboard-secondary-title{margin-top:13px;color:#687b76}
+.teacher-dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.dashboard-tool{
+  width:100%;
+  min-height:70px;
+  border:0;
+  border-radius:11px;
+  padding:12px 15px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  cursor:pointer;
+  color:#fff;
+  font-family:Tahoma,Arial,sans-serif;
+  font-weight:bold;
+  text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,.10);
+  transition:.15s;
+}
+.dashboard-tool:hover{transform:translateY(-2px);filter:brightness(1.03)}
+.dashboard-tool:nth-child(6n+1){background:#7a3ec8}
+.dashboard-tool:nth-child(6n+2){background:#0f7d74}
+.dashboard-tool:nth-child(6n+3){background:#c89a22}
+.dashboard-tool:nth-child(6n+4){background:#156b9d}
+.dashboard-tool:nth-child(6n+5){background:#7a3ec8}
+.dashboard-tool:nth-child(6n+6){background:#0f7d74}
+.teacher-dashboard-main .dashboard-tool:nth-child(1){background:#0f7d74}
+.teacher-dashboard-main .dashboard-tool:nth-child(2){background:#947219}
+.teacher-dashboard-main .dashboard-tool:nth-child(3){background:#7d3ce4}
+.dashboard-tool-icon{font-size:19px}
+.dashboard-tool-text{display:flex;flex-direction:column;gap:2px}
+.dashboard-tool-text strong{font-size:15px}
+.dashboard-tool-text small{font-size:10px;font-weight:normal;color:rgba(255,255,255,.88)}
+.dashboard-tool-arrow{display:none}
+.teacher-dashboard-main .dashboard-tool{min-height:82px}
+.teacher-dashboard-main .dashboard-tool-text strong{font-size:17px}
+.feature-panel-bar{
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:8px 0 12px;
+  padding:10px 13px;
+  border-radius:10px;
+  background:#004c3f;
+  color:#fff;
+}
+.feature-panel-bar.show{display:flex}
+.feature-panel-bar span{display:block;font-size:9px;opacity:.72}
+.feature-panel-bar strong{font-size:14px}
+.feature-panel-bar button{
+  border:0;border-radius:8px;background:#fff;color:#004c3f;
+  padding:8px 11px;font-weight:bold;cursor:pointer
+}
+.teacher-feature-panel{display:none}
+.teacher-feature-panel.feature-visible{display:block}
+.legacy-teacher-tools{display:none!important}
+@media(max-width:900px){
+  .teacher-dashboard-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:620px){
+  .teacher-hero{padding:18px 12px}
+  .teacher-hero-brand{flex-direction:column;gap:10px}
+  .teacher-hero-copy{text-align:center}
+  .teacher-gold-line{margin:8px auto}
+  .teacher-welcome{justify-content:center}
+  .teacher-logo-shell{width:88px;height:88px;flex-basis:88px}
+  .teacher-dashboard-grid{grid-template-columns:1fr}
+  .hero-logout{position:static!important;margin-bottom:8px}
+}
+@media print{
+  .teacher-dashboard,
+  .feature-panel-bar,
+  #gradingSelectorCard,
+  #studentProgressSection,
+  #messagesSection,
+  .legacy-teacher-tools{
+    display:none!important;
+  }
+
+  .teacher-feature-panel{
+    display:none!important;
+  }
+
+  #gradingStudentsCard{
+    display:block!important;
+  }
+}
+</style>
 </head>
 
 <body>
@@ -1008,47 +1160,138 @@ tbody tr:nth-child(even){
      HEADER
 ===================================================== -->
 
-<header class="header">
+<header class="header teacher-hero">
+  <button class="logout hero-logout" onclick="logout()">خروج ←</button>
 
-<div class="user-card">
+  <div class="teacher-hero-brand">
+    <div class="teacher-logo-shell">
+      <img src="logo.jpeg" class="logo teacher-hero-logo" alt="شعار مدارس الفلاح الأهلية">
+    </div>
 
-<div class="user-icon">👤</div>
-
-<div>
-<div>أهلًا بالمعلم</div>
-<div class="user-name" id="headerTeacherName">...</div>
-</div>
-
-</div>
-
-<div class="header-center">
-
-<img src="logo.jpeg" class="logo">
-
-<div class="header-title">
-
-<h1>مدارس الفلاح الأهلية</h1>
-
-<p>نظام راصد - صفحة المعلم</p>
-
-</div>
-
-</div>
-
-<button class="logout" onclick="logout()">
-خروج ←
-</button>
-
+    <div class="teacher-hero-copy">
+      <div class="teacher-school-name">مدارس الفلاح الأهلية</div>
+      <h1>منصة المعلم</h1>
+      <div class="teacher-gold-line"></div>
+      <div class="teacher-welcome">
+        <span>أهلًا بالمعلم</span>
+        <strong id="headerTeacherName">...</strong>
+      </div>
+      <p>جميع أدواتك التعليمية والإدارية في مكان واحد</p>
+    </div>
+  </div>
 </header>
 
 
 <div class="container">
+<div class="teacher-dashboard" id="teacherDashboard">
+  <div class="dashboard-heading">
+    <div>
+      <span class="dashboard-kicker">لوحة العمل</span>
+      <h2>أدوات المعلم</h2>
+      <p>ابدأ من إحدى الخدمات الرئيسية، ثم استخدم الأدوات المساندة عند الحاجة.</p>
+    </div>
+  </div>
+
+  <div class="dashboard-section-title">الخدمات الرئيسية</div>
+  <div class="teacher-dashboard-grid teacher-dashboard-main">
+    <button class="dashboard-tool dashboard-tool-primary" data-feature="grading" onclick="showTeacherFeature('grading',this)">
+      <span class="dashboard-tool-icon">📝</span>
+      <span class="dashboard-tool-text"><strong>رصد الدرجات</strong><small>الرصد والحفظ والطباعة والحذف</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool dashboard-tool-primary" onclick="openUnifiedWorkspace('weekly')">
+      <span class="dashboard-tool-icon">📅</span>
+      <span class="dashboard-tool-text"><strong>الخطة الأسبوعية</strong><small>إعداد وتحديث الخطة الأسبوعية</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool dashboard-tool-primary" onclick="openUnifiedWorkspace('visits')">
+      <span class="dashboard-tool-icon">📋</span>
+      <span class="dashboard-tool-text"><strong>زياراتي الفنية</strong><small>الاطلاع على الزيارات والتقارير</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+  </div>
+
+  <div class="dashboard-section-title dashboard-secondary-title">أدوات مساندة</div>
+  <div class="teacher-dashboard-grid teacher-dashboard-secondary">
+    <button class="dashboard-tool" data-feature="progress" onclick="showTeacherFeature('progress',this)">
+      <span class="dashboard-tool-icon">📈</span>
+      <span class="dashboard-tool-text"><strong>عرض مستوى الطالب</strong><small>متابعة تطور مستوى الطالب ونتائجه</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool" data-feature="messages" onclick="showTeacherFeature('messages',this)">
+      <span class="dashboard-tool-icon">📨</span>
+      <span class="dashboard-tool-text"><strong>سجل رسائل أولياء الأمور</strong><small>عرض السجل والطباعة والحذف والإجراءات</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool" onclick="openAnalysis()">
+      <span class="dashboard-tool-icon">📊</span>
+      <span class="dashboard-tool-text"><strong>تحليل نتائج الفصل</strong><small>تحليل أداء الطلاب في الفصل</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button id="dashboardExamPlatformBtn" class="dashboard-tool" style="display:none" onclick="openExamPlatform()">
+      <span class="dashboard-tool-icon">🧪</span>
+      <span class="dashboard-tool-text"><strong>الاختبارات الإلكترونية</strong><small>إنشاء وإدارة الاختبارات</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool" onclick="location.href='interactive-activities.html?v=20261014-4'">
+      <span class="dashboard-tool-icon">🎮</span>
+      <span class="dashboard-tool-text"><strong>الأنشطة التفاعلية</strong><small>إنشاء وتشغيل ونشر أنشطة تعليمية ممتعة</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool" onclick="location.href='staff-files.html'"><span class="dashboard-tool-icon">📁</span><span class="dashboard-tool-text"><strong>مركز الملفات والتوثيق</strong><small>تبادل الملفات مع المشرف المختص</small></span><span class="dashboard-tool-arrow">←</span></button>
+    <button class="dashboard-tool" onclick="location.href='teacher-training.html'">
+      <span class="dashboard-tool-icon">🎓</span>
+      <span class="dashboard-tool-text"><strong>الدورات والاجتماعات</strong><small>الدورات التدريبية والاجتماعات</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool" onclick="location.href='teacher-live-classes.html'">
+      <span class="dashboard-tool-icon">💻</span>
+      <span class="dashboard-tool-text"><strong>الحصص المباشرة</strong><small>إدارة وحضور الحصص المباشرة</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool" onclick="location.href='activities-teacher.html'">
+      <span class="dashboard-tool-icon">🎯</span>
+      <span class="dashboard-tool-text"><strong>الأنشطة والتقارير</strong><small>توثيق الأنشطة والتقارير</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool" onclick="openUploadLinkModal()">
+      <span class="dashboard-tool-icon">📎</span>
+      <span class="dashboard-tool-text"><strong>رفع ملف وتوليد رابط</strong><small>رفع الملفات ومشاركة الرابط</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+
+    <button class="dashboard-tool" onclick="location.href='change-password.html?return=teacher.html'">
+      <span class="dashboard-tool-icon">🔐</span>
+      <span class="dashboard-tool-text"><strong>تغيير كلمة المرور</strong><small>إدارة كلمة مرور الحساب</small></span>
+      <span class="dashboard-tool-arrow">←</span>
+    </button>
+  </div>
+</div>
+
+<div id="featurePanelBar" class="feature-panel-bar">
+  <div>
+    <span>الخدمة الحالية</span>
+    <strong id="featurePanelTitle">-</strong>
+  </div>
+  <button type="button" onclick="closeTeacherFeature()">← العودة إلى لوحة الأدوات</button>
+</div>
+
 
 <!-- =====================================================
      SELECT TEST
 ===================================================== -->
 
-<div class="card selector-card">
+<div id="gradingSelectorCard" class="card selector-card teacher-feature-panel grading-feature-panel">
 
 <div class="card-title">
 📖 تسجيل درجات الاختبار
@@ -1158,9 +1401,7 @@ tbody tr:nth-child(even){
 🚫 الكل غائب
 </button>
 
-<button class="action-btn" style="background:#198754;color:#fff" onclick="fillFullMarkForAll()">
-⭐ الدرجة النهائية للجميع
-</button>
+
 
 </div>
 
@@ -1179,7 +1420,7 @@ tbody tr:nth-child(even){
      GRADES
 ===================================================== -->
 
-<div class="card">
+<div id="gradingStudentsCard" class="card teacher-feature-panel grading-feature-panel">
 
 <div class="card-title">
 👨‍🎓 الطلاب والرسائل والحضور والدرجات
@@ -1344,7 +1585,7 @@ tbody tr:nth-child(even){
 
 
 
-<div class="card teacher-tools-card">
+<div class="card teacher-tools-card legacy-teacher-tools">
 
 <div class="card-title">
 🧰 أدوات المعلم
@@ -1370,6 +1611,14 @@ tbody tr:nth-child(even){
 📨 سجل رسائلي لأولياء الأمور
 </button>
 
+<button class="action-btn" style="background:#8a6d1d;color:#fff" onclick='openUnifiedWorkspace("weekly")'>
+📅 الخطة الأسبوعية
+</button>
+
+<button class="action-btn" style="background:#7c3aed;color:#fff" onclick='openUnifiedWorkspace("visits")'>
+📋 زياراتي الفنية
+</button>
+
 <button class="action-btn" style="background:#0f766e;color:#fff" onclick="location.href='teacher-training.html'">
 🎓 الدورات والاجتماعات
 </button>
@@ -1381,7 +1630,6 @@ tbody tr:nth-child(even){
 🎯 الأنشطة والتقارير
 </button>
 
-<button class="action-btn" style="background:#07543f;color:#fff" onclick="location.href='staff-files.html'">📁 مركز الملفات والتوثيق</button>
 <button class="action-btn" style="background:#6f42c1;color:#fff" onclick="openUploadLinkModal()">
 📎 رفع ملف وتوليد رابط
 </button>
@@ -1397,8 +1645,8 @@ tbody tr:nth-child(even){
 </div>
 
 
-<div class="card" id="studentProgressSection">
-<div class="card-title">📈 تطور مستوى الطالب</div>
+<div class="card teacher-feature-panel" id="studentProgressSection">
+<div class="card-title">📈 عرض مستوى الطالب</div>
 <div class="card-body">
 <div class="note">يعرض هذا التحليل نتائج الطالب في المادة المختارة فقط، ضمن المواد والفصول المسندة إليك. الغياب لا يُحسب صفرًا.</div>
 <div class="progress-controls">
@@ -1411,7 +1659,7 @@ tbody tr:nth-child(even){
 </div>
 </div>
 
-<div class="card messages-card" id="messagesSection">
+<div class="card messages-card teacher-feature-panel" id="messagesSection">
 <div class="card-title">📨 سجل رسائلي لأولياء الأمور</div>
 <div class="card-body">
 <div class="message-tools">
@@ -3181,9 +3429,10 @@ snap.forEach(doc=>{
 const data=doc.data()||{};
 
 
-// Keep the student's previously recorded mark visible after a class transfer.
-// The student code and test ID identify the grade; the stored class is historical.
-if(currentStudents.some(student=>String(student.code)===String(data.studentCode))){
+if(
+data.grade===selectedGrade &&
+data.section===selectedSection
+){
 
 savedGrades[
 String(data.studentCode)
@@ -3864,9 +4113,6 @@ item.student.name||"",
 teacherEmail:
 currentUsername,
 
-// Immutable identity survives changes to the login username.
-teacherId:String(currentTeacher.teacherId||currentTeacher.email||currentUsername),
-
 teacherName:
 currentTeacher.name||"",
 
@@ -4457,7 +4703,7 @@ function scrollToMessages(){el("messagesSection").scrollIntoView({behavior:"smoo
 
 function formatMessageDate(ts){
 if(!ts) return "الآن";
-try{const d=ts.toDate?ts.toDate():new Date(ts);return new Intl.DateTimeFormat("ar-SA-u-ca-gregory",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d);}catch{return "-";}
+try{const d=ts.toDate?ts.toDate():new Date(ts);return new Intl.DateTimeFormat("ar-SA",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d);}catch{return "-";}
 }
 
 async function loadMessageLogs(){
@@ -4518,9 +4764,9 @@ const html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"
 
 
 
-</style></head><body><div class="head"><img src="logo.jpeg"><h1>مدارس الفلاح الأهلية</h1><h2>سجل رسائل أولياء الأمور - المعلم</h2></div><div class="meta"><span><strong>المعلم:</strong> ${escapeHtml(currentTeacher?.name||"")}</span><span><strong>عدد الرسائل:</strong> ${rows.length}</span></div><table><thead><tr><th>م</th><th>التاريخ والوقت</th><th>الطالب</th><th>الفصل</th><th>المادة</th><th>الاختبار / النوع</th><th>الجوال</th><th>نص الرسالة</th></tr></thead><tbody>${body}</tbody></table><div class="foot"><span>نظام راصد - مدارس الفلاح الأهلية</span><span>تصميم محمد عامر أحمد - 2026</span></div><script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script>
-<div style="text-align:center;padding:12px"><a href="student-achievements.html" style="display:inline-block;margin:10px;padding:12px 18px;background:#086a55;color:#fff;border-radius:10px;text-decoration:none;font-weight:bold">📁 ملف إنجاز الطالب</a> <a href="smart-certificates.html" style="display:inline-block;margin:10px;padding:12px 18px;background:#9a7527;color:#fff;border-radius:10px;text-decoration:none;font-weight:bold">🏆 الشهادات والتحفيز الذكي</a></div>
-<div style="text-align:center;padding:16px"><a href="staff-files.html" style="display:inline-block;background:#07543f;color:#fff;text-decoration:none;padding:16px 24px;border-radius:14px;font-weight:bold;box-shadow:0 3px 12px #0002">📁 مركز الملفات والتوثيق — رفع وتبادل الملفات</a></div>
+</style>
+
+</head><body><div class="head"><img src="logo.jpeg"><h1>مدارس الفلاح الأهلية</h1><h2>سجل رسائل أولياء الأمور - المعلم</h2></div><div class="meta"><span><strong>المعلم:</strong> ${escapeHtml(currentTeacher?.name||"")}</span><span><strong>عدد الرسائل:</strong> ${rows.length}</span></div><table><thead><tr><th>م</th><th>التاريخ والوقت</th><th>الطالب</th><th>الفصل</th><th>المادة</th><th>الاختبار / النوع</th><th>الجوال</th><th>نص الرسالة</th></tr></thead><tbody>${body}</tbody></table><div class="foot"><span>نظام راصد - مدارس الفلاح الأهلية</span><span>تصميم محمد عامر أحمد - 2026</span></div><script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script>
 </body></html>`;
 const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة للطباعة.");return;}w.document.open();w.document.write(html);w.document.close();
 }
@@ -4849,5 +5095,123 @@ start();
 
 </script>
 
+
+<style id="unifiedWorkspaceStyle">
+.unified-workspace{
+  position:fixed;inset:0;z-index:999999;background:#f4f7f5;display:none;flex-direction:column;
+  font-family:Tajawal,Cairo,Tahoma,Arial,sans-serif;
+}
+.unified-workspace.open{display:flex}
+.unified-workspace-head{
+  min-height:64px;background:linear-gradient(135deg,#004c3f,#006653);color:#fff;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;
+  box-shadow:0 5px 18px rgba(0,0,0,.16)
+}
+.unified-workspace-title{font-weight:900;font-size:18px}
+.unified-workspace-actions{display:flex;gap:8px;align-items:center}
+.unified-workspace-actions button{
+  border:0;border-radius:10px;padding:9px 13px;font:inherit;font-weight:800;cursor:pointer
+}
+.unified-workspace-back{background:#fff;color:#004c3f}
+.unified-workspace-home{background:#f0cf79;color:#17372f}
+.unified-workspace-frame{width:100%;flex:1;border:0;background:#fff}
+@media(max-width:650px){
+  .unified-workspace-head{min-height:58px;padding:8px 10px}
+  .unified-workspace-title{font-size:14px}
+  .unified-workspace-actions button{padding:8px 10px;font-size:12px}
+}
+</style>
+
+<div id="unifiedWorkspace" class="unified-workspace" aria-hidden="true">
+  <div class="unified-workspace-head">
+    <div id="unifiedWorkspaceTitle" class="unified-workspace-title">الخدمة</div>
+    <div class="unified-workspace-actions">
+      <button type="button" class="unified-workspace-home" onclick="reloadUnifiedWorkspace()">↻ تحديث</button>
+      <button type="button" class="unified-workspace-back" onclick="closeUnifiedWorkspace()">← رجوع إلى منصة المعلم</button>
+    </div>
+  </div>
+  <iframe id="unifiedWorkspaceFrame" class="unified-workspace-frame" title="الخدمة"></iframe>
+</div>
+
+<script>
+function openUnifiedWorkspace(kind){
+  const box=document.getElementById("unifiedWorkspace");
+  const frame=document.getElementById("unifiedWorkspaceFrame");
+  const title=document.getElementById("unifiedWorkspaceTitle");
+  let url="",label="";
+  if(kind==="weekly"){
+    url="../weekly/teacher.html";
+    label="الخطة الأسبوعية";
+  }else if(kind==="visits"){
+    url="../follow-up/teacher-portal.html"; label="زياراتي الفنية";
+  }
+  if(!url)return;
+  title.textContent=label;
+  frame.src=url;
+  box.classList.add("open");
+  box.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+function closeUnifiedWorkspace(){
+  const box=document.getElementById("unifiedWorkspace");
+  const frame=document.getElementById("unifiedWorkspaceFrame");
+  box.classList.remove("open");
+  box.setAttribute("aria-hidden","true");
+  frame.src="about:blank";
+  document.body.style.overflow="";
+}
+function reloadUnifiedWorkspace(){
+  const frame=document.getElementById("unifiedWorkspaceFrame");
+  if(frame&&frame.src&&frame.src!=="about:blank")frame.contentWindow.location.reload();
+}
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"&&document.getElementById("unifiedWorkspace")?.classList.contains("open"))closeUnifiedWorkspace();
+});
+</script>
+
+
+<script id="teacherDashboardBehavior">
+(function(){
+  const titles={grading:"رصد الدرجات",progress:"عرض مستوى الطالب",messages:"سجل رسائل أولياء الأمور"};
+  window.showTeacherFeature=function(feature,button){
+    document.querySelectorAll(".teacher-feature-panel").forEach(el=>el.classList.remove("feature-visible"));
+    document.querySelectorAll(".dashboard-tool[data-feature]").forEach(el=>el.classList.remove("active"));
+    if(feature==="grading"){
+      document.querySelectorAll(".grading-feature-panel").forEach(el=>el.classList.add("feature-visible"));
+    }else if(feature==="progress"){
+      document.getElementById("studentProgressSection")?.classList.add("feature-visible");
+    }else if(feature==="messages"){
+      document.getElementById("messagesSection")?.classList.add("feature-visible");
+      try{if(typeof renderMessageLogs==="function")renderMessageLogs()}catch(e){}
+    }
+    (button||document.querySelector('.dashboard-tool[data-feature="'+feature+'"]'))?.classList.add("active");
+    const bar=document.getElementById("featurePanelBar");
+    const t=document.getElementById("featurePanelTitle");
+    if(t)t.textContent=titles[feature]||"الخدمة";
+    bar?.classList.add("show");
+    setTimeout(()=>bar?.scrollIntoView({behavior:"smooth",block:"start"}),30);
+  };
+  window.closeTeacherFeature=function(){
+    document.querySelectorAll(".teacher-feature-panel").forEach(el=>el.classList.remove("feature-visible"));
+    document.querySelectorAll(".dashboard-tool[data-feature]").forEach(el=>el.classList.remove("active"));
+    document.getElementById("featurePanelBar")?.classList.remove("show");
+    document.getElementById("teacherDashboard")?.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+  function syncExam(){
+    const a=document.getElementById("examPlatformBtn"),b=document.getElementById("dashboardExamPlatformBtn");
+    if(a&&b)b.style.display=a.style.display!=="none"?"flex":"none";
+  }
+  window.addEventListener("load",()=>{
+    syncExam();
+    const a=document.getElementById("examPlatformBtn");
+    if(a)new MutationObserver(syncExam).observe(a,{attributes:true,attributeFilter:["style","class"]});
+  });
+  const old=window.scrollToMessages;
+  window.scrollToMessages=function(){
+    window.showTeacherFeature("messages");
+    try{if(typeof old==="function")setTimeout(old,70)}catch(e){}
+  };
+})();
+</script>
 </body>
 </html>
