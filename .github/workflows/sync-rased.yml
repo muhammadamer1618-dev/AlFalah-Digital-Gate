@@ -30,7 +30,7 @@ jobs:
       - name: Copy Rased files without removing portal-only files
         run: |
           mkdir -p rased
-          rsync -a --exclude '.git' --exclude 'CNAME' --exclude 'admin.html' --exclude 'teacher.html' --exclude 'supervisor.html' --exclude 'student.html' --exclude 'analysis.html' --exclude 'student-achievements.html' --exclude 'smart-certificates.html' _rased_source/ rased/
+          rsync -a --exclude '.git' --exclude 'CNAME' --exclude 'admin.html' --exclude 'teacher.html' --exclude 'supervisor.html' --exclude 'supervisor-dashboard.html' --exclude 'student.html' --exclude 'analysis.html' --exclude 'student-achievements.html' --exclude 'smart-certificates.html' _rased_source/ rased/
           rm -rf _rased_source
       - name: Commit and publish changed files
         run: |
