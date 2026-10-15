@@ -3873,7 +3873,7 @@ async function migrateStudentRecords(oldCode,newCode,moveStudent,studentFields){
   }
   if(moveStudent){
     const oldData=oldStudent.data()||{};
-    batch.set(newRef,{...oldData,...studentFields,code:newCode,previousCodes:[...new Set([...(oldData.previousCodes||[]),oldCode])]});
+    batch.set(newRef,{...oldData,...studentFields,code:newCode,previousCodes:[...new Set([...(Array.isArray(oldData.previousCodes)?oldData.previousCodes:[]),oldCode])]});
     batch.delete(oldRef);
   }
   await batch.commit();
