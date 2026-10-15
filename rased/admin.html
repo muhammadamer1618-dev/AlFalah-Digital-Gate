@@ -1271,26 +1271,27 @@ id="statClasses">
 ========================================= -->
 
 <div class="box" id="adminGradeOverrideSection">
-<div class="box-title">✍️ رصد وتعديل درجات الطلاب — صلاحية الإدارة</div>
+<div class="box-title">✍️ رصد وتعديل الدرجات — كشف الفصل</div>
 <div class="box-body">
-<p style="color:#64748b;line-height:1.9">يمكن للإدارة إضافة درجة أو تعديلها حتى بعد إغلاق فترة الرصد. تُحفظ التعديلات في سجل التدقيق، ولا يُعاد فتح الرصد للمعلمين.</p>
+<p style="color:#64748b;line-height:1.8">اختر الصف والفصل ونوع الاختبار؛ سيظهر جميع الطلاب رأسيًا والمواد أفقيًا. يمكن للإدارة تعديل الدرجات حتى بعد إغلاق الرصد دون فتحه للمعلمين.</p>
 <div class="row">
-<div class="col"><label>الاختبار</label><select id="adminGradeTest"><option value="">اختر الاختبار</option></select></div>
-<div class="col"><label>بحث عن الطالب بالاسم أو الكود</label><input id="adminGradeStudentSearch" placeholder="اسم الطالب أو رقم الهوية" oninput="filterAdminGradeStudents()"></div>
-<div class="col"><label>الطالب</label><select id="adminGradeStudent"><option value="">اختر الطالب</option></select></div>
+<div class="col"><label>الصف الدراسي</label><select id="adminMatrixGrade" onchange="adminMatrixChangeGrade()"><option value="">اختر الصف</option></select></div>
+<div class="col"><label>الفصل</label><select id="adminMatrixSection" onchange="adminMatrixReset()"><option value="">اختر الفصل</option></select></div>
+<div class="col"><label>الاختبار / فترة التقييم</label><select id="adminMatrixExam" onchange="adminMatrixReset()"><option value="">اختر الاختبار</option></select></div>
 </div>
-<div class="actions"><button class="btn-primary" onclick="loadAdminGradeRecord()">🔎 عرض الدرجة الحالية</button></div>
-<div id="adminGradeEditor" style="display:none;background:#f7fafc;border:1px solid #dbe5ef;border-radius:12px;padding:16px;margin-top:15px">
-<div id="adminGradeContext" style="font-weight:bold;margin-bottom:12px"></div>
-<div class="row">
-<div class="col"><label>الحضور</label><select id="adminGradeAttendance" onchange="adminGradeAttendanceChanged()"><option value="present">حاضر</option><option value="absent">غائب</option></select></div>
-<div class="col"><label>الدرجة</label><input type="number" id="adminGradeMark" min="0" step="0.25"></div>
-<div class="col"><label>سبب التعديل (إلزامي)</label><input id="adminGradeReason" placeholder="مثال: تصحيح خطأ في الرصد"></div>
+<div class="actions"><button class="btn-primary" onclick="loadAdminGradeMatrix()">📋 عرض كشف الرصد</button></div>
+<div id="adminMatrixStatus" style="margin:12px 0;color:#174f7c;font-weight:bold"></div>
+<div id="adminMatrixArea" style="display:none">
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0">
+<label style="margin:0;flex:1 1 280px">سبب التعديل (إلزامي عند الحفظ) <input id="adminMatrixReason" placeholder="مثال: تعديل درجة بعد مراجعة ورقة الاختبار"></label>
+<button class="btn-success" id="adminMatrixSave" onclick="saveAdminGradeMatrix()">💾 حفظ الدرجات المعدّلة</button>
 </div>
-<div class="actions"><button class="btn-success" id="adminGradeSaveBtn" onclick="saveAdminGradeOverride()">💾 حفظ الدرجة بصلاحية الإدارة</button></div>
-</div>
-<div id="adminGradeMessage" style="margin-top:12px;color:#174f7c;font-weight:bold"></div>
-</div></div>
+<div style="overflow:auto;max-height:65vh;border:1px solid #dbe5ef;border-radius:12px">
+<table id="adminMatrixTable" style="min-width:750px;border-collapse:separate;border-spacing:0;width:100%;text-align:center">
+<thead id="adminMatrixHead"></thead><tbody id="adminMatrixBody"></tbody>
+</table></div>
+<p style="font-size:12px;color:#64748b;margin-top:10px">الخانة الفارغة تعني عدم رصد الدرجة. اكتب 0 لرصد صفر، واكتب «غ» لتسجيل الغياب. التعديلات فقط هي التي تُحفظ.</p>
+</div></div></div>
 
 <div
 class="box"
@@ -11397,79 +11398,101 @@ start();
   };
 })();
 
-let adminGradeOriginalRecord=null;
-let adminGradeLoadedKey="";
-function adminGradeEsc(v){return escapeHtml(v??"");}
+
+let adminMatrixRows=[],adminMatrixTests=[],adminMatrixOriginal=new Map(),adminMatrixLoadedKey="";
 function adminGradeTestOptions(){
- const el=document.getElementById("adminGradeTest");if(!el)return;
- const current=el.value;
- el.innerHTML='<option value="">اختر الاختبار</option>'+tests.map(t=>'<option value="'+adminGradeEsc(t.id)+'">'+adminGradeEsc((t.name||"اختبار")+" — "+(t.subjectName||"")+" — "+(t.date||""))+'</option>').join("");
- el.value=current;
+ const g=document.getElementById("adminMatrixGrade"),e=document.getElementById("adminMatrixExam");
+ if(!g||!e)return;
+ const gv=g.value,ev=e.value;
+ g.innerHTML='<option value="">اختر الصف</option>'+grades.filter(x=>students.some(st=>String(st.grade)===x)).map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join("");
+ g.value=gv;
+ const seen=new Map();
+ tests.forEach(t=>{const key=String(t.name||"")+"|"+String(t.examCategory||"");if(t.name&&!seen.has(key))seen.set(key,t)});
+ e.innerHTML='<option value="">اختر الاختبار</option>'+[...seen].map(([key,t])=>'<option value="'+escapeHtml(key)+'">'+escapeHtml(t.name+(t.examCategory?" — "+t.examCategory:""))+'</option>').join("");
+ e.value=ev;
+ adminMatrixChangeGrade(true);
 }
-function filterAdminGradeStudents(){
- const el=document.getElementById("adminGradeStudent");if(!el)return;
- const q=String(document.getElementById("adminGradeStudentSearch").value||"").trim().toLowerCase();
- const previous=el.value;
- const rows=students.filter(x=>!q||String(x.name||"").toLowerCase().includes(q)||String(x.code||"").includes(q)).slice(0,150);
- el.innerHTML='<option value="">اختر الطالب</option>'+rows.map(x=>'<option value="'+adminGradeEsc(x.code)+'">'+adminGradeEsc(x.name+" — "+x.code+" — "+(x.grade||"")+" "+(x.section||""))+'</option>').join("");
- if(rows.some(x=>String(x.code)===previous))el.value=previous;
- document.getElementById("adminGradeEditor").style.display="none";
- adminGradeLoadedKey="";
+function adminMatrixChangeGrade(keep){
+ const g=document.getElementById("adminMatrixGrade").value;
+ const el=document.getElementById("adminMatrixSection"),old=keep?el.value:"";
+ const list=[...new Set(students.filter(s=>String(s.grade)===g).map(s=>String(s.section||"")).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));
+ el.innerHTML='<option value="">اختر الفصل</option>'+list.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join("");
+ el.value=old;
+ adminMatrixReset();
 }
-function adminGradeAttendanceChanged(){
- const absent=document.getElementById("adminGradeAttendance").value==="absent";
- const input=document.getElementById("adminGradeMark");input.disabled=absent;if(absent)input.value="";
+function adminMatrixReset(){
+ document.getElementById("adminMatrixArea").style.display="none";
+ document.getElementById("adminMatrixStatus").textContent="";
+ adminMatrixLoadedKey="";
 }
-async function loadAdminGradeRecord(){
- const testId=document.getElementById("adminGradeTest").value;
- const code=document.getElementById("adminGradeStudent").value;
- const msg=document.getElementById("adminGradeMessage");
- document.getElementById("adminGradeEditor").style.display="none";adminGradeLoadedKey="";
- const test=tests.find(t=>String(t.id)===testId),student=students.find(x=>String(x.code)===code);
- if(!test||!student){msg.textContent="اختر الاختبار والطالب أولًا";return;}
+function adminMatrixKey(t,c){return String(t.id)+"_"+String(c)}
+async function loadAdminGradeMatrix(){
+ const grade=document.getElementById("adminMatrixGrade").value,section=document.getElementById("adminMatrixSection").value,exam=document.getElementById("adminMatrixExam").value;
+ const status=document.getElementById("adminMatrixStatus");
+ adminMatrixReset();
+ if(!grade||!section||!exam){status.textContent="اختر الصف والفصل والاختبار أولًا";return;}
+ const [name,category]=exam.split("|");
+ const classTests=tests.filter(t=>String(t.name||"")===name&&String(t.examCategory||"")===category&&Array.isArray(t.classes)&&t.classes.some(c=>String(c.grade)===grade&&String(c.section)===section));
+ const unique=new Map();classTests.forEach(t=>{if(!unique.has(String(t.subjectId)))unique.set(String(t.subjectId),t)});
+ adminMatrixTests=[...unique.values()].sort((a,b)=>String(a.subjectName||"").localeCompare(String(b.subjectName||""),"ar"));
+ adminMatrixRows=students.filter(x=>String(x.grade)===grade&&String(x.section)===section).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
+ if(!adminMatrixRows.length){status.textContent="لا يوجد طلاب مسجلون لهذا الفصل. راجع الصف والشعبة في إدارة الطلاب.";return;}
+ if(!adminMatrixTests.length){status.textContent="لا توجد اختبارات مرتبطة بهذا الفصل ونوع الاختبار.";return;}
+ status.textContent="جاري تحميل درجات "+adminMatrixRows.length+" طالب...";
  try{
-  const ref=db.collection("grades").doc(testId+"_"+code);
-  const snap=await ref.get();const record=snap.exists?snap.data():null;
-  adminGradeOriginalRecord=record;
-  adminGradeLoadedKey=testId+"_"+code;
-  document.getElementById("adminGradeAttendance").value=record?.attendance==="absent"?"absent":"present";
-  document.getElementById("adminGradeMark").value=record?.mark??"";
-  document.getElementById("adminGradeMark").max=String(test.fullMark??100);
-  document.getElementById("adminGradeReason").value="";
-  document.getElementById("adminGradeContext").textContent=student.name+" | "+(test.name||"اختبار")+" | الدرجة النهائية: "+(test.fullMark??"غير محددة")+" | "+(record?"درجة مسجلة":"لم تُرصد درجة بعد");
-  document.getElementById("adminGradeEditor").style.display="block";
-  adminGradeAttendanceChanged();msg.textContent="";
- }catch(e){console.error(e);msg.textContent="تعذر تحميل الدرجة: "+e.message;}
+  adminMatrixOriginal=new Map();
+  await Promise.all(adminMatrixTests.map(async t=>{
+   const snap=await db.collection("grades").where("testId","==",t.id).get();
+   snap.forEach(d=>{const data=d.data()||{};if(data.studentCode!==undefined)adminMatrixOriginal.set(adminMatrixKey(t,String(data.studentCode)),data)});
+  }));
+  const th=document.getElementById("adminMatrixHead");
+  th.innerHTML='<tr><th style="position:sticky;top:0;background:#eaf1f7;z-index:3">#</th><th style="position:sticky;top:0;background:#eaf1f7;z-index:3;min-width:180px">الطالب</th>'+adminMatrixTests.map(t=>'<th style="position:sticky;top:0;background:#eaf1f7;z-index:3;min-width:120px">'+escapeHtml(t.subjectName||"مادة")+'<div style="font-size:11px">من '+escapeHtml(t.fullMark||"—")+'</div></th>').join("")+'</tr>';
+  document.getElementById("adminMatrixBody").innerHTML=adminMatrixRows.map((st,i)=>'<tr><td>'+(i+1)+'</td><td style="text-align:right;font-weight:bold;white-space:nowrap">'+escapeHtml(st.name||"")+'<div style="font-size:10px;color:#64748b">'+escapeHtml(st.code)+'</div></td>'+adminMatrixTests.map(t=>{
+   const x=adminMatrixOriginal.get(adminMatrixKey(t,st.code));
+   const val=x?(x.attendance==="absent"?"غ":x.mark??""):"";
+   return '<td><input class="admin-matrix-mark" data-test="'+escapeHtml(t.id)+'" data-code="'+escapeHtml(st.code)+'" data-initial="'+escapeHtml(String(val))+'" value="'+escapeHtml(String(val))+'" placeholder="—" style="width:85px;text-align:center;height:36px;padding:5px" aria-label="'+escapeHtml(st.name+" "+t.subjectName)+'"></td>';
+  }).join("")+'</tr>').join("");
+  document.getElementById("adminMatrixArea").style.display="block";
+  adminMatrixLoadedKey=grade+"|"+section+"|"+exam;
+  status.textContent="تم عرض "+adminMatrixRows.length+" طالب و"+adminMatrixTests.length+" مادة.";
+ }catch(err){console.error(err);status.textContent="تعذر تحميل الدرجات: "+err.message;}
 }
-async function saveAdminGradeOverride(){
- const testId=document.getElementById("adminGradeTest").value,code=document.getElementById("adminGradeStudent").value;
- if(adminGradeLoadedKey!==testId+"_"+code){alert("اعرض الدرجة الحالية أولًا");return;}
- const test=tests.find(x=>String(x.id)===testId),student=students.find(x=>String(x.code)===code);
- if(!test||!student)return;
- const attendance=document.getElementById("adminGradeAttendance").value;
- const raw=document.getElementById("adminGradeMark").value;
- const reason=document.getElementById("adminGradeReason").value.trim();
- const fullMark=Number(test.fullMark);
- if(!reason){alert("اكتب سبب الرصد أو التعديل");return;}
- if(!Number.isFinite(fullMark)||fullMark<=0){alert("الاختبار ليس له درجة نهائية صحيحة");return;}
- if(attendance!=="absent"&&(raw.trim()===""||!Number.isFinite(Number(raw))||Number(raw)<0||Number(raw)>fullMark)){alert("الدرجة يجب أن تكون بين صفر و"+fullMark);return;}
- const mark=attendance==="absent"?null:Number(raw);
- if(!confirm("تأكيد "+(adminGradeOriginalRecord?"تعديل":"رصد")+" درجة "+student.name+" في "+test.name+"؟"))return;
- const btn=document.getElementById("adminGradeSaveBtn");btn.disabled=true;
+async function saveAdminGradeMatrix(){
+ const key=[document.getElementById("adminMatrixGrade").value,document.getElementById("adminMatrixSection").value,document.getElementById("adminMatrixExam").value].join("|");
+ if(key!==adminMatrixLoadedKey){alert("اعرض الكشف من جديد أولًا");return;}
+ const changed=[...document.querySelectorAll(".admin-matrix-mark")].filter(el=>el.value.trim()!==el.dataset.initial.trim());
+ if(!changed.length){alert("لا توجد درجات معدّلة");return;}
+ const reason=document.getElementById("adminMatrixReason").value.trim();
+ if(!reason){alert("يجب كتابة سبب التعديل قبل الحفظ");return;}
+ const edits=[];
+ for(const el of changed){
+  const t=adminMatrixTests.find(t=>String(t.id)===el.dataset.test),st=adminMatrixRows.find(s=>String(s.code)===el.dataset.code);
+  if(!t||!st){alert("تغيرت بيانات الكشف؛ أعد تحميله");return;}
+  const val=el.value.trim(),full=Number(t.fullMark);
+  if(!Number.isFinite(full)||full<=0){alert("درجة الاختبار النهائية غير صحيحة لمادة "+t.subjectName);return;}
+  if(val!==""&&val!=="غ"&&(!Number.isFinite(Number(val))||Number(val)<0||Number(val)>full)){alert("درجة غير صحيحة للطالب "+st.name+" في "+t.subjectName+"؛ المسموح من صفر إلى "+full+" أو غ");el.focus();return;}
+  edits.push({t,st,val,mark:val===""||val==="غ"?null:Number(val),attendance:val==="غ"?"absent":"present"});
+ }
+ if(!confirm("تأكيد حفظ "+edits.length+" تعديلًا؟ سيتم تسجيل السبب لكل درجة، ولن يُفتح الرصد للمعلمين."))return;
+ const button=document.getElementById("adminMatrixSave"),status=document.getElementById("adminMatrixStatus");button.disabled=true;
  try{
-  const ref=db.collection("grades").doc(testId+"_"+code);
-  const oldSnap=await ref.get();const before=oldSnap.exists?oldSnap.data():null;
   const actor=auditActor();
-  const after={...(before||{}),testId,studentCode:String(code),studentName:student.name||"",subjectId:test.subjectId||before?.subjectId||"",subjectName:test.subjectName||before?.subjectName||"",grade:student.grade||"",section:student.section||"",attendance,mark,testName:test.name||"",testDate:test.date||"",fullMark,teacherEmail:before?.teacherEmail||"",teacherName:before?.teacherName||"",adminOverride:true,adminOverrideReason:reason,adminOverrideBy:actor.username,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
-  const logRef=db.collection("auditLogs").doc();
-  const batch=db.batch();
-  batch.set(ref,after);
-  batch.set(logRef,{action:"admin_grade_override",entityType:"grade",entityId:ref.id,studentCode:String(code),studentName:student.name||"",testId,testName:test.name||"",reason,actor,previous:before?{attendance:before.attendance,mark:before.mark}:null,next:{attendance,mark},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await batch.commit();
-  document.getElementById("adminGradeMessage").textContent="✅ تم حفظ الدرجة وتسجيل سبب التعديل بنجاح";
-  await loadAdminGradeRecord();
- }catch(e){console.error(e);alert("تعذر حفظ الدرجة: "+e.message);}
- finally{btn.disabled=false;}
+  for(let offset=0;offset<edits.length;offset+=180){
+   const chunk=edits.slice(offset,offset+180),batch=db.batch();
+   for(const item of chunk){
+    const {t,st,mark,attendance}=item;
+    const ref=db.collection("grades").doc(adminMatrixKey(t,st.code));
+    const before=adminMatrixOriginal.get(adminMatrixKey(t,st.code))||null;
+    const data={...(before||{}),testId:t.id,studentCode:String(st.code),studentName:st.name||"",subjectId:t.subjectId||"",subjectName:t.subjectName||"",grade:st.grade||"",section:st.section||"",testName:t.name||"",testDate:t.date||"",fullMark:Number(t.fullMark),teacherEmail:before?.teacherEmail||"",teacherName:before?.teacherName||"",attendance,mark,adminOverride:true,adminOverrideReason:reason,adminOverrideBy:actor.username,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    batch.set(ref,data);
+    batch.set(db.collection("auditLogs").doc(),{action:"admin_grade_override",entityType:"grade",entityId:ref.id,studentCode:String(st.code),studentName:st.name||"",testId:t.id,testName:t.name||"",subjectName:t.subjectName||"",reason,actor,previous:before?{attendance:before.attendance,mark:before.mark}:null,next:{attendance,mark},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+   }
+   await batch.commit();
+  }
+  status.textContent="✅ تم حفظ "+edits.length+" تعديلًا مع تسجيل أسباب التعديل.";
+  await loadAdminGradeMatrix();
+ }catch(err){console.error(err);status.textContent="تعذر إكمال الحفظ: "+err.message+"؛ أعد تحميل الكشف للتحقق من الدرجات قبل إعادة المحاولة.";}
+ finally{button.disabled=false;}
 }
 
 </script>
