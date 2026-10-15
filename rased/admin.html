@@ -825,110 +825,6 @@ border-bottom:1px dashed #e5e7eb
 
 
 </style>
-
-<style id="adminCardDashboardTheme">
-.top-actions{display:none!important}
-
-.admin-card-dashboard{
-  margin:0 0 14px;
-}
-.admin-dashboard-group{
-  margin:0 0 15px;
-}
-.admin-dashboard-group-title{
-  margin:4px 2px 9px;
-  color:#004c3f;
-  font-size:13px;
-  font-weight:bold;
-}
-.admin-dashboard-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-.admin-dashboard-tool{
-  min-height:74px;
-  border:0;
-  border-radius:11px;
-  padding:12px 14px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:3px;
-  color:#fff;
-  cursor:pointer;
-  text-align:center;
-  font-family:Tahoma,Arial,sans-serif;
-  box-shadow:0 5px 15px rgba(0,0,0,.10);
-  transition:.15s ease;
-}
-.admin-dashboard-tool:hover{
-  transform:translateY(-2px);
-  filter:brightness(1.04);
-}
-.admin-dashboard-tool span{font-size:19px;line-height:1}
-.admin-dashboard-tool strong{font-size:14px;line-height:1.35}
-.admin-dashboard-tool small{
-  font-size:9.5px;
-  line-height:1.35;
-  font-weight:normal;
-  color:rgba(255,255,255,.86);
-}
-.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+1){background:#0f7d74}
-.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+2){background:#947219}
-.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+3){background:#7d3ce4}
-.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+4){background:#156b9d}
-.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+5){background:#7a3ec8}
-.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+6){background:#0f7d74}
-.admin-dashboard-tool.active{
-  background:#004c3f!important;
-  box-shadow:0 0 0 3px rgba(201,151,44,.32),0 8px 20px rgba(0,76,63,.18);
-}
-
-.admin-feature-bar{
-  display:none;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin:8px 0 13px;
-  padding:10px 13px;
-  border-radius:10px;
-  background:#004c3f;
-  color:#fff;
-}
-.admin-feature-bar.show{display:flex}
-.admin-feature-bar span{display:block;font-size:9px;opacity:.72}
-.admin-feature-bar strong{font-size:14px}
-.admin-feature-bar button{
-  border:0;
-  border-radius:8px;
-  background:#fff;
-  color:#004c3f;
-  padding:8px 11px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-/* كل أقسام الإدارة الطويلة مخفية حتى اختيار بطاقة */
-.container > .box{
-  display:none!important;
-}
-.container > .box.admin-feature-visible{
-  display:block!important;
-}
-
-/* الملخص الإحصائي يظل ظاهرًا دائمًا */
-.stats{display:grid!important}
-
-@media(max-width:900px){
-  .admin-dashboard-grid{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:620px){
-  .admin-dashboard-grid{grid-template-columns:1fr}
-  .admin-feature-bar{align-items:flex-start;flex-direction:column}
-}
-</style>
 </head>
 
 
@@ -1082,7 +978,6 @@ onclick="scrollToSection('liveProviderSettingsSection')">
 </div>
 
 
-
 <!-- =========================================
      الإحصائيات
 ========================================= -->
@@ -1176,74 +1071,6 @@ id="statClasses">
 </div>
 
 </div>
-
-<div id="adminCardDashboard" class="admin-card-dashboard">
-
-  <div class="admin-dashboard-group">
-    <div class="admin-dashboard-group-title">إدارة البيانات</div>
-    <div class="admin-dashboard-grid">
-      <button class="admin-dashboard-tool" data-admin-target="studentsSection" onclick="showAdminFeature('studentsSection',this,'إدارة الطلاب')"><span>👨‍🎓</span><strong>إدارة الطلاب</strong><small>إضافة وتعديل وحذف الطلاب</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="teachersSection" onclick="showAdminFeature('teachersSection',this,'إدارة المعلمين')"><span>👨‍🏫</span><strong>إدارة المعلمين</strong><small>الحسابات والبيانات الأساسية</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="subjectsSection" onclick="showAdminFeature('subjectsSection',this,'إدارة المواد')"><span>📚</span><strong>إدارة المواد</strong><small>إضافة وتعديل مواد المدرسة</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="teacherAssignmentsSection" onclick="showAdminFeature('teacherAssignmentsSection',this,'إسناد المواد والفصول')"><span>🔗</span><strong>إسناد المواد والفصول</strong><small>إسناد المعلمين للمواد والفصول</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="bulkTeacherSendSection" onclick="showAdminFeature('bulkTeacherSendSection',this,'الإرسال الجماعي للمعلمين')"><span>📨</span><strong>الإرسال الجماعي</strong><small>إرسال بيانات دخول المعلمين</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="excelImportSection" onclick="showAdminFeature('excelImportSection',this,'استيراد الطلاب من Excel')"><span>📊</span><strong>استيراد الطلاب</strong><small>Excel ونموذج الاستيراد</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="studentProgressSection" onclick="showAdminFeature('studentProgressSection',this,'تطور مستوى الطالب')"><span>📈</span><strong>تطور مستوى الطالب</strong><small>متابعة نتائج الطالب عبر الاختبارات</small></button>
-    </div>
-  </div>
-
-  <div class="admin-dashboard-group">
-    <div class="admin-dashboard-group-title">الاختبارات والرصد</div>
-    <div class="admin-dashboard-grid">
-      <button class="admin-dashboard-tool" data-admin-target="testsSection" onclick="showAdminFeature('testsSection',this,'إدارة الاختبارات')"><span>📝</span><strong>إدارة الاختبارات</strong><small>إنشاء وتعديل وإدارة الاختبارات</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="examScheduleSection" onclick="showAdminFeature('examScheduleSection',this,'جدول الاختبارات')"><span>🗓️</span><strong>جدول الاختبارات</strong><small>إنشاء ونسخ جداول الاختبارات</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="gradingWindowsSection" onclick="showAdminFeature('gradingWindowsSection',this,'فترات رصد الدرجات')"><span>⏱️</span><strong>فترات رصد الدرجات</strong><small>فتح وإغلاق فترات الرصد</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="examAccessSection" onclick="showAdminFeature('examAccessSection',this,'إتاحة الاختبارات الإلكترونية')"><span>🎛️</span><strong>إتاحة الاختبارات الإلكترونية</strong><small>تحديد المواد المسموح لها</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="messagesSection" onclick="showAdminFeature('messagesSection',this,'سجل رسائل أولياء الأمور')"><span>📨</span><strong>سجل رسائل أولياء الأمور</strong><small>بحث وطباعة وحذف الرسائل</small></button>
-      <button class="admin-dashboard-tool" onclick="openMonitoring()"><span>📋</span><strong>حالة الرصد</strong><small>متابعة تقدم رصد الدرجات</small></button>
-      <button class="admin-dashboard-tool" onclick="openExamMonitoring()"><span>💻</span><strong>متابعة الاختبارات الإلكترونية</strong><small>متابعة تنفيذ الاختبارات</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='interactive-admin.html?v=20261013-2'"><span>🎮</span><strong>الأنشطة التفاعلية</strong><small>متابعة الأنشطة والنشر والإدارة</small></button>
-    </div>
-  </div>
-
-  <div class="admin-dashboard-group">
-    <div class="admin-dashboard-group-title">التحليل والمتابعة</div>
-    <div class="admin-dashboard-grid">
-      <button class="admin-dashboard-tool" onclick="openAnalysis()"><span>📊</span><strong>تحليل النتائج</strong><small>تحليل نتائج الطلاب والفصول</small></button>
-      <button class="admin-dashboard-tool" onclick="openComparison()"><span>📈</span><strong>مقارنة النتائج</strong><small>مقارنة الأداء والنتائج</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='control-center.html'"><span>🎛️</span><strong>مركز التحكم</strong><small>إدارة ومتابعة النظام</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='student-report.html'"><span>📄</span><strong>تقرير الطالب الشامل</strong><small>عرض التقرير الكامل للطالب</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='audit-log.html'"><span>🛡️</span><strong>سجل التدقيق</strong><small>متابعة العمليات والتغييرات</small></button>
-      <button class="admin-dashboard-tool" onclick="openSupportStudents()"><span>👥</span><strong>الطلاب المحتاجون للدعم</strong><small>متابعة حالات الدعم الأكاديمي</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='top10.html'"><span>🏆</span><strong>أوائل الطلاب</strong><small>عرض وترتيب الطلاب المتفوقين</small></button>
-      
-      <button class="admin-dashboard-tool" onclick="location.href='supervisor-activities.html'"><span>🎯</span><strong>تقارير الأنشطة</strong><small>مراجعة واعتماد تقارير الأنشطة</small></button>
-    </div>
-  </div>
-
-  <div class="admin-dashboard-group">
-    <div class="admin-dashboard-group-title">الحسابات والإعدادات</div>
-    <div class="admin-dashboard-grid">
-      <button class="admin-dashboard-tool" data-admin-target="supervisorsSection" onclick="showAdminFeature('supervisorsSection',this,'حسابات الإشراف والصلاحيات')"><span>🛡️</span><strong>حسابات المشرفين</strong><small>الحسابات والصلاحيات والإسنادات</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="studentCounselorsSection" onclick="showAdminFeature('studentCounselorsSection',this,'حسابات الموجه الطلابي')"><span>🧭</span><strong>حسابات الموجه الطلابي</strong><small>إضافة وتعديل حسابات التوجيه الطلابي</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="activityLeadersSection" onclick="showAdminFeature('activityLeadersSection',this,'حسابات رواد النشاط')"><span>🎯</span><strong>حسابات رواد النشاط</strong><small>إضافة وتعديل حسابات رواد النشاط</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="liveProviderSettingsSection" onclick="showAdminFeature('liveProviderSettingsSection',this,'إعداد مزود الحصص المباشرة')"><span>🎥</span><strong>مزود الحصص المباشرة</strong><small>إعدادات البث والقاعات</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="cleanupSection" onclick="showAdminFeature('cleanupSection',this,'تنظيف بيانات راصد')"><span>⚠️</span><strong>تنظيف بيانات راصد</strong><small>عمليات الحذف الجماعي الحساسة</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='change-password.html?return=admin.html'"><span>🔐</span><strong>تغيير كلمة المرور</strong><small>تحديث كلمة مرور الإدارة</small></button>
-    </div>
-  </div>
-
-</div>
-
-<div id="adminFeatureBar" class="admin-feature-bar">
-  <div>
-    <span>القسم الحالي</span>
-    <strong id="adminFeatureTitle">-</strong>
-  </div>
-  <button type="button" onclick="closeAdminFeature()">← العودة إلى لوحة الأدوات</button>
-</div>
-
-
 
 
 
@@ -1515,15 +1342,6 @@ onclick="downloadExcelTemplate()">
 
 </button>
 
-
-<button
-class="btn-gold"
-onclick="exportStudentsBackup()">
-
-📥 تصدير نسخة احتياطية للطلاب
-
-</button>
-
 </div>
 
 
@@ -1539,12 +1357,6 @@ code - name - grade - section - phone
 
 إذا كان كود الطالب موجودًا بالفعل،
 سيتم تحديث بياناته بدل تكراره.
-
-<br><br>
-
-<strong>قبل أي استيراد جماعي:</strong>
-اضغط «تصدير نسخة احتياطية للطلاب».
-الملف الناتج يحتوي على شيت أول جاهز لإعادة الاستيراد والاسترجاع، وشيت ثانٍ لنسخة موسعة من البيانات الحالية.
 
 </div>
 
@@ -1841,36 +1653,16 @@ onclick="deleteAllTeachers()">
 <div class="box-body">
 
 <div class="note">
-حدد المعلمين من القائمة التالية مباشرة، ثم أرسل بيانات الدخول الخاصة بكل معلم عبر إضافة <strong>Rased Sender</strong>.
-</div>
-
-<div style="margin-top:12px">
-  <input
-    id="bulkTeacherSearch"
-    placeholder="🔎 بحث باسم المعلم أو اسم المستخدم أو رقم الجوال"
-    oninput="renderBulkTeacherSelectionList()">
+حدد المعلمين من جدول إدارة المعلمين بالأعلى، ثم أرسل بيانات الدخول الخاصة بكل معلم عبر إضافة Rased Sender.
 </div>
 
 <div class="actions" style="margin-top:14px">
 <button class="btn-light" onclick="selectAllBulkTeachers(true)">☑️ تحديد الكل</button>
 <button class="btn-light" onclick="selectAllBulkTeachers(false)">⬜ إلغاء التحديد</button>
+<button class="btn-primary" onclick="bulkSendTeacherCredentials()">📲 إرسال بيانات الدخول للمحددين</button>
 </div>
 
 <div id="bulkTeacherCount" style="margin-top:12px;font-weight:700">تم تحديد: 0 معلم</div>
-
-<div
-  id="bulkTeacherSelectionList"
-  style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px">
-</div>
-
-<div style="display:flex;justify-content:center;margin-top:18px">
-  <button
-    class="btn-success"
-    style="font-size:17px;padding:14px 34px;min-width:280px"
-    onclick="bulkSendTeacherCredentials()">
-    🚀 بدء الإرسال الجماعي للمحددين
-  </button>
-</div>
 
 <div id="bulkTeacherProgress" class="note" style="display:none;margin-top:12px">
 <div id="bulkTeacherProgressText">جاهز للإرسال.</div>
@@ -2583,8 +2375,7 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="row">
 <div class="col"><label>الاسم</label><input id="supervisorName" placeholder="مثال: أحمد سمير عباس"></div>
-<div class="col"><label>رقم الهوية / الإقامة</label><input id="supervisorUsername" inputmode="numeric" maxlength="10" placeholder="10 أرقام — يستخدم للدخول من بوابة الفلاح"></div>
-<div class="col"><label>رقم الجوال — اسم المستخدم في الزيارات الفنية</label><input id="supervisorPhone" inputmode="tel" placeholder="05xxxxxxxx"></div>
+<div class="col"><label>اسم المستخدم</label><input id="supervisorUsername" placeholder="مثال: supervisor1"></div>
 <div class="col"><label>كلمة المرور</label><input id="supervisorPassword" type="text" autocomplete="new-password"></div>
 <div class="col">
 <label>نوع الحساب</label>
@@ -2681,7 +2472,6 @@ onclick="clearCurrentTeacherAssignments()">
 <div class="permission-group">
 <div class="permission-group-title">🎓 الدورات والاجتماعات والحصص المباشرة</div>
 <div class="permission-grid">
-<label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permStaffFilesView" checked><span>📁 مركز الملفات والتوثيق</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permTrainingManage" checked><span>🎓 إدارة الدورات والاجتماعات</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permLiveClassesView" checked><span>💻 متابعة الحصص المباشرة</span></label>
 <label class="permission-item" id="liveClassesSettingsPermissionItem"><input type="checkbox" class="supervisor-permission-check" id="permLiveClassesSettings"><span>⚙️ إعدادات الحصص المباشرة <small style="display:block;color:#64748b;margin-top:3px">متاحة لأي نوع حساب إشراف عند تفعيلها: أيام التعليق وأوقات الحصص</small></span></label>
@@ -2697,10 +2487,6 @@ onclick="clearCurrentTeacherAssignments()">
 <button class="btn-success" onclick="location.href='supervisor-activities.html'">📋 فتح لوحة الأنشطة</button>
 </div>
 
-<div class="note" style="border-right:4px solid #c9972c">
-<strong>طريقة الدخول والربط:</strong> رقم الهوية هو اسم الدخول للمشرف في بوابة الفلاح، ورقم الجوال هو اسم المستخدم نفسه في نظام الزيارات الفنية ويستخدم للربط التلقائي. إذا كان المشرف معلمًا أيضًا، يظل حساب المعلم برقم الجوال مستقلًا ولا يحدث تعارض.
-</div>
-
 <div class="note">
 يُحفظ الحساب داخل مجموعة <strong>users</strong> بدور تقني <strong>supervisor</strong> للحفاظ على توافق النظام القديم،
 ويتم تحديد نوعه كـ <strong>مشرف عام / مدير / مشرف</strong> بصورة مستقلة.
@@ -2711,78 +2497,13 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="table-wrap">
 <table style="min-width:1180px">
-<thead><tr><th>#</th><th>الاسم</th><th>رقم الهوية / الإقامة</th><th>رقم الجوال</th><th>نوع الحساب</th><th>المعلمون المسندون</th><th>الصلاحيات</th><th>الإجراءات</th></tr></thead>
+<thead><tr><th>#</th><th>الاسم</th><th>اسم المستخدم</th><th>نوع الحساب</th><th>المعلمون المسندون</th><th>الصلاحيات</th><th>الإجراءات</th></tr></thead>
 <tbody id="supervisorsBody"></tbody>
 </table>
 </div>
 
 </div>
 </div>
-
-<!-- =========================================
-     حسابات الموجه الطلابي
-========================================= -->
-
-<div class="box" id="studentCounselorsSection">
-
-<div class="box-title">
-🧭 حسابات الموجه الطلابي
-</div>
-
-<div class="box-body">
-
-<input type="hidden" id="studentCounselorOriginalUsername">
-
-<div class="row">
-
-<div class="col">
-<label>اسم الموجه الطلابي</label>
-<input id="studentCounselorName" placeholder="مثال: ربيع فاروق التوني">
-</div>
-
-<div class="col">
-<label>اسم المستخدم</label>
-<input id="studentCounselorUsername" placeholder="مثال: counselor1">
-</div>
-
-<div class="col">
-<label>كلمة المرور</label>
-<input id="studentCounselorPassword" type="text" autocomplete="new-password">
-</div>
-
-</div>
-
-<div class="actions">
-<button class="btn-primary" onclick="saveStudentCounselor()">💾 حفظ حساب الموجه الطلابي</button>
-<button class="btn-light" onclick="clearStudentCounselorForm()">حساب جديد</button>
-</div>
-
-<div class="note">
-حساب <strong>الموجه الطلابي</strong> مخصص لصفحة التوجيه والإرشاد الطلابي.
-يتم الدخول له من بوابة الإشراف والإدارة بنفس اسم المستخدم وكلمة المرور.
-</div>
-
-<div class="admin-list-count">
-عدد حسابات الموجه الطلابي: <b id="studentCounselorsCount">0</b>
-</div>
-
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>اسم الموجه الطلابي</th>
-<th>اسم المستخدم</th>
-<th>الإجراءات</th>
-</tr>
-</thead>
-<tbody id="studentCounselorsBody"></tbody>
-</table>
-</div>
-
-</div>
-</div>
-
 
 <!-- =========================================
      حسابات رواد النشاط
@@ -3215,7 +2936,6 @@ let messageLogs=[];
 let filteredMessageLogs=[];
 let supervisors=[];
 let activityLeaders=[];
-let studentCounselors=[];
 let examAccessEnabledSubjectIds=null;
 
 
@@ -3370,7 +3090,7 @@ new Date(value);
 if(Number.isNaN(date.getTime())) return "—";
 
 return new Intl.DateTimeFormat(
-"ar-SA",
+"ar-SA-u-ca-gregory",
 {
 weekday:"long",
 year:"numeric",
@@ -3893,6 +3613,63 @@ return;
 
 }
 
+
+if(original && original!==code){
+  if(!confirm("تأكيد تغيير كود الطالب من "+original+" إلى "+code+" مع نقل درجاته وسجلاته المرتبطة؟"))return;
+  try{
+    const oldRef=db.collection("students").doc(original);
+    const newRef=db.collection("students").doc(code);
+    const oldSnap=await oldRef.get();
+    const newSnap=await newRef.get();
+    if(!oldSnap.exists)throw Error("الطالب الأصلي غير موجود");
+    if(newSnap.exists)throw Error("الكود الجديد مستخدم بالفعل");
+    const collections=["grades","studentAchievements","studentCertificates","guidanceIncidents","liveClassAttendance","messageLogs","examSchedules"];
+    const linked=[];
+    for(const collectionName of collections){
+      const snap=await db.collection(collectionName).where("studentCode","==",original).get();
+      snap.docs.forEach(doc=>linked.push({collectionName,doc}));
+    }
+    if(linked.length>240)throw Error("عدد السجلات كبير ويحتاج ترحيلًا خاصًا؛ لم يتم تغيير شيء");
+    const batch=db.batch();
+    const oldData=oldSnap.data()||{};
+    for(const item of linked){
+      const data=item.doc.data()||{};
+      let target=item.doc.ref;
+      if(item.collectionName==="grades"){
+        if(!data.testId)throw Error("درجة قديمة بلا معرف اختبار؛ أُلغي النقل لحمايتها");
+        target=db.collection("grades").doc(String(data.testId)+"_"+code);
+      }else if(item.collectionName==="liveClassAttendance" && data.classId){
+        target=db.collection("liveClassAttendance").doc(String(data.classId)+"_"+code.replace(/[^0-9A-Za-z_-]/g,"_"));
+      }
+      if(target.path!==item.doc.ref.path){
+        if((await target.get()).exists)throw Error("تعارض في سجل مرتبط بالكود الجديد: "+item.collectionName);
+        batch.set(target,{...data,studentCode:code});
+        batch.delete(item.doc.ref);
+      }else{
+        batch.update(item.doc.ref,{studentCode:code});
+      }
+    }
+    batch.set(newRef,{...oldData,code,name,grade,section,guardianPhone:phone,phone:phone,previousCodes:[...new Set([...(Array.isArray(oldData.previousCodes)?oldData.previousCodes:[]),original])]});
+    batch.delete(oldRef);
+    await batch.commit();
+    try{await writeAuditLog("student_code_change","student",code,name,oldData,{previousCode:original,code,migratedRecords:linked.length});}catch(e){console.warn("Audit log failed",e);}
+    alert("تم تغيير الكود ونقل "+linked.length+" سجلًا مرتبطًا بنجاح");
+    clearStudentForm();
+    await loadStudents();
+  }catch(e){
+    console.error("Student code change failed",e);
+    alert("لم يتم تغيير كود الطالب: "+e.message);
+  }
+  return;
+}
+
+if(!original){
+  const existingStudent=await db.collection("students").doc(code).get();
+  if(existingStudent.exists){
+    alert("هذا الكود مستخدم بالفعل. لم يتم حفظ التغيير.");
+    return;
+  }
+}
 
 let oldData={};
 
@@ -4616,260 +4393,6 @@ input.files[0]
 }
 
 
-function backupCellValue(value){
-
-if(
-value===null ||
-value===undefined
-){
-return "";
-}
-
-if(
-typeof value==="string" ||
-typeof value==="number" ||
-typeof value==="boolean"
-){
-return value;
-}
-
-try{
-
-if(
-typeof value.toDate==="function"
-){
-return value.toDate().toISOString();
-}
-
-return JSON.stringify(
-auditSafe(value)
-);
-
-}catch(error){
-
-return String(value);
-
-}
-
-}
-
-
-function exportStudentsBackup(){
-
-if(
-!students.length
-){
-
-alert(
-"لا توجد بيانات طلاب لتصديرها."
-);
-
-return;
-
-}
-
-
-/*
-الشيت الأول متوافق مباشرة مع الاستيراد الحالي
-حتى يمكن استرجاع البيانات الأساسية بسرعة.
-*/
-const restoreRows=
-students.map(student=>({
-
-code:String(student.code||""),
-name:String(student.name||""),
-grade:String(student.grade||""),
-section:String(student.section||""),
-phone:String(
-student.guardianPhone ||
-student.phone ||
-""
-)
-
-}));
-
-
-/*
-الشيت الثاني نسخة موسعة من كل الحقول الحالية
-للمراجعة والاحتياط.
-*/
-const fieldSet=
-new Set([
-"code",
-"name",
-"grade",
-"section",
-"guardianPhone",
-"phone"
-]);
-
-
-students.forEach(student=>{
-
-Object.keys(
-student||{}
-)
-.forEach(key=>
-fieldSet.add(key)
-);
-
-});
-
-
-const preferred=[
-"code",
-"name",
-"grade",
-"section",
-"guardianPhone",
-"phone"
-];
-
-
-const remaining=
-[...fieldSet]
-.filter(key=>
-!preferred.includes(key)
-)
-.sort((a,b)=>
-String(a)
-.localeCompare(
-String(b),
-"en"
-)
-);
-
-
-const fullFields=[
-...preferred,
-...remaining
-];
-
-
-const fullRows=
-students.map(student=>{
-
-const row={};
-
-fullFields.forEach(key=>{
-
-row[key]=
-backupCellValue(
-student[key]
-);
-
-});
-
-return row;
-
-});
-
-
-const wb=
-XLSX.utils.book_new();
-
-
-const restoreSheet=
-XLSX.utils.json_to_sheet(
-restoreRows,
-{
-header:[
-"code",
-"name",
-"grade",
-"section",
-"phone"
-]
-}
-);
-
-
-restoreSheet["!cols"]=[
-{wch:18},
-{wch:34},
-{wch:18},
-{wch:12},
-{wch:18}
-];
-
-
-const fullSheet=
-XLSX.utils.json_to_sheet(
-fullRows,
-{
-header:fullFields
-}
-);
-
-
-fullSheet["!cols"]=
-fullFields.map(key=>({
-
-wch:
-["name"].includes(key)
-?34
-:
-[
-"code",
-"guardianPhone",
-"phone"
-].includes(key)
-?18
-:
-20
-
-}));
-
-
-XLSX.utils.book_append_sheet(
-wb,
-restoreSheet,
-"students_restore"
-);
-
-
-XLSX.utils.book_append_sheet(
-wb,
-fullSheet,
-"students_full_backup"
-);
-
-
-const now=
-new Date();
-
-
-const stamp=
-[
-now.getFullYear(),
-String(now.getMonth()+1).padStart(2,"0"),
-String(now.getDate()).padStart(2,"0")
-].join("-")
-+
-"_"
-+
-[
-String(now.getHours()).padStart(2,"0"),
-String(now.getMinutes()).padStart(2,"0")
-].join("-");
-
-
-XLSX.writeFile(
-wb,
-"Rased_Students_Backup_"+stamp+".xlsx"
-);
-
-
-alert(
-"تم تجهيز نسخة احتياطية لـ "+
-students.length+
-" طالب ✅\n\n"+
-"احتفظ بالملف قبل رفع التحديث الجديد."
-);
-
-}
-
-
 function downloadExcelTemplate(){
 
 const data=[
@@ -5569,8 +5092,6 @@ renderTeachers();
 
 renderTeacherCards();
 
-renderBulkTeacherSelectionList();
-
 fillMessageTeacherFilter();
 if(document.getElementById("supervisorTeacherList")){
   renderSupervisorTeacherAssignmentList();
@@ -5713,103 +5234,10 @@ updateBulkTeacherCount();
 }
 
 
-function renderBulkTeacherSelectionList(){
-
-const box=document.getElementById("bulkTeacherSelectionList");
-if(!box) return;
-
-const search=String(document.getElementById("bulkTeacherSearch")?.value||"")
-.trim()
-.toLowerCase();
-
-const selectedBefore=new Set(
-  Array.from(document.querySelectorAll(".bulkTeacherSendCheck:checked"))
-  .map(el=>String(el.value||""))
-);
-
-const list=teachers.filter(teacher=>{
-  if(!search) return true;
-  const haystack=[
-    teacher.name,
-    teacher.email,
-    teacher.phone
-  ]
-  .map(v=>String(v||"").toLowerCase())
-  .join(" ");
-  return haystack.includes(search);
-});
-
-if(!list.length){
-  box.innerHTML='<div class="note" style="grid-column:1/-1;text-align:center">لا يوجد معلمون مطابقون للبحث.</div>';
-  updateBulkTeacherCount();
-  return;
-}
-
-box.innerHTML=list.map((teacher,index)=>{
-  const username=String(teacher.email||"");
-  const checked=selectedBefore.has(username) ? " checked" : "";
-  const phone=String(teacher.phone||"").trim();
-
-  return `
-    <label
-      style="
-        display:flex;
-        align-items:flex-start;
-        gap:10px;
-        padding:11px 12px;
-        border:1px solid #d7e0dc;
-        border-radius:10px;
-        background:#fff;
-        cursor:pointer
-      ">
-      <input
-        type="checkbox"
-        class="bulkTeacherSendCheck"
-        value="${escapeHtml(username)}"
-        ${checked}
-        onchange="syncBulkTeacherCheckboxes(this);updateBulkTeacherCount()"
-        style="width:auto;margin-top:3px">
-      <span style="min-width:0">
-        <strong style="display:block;color:#123c63">${escapeHtml(teacher.name||username)}</strong>
-        <small style="display:block;color:#64748b;margin-top:3px">${escapeHtml(username)}</small>
-        <small style="display:block;color:${phone?'#198754':'#b42318'};margin-top:3px">
-          ${phone?'📱 '+escapeHtml(phone):'⚠ لا يوجد رقم جوال'}
-        </small>
-      </span>
-    </label>
-  `;
-}).join("");
-
-updateBulkTeacherCount();
-
-}
-
-
-function syncBulkTeacherCheckboxes(source){
-
-const username=String(source?.value||"");
-const checked=!!source?.checked;
-
-document.querySelectorAll(".bulkTeacherCheck").forEach(el=>{
-  if(String(el.value||"")===username) el.checked=checked;
-});
-
-document.querySelectorAll(".bulkTeacherSendCheck").forEach(el=>{
-  if(el!==source && String(el.value||"")===username) el.checked=checked;
-});
-
-}
-
-
 function getSelectedBulkTeachers(){
 
-const direct=Array.from(document.querySelectorAll(".bulkTeacherSendCheck:checked"))
-.map(el=>String(el.value||""));
-
-const legacy=Array.from(document.querySelectorAll(".bulkTeacherCheck:checked"))
-.map(el=>String(el.value||""));
-
-return [...new Set([...direct,...legacy])];
+return Array.from(document.querySelectorAll(".bulkTeacherCheck:checked"))
+.map(el=>el.value);
 
 }
 
@@ -5826,7 +5254,7 @@ el.textContent="تم تحديد: "+getSelectedBulkTeachers().length+" معلم";
 
 function selectAllBulkTeachers(checked){
 
-document.querySelectorAll(".bulkTeacherCheck,.bulkTeacherSendCheck").forEach(el=>{
+document.querySelectorAll(".bulkTeacherCheck").forEach(el=>{
 el.checked=checked;
 });
 
@@ -6013,52 +5441,32 @@ return p;
 
 async function sendTeacherCredentials(username){
 
-// افتح النافذة فور الضغطة حتى لا يمنع Safari/Chrome فتح واتساب بعد await.
-let whatsappWindow=null;
-try{
-  whatsappWindow=window.open("about:blank","_blank");
-  if(whatsappWindow){
-    whatsappWindow.document.write(
-      '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>جاري فتح واتساب</title></head><body style="font-family:Arial;text-align:center;padding:40px">جاري تجهيز بيانات المعلم وفتح واتساب...</body></html>'
-    );
-  }
-}catch(error){
-  console.warn("WHATSAPP WINDOW OPEN ERROR",error);
-}
-
 const teacher=teachers.find(t=>t.email===username);
 
 if(!teacher){
-  if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
-  alert("لم يتم العثور على بيانات المعلم.");
-  return;
+alert("لم يتم العثور على بيانات المعلم.");
+return;
 }
 
 const phone=normalizeTeacherPhone(teacher.phone||"");
 
-if(!/^9665\d{8}$/.test(phone)){
-  if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
-  alert(
-    "رقم جوال المعلم غير صحيح أو غير مسجل:\n"+
-    (teacher.name||username)+
-    "\n\nيجب أن يكون رقمًا سعوديًا مثل 05xxxxxxxx."
-  );
-  return;
+if(!phone){
+alert("لا يوجد رقم جوال مسجل للمعلم:\n"+(teacher.name||username)+"\n\nاضغط تعديل وأضف رقم الجوال أولًا.");
+return;
 }
 
 let password="";
 
 try{
-  const userDoc=await db.collection("users").doc(username).get();
-  password=userDoc.exists ? (userDoc.data().password||"") : "";
+const userDoc=await db.collection("users").doc(username).get();
+password=userDoc.exists ? (userDoc.data().password||"") : "";
 }catch(error){
-  console.error(error);
+console.error(error);
 }
 
 if(!password){
-  if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
-  alert("لا توجد كلمة مرور محفوظة لهذا المعلم.");
-  return;
+alert("لا توجد كلمة مرور محفوظة لهذا المعلم.");
+return;
 }
 
 const message=`مدارس الفلاح الأهلية
@@ -6075,22 +5483,13 @@ ${password}
 
 يرجى الاحتفاظ ببيانات الدخول.`;
 
-const whatsappUrl=
-  "https://wa.me/"+phone+"?text="+encodeURIComponent(message);
-
-try{
-  if(whatsappWindow&&!whatsappWindow.closed){
-    whatsappWindow.location.replace(whatsappUrl);
-  }else{
-    // fallback مهم خصوصًا على iPhone إذا حجب المتصفح النافذة الجديدة.
-    window.location.href=whatsappUrl;
-  }
-}catch(error){
-  console.error("WHATSAPP OPEN ERROR",error);
-  window.location.href=whatsappUrl;
-}
+window.open(
+"https://wa.me/"+phone+"?text="+encodeURIComponent(message),
+"_blank"
+);
 
 }
+
 
 async function saveTeacher(){
 
@@ -6178,69 +5577,28 @@ oldDoc.data()||{};
 }
 
 
-if(
-original &&
-original!==username
-){
-
-await db
-.collection("teachers")
-.doc(original)
-.delete();
-
-
-const oldUser=
-
-await db
-.collection("users")
-.doc(original)
-.get();
-
-
-if(
-oldUser.exists &&
-oldUser.data().role==="teacher"
-){
-
-await db
-.collection("users")
-.doc(original)
-.delete();
-
+// Preserve identity even when the login username changes.
+const teacherId=String(oldData.teacherId||original||username);
+const existingTarget=await db.collection("teachers").doc(username).get();
+if(original!==username && existingTarget.exists){
+  alert("اسم المستخدم الجديد مستخدم بالفعل لمعلم آخر.");
+  return;
 }
-
+const batch=db.batch();
+batch.set(db.collection("teachers").doc(username),{
+  ...oldData,name,email:username,phone,teacherId
+},{merge:true});
+batch.set(db.collection("users").doc(username),{
+  name,role:"teacher",password,teacherId
+},{merge:true});
+if(original && original!==username){
+  batch.delete(db.collection("teachers").doc(original));
+  const oldUser=await db.collection("users").doc(original).get();
+  if(oldUser.exists && oldUser.data().role==="teacher"){
+    batch.delete(db.collection("users").doc(original));
+  }
 }
-
-
-await db
-.collection("teachers")
-.doc(username)
-.set({
-
-...oldData,
-
-name,
-email:username,
-phone
-
-},{
-merge:true
-});
-
-
-await db
-.collection("users")
-.doc(username)
-.set({
-
-name,
-role:"teacher",
-password
-
-},{
-merge:true
-});
-
+await batch.commit();
 
 alert(
 "تم حفظ المعلم ✅"
@@ -9745,7 +9103,6 @@ const SUPERVISOR_PERMISSION_DEFS=[
 ["guidanceReview","permGuidanceReview","مراجعة التوجيه"],
 ["guidancePublish","permGuidancePublish","نشر التوجيه لولي الأمر"],
 ["guidanceDelete","permGuidanceDelete","حذف سجلات التوجيه"],
-["staffFilesView","permStaffFilesView","مركز الملفات والتوثيق"],
 ["trainingManage","permTrainingManage","الدورات والاجتماعات"],
 ["liveClassesView","permLiveClassesView","الحصص المباشرة"],
 ["liveClassesSettings","permLiveClassesSettings","إعدادات الحصص المباشرة"]
@@ -9848,7 +9205,6 @@ supervisors.push({
 username:doc.id,
 name:data.name||doc.id,
 password:data.password||"",
-phone:data.phone||data.mobile||"",
 role:"supervisor",
 supervisorType:data.supervisorType||"general_supervisor",
 assignedTeacherEmails:Array.isArray(data.assignedTeacherEmails)?data.assignedTeacherEmails.map(normalizeTeacherEmail).filter(Boolean):[],
@@ -9872,14 +9228,13 @@ const count=document.getElementById("supervisorsCount");
 if(count)count.textContent=supervisors.length;
 if(!body)return;
 body.innerHTML="";
-if(!supervisors.length){body.innerHTML="<tr><td colspan='8'>لا توجد حسابات إشراف</td></tr>";return}
+if(!supervisors.length){body.innerHTML="<tr><td colspan='7'>لا توجد حسابات إشراف</td></tr>";return}
 supervisors.forEach((s,index)=>{
 const tr=document.createElement("tr");
 tr.innerHTML=`
 <td class="admin-row-number">${index+1}</td>
 <td>${escapeHtml(s.name)}</td>
 <td>${escapeHtml(s.username)}</td>
-<td>${escapeHtml(s.phone||"")}</td>
 <td><span class="role-badge">${escapeHtml(supervisorTypeLabel(s.supervisorType))}</span></td>
 <td>${String(s.supervisorType||"").toLowerCase()==="supervisor"
   ?(s.assignedTeacherEmails?.length
@@ -9912,17 +9267,13 @@ const original=document.getElementById("supervisorOriginalUsername").value.trim(
 const name=document.getElementById("supervisorName").value.trim();
 const username=document.getElementById("supervisorUsername").value.trim().toLowerCase();
 const password=document.getElementById("supervisorPassword").value.trim();
-const phone=document.getElementById("supervisorPhone").value.trim();
 const supervisorType=document.getElementById("supervisorRole").value||"general_supervisor";
 const permissions=readSupervisorPermissions();
 const assignedTeacherEmails=supervisorType==="supervisor"?selectedSupervisorTeacherEmails():[];
 
-if(!name||!username||!phone||!password){alert("أدخل الاسم ورقم الهوية ورقم الجوال وكلمة المرور");return}
-const normalizedSupervisorPhone=String(phone).replace(/\D/g,"");
-if(!/^(?:05\d{8}|5\d{8}|9665\d{8})$/.test(normalizedSupervisorPhone)){alert("أدخل رقم جوال سعودي صحيح للمشرف.");return}
-const savedSupervisorPhone=normalizedSupervisorPhone.startsWith("966")?"0"+normalizedSupervisorPhone.slice(3):(normalizedSupervisorPhone.startsWith("5")?"0"+normalizedSupervisorPhone:normalizedSupervisorPhone);
+if(!name||!username||!password){alert("أدخل الاسم واسم المستخدم وكلمة المرور");return}
 if(!["general_supervisor","manager","deputy","supervisor"].includes(supervisorType)){alert("اختر نوع حساب صحيح.");return}
-if(!/^[12]\d{9}$/.test(username)){alert("رقم الهوية / الإقامة يجب أن يكون 10 أرقام ويبدأ بـ 1 أو 2.");return}
+if(!/^[a-zA-Z0-9._-]{3,60}$/.test(username)){alert("اسم المستخدم يجب أن يكون 3 أحرف على الأقل، ويحتوي على حروف إنجليزية أو أرقام أو . _ - فقط.");return}
 if(password.length<4){alert("كلمة المرور يجب ألا تقل عن 4 أحرف.");return}
 if(supervisorType==="supervisor"&&!assignedTeacherEmails.length){alert("حدد معلمًا واحدًا على الأقل لهذا المشرف.");return}
 if(!permissions.activitiesView&&(permissions.activitiesReview||permissions.activitiesPublish||permissions.activitiesReturn||permissions.activitiesDelete)){
@@ -9936,7 +9287,7 @@ const existing=await db.collection("users").doc(username).get();
 const previousSupervisor=
 original?supervisors.find(x=>x.username===original)||null:
 (existing.exists?{username,...existing.data()}:null);
-if(existing.exists&&username!==original){alert("رقم الهوية / الإقامة مستخدم بالفعل في حساب آخر.");return}
+if(existing.exists&&username!==original){alert("اسم المستخدم مستخدم بالفعل.");return}
 
 if(original&&original!==username){
 const oldDoc=await db.collection("users").doc(original).get();
@@ -9944,7 +9295,7 @@ if(oldDoc.exists&&String(oldDoc.data().role||"").toLowerCase()==="supervisor")aw
 }
 
 await db.collection("users").doc(username).set({
-name,username,identityNumber:username,phone:savedSupervisorPhone,mobile:savedSupervisorPhone,role:"supervisor",supervisorType,password,permissions,
+name,username,role:"supervisor",supervisorType,password,permissions,
 assignedTeacherEmails,
 teacherScopeMode:supervisorType==="supervisor"?"assigned":"all",
 updatedAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -9959,8 +9310,6 @@ await writeAuditLog(
   {
     name,
     username,
-    identityNumber:username,
-    phone:savedSupervisorPhone,
     role:"supervisor",
     supervisorType,
     permissions,
@@ -9979,7 +9328,6 @@ const s=supervisors.find(x=>x.username===username);if(!s)return;
 document.getElementById("supervisorOriginalUsername").value=s.username;
 document.getElementById("supervisorName").value=s.name||"";
 document.getElementById("supervisorUsername").value=s.username||"";
-document.getElementById("supervisorPhone").value=s.phone||"";
 document.getElementById("supervisorPassword").value=s.password||"";
 document.getElementById("supervisorRole").value=s.supervisorType||"general_supervisor";
 document.getElementById("supervisorTeacherSearch").value="";
@@ -9994,7 +9342,6 @@ function clearSupervisorForm(){
 document.getElementById("supervisorOriginalUsername").value="";
 document.getElementById("supervisorName").value="";
 document.getElementById("supervisorUsername").value="";
-document.getElementById("supervisorPhone").value="";
 document.getElementById("supervisorPassword").value="";
 document.getElementById("supervisorRole").value="general_supervisor";
 document.getElementById("supervisorTeacherSearch").value="";
@@ -10022,185 +9369,6 @@ await writeAuditLog(
 );
 
 await loadSupervisors();
-}
-
-
-/* =========================================
-   حسابات الموجه الطلابي
-========================================= */
-
-async function loadStudentCounselors(){
-
-const snap=await db.collection("users").get();
-
-studentCounselors=[];
-
-snap.forEach(doc=>{
-
-const data=doc.data()||{};
-
-if(String(data.role||"").toLowerCase()==="student_counselor"){
-
-studentCounselors.push({
-username:doc.id,
-name:data.name||doc.id,
-password:data.password||""
-});
-
-}
-
-});
-
-studentCounselors.sort((a,b)=>
-String(a.name||"").localeCompare(String(b.name||""),"ar")
-);
-
-renderStudentCounselors();
-
-}
-
-
-function renderStudentCounselors(){
-
-const body=document.getElementById("studentCounselorsBody");
-const count=document.getElementById("studentCounselorsCount");
-
-if(count) count.textContent=studentCounselors.length;
-if(!body) return;
-
-body.innerHTML="";
-
-if(!studentCounselors.length){
-
-body.innerHTML="<tr><td colspan='4'>لا توجد حسابات موجهين طلابيين</td></tr>";
-return;
-
-}
-
-studentCounselors.forEach((item,index)=>{
-
-const tr=document.createElement("tr");
-
-tr.innerHTML=`
-<td class="admin-row-number">${index+1}</td>
-<td>${escapeHtml(item.name)}</td>
-<td>${escapeHtml(item.username)}</td>
-<td>
-<button class="small-btn btn-warning" onclick='editStudentCounselor(${JSON.stringify(item.username)})'>تعديل</button>
-<button class="small-btn btn-danger" onclick='deleteStudentCounselor(${JSON.stringify(item.username)})'>حذف</button>
-</td>
-`;
-
-body.appendChild(tr);
-
-});
-
-}
-
-
-async function saveStudentCounselor(){
-
-const original=document.getElementById("studentCounselorOriginalUsername").value.trim().toLowerCase();
-const name=document.getElementById("studentCounselorName").value.trim();
-const username=document.getElementById("studentCounselorUsername").value.trim().toLowerCase();
-const password=document.getElementById("studentCounselorPassword").value.trim();
-
-if(!name || !username || !password){
-
-alert("أدخل اسم الموجه الطلابي واسم المستخدم وكلمة المرور");
-return;
-
-}
-
-if(!/^[a-zA-Z0-9._-]{3,60}$/.test(username)){
-
-alert("اسم المستخدم يجب أن يكون 3 أحرف على الأقل، ويحتوي على حروف إنجليزية أو أرقام أو . _ - فقط.");
-return;
-
-}
-
-if(password.length<4){
-
-alert("كلمة المرور يجب ألا تقل عن 4 أحرف.");
-return;
-
-}
-
-const existing=await db.collection("users").doc(username).get();
-
-if(existing.exists && username!==original){
-
-alert("اسم المستخدم مستخدم بالفعل.");
-return;
-
-}
-
-if(original && original!==username){
-
-const oldDoc=await db.collection("users").doc(original).get();
-
-if(oldDoc.exists && String(oldDoc.data().role||"").toLowerCase()==="student_counselor"){
-await oldDoc.ref.delete();
-}
-
-}
-
-await db.collection("users").doc(username).set({
-name,
-username,
-role:"student_counselor",
-password,
-updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-},{merge:true});
-
-alert("تم حفظ حساب الموجه الطلابي ✅");
-
-clearStudentCounselorForm();
-await loadStudentCounselors();
-
-}
-
-
-function editStudentCounselor(username){
-
-const item=studentCounselors.find(x=>x.username===username);
-if(!item) return;
-
-document.getElementById("studentCounselorOriginalUsername").value=item.username;
-document.getElementById("studentCounselorName").value=item.name||"";
-document.getElementById("studentCounselorUsername").value=item.username||"";
-document.getElementById("studentCounselorPassword").value=item.password||"";
-
-scrollToSection("studentCounselorsSection");
-
-}
-
-
-function clearStudentCounselorForm(){
-
-document.getElementById("studentCounselorOriginalUsername").value="";
-document.getElementById("studentCounselorName").value="";
-document.getElementById("studentCounselorUsername").value="";
-document.getElementById("studentCounselorPassword").value="";
-
-}
-
-
-async function deleteStudentCounselor(username){
-
-const item=studentCounselors.find(x=>x.username===username);
-if(!item) return;
-
-if(!confirm("هل تريد حذف حساب الموجه الطلابي:\n"+item.name+" ؟")) return;
-
-const doc=await db.collection("users").doc(username).get();
-
-if(doc.exists && String(doc.data().role||"").toLowerCase()==="student_counselor"){
-await doc.ref.delete();
-}
-
-await loadStudentCounselors();
-
 }
 
 
@@ -11284,7 +10452,6 @@ loadSubjects(),
 loadTeachers(),
 loadTests(),
 loadSupervisors(),
-loadStudentCounselors(),
 loadActivityLeaders()
 
 ]);
@@ -11360,68 +10527,5 @@ start();
   </div>
 </div>
 
-
-<script id="adminCardDashboardBehavior">
-(function(){
-  function titleText(el){
-    const t=el?.querySelector(":scope > .box-title");
-    return (t?.textContent||"القسم").replace(/\s+/g," ").trim();
-  }
-
-  function ensureSpecialIds(){
-    document.querySelectorAll(".container > .box").forEach(box=>{
-      const text=titleText(box);
-      if(!box.id && text.includes("استيراد الطلاب من Excel"))box.id="excelImportSection";
-      if(!box.id && text.includes("إسناد المواد والفصول للمعلمين"))box.id="teacherAssignmentsSection";
-      if(!box.id && text.includes("تنظيف بيانات راصد"))box.id="cleanupSection";
-    });
-  }
-
-  window.showAdminFeature=function(id,button,label){
-    ensureSpecialIds();
-
-    document.querySelectorAll(".container > .box").forEach(el=>el.classList.remove("admin-feature-visible"));
-    document.querySelectorAll(".admin-dashboard-tool[data-admin-target]").forEach(el=>el.classList.remove("active"));
-
-    const target=document.getElementById(id);
-    if(!target)return;
-
-    target.classList.add("admin-feature-visible");
-    const selected=button||document.querySelector('.admin-dashboard-tool[data-admin-target="'+id+'"]');
-    selected?.classList.add("active");
-
-    const bar=document.getElementById("adminFeatureBar");
-    const title=document.getElementById("adminFeatureTitle");
-    if(title)title.textContent=label||titleText(target);
-    bar?.classList.add("show");
-
-    if(id==="messagesSection"){
-      try{if(typeof loadMessageLogs==="function")loadMessageLogs()}catch(e){}
-    }
-
-    setTimeout(()=>bar?.scrollIntoView({behavior:"smooth",block:"start"}),30);
-  };
-
-  window.closeAdminFeature=function(){
-    document.querySelectorAll(".container > .box").forEach(el=>el.classList.remove("admin-feature-visible"));
-    document.querySelectorAll(".admin-dashboard-tool[data-admin-target]").forEach(el=>el.classList.remove("active"));
-    document.getElementById("adminFeatureBar")?.classList.remove("show");
-    document.getElementById("adminCardDashboard")?.scrollIntoView({behavior:"smooth",block:"start"});
-  };
-
-  window.addEventListener("load",ensureSpecialIds);
-
-  // أي كود قديم يحاول الانتقال إلى قسم داخلي يفتح البطاقة بدل تمرير الصفحة الطويلة.
-  window.scrollToSection=function(id){
-    ensureSpecialIds();
-    const target=document.getElementById(id);
-    if(target && target.closest(".container") && target.classList.contains("box")){
-      window.showAdminFeature(id,null,titleText(target));
-      return;
-    }
-    if(target)target.scrollIntoView({behavior:"smooth",block:"start"});
-  };
-})();
-</script>
 </body>
 </html>
