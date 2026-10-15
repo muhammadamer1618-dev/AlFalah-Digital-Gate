@@ -78,10 +78,6 @@ tr{break-inside:avoid!important;page-break-inside:avoid!important}.legend{margin
 <h2 style="margin:0 0 7px;color:#075c70">🎯 الخطط العلاجية — متابعة الطلاب المتعثرين</h2>
 <p style="color:#617689;font-size:13px">اختر الاختبار أولًا، ثم حدد الطالب وسجّل المهارة والإجراء العلاجي وموعد المتابعة. لا تؤثر الخطة على درجات الطالب.</p>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px">
-<label>اسم المعلم<input id="remedialTeacher" maxlength="120" placeholder="اسم المعلم المسؤول" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-<label>اسم المشرف<input id="remedialSupervisor" maxlength="120" placeholder="اسم المشرف التربوي" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-<label>المشرف العام<input id="remedialGeneralSupervisor" maxlength="120" value="أحمد سمير عباس" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
-<label>مدير المدرسة<input id="remedialPrincipal" maxlength="120" value="عبد العزيز بن إبراهيم القحطاني" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
 <label>الطالب<select id="remedialStudent" style="display:block;width:100%;padding:10px;margin-top:5px"><option value="">اختر اختبارًا أولًا</option></select></label>
 <label>المهارة المستهدفة<input id="remedialSkill" maxlength="160" placeholder="مثال: فهم المقروء" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
 <label>موعد المتابعة<input id="remedialDate" type="date" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
@@ -230,7 +226,7 @@ function remedialScopeValid(){
  return !!(selectedSubjectId&&selectedGrade&&selectedSection&&selectedTest&&(!isTeacher||assignments.some(a=>String(a.subjectId)===String(selectedSubjectId)&&a.grade===selectedGrade&&a.section===selectedSection)));
 }
 function populateRemedialStudents(){
- const teacher=el("remedialTeacher");if(teacher&&!remedialEditingId)teacher.value=getAnalysisTeacherName()==="-"?"":getAnalysisTeacherName();
+
  const select=el("remedialStudent");if(!select)return;
  select.innerHTML='<option value="">اختر الطالب</option>';
  analyzedStudents.filter(x=>x.student?.code).sort((a,b)=>(a.percentage??101)-(b.percentage??101)).forEach(x=>{
@@ -241,13 +237,31 @@ function remedialActor(){
  return String(currentUsername||localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"").trim().toLowerCase();
 }
 let remedialEditingId=null;let remedialLoadedPlans=[];
+async function resolveRemedialTeacherSupervisor(){
+ const fallbackName=getAnalysisTeacherName();let teacherName=fallbackName==="-"?"غير محدد":String(fallbackName);
+ const teacherId=isTeacher?currentUsername:String(selectedTest?.teacherEmail||selectedTest?.teacherUsername||selectedTest?.createdBy||"").trim().toLowerCase();
+ if(teacherId){
+  try{const doc=await db.collection("teachers").doc(teacherId).get();if(doc.exists)teacherName=String(doc.data()?.name||teacherName);}catch(e){console.warn("Teacher lookup",e);}
+ }
+ let supervisorName="غير محدد";
+ if(teacherId){
+  try{
+   const snap=await db.collection("users").where("assignedTeacherEmails","array-contains",teacherId).get();
+   const supervisors=snap.docs.map(d=>d.data()||{}).filter(u=>u.role==="supervisor"&&u.supervisorType==="supervisor");
+   if(supervisors.length===1)supervisorName=String(supervisors[0].name||"غير محدد");
+   else if(supervisors.length>1)supervisorName=supervisors.map(u=>u.name).filter(Boolean).join("، ");
+  }catch(e){console.warn("Supervisor lookup",e);}
+ }
+ return{teacherName,supervisorName};
+}
 async function saveRemedialPlan(){
  const out=el("remedialStatus");
  if(!remedialScopeValid()){out.textContent="اختر مادة وصفًا وفصلًا واختبارًا ضمن صلاحياتك أولًا.";return;}
  const code=el("remedialStudent").value,student=students.find(x=>String(x.code)===code);
- const teacherName=el("remedialTeacher").value.trim(),supervisorName=el("remedialSupervisor").value.trim(),generalSupervisorName=el("remedialGeneralSupervisor").value.trim(),principalName=el("remedialPrincipal").value.trim();
+ const teacherInfo=await resolveRemedialTeacherSupervisor();
+ const teacherName=teacherInfo.teacherName,supervisorName=teacherInfo.supervisorName,generalSupervisorName="أحمد سمير عباس",principalName="عبد العزيز بن إبراهيم القحطاني";
  const skill=el("remedialSkill").value.trim(),action=el("remedialAction").value.trim(),date=el("remedialDate").value;
- if(!student||!teacherName||!supervisorName||!generalSupervisorName||!principalName||!skill||!action||!date){out.textContent="اختر الطالب واكتب المهارة والإجراء وموعد المتابعة.";return;}
+ if(!student||!skill||!action||!date){out.textContent="اختر الطالب واكتب المهارة والإجراء وموعد المتابعة.";return;}
  const actor=remedialActor();if(!actor){out.textContent="تعذر تحديد الحساب الحالي. سجّل الدخول مرة أخرى.";return;}
  out.textContent="جارٍ حفظ الخطة...";
  try{
@@ -275,7 +289,7 @@ function editRemedialPlan(id){
  const p=remedialLoadedPlans.find(x=>x.id===id);if(!p)return;
  if(!isAdmin&&p.createdBy!==remedialActor()){alert("تعديل الخطة متاح لمن أنشأها أو للإدارة.");return;}
  remedialEditingId=id;el("remedialStudent").value=String(p.studentCode);el("remedialStudent").disabled=true;
- el("remedialTeacher").value=p.teacherName||"";el("remedialSupervisor").value=p.supervisorName||"";el("remedialGeneralSupervisor").value=p.generalSupervisorName||"أحمد سمير عباس";el("remedialPrincipal").value=p.principalName||"عبد العزيز بن إبراهيم القحطاني";el("remedialSkill").value=p.skill||"";el("remedialAction").value=p.action||"";el("remedialDate").value=p.followupDate||"";
+ el("remedialSkill").value=p.skill||"";el("remedialAction").value=p.action||"";el("remedialDate").value=p.followupDate||"";
  el("remedialSaveBtn").textContent="💾 حفظ التعديل";el("remedialPanel").scrollIntoView({behavior:"smooth"});
 }
 async function deleteRemedialPlan(id){
@@ -292,7 +306,7 @@ function printRemedialPlan(id){
  const p=remedialLoadedPlans.find(x=>x.id===id);if(!p)return;
  const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة للطباعة.");return;}
  const e=escapeHtml;
- w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>خطة علاجية</title><style>@page{size:A4;margin:15mm}body{font-family:Tahoma,Arial;color:#163d52;line-height:2}.head{text-align:center;border-bottom:4px solid #b78b38;padding:12px}.head img{width:85px;height:85px;object-fit:contain}h1{color:#075d74}table{width:100%;border-collapse:collapse;margin-top:20px}td{border:1px solid #cbdde5;padding:11px}td:first-child{width:30%;background:#eff5f7;font-weight:bold}footer{margin-top:45px;text-align:center;color:#627989;font-size:12px}</style></head><body><div class="head"><img src="'+new URL("logo.jpeg",location.href).href+'"><h2>مدارس الفلاح الأهلية</h2><h1>الخطة العلاجية للطالب</h1></div><table>'+[['الطالب',p.studentName],['المعلم',p.teacherName||'—'],['المشرف التربوي',p.supervisorName||'—'],['المشرف العام',p.generalSupervisorName||'أحمد سمير عباس'],['مدير المدرسة',p.principalName||'عبد العزيز بن إبراهيم القحطاني'],['الصف والفصل',p.grade+' / '+p.section],['المادة',p.subjectName],['الاختبار المرجعي',p.baselineTestName],['المستوى المرجعي',Number.isFinite(p.baselinePercentage)?p.baselinePercentage.toFixed(1)+'%':'غير متاح'],['المهارة المستهدفة',p.skill],['الإجراء العلاجي',p.action],['موعد المتابعة',p.followupDate],['الحالة',p.status||'active']].map(x=>'<tr><td>'+e(x[0])+'</td><td>'+e(x[1]??'')+'</td></tr>').join('')+'</table><footer>تصميم محمد عامر أحمد</footer></body></html>');
+ w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>خطة علاجية</title><style>@page{size:A4;margin:15mm}body{font-family:Tahoma,Arial;color:#163d52;line-height:2}.head{text-align:center;border-bottom:4px solid #b78b38;padding:12px}.head img{width:85px;height:85px;object-fit:contain}h1{color:#075d74}table{width:100%;border-collapse:collapse;margin-top:20px}td{border:1px solid #cbdde5;padding:11px}td:first-child{width:30%;background:#eff5f7;font-weight:bold}.signatures{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:28px;text-align:center}.signatures div{border-top:2px solid #b78b38;padding:9px 3px}.signatures span{display:block;font-size:12px}.signatures b{font-size:13px}footer{margin-top:30px;text-align:center;color:#627989;font-size:12px}</style></head><body><div class="head"><img src="'+new URL("logo.jpeg",location.href).href+'"><h2>مدارس الفلاح الأهلية</h2><h1>الخطة العلاجية للطالب</h1></div><table>'+[['الطالب',p.studentName],['الصف والفصل',p.grade+' / '+p.section],['المادة',p.subjectName],['الاختبار المرجعي',p.baselineTestName],['المستوى المرجعي',Number.isFinite(p.baselinePercentage)?p.baselinePercentage.toFixed(1)+'%':'غير متاح'],['المهارة المستهدفة',p.skill],['الإجراء العلاجي',p.action],['موعد المتابعة',p.followupDate],['الحالة',p.status||'active']].map(x=>'<tr><td>'+e(x[0])+'</td><td>'+e(x[1]??'')+'</td></tr>').join('')+'</table><div class="signatures"><div><span>معلم المادة</span><b>'+e(p.teacherName||'غير محدد')+'</b></div><div><span>المشرف التربوي</span><b>'+e(p.supervisorName||'غير محدد')+'</b></div><div><span>المشرف العام</span><b>أحمد سمير عباس</b></div><div><span>مدير المدرسة</span><b>عبد العزيز بن إبراهيم القحطاني</b></div></div><footer>تصميم محمد عامر أحمد</footer></body></html>');
  w.document.close();w.addEventListener("load",()=>w.print(),{once:true});
 }
 
