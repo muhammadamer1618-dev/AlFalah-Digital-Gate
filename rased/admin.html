@@ -1253,6 +1253,7 @@ id="statClasses">
 <!-- =========================================
      تطور مستوى الطالب
 ========================================= -->
+<div class="box" id="portfolioPublishSettings"><div class="box-title">📁 ظهور ملف الإنجاز لولي الأمر</div><div class="box-body"><p>البطاقة مخفية افتراضيًا حتى تسمح الإدارة بنشرها.</p><label><input type="checkbox" id="portfolioParentEnabled"> إظهار بطاقة ملف الإنجاز لولي الأمر</label><div class="actions"><button class="btn-primary" onclick="savePortfolioParentEnabled()">حفظ الإعداد</button></div><p id="portfolioPublishMessage"></p></div></div>
 <div class="box" id="studentProgressSection">
 <div class="box-title">📈 تطور مستوى الطالب</div>
 <div class="box-body">
@@ -11496,6 +11497,9 @@ async function saveAdminGradeMatrix(){
  finally{button.disabled=false;}
 }
 
+async function savePortfolioParentEnabled(){const msg=document.getElementById("portfolioPublishMessage");try{const enabled=document.getElementById("portfolioParentEnabled").checked;await db.collection("systemSettings").doc("studentPortfolio").set({parentVisible:enabled},{merge:true});msg.textContent="تم حفظ الإعداد";}catch(e){msg.textContent="تعذر الحفظ: "+e.message;}}
+async function loadPortfolioParentEnabled(){try{const d=await db.collection("systemSettings").doc("studentPortfolio").get();document.getElementById("portfolioParentEnabled").checked=d.exists&&d.data().parentVisible===true;}catch(e){document.getElementById("portfolioPublishMessage").textContent="تعذر قراءة الإعداد";}}
+window.addEventListener("load",loadPortfolioParentEnabled);
 </script>
 </body>
 </html>
