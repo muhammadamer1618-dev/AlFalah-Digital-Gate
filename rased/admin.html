@@ -1354,6 +1354,8 @@ onclick="saveStudent()">
 </button>
 
 
+<button class="btn-light" onclick="repairStudentGrades()" title="استعادة درجات طالب بعد تغيير كوده سابقًا">🔄 استعادة درجات بعد تغيير الكود</button>
+
 <button
 class="btn-light"
 onclick="clearStudentForm()">
@@ -3826,149 +3828,95 @@ body.appendChild(tr);
 }
 
 
+async function migrateStudentRecords(oldCode,newCode,moveStudent,studentFields){
+  oldCode=String(oldCode||"").trim();newCode=String(newCode||"").trim();
+  if(!oldCode||!newCode||oldCode===newCode)throw Error("أدخل كودين مختلفين وصحيحين");
+  const oldRef=db.collection("students").doc(oldCode);
+  const newRef=db.collection("students").doc(newCode);
+  const [oldStudent,newStudent]=await Promise.all([oldRef.get(),newRef.get()]);
+  if(moveStudent){
+    if(!oldStudent.exists)throw Error("الطالب بالكود القديم غير موجود");
+    if(newStudent.exists)throw Error("الكود الجديد مستخدم بالفعل");
+  }else if(!newStudent.exists){
+    throw Error("الطالب بالكود الجديد غير موجود؛ لا يمكن استعادة درجاته");
+  }
+  const names=["grades","studentAchievements","studentCertificates","guidanceIncidents","liveClassAttendance","messageLogs","examSchedules"];
+  const records=[];
+  for(const name of names){
+    const q=await db.collection(name).where("studentCode","==",oldCode).get();
+    q.forEach(doc=>records.push({name,doc,data:doc.data()||{}}));
+  }
+  const gradeCount=records.filter(x=>x.name==="grades").length;
+  if(records.length===0)throw Error("لم يُعثر على أي سجلات بالكود القديم. لم يتم تعديل بيانات الطالب");
+  if(records.length>230)throw Error("عدد السجلات أكبر من حد النقل الآمن؛ لم يتم تغيير أي شيء");
+  const changes=[];
+  for(const item of records){
+    let dest=item.doc.ref;
+    if(item.name==="grades"){
+      if(!item.data.testId)throw Error("درجة بلا رقم اختبار؛ أُوقف النقل لحمايتها");
+      dest=db.collection("grades").doc(String(item.data.testId)+"_"+newCode);
+    }else if(item.name==="liveClassAttendance"&&item.data.classId){
+      dest=db.collection("liveClassAttendance").doc(String(item.data.classId)+"_"+newCode.replace(/[^0-9A-Za-z_-]/g,"_"));
+    }
+    if(dest.path!==item.doc.ref.path && (await dest.get()).exists)
+      throw Error("تعارض في "+item.name+"؛ لم يتم تعديل أي شيء");
+    changes.push({item,dest});
+  }
+  const batch=db.batch();
+  for(const {item,dest} of changes){
+    if(dest.path===item.doc.ref.path){
+      batch.update(item.doc.ref,{studentCode:newCode});
+    }else{
+      batch.set(dest,{...item.data,studentCode:newCode});
+      batch.delete(item.doc.ref);
+    }
+  }
+  if(moveStudent){
+    const oldData=oldStudent.data()||{};
+    batch.set(newRef,{...oldData,...studentFields,code:newCode,previousCodes:[...new Set([...(oldData.previousCodes||[]),oldCode])]});
+    batch.delete(oldRef);
+  }
+  await batch.commit();
+  return {gradeCount,total:records.length};
+}
+
+async function repairStudentGrades(){
+  const oldCode=prompt("اكتب كود الطالب القديم الذي كانت الدرجات تظهر به (مثال: 111):");
+  if(oldCode===null)return;
+  const newCode=prompt("اكتب كود الطالب الحالي الموجود في إدارة الطلاب:");
+  if(newCode===null)return;
+  if(!confirm("سيتم نقل الدرجات والسجلات المرتبطة فقط من الكود القديم إلى الحالي، دون تغيير بيانات الطالب. متابعة؟"))return;
+  try{
+    const result=await migrateStudentRecords(oldCode,newCode,false,{});
+    alert("تم استرجاع "+result.gradeCount+" درجة، ونقل "+result.total+" سجل مرتبط بنجاح");
+  }catch(e){console.error(e);alert("لم يتم الاسترجاع: "+e.message);}
+}
+
 async function saveStudent(){
-
-const original=
-document
-.getElementById(
-"studentOriginalCode"
-)
-.value
-.trim();
-
-
-const code=
-document
-.getElementById(
-"studentCode"
-)
-.value
-.trim();
-
-
-const name=
-document
-.getElementById(
-"studentName"
-)
-.value
-.trim();
-
-
-const grade=
-document
-.getElementById(
-"studentGrade"
-)
-.value;
-
-
-const section=
-document
-.getElementById(
-"studentSection"
-)
-.value;
-
-
-const phone=
-document
-.getElementById(
-"guardianPhone"
-)
-.value
-.trim();
-
-
-if(
-!code ||
-!name
-){
-
-alert(
-"أدخل كود الطالب واسم الطالب"
-);
-
-return;
-
+  const original=document.getElementById("studentOriginalCode").value.trim();
+  const code=document.getElementById("studentCode").value.trim();
+  const name=document.getElementById("studentName").value.trim();
+  const grade=document.getElementById("studentGrade").value;
+  const section=document.getElementById("studentSection").value;
+  const phone=document.getElementById("guardianPhone").value.trim();
+  if(!code||!name){alert("أدخل كود الطالب واسم الطالب");return;}
+  const fields={name,grade,section,guardianPhone:phone,phone};
+  try{
+    if(original&&original!==code){
+      if(!confirm("تغيير كود الطالب مع نقل درجاته وسجلاته المرتبطة؟"))return;
+      const result=await migrateStudentRecords(original,code,true,fields);
+      alert("تم تغيير الكود ونقل "+result.gradeCount+" درجة و"+result.total+" سجل مرتبط");
+    }else{
+      const ref=db.collection("students").doc(code);
+      const previous=await ref.get();
+      if(!original&&previous.exists)throw Error("كود الطالب مستخدم بالفعل؛ افتح الطالب للتعديل بدل إنشاء طالب مكرر");
+      await ref.set({...(previous.exists?previous.data():{}),code,...fields},{merge:true});
+      alert("تم حفظ الطالب ✅");
+    }
+    try{await writeAuditLog(original?"student_update":"student_create","student",code,name,{},fields);}catch(e){console.warn(e);}
+    clearStudentForm();await loadStudents();
+  }catch(e){console.error(e);alert("لم يتم حفظ التغيير: "+e.message);}
 }
-
-
-let oldData={};
-
-
-if(original){
-
-const oldDoc=
-
-await db
-.collection("students")
-.doc(original)
-.get();
-
-
-if(oldDoc.exists){
-
-oldData=
-oldDoc.data()||{};
-
-}
-
-}
-
-
-await db
-.collection("students")
-.doc(code)
-.set({
-
-...oldData,
-
-code,
-name,
-grade,
-section,
-
-guardianPhone:phone,
-phone:phone
-
-},{
-merge:true
-});
-
-
-if(
-original &&
-original!==code
-){
-
-await db
-.collection("students")
-.doc(original)
-.delete();
-
-}
-
-
-alert(
-"تم حفظ الطالب ✅"
-);
-
-await writeAuditLog(
-  original?"student_update":"student_create",
-  "student",
-  code,
-  name,
-  oldData,
-  {code,name,grade,section,guardianPhone:phone}
-);
-
-clearStudentForm();
-
-await loadStudents();
-
-}
-
 
 function editStudent(code){
 
