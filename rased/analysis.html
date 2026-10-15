@@ -238,21 +238,26 @@ function remedialActor(){
 }
 let remedialEditingId=null;let remedialLoadedPlans=[];
 async function resolveRemedialTeacherSupervisor(){
- const fallbackName=getAnalysisTeacherName();let teacherName=fallbackName==="-"?"غير محدد":String(fallbackName);
- const teacherId=isTeacher?currentUsername:String(selectedTest?.teacherEmail||selectedTest?.teacherUsername||selectedTest?.createdBy||"").trim().toLowerCase();
- if(teacherId){
-  try{const doc=await db.collection("teachers").doc(teacherId).get();if(doc.exists)teacherName=String(doc.data()?.name||teacherName);}catch(e){console.warn("Teacher lookup",e);}
+ const norm=v=>String(v||"").trim().toLowerCase();
+ const possibleIds=[isTeacher?currentUsername:"",selectedTest?.teacherEmail,selectedTest?.teacherUsername,selectedTest?.createdBy,selectedTest?.createdByEmail,...gradeRecords.map(x=>x.teacherEmail||x.teacherUsername||x.createdBy)].map(norm).filter(Boolean);
+ let teacherId="",teacherName="",supervisorName="";
+ const candidates=[...new Set(possibleIds)];
+ for(const id of candidates){
+  try{const d=await db.collection("teachers").doc(id).get();if(d.exists){teacherId=id;teacherName=String(d.data()?.name||"").trim();break;}}catch(e){console.warn("Teacher lookup",e);}
  }
- let supervisorName="غير محدد";
+ if(!teacherName){
+  const name=String(getAnalysisTeacherName()||"").trim();
+  if(name&&name!=="-"){teacherName=name;try{const snap=await db.collection("teachers").where("name","==",name).limit(2).get();if(snap.size===1)teacherId=snap.docs[0].id;}catch(e){console.warn("Teacher name lookup",e);}}
+ }
+ if(!teacherName&&isTeacher)teacherName=String(currentTeacher?.name||localStorage.getItem("currentUserName")||"").trim();
  if(teacherId){
   try{
    const snap=await db.collection("users").where("assignedTeacherEmails","array-contains",teacherId).get();
-   const supervisors=snap.docs.map(d=>d.data()||{}).filter(u=>u.role==="supervisor"&&u.supervisorType==="supervisor");
-   if(supervisors.length===1)supervisorName=String(supervisors[0].name||"غير محدد");
-   else if(supervisors.length>1)supervisorName=supervisors.map(u=>u.name).filter(Boolean).join("، ");
+   const matches=snap.docs.map(d=>d.data()||{}).filter(u=>String(u.role).toLowerCase()==="supervisor"&&String(u.supervisorType).toLowerCase()==="supervisor");
+   supervisorName=matches.map(x=>x.name).filter(Boolean).join("، ");
   }catch(e){console.warn("Supervisor lookup",e);}
  }
- return{teacherName,supervisorName};
+ return{teacherName:teacherName||"غير محدد",supervisorName:supervisorName||"غير محدد"};
 }
 async function saveRemedialPlan(){
  const out=el("remedialStatus");
@@ -302,8 +307,11 @@ async function deleteRemedialPlan(id){
  el("remedialStatus").textContent="✓ تم حذف الخطة.";await loadRemedialPlans();
  }catch(e){el("remedialStatus").textContent="تعذر الحذف: "+e.message;}
 }
-function printRemedialPlan(id){
+async function printRemedialPlan(id){
  const p=remedialLoadedPlans.find(x=>x.id===id);if(!p)return;
+ const current=await resolveRemedialTeacherSupervisor();
+ if(current.teacherName!=="غير محدد")p.teacherName=current.teacherName;
+ if(current.supervisorName!=="غير محدد")p.supervisorName=current.supervisorName;
  const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة للطباعة.");return;}
  const e=escapeHtml;
  w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>خطة علاجية</title><style>@page{size:A4;margin:15mm}body{font-family:Tahoma,Arial;color:#163d52;line-height:2}.head{text-align:center;border-bottom:4px solid #b78b38;padding:12px}.head img{width:85px;height:85px;object-fit:contain}h1{color:#075d74}table{width:100%;border-collapse:collapse;margin-top:20px}td{border:1px solid #cbdde5;padding:11px}td:first-child{width:30%;background:#eff5f7;font-weight:bold}.signatures{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:28px;text-align:center}.signatures div{border-top:2px solid #b78b38;padding:9px 3px}.signatures span{display:block;font-size:12px}.signatures b{font-size:13px}footer{margin-top:30px;text-align:center;color:#627989;font-size:12px}</style></head><body><div class="head"><img src="'+new URL("logo.jpeg",location.href).href+'"><h2>مدارس الفلاح الأهلية</h2><h1>الخطة العلاجية للطالب</h1></div><table>'+[['الطالب',p.studentName],['الصف والفصل',p.grade+' / '+p.section],['المادة',p.subjectName],['الاختبار المرجعي',p.baselineTestName],['المستوى المرجعي',Number.isFinite(p.baselinePercentage)?p.baselinePercentage.toFixed(1)+'%':'غير متاح'],['المهارة المستهدفة',p.skill],['الإجراء العلاجي',p.action],['موعد المتابعة',p.followupDate],['الحالة',p.status||'active']].map(x=>'<tr><td>'+e(x[0])+'</td><td>'+e(x[1]??'')+'</td></tr>').join('')+'</table><div class="signatures"><div><span>معلم المادة</span><b>'+e(p.teacherName||'غير محدد')+'</b></div><div><span>المشرف التربوي</span><b>'+e(p.supervisorName||'غير محدد')+'</b></div><div><span>المشرف العام</span><b>أحمد سمير عباس</b></div><div><span>مدير المدرسة</span><b>عبد العزيز بن إبراهيم القحطاني</b></div></div><footer>تصميم محمد عامر أحمد</footer></body></html>');
