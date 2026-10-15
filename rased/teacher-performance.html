@@ -66,7 +66,7 @@ let teachers=[],assigned=[],loaded={},busy=false,subjectNames={};
 function notify(message,error=false){E("status").textContent=message;E("status").classList.toggle("error",error)}
 function teacherId(t){return norm(t.id)}
 function teacherAssignments(t){return Array.isArray(t.assignments)?t.assignments:[]}
-function stageOf(g){g=String(g||"").trim();if(/ابتدائ/.test(g)||/^(الأول|الثاني|الثالث|الرابع|الخامس|السادس|1|2|3|4|5|6)( |$)/.test(g))return "الابتدائية";if(/متوسط/.test(g)||/^(السابع|الثامن|التاسع|7|8|9)( |$)/.test(g))return "المتوسطة";if(/ثانو/.test(g)||/^(العاشر|الحادي عشر|الثاني عشر|10|11|12)( |$)/.test(g))return "الثانوية";return "غير محددة"}
+function stageOf(g){g=String(g||"").trim();if(/متوسط|إعدادي|اعدادي/.test(g))return "المتوسطة";if(/ثانو/.test(g))return "الثانوية";if(/ابتدائ/.test(g))return "الابتدائية";const n=(g.match(/\d+/)||[])[0];if(n){if(+n>=10)return "الثانوية";if(+n>=7)return "المتوسطة";if(+n>=1&&+n<=6)return "الابتدائية"}return "غير محددة"}
 function aSubject(a){return String(a.subjectName||subjectNames[a.subjectId]||a.subject||a.subjectId||"")}
 function filteredAssignments(t){return teacherAssignments(t).filter(a=>(!E("stage").value||stageOf(a.grade)===E("stage").value)&&(!E("grade").value||String(a.grade)===E("grade").value)&&(!E("section").value||String(a.section)===E("section").value)&&(!E("subject").value||norm(a.subjectId)===norm(E("subject").value)))}
 function teacherName(t){return t.name||t.fullName||t.teacherName||t.id}
@@ -104,7 +104,7 @@ async function run(){
  E("period").textContent="الفترة: "+(E("from").value||"بداية السجلات")+" إلى "+(E("to").value||"اليوم")+" · بيانات رقمية موثقة";
  busy=true;E("apply").disabled=true;notify("جارٍ فحص السجلات وحساب المؤشرات...");
  try{
-  const names=["tests","grades","academicRemedialPlans"],result=await Promise.allSettled(names.map(getCollection));
+  const names=["tests","grades","academicRemedialPlans","onlineExams"],result=await Promise.allSettled(names.map(getCollection));
   const sources={};result.forEach((r,i)=>{sources[names[i]]=r.status==="fulfilled"?r.value:null});
   const unavailable=names.filter(n=>sources[n]===null);
   const matchedTest=(x)=>scope.some(t=>{if(belongs(x,t))return true;const entries=filteredAssignments(t);return entries.some(a=>norm(a.subjectId)===norm(x.subjectId)&&Array.isArray(x.classes)&&x.classes.some(c=>{const g=typeof c==="string"?c:(c.grade||c.class||"");const sec=typeof c==="string"?"":(c.section||"");return String(g)===String(a.grade)&&(!sec||String(sec)===String(a.section))}) )});
@@ -113,15 +113,17 @@ async function run(){
   const plans=sources.academicRemedialPlans?sources.academicRemedialPlans.filter(x=>scope.some(t=>belongs(x,t)||(filteredAssignments(t).some(a=>norm(a.subjectId)===norm(x.subjectId)&&String(a.grade)===String(x.grade)&&(!x.section||String(a.section)===String(x.section)))))&&inPeriod(x)):null;
   const planKeys=plans?new Set(plans.map(x=>[x.createdBy,x.subjectId,x.baselineTestId,JSON.stringify(x.skillItems||[]),x.startDate].join("|"))):null;
   const marks=grades?grades.filter(x=>x.mark!==null&&x.mark!==undefined&&x.mark!==""&&x.attendance!=="absent").length:null;
-  const metrics=[{name:"المعلمون في التقرير",value:String(scope.length),description:"وفق الصلاحيات والفلاتر"},{name:"الاختبارات المنشأة",value:tests?String(tests.length):"غير متاح",description:"سجلات إنشاء الاختبارات"},{name:"الدرجات المرصودة",value:marks!==null?String(marks):"غير متاح",description:"درجات مثبتة بالسجلات"},{name:"الخطط العلاجية",value:planKeys?String(planKeys.size):"غير متاح",description:plans?plans.length+" سجل مرتبط بالطلاب":"المصدر غير متاح"}];
+  const online=sources.onlineExams?sources.onlineExams.filter(x=>scope.some(t=>belongs(x,t)||(norm(x.teacherName)===norm(teacherName(t))&&(!x.createdByRole||norm(x.createdByRole)==="teacher")))&&inPeriod(x)&&(!E("subject").value||norm(x.subjectId)===norm(E("subject").value))&&(!E("grade").value&&!E("section").value||Array.isArray(x.classes)&&x.classes.some(c=>(!E("grade").value||String(c.grade)===E("grade").value)&&(!E("section").value||String(c.section)===E("section").value)))):null;
+  const metrics=[{name:"المعلمون في التقرير",value:String(scope.length),description:"وفق الصلاحيات والفلاتر"},{name:"الاختبارات المنشأة",value:tests?String(tests.length):"غير متاح",description:"سجلات إنشاء الاختبارات"},{name:"الدرجات المرصودة",value:marks!==null?String(marks):"غير متاح",description:"درجات مثبتة بالسجلات"},{name:"الاختبارات الإلكترونية",value:online?String(online.length):"غير متاح",description:"من منصة الاختبارات الإلكترونية"},{name:"الخطط العلاجية",value:planKeys?String(planKeys.size):"غير متاح",description:plans?plans.length+" سجل مرتبط بالطلاب":"المصدر غير متاح"}];
   setSummary(metrics);
   let html="";
   html+=row("الاختبارات والتقويم",tests?tests.length+" اختبار":"غير متاح للقياس",tests?"بيانات مرصودة":"تعذر قراءة المصدر","tests",tests?"":"none");
   html+=row("درجات الطلاب",marks!==null?marks+" درجة":"غير متاح للقياس",marks!==null?"بيانات مرصودة":"تعذر ربط البيانات","grades / tests",marks!==null?"":"none");
+  html+=row("الاختبارات الإلكترونية",online?online.length+" اختبار":"غير متاح للقياس",online?"بيانات مرصودة":"تعذر قراءة المصدر","onlineExams",online?"":"none");
   html+=row("الخطط العلاجية",plans?planKeys.size+" خطة / "+plans.length+" سجل طلابي":"غير متاح للقياس",plans?"بيانات مرصودة":"تعذر قراءة المصدر","academicRemedialPlans",plans?"":"none");
-  ["الأنشطة التفاعلية","الاختبارات الإلكترونية المنشورة","التحليل الذكي","التقارير والمتابعات"].forEach(name=>html+=row(name,"غير مربوط بمصدر موثوق","بانتظار الربط","لم يتم اعتماد مجموعة بيانات","none"));
+  ["الأنشطة التفاعلية","التحليل الذكي","التقارير والمتابعات"].forEach(name=>html+=row(name,"غير مربوط بمصدر موثوق","بانتظار الربط","لم يتم اعتماد مجموعة بيانات","none"));
   E("details").innerHTML=html;
-  renderBars([{name:"الاختبارات",value:tests?tests.length:0},{name:"الدرجات المرصودة",value:marks||0},{name:"الخطط العلاجية",value:planKeys?planKeys.size:0}]);
+  renderBars([{name:"الاختبارات الإلكترونية",value:online?online.length:0},{name:"اختبارات الرصد",value:tests?tests.length:0},{name:"الدرجات المرصودة",value:marks||0},{name:"الخطط العلاجية",value:planKeys?planKeys.size:0}]);
   E("notes").textContent="بعض الاختبارات أنشأتها الإدارة دون تحديد المعلم، ولذلك تُربط هنا بمادة وصف وفصل الإسناد، ولا يُعتبر هذا إثباتًا أن المعلم أنشأ الاختبار. الأعداد لا تعني وحدها جودة الأداء أو اكتماله. "+(unavailable.length?"تعذر الوصول إلى المصادر التالية: "+unavailable.join("، ")+"؛ تحقق من قواعد Firestore وصلاحيات الحساب.":"تم الوصول إلى المصادر الثلاثة المتصلة. المؤشرات الأخرى تحتاج ربطًا موثقًا قبل القياس.")+" لا يتم منح درجة نهائية دون معايير تقييم وأوزان معتمدة.";
   notify(scope.length?"اكتمل العرض لـ "+scope.length+" معلم. "+(unavailable.length?"بعض المصادر غير متاحة؛ راجع ملاحظات التقرير.":"يمكن طباعة التقرير الآن."):"لا يوجد معلمون يطابقون التصفية.");
  }catch(e){notify("حدث خطأ أثناء عرض التقرير: "+e.message,true)}
