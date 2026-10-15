@@ -83,7 +83,7 @@ tr{break-inside:avoid!important;page-break-inside:avoid!important}.legend{margin
 <label>موعد المتابعة<input id="remedialDate" type="date" style="display:block;width:100%;padding:10px;margin-top:5px"></label>
 </div>
 <label style="display:block;margin-top:12px">الإجراء العلاجي<textarea id="remedialAction" maxlength="1000" rows="3" placeholder="نشاط محدد قابل للتنفيذ والقياس" style="display:block;width:100%;padding:10px;margin-top:5px"></textarea></label>
-<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button type="button" onclick="saveRemedialPlan()" style="background:#087761;color:white;border:0;border-radius:9px;padding:11px 17px;cursor:pointer">💾 حفظ الخطة</button><button type="button" onclick="loadRemedialPlans()" style="background:#075b85;color:white;border:0;border-radius:9px;padding:11px 17px;cursor:pointer">📋 عرض خطط هذا الفصل</button></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button id="remedialSaveBtn" type="button" onclick="saveRemedialPlan()" style="background:#087761;color:white;border:0;border-radius:9px;padding:11px 17px;cursor:pointer">💾 حفظ الخطة</button><button type="button" onclick="loadRemedialPlans()" style="background:#075b85;color:white;border:0;border-radius:9px;padding:11px 17px;cursor:pointer">📋 عرض خطط هذا الفصل</button></div>
 <div id="remedialStatus" style="margin-top:12px" aria-live="polite"></div><div id="remedialPlansList" style="margin-top:12px"></div>
 </section>
 <div id="analysisArea"><div class="empty">اختر المادة والصف والشعبة والاختبار لعرض التحليل.</div></div>
@@ -235,6 +235,7 @@ function populateRemedialStudents(){
 function remedialActor(){
  return String(currentUsername||localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"").trim().toLowerCase();
 }
+let remedialEditingId=null;let remedialLoadedPlans=[];
 async function saveRemedialPlan(){
  const out=el("remedialStatus");
  if(!remedialScopeValid()){out.textContent="اختر مادة وصفًا وفصلًا واختبارًا ضمن صلاحياتك أولًا.";return;}
@@ -244,8 +245,10 @@ async function saveRemedialPlan(){
  const actor=remedialActor();if(!actor){out.textContent="تعذر تحديد الحساب الحالي. سجّل الدخول مرة أخرى.";return;}
  out.textContent="جارٍ حفظ الخطة...";
  try{
-  await db.collection("academicRemedialPlans").add({studentCode:String(student.code),studentName:String(student.name||""),subjectId:selectedSubjectId,subjectName:selectedSubjectName,grade:selectedGrade,section:selectedSection,baselineTestId:selectedTest.id,baselineTestName:selectedTest.name||"",baselinePercentage:analyzedStudents.find(x=>String(x.student.code)===code)?.percentage??null,skill,action,followupDate:date,status:"active",createdBy:actor,createdByRole:role,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  out.textContent="✓ تم حفظ الخطة العلاجية بنجاح.";el("remedialSkill").value="";el("remedialAction").value="";await loadRemedialPlans();
+  const payload={studentCode:String(student.code),studentName:String(student.name||""),subjectId:selectedSubjectId,subjectName:selectedSubjectName,grade:selectedGrade,section:selectedSection,baselineTestId:selectedTest.id,baselineTestName:selectedTest.name||"",baselinePercentage:analyzedStudents.find(x=>String(x.student.code)===code)?.percentage??null,skill,action,followupDate:date,status:"active",createdBy:actor,createdByRole:role};
+  if(remedialEditingId){const old=remedialLoadedPlans.find(p=>p.id===remedialEditingId);if(!old||(!isAdmin&&old.createdBy!==actor)){out.textContent="لا تملك صلاحية تعديل هذه الخطة.";return;}await db.collection("academicRemedialPlans").doc(remedialEditingId).update({skill,action,followupDate:date,updatedBy:actor,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});out.textContent="✓ تم تعديل الخطة.";}
+  else await db.collection("academicRemedialPlans").add({...payload,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  remedialEditingId=null;el("remedialStudent").disabled=false;el("remedialSaveBtn").textContent="💾 حفظ الخطة";el("remedialSkill").value="";el("remedialAction").value="";await loadRemedialPlans();
  }catch(err){console.error(err);out.textContent="تعذر حفظ الخطة. قد تحتاج مجموعة الخطط إلى تفعيل صلاحيات Firestore: "+(err.message||err);}
 }
 async function loadRemedialPlans(){
@@ -255,9 +258,36 @@ async function loadRemedialPlans(){
   const snap=await db.collection("academicRemedialPlans").where("subjectId","==",selectedSubjectId).get();
   const actor=remedialActor();
   const plans=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.grade===selectedGrade&&p.section===selectedSection&&(!isTeacher||p.createdBy===actor)).sort((a,b)=>String(a.followupDate).localeCompare(String(b.followupDate)));
+  remedialLoadedPlans=plans;
   if(!plans.length){out.textContent="لا توجد خطط محفوظة ضمن النطاق المحدد.";return;}
-  out.innerHTML='<h3>الخطط العلاجية المسجلة ('+plans.length+')</h3>'+plans.map(p=>'<article style="border:1px solid #dae6ec;border-radius:11px;padding:12px;margin:9px 0;background:#f8fbfc"><strong>'+escapeHtml(p.studentName)+'</strong> — '+escapeHtml(p.skill)+'<div style="font-size:13px;color:#546b7b">الإجراء: '+escapeHtml(p.action)+'</div><div style="font-size:12px;color:#607989">خط الأساس: '+(Number.isFinite(p.baselinePercentage)?p.baselinePercentage.toFixed(1)+"%":"غير متاح")+' | موعد المتابعة: '+escapeHtml(p.followupDate)+' | الحالة: '+escapeHtml(p.status||"active")+'</div></article>').join('');
+  out.innerHTML='<h3>الخطط العلاجية المسجلة ('+plans.length+')</h3>'+plans.map(p=>'<article style="border:1px solid #dae6ec;border-radius:11px;padding:12px;margin:9px 0;background:#f8fbfc"><strong>'+escapeHtml(p.studentName)+'</strong> — '+escapeHtml(p.skill)+'<div style="font-size:13px;color:#546b7b">الإجراء: '+escapeHtml(p.action)+'</div><div style="font-size:12px;color:#607989">خط الأساس: '+(Number.isFinite(p.baselinePercentage)?p.baselinePercentage.toFixed(1)+"%":"غير متاح")+' | موعد المتابعة: '+escapeHtml(p.followupDate)+' | الحالة: '+escapeHtml(p.status||"active")+'</div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px"><button type="button" onclick="editRemedialPlan(\''+escapeHtml(p.id)+'\')">✏️ تعديل</button><button type="button" onclick="deleteRemedialPlan(\''+escapeHtml(p.id)+'\')">🗑️ حذف</button><button type="button" onclick="printRemedialPlan(\''+escapeHtml(p.id)+'\')">🖨️ طباعة</button></div></article>').join('');
  }catch(err){console.error(err);out.textContent="تعذر قراءة الخطط: "+(err.message||err);}
+}
+
+
+function editRemedialPlan(id){
+ const p=remedialLoadedPlans.find(x=>x.id===id);if(!p)return;
+ if(!isAdmin&&p.createdBy!==remedialActor()){alert("تعديل الخطة متاح لمن أنشأها أو للإدارة.");return;}
+ remedialEditingId=id;el("remedialStudent").value=String(p.studentCode);el("remedialStudent").disabled=true;
+ el("remedialSkill").value=p.skill||"";el("remedialAction").value=p.action||"";el("remedialDate").value=p.followupDate||"";
+ el("remedialSaveBtn").textContent="💾 حفظ التعديل";el("remedialPanel").scrollIntoView({behavior:"smooth"});
+}
+async function deleteRemedialPlan(id){
+ const p=remedialLoadedPlans.find(x=>x.id===id);if(!p)return;
+ if(!isAdmin&&p.createdBy!==remedialActor()){alert("حذف الخطة متاح لمن أنشأها أو للإدارة.");return;}
+ if(!confirm("هل تريد حذف الخطة العلاجية للطالب "+p.studentName+"؟ لا يمكن التراجع عن الحذف."))return;
+ try{
+ await db.collection("academicRemedialPlans").doc(id).delete();
+ if(remedialEditingId===id){remedialEditingId=null;el("remedialStudent").disabled=false;el("remedialSaveBtn").textContent="💾 حفظ الخطة";}
+ el("remedialStatus").textContent="✓ تم حذف الخطة.";await loadRemedialPlans();
+ }catch(e){el("remedialStatus").textContent="تعذر الحذف: "+e.message;}
+}
+function printRemedialPlan(id){
+ const p=remedialLoadedPlans.find(x=>x.id===id);if(!p)return;
+ const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة للطباعة.");return;}
+ const e=escapeHtml;
+ w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>خطة علاجية</title><style>@page{size:A4;margin:15mm}body{font-family:Tahoma,Arial;color:#163d52;line-height:2}.head{text-align:center;border-bottom:4px solid #b78b38;padding:12px}.head img{width:85px;height:85px;object-fit:contain}h1{color:#075d74}table{width:100%;border-collapse:collapse;margin-top:20px}td{border:1px solid #cbdde5;padding:11px}td:first-child{width:30%;background:#eff5f7;font-weight:bold}footer{margin-top:45px;text-align:center;color:#627989;font-size:12px}</style></head><body><div class="head"><img src="'+new URL("logo.jpeg",location.href).href+'"><h2>مدارس الفلاح الأهلية</h2><h1>الخطة العلاجية للطالب</h1></div><table>'+[['الطالب',p.studentName],['الصف والفصل',p.grade+' / '+p.section],['المادة',p.subjectName],['الاختبار المرجعي',p.baselineTestName],['المستوى المرجعي',Number.isFinite(p.baselinePercentage)?p.baselinePercentage.toFixed(1)+'%':'غير متاح'],['المهارة المستهدفة',p.skill],['الإجراء العلاجي',p.action],['موعد المتابعة',p.followupDate],['الحالة',p.status||'active']].map(x=>'<tr><td>'+e(x[0])+'</td><td>'+e(x[1]??'')+'</td></tr>').join('')+'</table><footer>تصميم محمد عامر أحمد</footer></body></html>');
+ w.document.close();w.addEventListener("load",()=>w.print(),{once:true});
 }
 
 async function start(){if(!protectPage())return;try{await loadCurrentTeacher();await loadSubjects();renderMode();await applyIncoming()}catch(error){console.error(error);alert("حدث خطأ أثناء تحميل صفحة التحليل:\n"+error.message)}}
