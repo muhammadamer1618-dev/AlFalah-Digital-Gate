@@ -1288,7 +1288,7 @@ id="statClasses">
 </div>
 <div style="overflow:auto;max-height:65vh;border:1px solid #dbe5ef;border-radius:12px">
 <table id="adminMatrixTable" style="min-width:750px;border-collapse:separate;border-spacing:0;width:100%;text-align:center">
-<thead id="adminMatrixHead"></thead><tbody id="adminMatrixBody"></tbody>
+<thead id="adminMatrixHead" style="color:#123f68!important"></thead><tbody id="adminMatrixBody"></tbody>
 </table></div>
 <p style="font-size:12px;color:#64748b;margin-top:10px">الخانة الفارغة تعني عدم رصد الدرجة. اكتب 0 لرصد صفر، واكتب «غ» لتسجيل الغياب. التعديلات فقط هي التي تُحفظ.</p>
 </div></div></div>
@@ -11447,7 +11447,7 @@ async function loadAdminGradeMatrix(){
    snap.forEach(d=>{const data=d.data()||{};if(data.studentCode!==undefined)adminMatrixOriginal.set(adminMatrixKey(t,String(data.studentCode)),data)});
   }));
   const th=document.getElementById("adminMatrixHead");
-  th.innerHTML='<tr><th style="position:sticky;top:0;background:#eaf1f7;z-index:3">#</th><th style="position:sticky;top:0;background:#eaf1f7;z-index:3;min-width:180px">الطالب</th>'+adminMatrixTests.map(t=>'<th style="position:sticky;top:0;background:#eaf1f7;z-index:3;min-width:120px">'+escapeHtml(t.subjectName||"مادة")+'<div style="font-size:11px">من '+escapeHtml(t.fullMark||"—")+'</div></th>').join("")+'</tr>';
+  th.innerHTML='<tr><th style="position:sticky;top:0;background:#eaf1f7;color:#123f68!important;font-weight:800;z-index:3">#</th><th style="position:sticky;top:0;background:#eaf1f7;color:#123f68!important;font-weight:800;z-index:3;min-width:180px">الطالب</th>'+adminMatrixTests.map(t=>'<th style="position:sticky;top:0;background:#eaf1f7;color:#123f68!important;font-weight:800;z-index:3;min-width:120px">'+escapeHtml(t.subjectName||"مادة")+'<div style="font-size:11px">من '+escapeHtml(t.fullMark||"—")+'</div></th>').join("")+'</tr>';
   document.getElementById("adminMatrixBody").innerHTML=adminMatrixRows.map((st,i)=>'<tr><td>'+(i+1)+'</td><td style="text-align:right;font-weight:bold;white-space:nowrap">'+escapeHtml(st.name||"")+'<div style="font-size:10px;color:#64748b">'+escapeHtml(st.code)+'</div></td>'+adminMatrixTests.map(t=>{
    const x=adminMatrixOriginal.get(adminMatrixKey(t,st.code));
    const val=x?(x.attendance==="absent"?"غ":x.mark??""):"";
