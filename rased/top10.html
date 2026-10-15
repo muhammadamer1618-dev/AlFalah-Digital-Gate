@@ -1015,7 +1015,7 @@ tbody tr:hover{background:#f8fbfd}
     </div>
   </section>
 
-  <section id="resultsArea" style="display:none">
+  <section id="resultsArea" style="display:none"><div class="panel" style="margin-bottom:16px"><div class="panel-head"><div><div class="panel-title">🎓 إصدار شهادات التقدير والتفوق</div><div class="panel-sub">للطلاب الأوائل بناءً على الترتيب المعروض</div></div></div><div class="panel-body"><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end"><div class="field" style="flex:1;min-width:160px"><label>نوع الشهادة</label><select id="certificateType"><option value="excellence">شهادة تفوق</option><option value="appreciation">شهادة تقدير</option></select></div><div class="field" style="flex:1;min-width:210px"><label>الطالب</label><select id="certificateStudent"><option value="all">جميع الأوائل المعروضين</option></select></div><button class="primary-btn" onclick="issueTopCertificates()">🖨️ إصدار وطباعة الشهادات</button></div><div class="helper">يمكن طباعة شهادة واحدة أو شهادات جماعية وحفظها PDF من نافذة الطباعة، دون تغيير درجات الطلاب.</div></div></div>
 
     <div class="stats">
       <div class="stat">
@@ -1811,11 +1811,21 @@ function renderResults(category,grade,section,subjectId,scope="section"){
 
   renderPodium(rankingRows.slice(0,3));
   renderTable(limited);
+  updateCertificateStudents(limited);
 
   el("resultsArea").style.display="block";
   el("resultsArea").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+function updateCertificateStudents(rows){const sel=el("certificateStudent");sel.innerHTML='<option value="all">جميع الأوائل المعروضين</option>'+rows.map(r=>'<option value="'+esc(String(r.student?.code||""))+'">'+esc(r.student?.name||"طالب")+' — المركز '+esc(r.rank)+'</option>').join("");}
+function issueTopCertificates(){
+ const limit=el("limitFilter").value,shown=limit==="all"?rankingRows:rankingRows.slice(0,Number(limit)||10),code=el("certificateStudent").value,selected=code==="all"?shown:shown.filter(r=>String(r.student?.code||"")===code);
+ if(!selected.length){alert("يرجى عرض الأوائل واختيار الطالب أولًا");return;}
+ const excellence=el("certificateType").value==="excellence",heading=excellence?"شهادة تفوق":"شهادة تقدير",category=testCategoryLabel(el("categoryFilter").value),subject=el("subjectFilter").selectedOptions[0]?.textContent||"جميع المواد",scope=el("scopeFilter").value==="grade"?el("gradeFilter").value:el("gradeFilter").value+" / "+el("sectionFilter").value,date=new Intl.DateTimeFormat("ar-SA",{year:"numeric",month:"long",day:"numeric"}).format(new Date());
+ const pages=selected.map(r=>{const student=r.student||{};return '<article class="certificate"><div class="ornament">✦ ✧ ✦</div><div class="school">المملكة العربية السعودية<br>وزارة التعليم<br><strong>مدارس الفلاح الأهلية</strong></div><div class="seal">🏆</div><h1>'+heading+'</h1><p class="intro">تتقدم إدارة مدارس الفلاح الأهلية بخالص التهنئة والتقدير إلى الطالب</p><div class="name">'+esc(student.name||"")+'</div><div class="grade">الصف: '+esc(student.grade||"")+' &nbsp; | &nbsp; الفصل: '+esc(student.section||"")+'</div><p class="message">'+(excellence?"تقديرًا لتفوقه الدراسي وتميزه في التحصيل العلمي، وحصوله على مركز متقدم بين زملائه.":"تقديرًا لاجتهاده وتميزه في التحصيل الدراسي، وتشجيعًا له على مواصلة النجاح والعطاء.")+'</p><div class="achievement">المركز '+esc(r.rank)+' &nbsp; • &nbsp; النسبة '+r.percentage.toFixed(1)+'%</div><p class="context">'+esc(category)+' — '+esc(subject)+'<br>'+esc(scope)+'</p><p class="wish">مع أطيب الأمنيات بدوام النجاح والتفوق</p><div class="sign"><span>المشرف العام<br><b>أحمد سمير عباس</b></span><span>مدير المدرسة<br><b>عبد العزيز بن إبراهيم القحطاني</b></span></div><div class="date">تاريخ الإصدار: '+esc(date)+'</div></article>';}).join("");
+ const win=window.open("","_blank");if(!win){alert("اسمح بالنوافذ المنبثقة لإصدار الشهادات");return;}
+ win.document.open();win.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>'+heading+'</title><style>@page{size:A4 landscape;margin:0}*{box-sizing:border-box}body{margin:0;background:#edf0f3;font-family:Tajawal,Tahoma,Arial,sans-serif;color:#183b57}.certificate{width:297mm;height:210mm;margin:0 auto;background:#fffdf7;border:13mm solid #f8f0d9;outline:2mm solid #c49b3d;outline-offset:-17mm;position:relative;text-align:center;padding:11mm 22mm;break-after:page;page-break-after:always;overflow:hidden}.certificate:last-child{break-after:auto;page-break-after:auto}.ornament{color:#b38a31;font-size:22px;letter-spacing:15px}.school{font-size:14px;line-height:1.55;color:#244e69}.school strong{font-size:20px}.seal{font-size:28px;margin:2mm}.certificate h1{font-size:39px;color:#ad7c20;margin:2mm 0 4mm}.intro{font-size:18px;margin:0}.name{font-size:31px;font-weight:900;color:#0c466d;border-bottom:2px solid #d9bb74;display:inline-block;padding:3mm 15mm}.grade{font-size:15px;margin-top:3mm}.message{font-size:18px;max-width:205mm;margin:4mm auto;line-height:1.7}.achievement{display:inline-block;border:1px solid #d3b26d;border-radius:30px;padding:2mm 10mm;font-size:18px;font-weight:bold;background:#fff5d9}.context{font-size:13px;line-height:1.6;margin:3mm}.wish{font-size:15px;color:#947025;margin:2mm}.sign{display:flex;justify-content:space-between;margin:5mm 10mm 0;font-size:14px;line-height:1.6}.date{font-size:11px;color:#607788;position:absolute;bottom:6mm;left:12mm}@media screen{.certificate{margin:16px auto;box-shadow:0 4px 20px #ccc}}@media print{body{background:white}.certificate{box-shadow:none}print-color-adjust:exact;-webkit-print-color-adjust:exact}</style></head><body>'+pages+'</body></html>');win.document.close();win.focus();win.addEventListener("load",()=>win.print(),{once:true});
+}
 function podiumCard(row,placeClass,medalText){
   if(!row){
     return `<div class="podium-card ${placeClass}">
