@@ -1,0 +1,45 @@
+name: Sync Rased into AlFalah portal
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rased-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout AlFalah portal
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Checkout Rased source
+        uses: actions/checkout@v4
+        with:
+          repository: muhammadamer1618-dev/rasededu
+          ref: main
+          path: _rased_source
+          persist-credentials: false
+      - name: Copy Rased files without removing portal-only files
+        run: |
+          mkdir -p rased
+          rsync -a --exclude '.git' --exclude 'CNAME' _rased_source/ rased/
+          rm -rf _rased_source
+      - name: Commit and publish changed files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rased
+          if git diff --cached --quiet; then
+            echo "Rased already up to date"
+          else
+            git commit -m "Sync Rased latest updates into AlFalah portal"
+            git push
+          fi
