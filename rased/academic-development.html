@@ -51,8 +51,10 @@ footer{border-top:1px solid #e0e9ee;text-align:center;padding:19px;color:#708597
 <div class="bottom"><a id="back" class="back" href="teacher.html">← العودة للوحة الرئيسية</a><span style="font-size:12px;color:#738695">معًا نحو تعليم قائم على البيانات والتحسين المستمر</span></div>
 </main><footer>مدارس الفلاح الأهلية — تصميم محمد عامر أحمد</footer>
 <script>
+const role=localStorage.getItem("currentUserRole")||"";
+if(!["admin","superadmin","manager","supervisor"].includes(role)){location.replace("index.html");}
 const origin=new URLSearchParams(location.search).get("from");
-const destinations={teacher:"teacher.html",admin:"admin.html",supervisor:"supervisor-dashboard.html"};
-document.getElementById("back").href=destinations[origin]||"teacher.html";
-if(origin==="teacher"){const a=document.getElementById("analysisLink");a.removeAttribute("href");a.classList.add("disabled");a.textContent="التحليل الحالي متاح من أدوات المعلم";}
+const destinations={admin:"admin.html",supervisor:"supervisor-dashboard.html"};
+document.getElementById("back").href=destinations[origin]||(role==="supervisor"?"supervisor-dashboard.html":"admin.html");
+
 </script></body></html>
