@@ -73,6 +73,7 @@ tr{break-inside:avoid!important;page-break-inside:avoid!important}.legend{margin
 <div class="container">
 <div class="card selection-card"><div class="card-title">تحديد الاختبار</div><div class="card-body"><div id="modeNote" class="mode-note">جاري تحميل البيانات...</div><div class="filters"><div class="field"><label>المادة</label><select id="subjectSelect" onchange="subjectChanged()"><option value="">اختر المادة</option></select></div><div class="field"><label>الصف</label><select id="gradeSelect" onchange="gradeChanged()"><option value="">اختر الصف</option></select></div><div class="field"><label>الشعبة</label><select id="sectionSelect" onchange="sectionChanged()"><option value="">اختر الشعبة</option></select></div><div class="field"><label>الاختبار</label><select id="testSelect" onchange="testChanged()"><option value="">اختر الاختبار</option></select></div></div><div id="selectedInfo" class="selected-info" style="display:none"></div></div></div>
 <div class="card settings-card"><div class="card-title">حدود تصنيف الطلاب</div><div class="card-body"><div class="settings"><div class="setting"><label>المستوى المرتفع يبدأ من %</label><input id="highMin" type="number" value="85" min="0" max="100"></div><div class="setting"><label>المستوى المتوسط يبدأ من %</label><input id="mediumMin" type="number" value="70" min="0" max="100"></div><div class="setting"><label>أولى بالرعاية تبدأ من %</label><input id="careMin" type="number" value="50" min="0" max="100"></div><button class="analyze-btn" onclick="reanalyze()">إعادة التحليل</button></div></div></div>
+<section style="background:#fff;border:1px solid #cde1e8;border-right:5px solid #087c77;border-radius:14px;padding:18px;margin:20px 0;box-shadow:0 4px 16px #1232"><h2 style="margin:0 0 7px;color:#075c70">🧠 التحليل الذكي — مقارنة الاختبارات واكتشاف التعثر</h2><p style="font-size:13px;color:#566f80;margin:0 0 12px">اختر المادة والصف والفصل والاختبار، ثم اعرض التغير في مستوى الطلاب مقارنة بالاختبار السابق من نفس المادة.</p><button type="button" onclick="runSmartAnalysis()" style="background:#087761;border:0;color:#fff;border-radius:9px;padding:11px 20px;font-weight:bold;cursor:pointer">📊 تشغيل التحليل الذكي</button><div id="smartAnalysisArea" style="margin-top:14px" aria-live="polite">سيظهر هنا الطلاب المتراجعون والمتحسنون والمحتاجون إلى دعم.</div></section>
 <div id="analysisArea"><div class="empty">اختر المادة والصف والشعبة والاختبار لعرض التحليل.</div></div>
 <div class="screen-footer">تصميم محمد عامر أحمد - نظام راصد 2026</div>
 </div>
@@ -167,6 +168,46 @@ function printAnalysis(){if(!selectedTest){alert("اختر الاختبار أو
 function goBack(){if(isTeacher)location.href="teacher.html";else location.href=(role==="manager"?"manager.html":(role==="supervisor"?"supervisor-dashboard.html":"admin.html"))}
 function renderMode(){if(role==="manager"||role==="supervisor")el("modeNote").innerHTML="<strong>المشرف العام:</strong> يمكنك تحليل نتائج جميع المواد والفصول في المدرسة (عرض وتحليل فقط).";else if(isAdmin)el("modeNote").innerHTML="<strong>الإدارة:</strong> يمكنك تحليل نتائج جميع المواد والفصول في المدرسة.";else el("modeNote").innerHTML="<strong>المعلم:</strong> يمكنك تحليل نتائج المواد والفصول المسندة إليك فقط."}
 async function applyIncoming(){if(!incoming.subjectId)return;if(isTeacher){const allowed=assignments.some(a=>a.subjectId===incoming.subjectId&&a.grade===incoming.grade&&a.section===incoming.section);if(!allowed)return}const subjectSelect=el("subjectSelect");const subjectExists=[...subjectSelect.options].some(option=>option.value===incoming.subjectId);if(!subjectExists)return;subjectSelect.value=incoming.subjectId;selectedSubjectId=incoming.subjectId;const subject=subjects.find(s=>s.id===selectedSubjectId);selectedSubjectName=subject?.name||"";await fillGrades();if(incoming.grade){const gradeSelect=el("gradeSelect");const gradeExists=[...gradeSelect.options].some(option=>option.value===incoming.grade);if(gradeExists){gradeSelect.value=incoming.grade;selectedGrade=incoming.grade;await fillSections()}}if(incoming.section&&selectedGrade){const sectionSelect=el("sectionSelect");const sectionExists=[...sectionSelect.options].some(option=>option.value===incoming.section);if(sectionExists){sectionSelect.value=incoming.section;selectedSection=incoming.section;await loadTests()}}if(incoming.testId&&selectedSection){const testExists=tests.some(t=>t.id===incoming.testId);if(testExists){el("testSelect").value=incoming.testId;selectedTest=tests.find(t=>t.id===incoming.testId);showSelectedInfo();await loadResults()}}}
+
+/* Academic smart analysis: read-only, scoped to the already selected teacher assignment/class. */
+async function runSmartAnalysis(){
+ const out=el("smartAnalysisArea");
+ if(!selectedTest||!selectedSubjectId||!selectedGrade||!selectedSection||!students.length){out.textContent="اختر المادة والصف والفصل والاختبار وانتظر تحميل النتائج أولًا.";return;}
+ if(isTeacher&&!assignments.some(a=>String(a.subjectId)===String(selectedSubjectId)&&a.grade===selectedGrade&&a.section===selectedSection)){out.textContent="هذه المادة أو الشعبة غير مسندة إلى حساب المعلم.";return;}
+ const currentId=selectedTest.id,subjectId=selectedSubjectId,grade=selectedGrade,section=selectedSection;
+ out.textContent="جارٍ مقارنة النتائج بالاختبارات السابقة...";
+ try{
+  const relevant=tests.filter(t=>String(t.subjectId)===String(subjectId));
+  const index=relevant.findIndex(t=>t.id===currentId);
+  if(index<1){out.textContent="لا يوجد اختبار سابق في هذه المادة والشعبة للمقارنة. اختر اختبارًا أحدث.";return;}
+  const previous=relevant[index-1];
+  const snap=await db.collection("grades").where("testId","==",previous.id).get();
+  if(selectedTest?.id!==currentId||selectedGrade!==grade||selectedSection!==section){out.textContent="تغير الاختبار المختار؛ شغّل التحليل مجددًا.";return;}
+  const previousByCode=new Map();
+  snap.forEach(doc=>{const x=doc.data()||{};if(x.attendance!=="absent"&&x.mark!==null&&x.mark!==undefined&&x.mark!==""&&Number.isFinite(Number(x.mark))){const full=Number(x.fullMark||previous.fullMark);if(full>0)previousByCode.set(String(x.studentCode),Number(x.mark)/full*100);}});
+  const comparisons=[],noPrevious=[];
+  for(const row of analyzedStudents){
+   if(row.attendance!=="present"||!Number.isFinite(row.percentage))continue;
+   const old=previousByCode.get(String(row.student.code));
+   if(old===undefined){noPrevious.push(row);continue;}
+   comparisons.push({name:row.student.name||"طالب",code:row.student.code,old,now:row.percentage,delta:row.percentage-old});
+  }
+  const declining=comparisons.filter(x=>x.delta<=-10).sort((a,b)=>a.delta-b.delta);
+  const improving=comparisons.filter(x=>x.delta>=10).sort((a,b)=>b.delta-a.delta);
+  const needsSupport=comparisons.filter(x=>x.now<60).sort((a,b)=>a.now-b.now);
+  const stable=comparisons.length-declining.length-improving.length;
+  const esc=escapeHtml;
+  const card=(title,count,color)=>'<div style="padding:14px;background:'+color+';border-radius:12px;text-align:center"><strong style="display:block;font-size:26px">'+count+'</strong>'+title+'</div>';
+  const table=(arr,empty)=>arr.length?'<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#edf4f7"><th style="padding:9px">الطالب</th><th>السابق</th><th>الحالي</th><th>التغير</th></tr></thead><tbody>'+arr.map(x=>'<tr style="border-bottom:1px solid #e2ebef"><td style="padding:9px">'+esc(x.name)+'</td><td>'+x.old.toFixed(1)+'%</td><td>'+x.now.toFixed(1)+'%</td><td style="font-weight:bold;color:'+(x.delta<0?'#b43f39':'#087a55')+'">'+(x.delta>0?'+':'')+x.delta.toFixed(1)+' نقطة</td></tr>').join('')+'</tbody></table></div>':'<p style="color:#637b88">'+empty+'</p>';
+  out.innerHTML='<div style="padding:12px;background:#f2f7f9;border-radius:9px;margin-bottom:12px">مقارنة: <b>'+esc(previous.name||"الاختبار السابق")+'</b> ← <b>'+esc(selectedTest.name||"الاختبار الحالي")+'</b> | الطلاب ذوو النتائج المكتملة في الاختبارين: '+comparisons.length+'</div>'+
+   '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px">'+card("تراجعوا 10 نقاط فأكثر",declining.length,"#fff0ee")+card("تحسنوا 10 نقاط فأكثر",improving.length,"#e8f7ef")+card("أقل من 60% حاليًا",needsSupport.length,"#fff5dc")+card("تغيرهم أقل من 10 نقاط",stable,"#eef4fb")+'</div>'+
+   '<h3 style="color:#a34336">⚠️ تنبيه: الطلاب المتراجعون</h3>'+table(declining,"لا يوجد تراجع بمقدار 10 نقاط مئوية أو أكثر.")+
+   '<h3 style="color:#087a55">📈 الطلاب المتحسنون</h3>'+table(improving,"لا يوجد تحسن بمقدار 10 نقاط مئوية أو أكثر.")+
+   '<h3 style="color:#946314">🎯 الطلاب المحتاجون إلى دعم تحصيلي (أقل من 60%)</h3>'+table(needsSupport,"لا يوجد طلاب دون 60% بين النتائج القابلة للمقارنة.")+
+   '<p style="font-size:12px;color:#607789">مقترح متابعة: راجع أخطاء الاختبار والمهارات المستهدفة مع الطلاب المتراجعين، ثم نفّذ تقويمًا قصيرًا لقياس الأثر. لا يمكن تحديد سبب الضعف من الدرجات وحدها. لم تُغيَّر أي درجات. هناك '+noPrevious.length+' نتيجة حالية بلا نتيجة سابقة صالحة للمقارنة.</p>';
+ }catch(err){console.error("Smart analysis",err);out.textContent="تعذر إكمال المقارنة: "+(err.message||"تحقق من الاتصال وصلاحيات البيانات");}
+}
+
 async function start(){if(!protectPage())return;try{await loadCurrentTeacher();await loadSubjects();renderMode();await applyIncoming()}catch(error){console.error(error);alert("حدث خطأ أثناء تحميل صفحة التحليل:\n"+error.message)}}
 start();
 </script>
