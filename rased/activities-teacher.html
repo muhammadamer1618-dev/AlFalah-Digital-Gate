@@ -83,40 +83,10 @@ async function saveActivity(submit){const id=el('editId').value;const old=id?act
 const imagesPayloadSize=imgs.reduce((sum,img)=>sum+String(img?.url||'').length,0);
 if(imagesPayloadSize>820000){alert('إجمالي حجم الصور ما زال كبيرًا جدًا للحفظ. اختر صورًا أقل أو أصغر.');el('msg').textContent='';return}
 if(!imgs.length){alert('ارفع صورة واحدة على الأقل للنشاط.');el('msg').textContent='';return}const sid=el('subject').value;const subj=assignments.find(a=>String(a.subjectId)===String(sid));const now=firebase.firestore.FieldValue.serverTimestamp();const data={title,type:el('type').value,day:el('day').value.trim(),date,location,time:el('time').value,subjectId:sid,subjectName:subj?.subjectName||'',classes,description:el('description').value.trim(),objectives:el('objectives').value.trim(),notes:el('notes').value.trim(),participantsCount:Number(el('participants').value||0)||null,videoUrl:videoUrl||'',images:imgs,teacherEmail:username,teacherName:teacher?.name||'',status:submit?'submitted':'draft',updatedAt:now};if(!id){data.createdAt=now;data.history=[{status:submit?'submitted':'draft',label:submit?'تم الإرسال للمشرف':'تم إنشاء المسودة',at:new Date().toISOString(),by:teacher?.name||username}]}else{data.history=[...(old?.history||[]),{status:submit?'submitted':'draft',label:submit?'تم الإرسال للمشرف':'تم تحديث المسودة',at:new Date().toISOString(),by:teacher?.name||username}]}
-if(submit)data.submittedAt=now;
-if(id){
-  await db.collection('activities').doc(id).set(data,{merge:true});
-  if(submit){
-    await db.collection('activities').doc(id).update({
-      supervisorViewedAt:firebase.firestore.FieldValue.delete(),
-      supervisorViewedBy:firebase.firestore.FieldValue.delete(),
-      supervisorFirstViewedAt:firebase.firestore.FieldValue.delete(),
-      supervisorFirstViewedBy:firebase.firestore.FieldValue.delete(),
-      supervisorViewCount:firebase.firestore.FieldValue.delete()
-    });
-  }
-}else{
-  await db.collection('activities').add(data);
-}resetForm();await loadActivities();el('msg').textContent='تم الحفظ بنجاح ✅'}catch(e){console.error('ACTIVITY SAVE ERROR',e);const msg=(e&&e.message)?e.message:String(e||'');if(/resource-exhausted|maximum|too large|larger than|exceeds/i.test(msg)){alert('تعذر الحفظ لأن حجم الصور أكبر من الحد المسموح. جرّب صورًا أصغر.');}else{alert('تعذر الحفظ: '+msg)}el('msg').textContent=''} }
+if(submit)data.submittedAt=now; if(id)await db.collection('activities').doc(id).set(data,{merge:true});else await db.collection('activities').add(data);resetForm();await loadActivities();el('msg').textContent='تم الحفظ بنجاح ✅'}catch(e){console.error('ACTIVITY SAVE ERROR',e);const msg=(e&&e.message)?e.message:String(e||'');if(/resource-exhausted|maximum|too large|larger than|exceeds/i.test(msg)){alert('تعذر الحفظ لأن حجم الصور أكبر من الحد المسموح. جرّب صورًا أصغر.');}else{alert('تعذر الحفظ: '+msg)}el('msg').textContent=''} }
 async function loadActivities(){const s=await db.collection('activities').where('teacherEmail','==',username).get();activities=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));renderList()}
-function formatViewTime(value){
-  if(!value)return "";
-  try{
-    const d=typeof value.toDate==="function"?value.toDate():(value.seconds?new Date(value.seconds*1000):new Date(value));
-    if(Number.isNaN(d.getTime()))return "";
-    return d.toLocaleString("ar-SA",{dateStyle:"short",timeStyle:"short"});
-  }catch{return ""}
-}
-function supervisorViewReceipt(a){
-  if(!["submitted","reviewed","revision_requested","published"].includes(String(a.status||"")))return "";
-  const at=a.supervisorViewedAt||a.reviewedAt||null;
-  const by=a.supervisorViewedBy||a.reviewedBy||"المشرف العام";
-  if(!at)return '<div class="muted" style="margin-top:7px;color:#8a6d1d;font-weight:bold">⏳ لم يطلع عليه المشرف العام بعد</div>';
-  const when=formatViewTime(at);
-  return '<div class="muted" style="margin-top:7px;color:#08705d;font-weight:bold">👁️ تم الاطلاع بواسطة '+esc(by)+(when?' — '+esc(when):'')+'</div>';
-}
 function statusLabel(s){return {draft:'مسودة',submitted:'مرسل للمشرف',reviewed:'تمت المراجعة',revision_requested:'معاد للتعديل',published:'منشور لولي الأمر'}[s]||s}
-function renderList(){el('list').innerHTML=activities.map(a=>`<div class="activity"><div><strong>${esc(a.title)}</strong> <span class="status">${esc(statusLabel(a.status))}</span>${supervisorViewReceipt(a)}</div><div class="muted">${esc(a.date)} • ${esc(a.location)} • ${(a.classes||[]).map(c=>esc(c.grade+' / '+c.section)).join('، ')}</div>${a.videoUrl?`<div class="muted" style="margin-top:7px">🎥 مرفق فيديو للمراجعة</div>`:''}<div class="actions"><button class="btn primary" onclick="location.href='activity-report.html?id=${a.id}'">📄 عرض التقرير</button>${a.videoUrl?`<button class="btn light" onclick="window.open('${esc(a.videoUrl)}','_blank','noopener')">🎥 فتح الفيديو</button>`:''}${['draft','revision_requested'].includes(a.status)?`<button class="btn gold" onclick="editActivity('${a.id}')">✏️ تعديل</button>`:''}${['draft','revision_requested'].includes(a.status)?`<button class="btn danger" onclick="deleteActivity('${a.id}')">🗑️ حذف التقرير</button>`:''}</div></div>`).join('')||'لا توجد أنشطة حتى الآن.'}
+function renderList(){el('list').innerHTML=activities.map(a=>`<div class="activity"><div><strong>${esc(a.title)}</strong> <span class="status">${esc(statusLabel(a.status))}</span></div><div class="muted">${esc(a.date)} • ${esc(a.location)} • ${(a.classes||[]).map(c=>esc(c.grade+' / '+c.section)).join('، ')}</div>${a.videoUrl?`<div class="muted" style="margin-top:7px">🎥 مرفق فيديو للمراجعة</div>`:''}<div class="actions"><button class="btn primary" onclick="location.href='activity-report.html?id=${a.id}'">📄 عرض التقرير</button>${a.videoUrl?`<button class="btn light" onclick="window.open('${esc(a.videoUrl)}','_blank','noopener')">🎥 فتح الفيديو</button>`:''}${['draft','revision_requested'].includes(a.status)?`<button class="btn gold" onclick="editActivity('${a.id}')">✏️ تعديل</button>`:''}${['draft','revision_requested'].includes(a.status)?`<button class="btn danger" onclick="deleteActivity('${a.id}')">🗑️ حذف التقرير</button>`:''}</div></div>`).join('')||'لا توجد أنشطة حتى الآن.'}
 function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;el('editId').value=id;['title','type','day','date','location','time','description','objectives','notes'].forEach(k=>{if(el(k))el(k).value=a[k]||''});el('participants').value=a.participantsCount||'';el('videoUrl').value=a.videoUrl||'';el('subject').value=a.subjectId||'';document.querySelectorAll('.cls').forEach(x=>x.checked=(a.classes||[]).some(c=>c.grade===x.dataset.grade&&c.section===x.dataset.section));scrollTo({top:0,behavior:'smooth'})}
 async function deleteActivity(id){
   const a=activities.find(x=>x.id===id);

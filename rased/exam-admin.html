@@ -153,8 +153,8 @@ table{max-width:100%;}
 <option value="1">محاولة واحدة</option><option value="2">محاولتان</option>
 <option value="3">3 محاولات</option><option value="5">5 محاولات</option>
 <option value="0">غير محدود</option></select></div>
-<div><label>موعد نشر الاختبار</label><input id="publishAt" type="datetime-local"><div style="font-size:10px;color:#687786;margin-top:4px">اتركه فارغًا ليظهر الاختبار فور تفعيله. إذا حددت موعدًا فلن يظهر للطالب قبل هذا التاريخ والوقت.</div></div>
-<div><label>آخر موعد لأداء الاختبار</label><input id="deadline" type="datetime-local"><div style="font-size:10px;color:#687786;margin-top:4px">اتركه فارغًا إذا كان الاختبار بدون موعد نهائي.</div></div>
+<div><label>موعد نشر الاختبار</label><input id="publishAt" type="datetime-local" lang="en-GB" aria-label="موعد النشر بالتقويم الميلادي"><div style="font-size:10px;color:#687786;margin-top:4px">اتركه فارغًا ليظهر الاختبار فور تفعيله. إذا حددت موعدًا فلن يظهر للطالب قبل هذا التاريخ والوقت.</div></div>
+<div><label>آخر موعد لأداء الاختبار</label><input id="deadline" type="datetime-local" lang="en-GB" aria-label="آخر موعد بالتقويم الميلادي"><div style="font-size:10px;color:#687786;margin-top:4px">اتركه فارغًا إذا كان الاختبار بدون موعد نهائي.</div></div>
 </div>
 <div class="note" style="margin-top:12px">
 احفظ بيانات الاختبار أولًا وأضف الأسئلة، ثم استخدم زر <b>النشر</b> من جدول الاختبارات لتحديد الفصول أو الطلاب المستهدفين.
@@ -397,19 +397,10 @@ function ownerAliases(){
 function examBelongsToCurrentUser(e){
  if(!["teacher","supervisor"].includes(role))return true;
 
- /*
-   فصل ملكية الاختبارات بين حساب المعلم وحساب المشرف.
-   لا نعتمد على الاسم إطلاقًا لأن الشخص نفسه قد يملك الحسابين.
- */
- const savedRole=String(e?.createdByRole||"").trim().toLowerCase();
-
- if(
-   savedRole &&
-   ["teacher","supervisor"].includes(savedRole) &&
-   savedRole!==role
- ){
-   return false;
- }
+ // Separate ownership by the role used when the exam was created.
+ // A person may have both a teacher account and a supervisor account.
+ const creatorRole=String(e?.createdByRole||"").trim().toLowerCase();
+ if(creatorRole && creatorRole!==role)return false;
 
  const aliases=ownerAliases();
  const ownerCandidates=[
@@ -425,10 +416,13 @@ function examBelongsToCurrentUser(e){
    if(x && aliases.has(x))return true;
  }
 
- /*
-   الاختبارات القديمة التي لا تحتوي createdByRole تظل مدعومة
-   بشرط وجود معرف حساب مطابق فعليًا، وليس مجرد تطابق الاسم.
- */
+ // توافق مع الاختبارات الأقدم التي كان يُحفظ فيها اسم المعلم فقط.
+ if(role==="teacher" && currentTeacher){
+   const savedName=String(e?.teacherName||"").trim();
+   const myName=String(currentTeacher?.name||"").trim();
+   if(savedName && myName && savedName===myName)return true;
+ }
+
  return false;
 }
 
@@ -928,27 +922,11 @@ async function saveExam(){
  };
 
  if(["teacher","supervisor"].includes(role) && !editingId.value){
-   data.teacherEmail=
-     role==="teacher"
-       ?(currentTeacher?.email||currentUser)
-       :currentUser;
-
-   data.teacherId=
-     role==="teacher"
-       ?(currentTeacher?.id||"")
-       :"";
-
-   data.teacherUsername=
-     role==="teacher"
-       ?(currentTeacher?.username||currentTeacher?.user||currentUser)
-       :currentUser;
-
+   data.teacherEmail=currentUser;
    data.teacherName=
      role==="teacher"
      ?(currentTeacher?.name||localStorage.getItem("currentUserName")||currentUser)
      :(localStorage.getItem("currentUserName")||currentUser);
-
-   data.createdBy=currentUser;
    data.createdByRole=role;
  }else if(!["teacher","supervisor"].includes(role) && !editingId.value){
    data.teacherEmail=currentUser||"";
@@ -990,7 +968,7 @@ function publishTimeText(e){
  if(!e?.publishAt)return "فوري";
  const d=new Date(e.publishAt);
  if(Number.isNaN(d.getTime()))return "فوري";
- return d.toLocaleString("ar-SA");
+ return d.toLocaleString("en-GB-u-ca-gregory", {day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false});
 }
 function examAdminStatus(e){
  if(!examHasPublication(e))return "غير منشور";
@@ -1018,7 +996,7 @@ async function loadExams(){
    let e=examsData[i],qc=await db.collection("onlineExams").doc(e.id).collection("questions").get();
    let cls=examTargetText(e);
    const toggleBtn=examHasPublication(e)?` <button class="light" onclick="toggleExam('${e.id}',${e.active!==false})">${e.active!==false?"إيقاف":"تفعيل"}</button>`:"";
-   examRows.insertAdjacentHTML("beforeend",`<tr><td>${i+1}</td><td>${esc(e.name)}</td><td>${esc(e.subjectName)}</td><td>${esc(cls)}</td><td>${esc(e.fullMark)}</td><td>${esc(e.durationMinutes)} د</td><td>${esc(publishTimeText(e))}</td><td>${e.deadline?esc(new Date(e.deadline).toLocaleString("ar-SA")):"بدون موعد"}</td><td>${esc(examAdminStatus(e))}</td><td>${qc.size}</td><td><button class="primary" onclick="editExam('${e.id}')">تعديل</button> <button class="green" onclick="openQuestions('${e.id}')">الأسئلة</button> <button class="gold" onclick="openPublish('${e.id}')">📢 النشر</button> <button class="gold" onclick="showResults('${e.id}')">النتائج</button>${toggleBtn} <button class="gold" onclick="deleteExamResults('${e.id}')">حذف النتائج</button> <button class="red" onclick="deleteExam('${e.id}')">حذف</button></td></tr>`);
+   examRows.insertAdjacentHTML("beforeend",`<tr><td>${i+1}</td><td>${esc(e.name)}</td><td>${esc(e.subjectName)}</td><td>${esc(cls)}</td><td>${esc(e.fullMark)}</td><td>${esc(e.durationMinutes)} د</td><td>${esc(publishTimeText(e))}</td><td>${e.deadline?esc(new Date(e.deadline).toLocaleString("en-GB-u-ca-gregory", {day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false})):"بدون موعد"}</td><td>${esc(examAdminStatus(e))}</td><td>${qc.size}</td><td><button class="primary" onclick="editExam('${e.id}')">تعديل</button> <button class="green" onclick="openQuestions('${e.id}')">الأسئلة</button> <button class="gold" onclick="openPublish('${e.id}')">📢 النشر</button> <button class="gold" onclick="showResults('${e.id}')">النتائج</button>${toggleBtn} <button class="gold" onclick="deleteExamResults('${e.id}')">حذف النتائج</button> <button class="red" onclick="deleteExam('${e.id}')">حذف</button></td></tr>`);
  }
 }
 function editExam(id){

@@ -1,96 +1,18 @@
 <!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>راصد - بوابة المشرف العام</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<style>*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f3f6f9;color:#172b3f}.head{position:relative;background:linear-gradient(135deg,#073653,#0b5d92);color:#fff;text-align:center;padding:18px}.logo{width:78px;height:78px;object-fit:contain;background:#fff;border-radius:50%;padding:4px}.logout{position:absolute;left:16px;top:16px;border:0;border-radius:8px;padding:10px 14px;font-weight:bold;cursor:pointer}.wrap{max-width:1350px;margin:20px auto;padding:0 12px}.welcome{background:#e8f3ff;border:1px solid #bdd9f5;color:#174f7c;padding:12px;border-radius:10px;margin-bottom:14px}.nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:16px}.nav a{text-decoration:none;background:#fff;border:1px solid #dbe5ef;border-radius:12px;padding:14px;text-align:center;font-weight:bold;color:#0b4b78;box-shadow:0 3px 10px #0001}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}.stat{background:#fff;border:1px solid #e1e8ef;border-radius:12px;padding:14px;text-align:center}.stat b{display:block;font-size:26px;color:#174f7c;margin-top:5px}.box{background:#fff;border:1px solid #e0e6ec;border-radius:14px;margin-bottom:16px;overflow:hidden;box-shadow:0 3px 14px #0001}.title{padding:14px 18px;background:#eef4fa;color:#123c63;font-size:18px;font-weight:bold}.body{padding:15px}.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin-bottom:10px}input,select{width:100%;height:42px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-family:inherit}.table{overflow:auto;max-height:440px;border:1px solid #e1e7ee;border-radius:9px}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:center;font-size:12px}th{position:sticky;top:0;background:#174f7c;color:#fff;z-index:2}.muted{color:#64748b;font-size:12px}.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#eef4fa;color:#174f7c;font-weight:bold}.foot{text-align:center;color:#64748b;font-size:11px;padding:18px}@media print{.head,.nav,.filters,.logout{display:none!important}.box{box-shadow:none;break-inside:avoid}.table{max-height:none;overflow:visible}th{position:static}}</style>
-<style id="supervisorCardDashboardTheme">
-.nav{display:none!important}
-
-.supervisor-card-dashboard{margin:14px 0 16px}
-.supervisor-dashboard-group{margin-bottom:15px}
-.supervisor-dashboard-group-title{
-  margin:4px 2px 9px;
-  color:#004c3f;
-  font-size:13px;
-  font-weight:900;
-}
-.supervisor-dashboard-grid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:10px;
-}
-.supervisor-dashboard-tool{
-  min-height:76px;
-  border:0;
-  border-radius:11px;
-  padding:12px 14px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:3px;
-  color:#fff;
-  cursor:pointer;
-  text-align:center;
-  font-family:Tahoma,Arial,sans-serif;
-  box-shadow:0 5px 15px rgba(0,0,0,.10);
-  transition:.15s ease;
-}
-.supervisor-dashboard-tool:hover{transform:translateY(-2px);filter:brightness(1.04)}
-.supervisor-dashboard-tool span{font-size:19px;line-height:1}
-.supervisor-dashboard-tool strong{font-size:14px;line-height:1.35}
-.supervisor-dashboard-tool small{font-size:9.5px;line-height:1.35;font-weight:normal;color:rgba(255,255,255,.88)}
-.supervisor-dashboard-grid .supervisor-dashboard-tool:nth-child(6n+1){background:#0f7d74}
-.supervisor-dashboard-grid .supervisor-dashboard-tool:nth-child(6n+2){background:#947219}
-.supervisor-dashboard-grid .supervisor-dashboard-tool:nth-child(6n+3){background:#7d3ce4}
-.supervisor-dashboard-grid .supervisor-dashboard-tool:nth-child(6n+4){background:#156b9d}
-.supervisor-dashboard-grid .supervisor-dashboard-tool:nth-child(6n+5){background:#7a3ec8}
-.supervisor-dashboard-grid .supervisor-dashboard-tool:nth-child(6n+6){background:#0f7d74}
-.supervisor-dashboard-main .supervisor-dashboard-tool{min-height:90px}
-.supervisor-dashboard-main .supervisor-dashboard-tool strong{font-size:16px}
-.supervisor-dashboard-tool.active{background:#004c3f!important;box-shadow:0 0 0 3px rgba(201,151,44,.32),0 8px 20px rgba(0,76,63,.18)}
-
-.supervisor-feature-bar{
-  display:none;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin:8px 0 13px;
-  padding:10px 13px;
-  border-radius:10px;
-  background:#004c3f;
-  color:#fff;
-}
-.supervisor-feature-bar.show{display:flex}
-.supervisor-feature-bar span{display:block;font-size:9px;opacity:.72}
-.supervisor-feature-bar strong{font-size:14px}
-.supervisor-feature-bar button{border:0;border-radius:8px;background:#fff;color:#004c3f;padding:8px 11px;font-weight:bold;cursor:pointer}
-
-.wrap > .box{display:none!important}
-.wrap > .box.supervisor-feature-visible{display:block!important}
-
-@media(max-width:900px){.supervisor-dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:620px){
-  .supervisor-dashboard-grid{grid-template-columns:1fr}
-  .supervisor-feature-bar{align-items:flex-start;flex-direction:column}
-}
-@media print{
-  .supervisor-card-dashboard,.supervisor-feature-bar{display:none!important}
-  .wrap > .box.supervisor-feature-visible{display:block!important}
-}
-</style>
-</head><body>
+<style>*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f3f6f9;color:#172b3f}.head{position:relative;background:linear-gradient(135deg,#073653,#0b5d92);color:#fff;text-align:center;padding:18px}.logo{width:78px;height:78px;object-fit:contain;background:#fff;border-radius:50%;padding:4px}.logout{position:absolute;left:16px;top:16px;border:0;border-radius:8px;padding:10px 14px;font-weight:bold;cursor:pointer}.wrap{max-width:1350px;margin:20px auto;padding:0 12px}.welcome{background:#e8f3ff;border:1px solid #bdd9f5;color:#174f7c;padding:12px;border-radius:10px;margin-bottom:14px}.nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:16px}.nav a{text-decoration:none;background:#fff;border:1px solid #dbe5ef;border-radius:12px;padding:14px;text-align:center;font-weight:bold;color:#0b4b78;box-shadow:0 3px 10px #0001}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}.stat{background:#fff;border:1px solid #e1e8ef;border-radius:12px;padding:14px;text-align:center}.stat b{display:block;font-size:26px;color:#174f7c;margin-top:5px}.box{background:#fff;border:1px solid #e0e6ec;border-radius:14px;margin-bottom:16px;overflow:hidden;box-shadow:0 3px 14px #0001}.title{padding:14px 18px;background:#eef4fa;color:#123c63;font-size:18px;font-weight:bold}.body{padding:15px}.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin-bottom:10px}input,select{width:100%;height:42px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-family:inherit}.table{overflow:auto;max-height:440px;border:1px solid #e1e7ee;border-radius:9px}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:center;font-size:12px}th{position:sticky;top:0;background:#174f7c;color:#fff;z-index:2}.muted{color:#64748b;font-size:12px}.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#eef4fa;color:#174f7c;font-weight:bold}.foot{text-align:center;color:#64748b;font-size:11px;padding:18px}@media print{.head,.nav,.filters,.logout{display:none!important}.box{box-shadow:none;break-inside:avoid}.table{max-height:none;overflow:visible}th{position:static}}</style></head><body>
 <header class="head"><img src="logo.jpeg" class="logo"><h1>مدارس الفلاح الأهلية</h1><div id="portalRoleTitle">نظام راصد - بوابة الإشراف</div><button class="logout" onclick="logout()">تسجيل الخروج</button></header>
 <div class="wrap"><div class="welcome">مرحبًا، <strong id="supName">المستخدم</strong> — <span id="supRoleLabel">حساب إشراف</span>. تظهر لك فقط الأقسام التي منحتها لك الإدارة.</div>
 <div class="nav">
-<a href="javascript:void(0)" onclick='openUnifiedWorkspace("weekly")'>📅 متابعة الخطة الأسبوعية</a>
-<a href="javascript:void(0)" onclick='openUnifiedWorkspace("visits")'>📋 الزيارات الفنية</a>
 <a data-perm="analysisView" href="analysis.html">📊 تحليل النتائج</a>
 <a data-perm="comparisonView" href="comparison.html">📈 مقارنة النتائج</a>
 <a data-perm="monitoringView" href="monitoring.html">📋 حالة الرصد</a>
 <a data-perm="supportStudentsView" href="support-students.html">👥 الطلاب المحتاجون للدعم</a>
+<a href="/follow-up/" id="supervisorVisitsLink" aria-label="الزيارات الفنية وسجل زياراتي">📋 الزيارات الفنية / سجل زياراتي</a>
 <a data-perm="examMonitoringView" href="exam-monitoring.html">📝 متابعة الاختبارات الإلكترونية</a>
 <a data-perm="onlineExamsManage" href="exam-admin.html">🧪 إنشاء وإدارة الاختبارات الإلكترونية</a>
 <a data-perm="guidanceView" href="supervisor-guidance.html">🧭 التوجيه الطلابي</a>
-<a data-perm="staffFilesView" href="staff-files.html">📁 مركز الملفات والتوثيق</a>
+<a href="staff-files.html">📁 مركز الملفات والتوثيق</a>
 <a data-perm="trainingManage" href="supervisor-training.html">🎓 الدورات والاجتماعات</a>
 <a data-perm="liveClassesView" href="supervisor-live-classes.html">💻 الحصص المباشرة</a>
 <a data-perm="activitiesView" id="activitiesLink" href="supervisor-activities.html">🎯 تقارير الأنشطة</a>
@@ -114,67 +36,6 @@
 <div class="stat" data-perm="messagesView">الرسائل<b id="sMessages">0</b></div>
 <div class="stat" data-perm="activitiesView">الأنشطة<b id="sActivities">0</b></div>
 </div>
-
-<div id="supervisorCardDashboard" class="supervisor-card-dashboard">
-
-  <div class="supervisor-dashboard-group">
-    <div class="supervisor-dashboard-group-title">الخدمات الرئيسية</div>
-    <div class="supervisor-dashboard-grid supervisor-dashboard-main">
-      <button class="supervisor-dashboard-tool" onclick="openUnifiedWorkspace('weekly')">
-        <span>📅</span><strong>متابعة الخطة الأسبوعية</strong><small>الخطط الأسبوعية للمعلمين</small>
-      </button>
-      <button class="supervisor-dashboard-tool" onclick="openUnifiedWorkspace('visits')">
-        <span>📋</span><strong>الزيارات الفنية</strong><small>الزيارات والتقارير الفنية</small>
-      </button>
-      <button class="supervisor-dashboard-tool" data-perm="activitiesView" onclick="location.href='supervisor-activities.html'">
-        <span>🎯</span><strong>تقارير الأنشطة</strong><small>مراجعة واعتماد تقارير الأنشطة</small>
-      </button>
-    </div>
-  </div>
-
-  <div class="supervisor-dashboard-group">
-    <div class="supervisor-dashboard-group-title">التحليل والمتابعة</div>
-    <div class="supervisor-dashboard-grid">
-      <button class="supervisor-dashboard-tool" data-perm="analysisView" onclick="location.href='analysis.html'"><span>📊</span><strong>تحليل النتائج</strong><small>تحليل نتائج الطلاب والفصول</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="comparisonView" onclick="location.href='comparison.html'"><span>📈</span><strong>مقارنة النتائج</strong><small>مقارنة الأداء والنتائج</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="monitoringView" onclick="location.href='monitoring.html'"><span>📋</span><strong>حالة الرصد</strong><small>متابعة تقدم رصد الدرجات</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="supportStudentsView" onclick="location.href='support-students.html'"><span>👥</span><strong>الطلاب المحتاجون للدعم</strong><small>متابعة الدعم الأكاديمي</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="examMonitoringView" onclick="location.href='exam-monitoring.html'"><span>📝</span><strong>متابعة الاختبارات الإلكترونية</strong><small>متابعة تنفيذ الاختبارات</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="onlineExamsManage" onclick="location.href='exam-admin.html'"><span>🧪</span><strong>إنشاء وإدارة الاختبارات</strong><small>الاختبارات الإلكترونية للمشرف</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="topStudentsView" onclick="location.href='top10.html'"><span>🏆</span><strong>أوائل الطلاب</strong><small>عرض الطلاب المتفوقين</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="studentReportView" onclick="location.href='student-report.html'"><span>📄</span><strong>تقرير الطالب الشامل</strong><small>عرض التقرير الكامل للطالب</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="archiveView" onclick="location.href='archive.html'"><span>🗂️</span><strong>الأرشيف</strong><small>السجلات والبيانات المؤرشفة</small></button>
-    </div>
-  </div>
-
-  <div class="supervisor-dashboard-group">
-    <div class="supervisor-dashboard-group-title">التوجيه والتدريب</div>
-    <div class="supervisor-dashboard-grid">
-      <button class="supervisor-dashboard-tool" data-perm="guidanceView" onclick="location.href='supervisor-guidance.html'"><span>🧭</span><strong>التوجيه الطلابي</strong><small>متابعة أعمال التوجيه الطلابي</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="trainingManage" onclick="location.href='supervisor-training.html'"><span>🎓</span><strong>الدورات والاجتماعات</strong><small>إدارة التدريب والاجتماعات</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="liveClassesView" onclick="location.href='supervisor-live-classes.html'"><span>💻</span><strong>الحصص المباشرة</strong><small>متابعة الحصص المباشرة</small></button>
-    </div>
-  </div>
-
-  <div class="supervisor-dashboard-group">
-    <div class="supervisor-dashboard-group-title">البيانات والسجلات</div>
-    <div class="supervisor-dashboard-grid">
-      <button class="supervisor-dashboard-tool" data-perm="studentsView" data-supervisor-target="studentsBox" onclick="showSupervisorFeature('studentsBox',this,'الطلاب')"><span>👨‍🎓</span><strong>الطلاب</strong><small>عرض بيانات الطلاب</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="teachersView" data-supervisor-target="teachersBox" onclick="showSupervisorFeature('teachersBox',this,'المعلمون والإسنادات')"><span>👨‍🏫</span><strong>المعلمون</strong><small>بيانات المعلمين والإسنادات</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="subjectsView" data-supervisor-target="subjectsBox" onclick="showSupervisorFeature('subjectsBox',this,'المواد')"><span>📚</span><strong>المواد</strong><small>عرض مواد المدرسة</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="testsView" data-supervisor-target="testsBox" onclick="showSupervisorFeature('testsBox',this,'الاختبارات')"><span>🧾</span><strong>الاختبارات</strong><small>عرض الاختبارات الحالية</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="examSchedulesView" data-supervisor-target="schedulesBox" onclick="showSupervisorFeature('schedulesBox',this,'جداول الاختبارات')"><span>🗓️</span><strong>جداول الاختبارات</strong><small>عرض الجداول المنشورة</small></button>
-      <button class="supervisor-dashboard-tool" data-perm="messagesView" data-supervisor-target="messagesBox" onclick="showSupervisorFeature('messagesBox',this,'سجل الرسائل')"><span>📨</span><strong>سجل الرسائل</strong><small>رسائل أولياء الأمور</small></button>
-      <button class="supervisor-dashboard-tool" onclick="location.href='change-password.html?return=supervisor-dashboard.html'"><span>🔐</span><strong>تغيير كلمة المرور</strong><small>إدارة كلمة مرور الحساب</small></button>
-    </div>
-  </div>
-</div>
-
-<div id="supervisorFeatureBar" class="supervisor-feature-bar">
-  <div><span>القسم الحالي</span><strong id="supervisorFeatureTitle">-</strong></div>
-  <button type="button" onclick="closeSupervisorFeature()">← العودة إلى لوحة الأدوات</button>
-</div>
-
 <div class="box" id="studentsBox" data-perm="studentsView"><div class="title">👨‍🎓 الطلاب</div><div class="body"><div class="filters"><input id="studentSearch" placeholder="بحث بالاسم أو الكود" oninput="renderStudents()"><select id="studentGrade" onchange="renderStudents()"><option value="">كل الصفوف</option></select></div><div class="table"><table><thead><tr><th>#</th><th>الكود</th><th>الطالب</th><th>الصف</th><th>الشعبة</th><th>جوال ولي الأمر</th></tr></thead><tbody id="studentsBody"></tbody></table></div></div></div>
 <div class="box" id="teachersBox" data-perm="teachersView"><div class="title">👨‍🏫 المعلمون والإسنادات</div><div class="body"><div class="filters"><input id="teacherSearch" placeholder="بحث بالاسم أو المستخدم" oninput="renderTeachers()"></div><div class="table"><table><thead><tr><th>#</th><th>المعلم</th><th>اسم المستخدم</th><th>الجوال</th><th>عدد الإسنادات</th><th>الإسنادات</th></tr></thead><tbody id="teachersBody"></tbody></table></div></div></div>
 <div class="box" id="subjectsBox" data-perm="subjectsView"><div class="title">📚 المواد</div><div class="body"><div id="subjectsArea"></div></div></div>
@@ -248,15 +109,16 @@ document.addEventListener("click",function(event){
 
 
 const firebaseConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};firebase.initializeApp(firebaseConfig);const db=firebase.firestore();
-const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));let students=[],teachers=[],subjects=[],tests=[],grades=[],messages=[],activities=[],schedules=[];let currentPermissions={},currentSupervisorType="general_supervisor",currentSupervisorPhone="";
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));let students=[],teachers=[],subjects=[],tests=[],grades=[],messages=[],activities=[],schedules=[];let currentPermissions={},currentSupervisorType="general_supervisor";
 function protect(){const r=(rasedAuthGet("currentUserRole")||"").toLowerCase();if(r!=="supervisor"){alert("هذه الصفحة لحسابات الإشراف فقط");location.href="index.html";return false}return true}
 function logout(){rasedLogoutThisTab();location.href="index.html"}
-function fmtTs(v){try{const d=v?.toDate?v.toDate():new Date(v);return isNaN(d)?"—":new Intl.DateTimeFormat("ar-SA",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d)}catch{return "—"}}
+function fmtTs(v){try{const d=v?.toDate?v.toDate():new Date(v);return isNaN(d)?"—":new Intl.DateTimeFormat("ar-SA-u-ca-gregory",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d)}catch{return "—"}}
 function roleTypeLabel(type){
 const t=String(type||"").toLowerCase();
 return t==="manager"?"مدير":(t==="supervisor"?"مشرف":"مشرف عام");
 }
 function hasPerm(key){
+if(key==="onlineExamsManage")return currentPermissions[key]===true;
 return currentPermissions[key]!==false;
 }
 function applyPermissions(){
@@ -272,7 +134,6 @@ const d=await db.collection("users").doc(u).get();
 if(!d.exists||String(d.data()?.role||"").toLowerCase()!=="supervisor")throw Error("حساب الإشراف غير صالح");
 const x=d.data()||{};
 currentSupervisorType=String(x.supervisorType||"general_supervisor").toLowerCase();
-currentSupervisorPhone=String(x.phone||x.mobile||"").trim();
 currentPermissions=x.permissions&&typeof x.permissions==="object"?x.permissions:{};
 const roleLabel=roleTypeLabel(currentSupervisorType);
 supName.textContent=x.name||rasedAuthGet("currentUserName")||u;
@@ -323,312 +184,4 @@ function renderTests(){const q=testSearch.value.trim().toLowerCase();const rows=
 function renderSchedules(){schedules.sort((a,b)=>String(b.updatedAt?.seconds||"").localeCompare(String(a.updatedAt?.seconds||"")));schedulesBody.innerHTML=schedules.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name||"")}</td><td>${Array.isArray(x.days)?x.days.length:0}</td><td>${esc(fmtTs(x.updatedAt))}</td><td>${x.visibleToParent===false?'مخفي':'ظاهر'}</td></tr>`).join('')||'<tr><td colspan="5">لا توجد جداول.</td></tr>'}
 function renderMessages(){const q=messageSearch.value.trim().toLowerCase();const rows=messages.filter(x=>!q||[x.teacherName,x.studentName,x.subjectName,x.message,x.testName].join(" ").toLowerCase().includes(q)).sort((a,b)=>(b.sentAt?.seconds||0)-(a.sentAt?.seconds||0));messagesBody.innerHTML=rows.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.teacherName||"")}</td><td>${esc(x.studentName||"")}</td><td>${esc((x.grade||"")+"/"+(x.section||""))}</td><td>${esc(x.subjectName||"")}</td><td>${esc(x.messageType==='custom'?'رسالة عامة':(x.testName||'نتيجة اختبار'))}</td><td>${esc(x.guardianPhone||"")}</td><td style="text-align:right;white-space:pre-wrap;max-width:360px">${esc(x.message||"")}</td></tr>`).join('')||'<tr><td colspan="8">لا توجد رسائل.</td></tr>'}
 async function start(){if(!protect())return;try{await verifyAccount();await loadAll()}catch(e){console.error(e);alert("تعذر تحميل بوابة المشرف:\n"+e.message);location.href="index.html"}}start();
-</script>
-<style id="unifiedWorkspaceStyle">
-.unified-workspace{
-  position:fixed;inset:0;z-index:999999;background:#f4f7f5;display:none;flex-direction:column;
-  font-family:Tajawal,Cairo,Tahoma,Arial,sans-serif;
-}
-.unified-workspace.open{display:flex}
-.unified-workspace-head{
-  min-height:64px;background:linear-gradient(135deg,#004c3f,#006653);color:#fff;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;
-  box-shadow:0 5px 18px rgba(0,0,0,.16)
-}
-.unified-workspace-title{font-weight:900;font-size:18px}
-.unified-workspace-actions{display:flex;gap:8px;align-items:center}
-.unified-workspace-actions button{
-  border:0;border-radius:10px;padding:9px 13px;font:inherit;font-weight:800;cursor:pointer
-}
-.unified-workspace-back{background:#fff;color:#004c3f}
-.unified-workspace-home{background:#f0cf79;color:#17372f}
-.unified-workspace-frame{width:100%;flex:1;border:0;background:#fff}
-@media(max-width:650px){
-  .unified-workspace-head{min-height:58px;padding:8px 10px}
-  .unified-workspace-title{font-size:14px}
-  .unified-workspace-actions button{padding:8px 10px;font-size:12px}
-}
-</style>
-
-<div id="unifiedWorkspace" class="unified-workspace" aria-hidden="true">
-  <div class="unified-workspace-head">
-    <div id="unifiedWorkspaceTitle" class="unified-workspace-title">الخدمة</div>
-    <div class="unified-workspace-actions">
-      <button type="button" class="unified-workspace-home" onclick="reloadUnifiedWorkspace()">↻ تحديث</button>
-      <button type="button" class="unified-workspace-back" onclick="closeUnifiedWorkspace()">← رجوع إلى منصة المشرف</button>
-    </div>
-  </div>
-  <iframe id="unifiedWorkspaceFrame" class="unified-workspace-frame" title="الخدمة"></iframe>
-</div>
-
-<script>
-async function openUnifiedWorkspace(kind){
-  const box=document.getElementById("unifiedWorkspace");
-  const frame=document.getElementById("unifiedWorkspaceFrame");
-  const title=document.getElementById("unifiedWorkspaceTitle");
-  let url="",label="";
-  if(kind==="weekly"){
-    url="../weekly/supervisor-monitor.html";
-    label="متابعة الخطة الأسبوعية";
-  }else if(kind==="visits"){
-    const linked=await ensureVisitSupervisorSession();
-    if(!linked)return;
-    const role=String(linked.role||"");
-    if(role==="admin") url="../follow-up/admin-dashboard.html";
-    else if(role==="general_supervisor") url="../follow-up/general-supervisor-reports.html";
-    else url="../follow-up/supervisor-dashboard.html?v=20261013-2";
-    label="الزيارات الفنية";
-  }
-  if(!url)return;
-  title.textContent=label;
-  frame.src=url;
-  box.classList.add("open");
-  box.setAttribute("aria-hidden","false");
-  document.body.style.overflow="hidden";
-}
-function closeUnifiedWorkspace(){
-  const box=document.getElementById("unifiedWorkspace");
-  const frame=document.getElementById("unifiedWorkspaceFrame");
-  box.classList.remove("open");
-  box.setAttribute("aria-hidden","true");
-  frame.src="about:blank";
-  document.body.style.overflow="";
-}
-function reloadUnifiedWorkspace(){
-  const frame=document.getElementById("unifiedWorkspaceFrame");
-  if(frame&&frame.src&&frame.src!=="about:blank")frame.contentWindow.location.reload();
-}
-document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"&&document.getElementById("unifiedWorkspace")?.classList.contains("open"))closeUnifiedWorkspace();
-});
-</script>
-
-<script id="supervisorCardDashboardBehavior">
-(function(){
-  window.showSupervisorFeature=function(id,button,label){
-    document.querySelectorAll(".wrap > .box").forEach(el=>el.classList.remove("supervisor-feature-visible"));
-    document.querySelectorAll(".supervisor-dashboard-tool[data-supervisor-target]").forEach(el=>el.classList.remove("active"));
-    const target=document.getElementById(id);
-    if(!target)return;
-    target.classList.add("supervisor-feature-visible");
-    (button||document.querySelector('.supervisor-dashboard-tool[data-supervisor-target="'+id+'"]'))?.classList.add("active");
-    const bar=document.getElementById("supervisorFeatureBar");
-    const title=document.getElementById("supervisorFeatureTitle");
-    if(title)title.textContent=label||"القسم";
-    bar?.classList.add("show");
-    setTimeout(()=>bar?.scrollIntoView({behavior:"smooth",block:"start"}),30);
-  };
-
-  window.closeSupervisorFeature=function(){
-    document.querySelectorAll(".wrap > .box").forEach(el=>el.classList.remove("supervisor-feature-visible"));
-    document.querySelectorAll(".supervisor-dashboard-tool[data-supervisor-target]").forEach(el=>el.classList.remove("active"));
-    document.getElementById("supervisorFeatureBar")?.classList.remove("show");
-    document.getElementById("supervisorCardDashboard")?.scrollIntoView({behavior:"smooth",block:"start"});
-  };
-
-  // Backward-compatible hash links.
-  document.addEventListener("click",function(e){
-    const a=e.target.closest('a[href^="#"]');
-    if(!a)return;
-    const id=(a.getAttribute("href")||"").slice(1);
-    if(document.getElementById(id)){
-      e.preventDefault();
-      showSupervisorFeature(id,null,document.getElementById(id)?.querySelector(".title")?.textContent||"القسم");
-    }
-  },true);
-})();
-
-async function ensureVisitSupervisorSession(){
-  const gateUsername=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
-  const gateName=String(rasedAuthGet("currentUserName")||"").trim();
-  if(!gateUsername)return null;
-
-  const toEnglishDigits=value=>String(value||"")
-    .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d))
-    .replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d));
-
-  const normalizePhone=value=>{
-    let p=toEnglishDigits(value).replace(/\D/g,"");
-    if(p.startsWith("00966"))p=p.slice(2);
-    if(p.startsWith("966"))return p;
-    if(/^05\d{8}$/.test(p))return "966"+p.slice(1);
-    if(/^5\d{8}$/.test(p))return "966"+p;
-    return p;
-  };
-
-  const phoneVariants=value=>{
-    const p=normalizePhone(value);
-    if(!/^9665\d{8}$/.test(p))return [];
-    const local="0"+p.slice(3);
-    const noZero=p.slice(3);
-    return [...new Set([local,noZero,p,"+"+p,"00"+p])];
-  };
-
-  const normalizeName=value=>String(value||"")
-    .trim()
-    .replace(/\s+/g," ")
-    .replace(/[أإآ]/g,"ا")
-    .replace(/ى/g,"ي")
-    .toLowerCase();
-
-  let wantedPhone=normalizePhone(currentSupervisorPhone);
-
-  if(!wantedPhone){
-    try{
-      const rasedDoc=await db.collection("users").doc(gateUsername).get();
-      if(rasedDoc.exists){
-        const data=rasedDoc.data()||{};
-        currentSupervisorPhone=String(data.phone||data.mobile||"").trim();
-        wantedPhone=normalizePhone(currentSupervisorPhone);
-      }
-    }catch(e){}
-  }
-
-  if(!/^9665\d{8}$/.test(wantedPhone)){
-    alert("رقم جوال المشرف غير مسجل بصورة صحيحة في حسابه. راجعه من إدارة حسابات المشرفين.");
-    return null;
-  }
-
-  try{
-    const raw=localStorage.getItem("currentSupervisor")||sessionStorage.getItem("currentSupervisor");
-    if(raw){
-      const x=JSON.parse(raw);
-      const sameGate=String(x?.gateUsername||"").trim().toLowerCase()===gateUsername;
-      const samePhone=normalizePhone(x?.phone||x?.username||"")===wantedPhone;
-      if(x?.sourceProject==="follow-up-2026"&&(sameGate||samePhone))return x;
-    }
-  }catch(e){}
-
-  try{
-    localStorage.removeItem("currentSupervisor");
-    sessionStorage.removeItem("currentSupervisor");
-
-    const visitConfig={
-      apiKey:"AIzaSyBNFrPNCuQefOXHTCmiiKSBjgPLUy5Ug4U",
-      authDomain:"follow-up-2026.firebaseapp.com",
-      projectId:"follow-up-2026",
-      storageBucket:"follow-up-2026.firebasestorage.app",
-      messagingSenderId:"1077131515114",
-      appId:"1:1077131515114:web:d10d9c5228382d7cfdb393"
-    };
-
-    let app;
-    try{app=firebase.app("visitSupervisorBridge")}
-    catch(e){app=firebase.initializeApp(visitConfig,"visitSupervisorBridge")}
-
-    const visitDb=app.firestore();
-    let d=null;
-    let matchedBy="";
-
-    // 1) المطابقة الأساسية: رقم الجوال هو اسم المستخدم في نظام الزيارات.
-    for(const candidate of phoneVariants(wantedPhone)){
-      const snap=await visitDb.collection("supervisors")
-        .where("username","==",candidate)
-        .limit(2)
-        .get();
-
-      if(!snap.empty){
-        d=snap.docs[0];
-        matchedBy="username";
-        break;
-      }
-    }
-
-    // 2) توافق احتياطي مع حقول جوال قديمة.
-    if(!d){
-      for(const field of ["phone","mobile"]){
-        for(const candidate of phoneVariants(wantedPhone)){
-          const snap=await visitDb.collection("supervisors")
-            .where(field,"==",candidate)
-            .limit(2)
-            .get();
-          if(!snap.empty){
-            d=snap.docs[0];
-            matchedBy=field;
-            break;
-          }
-        }
-        if(d)break;
-      }
-    }
-
-    // 3) لو الرقم موجود بصيغة غير متوقعة، نربط بالاسم المطابق بشكل فريد.
-    if(!d && gateName){
-      const exactName=await visitDb.collection("supervisors")
-        .where("name","==",gateName)
-        .limit(3)
-        .get();
-
-      if(exactName.size===1){
-        d=exactName.docs[0];
-        matchedBy="name";
-      }
-    }
-
-    // 4) آخر محاولة: قراءة الحسابات ومقارنة الاسم بعد التطبيع إذا كانت القواعد تسمح بذلك.
-    if(!d && gateName){
-      try{
-        const all=await visitDb.collection("supervisors").get();
-        const wantedName=normalizeName(gateName);
-        const nameMatches=all.docs.filter(doc=>normalizeName(doc.data()?.name)===wantedName);
-        if(nameMatches.length===1){
-          d=nameMatches[0];
-          matchedBy="normalized-name";
-        }
-      }catch(e){}
-    }
-
-    if(!d){
-      alert(
-        "لم يتم العثور على حساب الزيارات المطابق لهذا المشرف.\n\n"+
-        "رقم الجوال المسجل في راصد: "+currentSupervisorPhone+"\n"+
-        "اسم المشرف: "+(gateName||"غير مسجل")+"\n\n"+
-        "تأكد أن حساب المشرف في الزيارات يحمل نفس رقم الجوال كاسم مستخدم."
-      );
-      return null;
-    }
-
-    const data=d.data()||{};
-    if(data.active===false){
-      alert("حساب المشرف في نظام الزيارات غير مفعل.");
-      return null;
-    }
-
-    // عند الربط بالاسم، نخزن الجوال صراحة في حساب الزيارات لتحسين الربط المستقبلي.
-    if(matchedBy==="name" || matchedBy==="normalized-name"){
-      try{
-        await d.ref.set({
-          phone:"0"+wantedPhone.slice(3),
-          mobile:"0"+wantedPhone.slice(3),
-          rasedIdentity:gateUsername,
-          linkedFromRasedAt:firebase.firestore.FieldValue.serverTimestamp()
-        },{merge:true});
-      }catch(e){
-        console.warn("VISIT LINK PATCH ERROR",e);
-      }
-    }
-
-    const session={
-      id:d.id,
-      name:data.name||gateName||gateUsername,
-      username:data.username||currentSupervisorPhone,
-      phone:currentSupervisorPhone,
-      gateUsername,
-      role:data.role||"supervisor",
-      canVisitAllTeachers:data.canVisitAllTeachers===true,
-      sourceProject:"follow-up-2026"
-    };
-
-    const value=JSON.stringify(session);
-    localStorage.setItem("currentSupervisor",value);
-    sessionStorage.setItem("currentSupervisor",value);
-    return session;
-
-  }catch(e){
-    console.warn("VISIT SUPERVISOR BRIDGE ERROR",e);
-    alert("تعذر الاتصال بحساب الزيارات الفنية: "+(e?.message||e));
-    return null;
-  }
-}
-</script>
-</body></html>
+</script></body></html>
