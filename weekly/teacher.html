@@ -1769,6 +1769,7 @@ async function loadSelectedWeek(week){
 
 
         renderCurrentDay();
+        restoreDraft();
 
 
         showMessage(
@@ -1829,6 +1830,7 @@ async function loadSelectedWeek(week){
 
 
     renderCurrentDay();
+    restoreDraft();
 
 
     if(sourcePlan){
@@ -1851,6 +1853,55 @@ async function loadSelectedWeek(week){
 
 }
 
+
+/* =========================
+   AUTOSAVE LOCAL DRAFT
+========================= */
+const draftPrefix="rased_weekly_draft_v1_";
+let restoringDraft=false;
+function draftKey(){return currentUser&&weekNumber.value?draftPrefix+currentUser.uid+"_week_"+weekNumber.value:null}
+function persistDraft(){
+ if(restoringDraft)return;
+ const key=draftKey();if(!key)return;
+ saveCurrentDayToMemory();
+ try{
+   localStorage.setItem(key,JSON.stringify({
+     week:weekNumber.value,
+     startDate:startDate.value,endDate:endDate.value,
+     educationalValue:educationalValue.value,
+     weekPersonality:weekPersonality.value,principalName:principalName.value,
+     days:planData,updatedAt:Date.now()
+   }));
+   const badge=document.getElementById("draftStatus");
+   if(badge)badge.textContent="✓ مسودة محفوظة تلقائيًا على هذا الجهاز — "+new Date().toLocaleTimeString("ar-SA");
+ }catch(error){const badge=document.getElementById("draftStatus");if(badge)badge.textContent="تعذر الحفظ المحلي: تحقق من مساحة المتصفح"}
+}
+function restoreDraft(){
+ const key=draftKey();if(!key)return false;
+ let draft;try{draft=JSON.parse(localStorage.getItem(key)||"null")}catch{return false}
+ if(!draft||!draft.days)return false;
+ restoringDraft=true;
+ try{
+   planData=normalizePlan(draft.days);
+   startDate.value=draft.startDate||"";
+   endDate.value=draft.endDate||"";
+   educationalValue.value=draft.educationalValue||"";
+   weekPersonality.value=draft.weekPersonality||"";
+   principalName.value=draft.principalName||"";
+   renderCurrentDay();
+   const badge=document.getElementById("draftStatus");
+   if(badge)badge.textContent="↺ تم استرجاع المسودة غير المحفوظة رسميًا — راجعها ثم اضغط حفظ الخطة";
+   return true;
+ }finally{restoringDraft=false}
+}
+function clearDraft(){const key=draftKey();if(key)localStorage.removeItem(key);const badge=document.getElementById("draftStatus");if(badge)badge.textContent="✓ الخطة محفوظة رسميًا"}
+planRows.addEventListener("input",persistDraft);
+[startDate,endDate,educationalValue,weekPersonality,principalName].forEach(el=>el.addEventListener("input",persistDraft));
+window.addEventListener("pagehide",persistDraft);
+const draftBadge=document.createElement("div");
+draftBadge.id="draftStatus";draftBadge.style.cssText="padding:9px 14px;margin:10px 0;border-right:4px solid #d6a821;background:#f1f8f2;color:#07543f;border-radius:8px;font-size:12px";
+draftBadge.textContent="الحفظ التلقائي للمسودة مفعّل بعد اختيار الأسبوع";
+document.getElementById("saveBtn").parentElement.insertAdjacentElement("beforebegin",draftBadge);
 
 /* =========================
    SAVE PLAN
@@ -1966,6 +2017,7 @@ async()=>{
 
 
         await loadPlanHistory();
+        clearDraft();
 
 
         renderCurrentDay();
