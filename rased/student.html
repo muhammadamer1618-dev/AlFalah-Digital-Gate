@@ -1278,7 +1278,7 @@ function buildPeriodSummary(category){
     const subjects=aggregateBySubject(items);
     const scored=subjects.filter(s=>s.percent!==null).sort((a,b)=>b.percent-a.percent);
     const best=scored[0]||null;
-    const watch=scored.length?scored[scored.length-1]:null;
+    const watch=scored.filter(s=>s.percent<70).sort((a,b)=>a.percent-b.percent)[0]||null;
 
     const subjectRows=subjects.map((s,i)=>`
         <tr>
@@ -1305,7 +1305,7 @@ function buildPeriodSummary(category){
                 ${scored.length?`
                     <div class="period-insight">
                         <div class="period-best">أعلى أداء: <strong>${escapeHtml(best.subjectName)}</strong>${best.percent!==null?" — "+best.percent.toFixed(1)+"%":""}</div>
-                        <div class="period-watch">تحتاج متابعة: <strong>${escapeHtml(watch.subjectName)}</strong>${watch.percent!==null?" — "+watch.percent.toFixed(1)+"%":""}</div>
+                        ${watch?`<div class="period-watch">تحتاج متابعة: <strong>${escapeHtml(watch.subjectName)}</strong> — ${watch.percent.toFixed(1)}%</div>`:""}
                     </div>
                 `:""}
 
