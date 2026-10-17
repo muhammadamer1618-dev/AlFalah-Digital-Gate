@@ -1278,7 +1278,7 @@ function buildPeriodSummary(category){
     const subjects=aggregateBySubject(items);
     const scored=subjects.filter(s=>s.percent!==null).sort((a,b)=>b.percent-a.percent);
     const best=scored[0]||null;
-    const watch=scored.filter(s=>s.percent<70).sort((a,b)=>a.percent-b.percent)[0]||null;
+    const watch=scored.filter(s=>s.percent<75).sort((a,b)=>a.percent-b.percent)[0]||null;
 
     const subjectRows=subjects.map((s,i)=>`
         <tr>
