@@ -1277,7 +1277,7 @@ function buildPeriodSummary(category){
     const aggregate=aggregateResults(items);
     const subjects=aggregateBySubject(items);
     const scored=subjects.filter(s=>s.percent!==null).sort((a,b)=>b.percent-a.percent);
-    const best=scored[0]||null;
+    const best=scored.length&&scored.filter(x=>Math.abs(x.percent-scored[0].percent)<0.00001).length===1?scored[0]:null;
     const watch=scored.filter(s=>s.percent<75).sort((a,b)=>a.percent-b.percent)[0]||null;
 
     const subjectRows=subjects.map((s,i)=>`
@@ -1304,7 +1304,7 @@ function buildPeriodSummary(category){
 
                 ${scored.length?`
                     <div class="period-insight">
-                        <div class="period-best">أعلى أداء: <strong>${escapeHtml(best.subjectName)}</strong>${best.percent!==null?" — "+best.percent.toFixed(1)+"%":""}</div>
+                        ${best?`<div class="period-best">أعلى أداء: <strong>${escapeHtml(best.subjectName)}</strong>${best.percent!==null?" — "+best.percent.toFixed(1)+"%":""}</div>`:""}
                         ${watch?`<div class="period-watch">تحتاج متابعة: <strong>${escapeHtml(watch.subjectName)}</strong> — ${watch.percent.toFixed(1)}%</div>`:""}
                     </div>
                 `:""}
