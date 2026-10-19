@@ -2669,6 +2669,7 @@ onclick="clearCurrentTeacherAssignments()">
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permTestsView" checked><span>📝 الاختبارات</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permOnlineExamsManage"><span>🧪 إنشاء وإدارة الاختبارات الإلكترونية <small style="display:block;color:#64748b;margin-top:3px">يظهر زر منصة الاختبارات الإلكترونية لهذا المشرف فقط عند تفعيلها</small></span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permGradesView" checked><span>📊 النتائج والدرجات</span></label>
+<label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permGradeSheetPrint"><span>🖨️ طباعة كشوف درجات الاختبارات المرصودة</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permExamSchedulesView" checked><span>🗓️ جداول الاختبارات</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permMessagesView" checked><span>📨 سجل الرسائل</span></label>
 </div>
@@ -9705,6 +9706,7 @@ const SUPERVISOR_PERMISSION_DEFS=[
 ["testsView","permTestsView","الاختبارات"],
 ["onlineExamsManage","permOnlineExamsManage","إنشاء الاختبارات الإلكترونية"],
 ["gradesView","permGradesView","النتائج والدرجات"],
+["gradeSheetPrint","permGradeSheetPrint","طباعة كشوف درجات الاختبارات"],
 ["examSchedulesView","permExamSchedulesView","جداول الاختبارات"],
 ["messagesView","permMessagesView","سجل الرسائل"],
 ["analysisView","permAnalysisView","تحليل النتائج"],
@@ -9807,7 +9809,7 @@ settingsItem.title="يمكن منح صلاحية إعدادات الحصص ال�
 function normalizeSupervisorPermissions(raw){
 const source=raw||{},out={};
 SUPERVISOR_PERMISSION_DEFS.forEach(([key])=>{
-out[key]=(key==="liveClassesSettings"||key==="onlineExamsManage")?source[key]===true:source[key]!==false;
+out[key]=(key==="liveClassesSettings"||key==="onlineExamsManage"||key==="gradeSheetPrint")?source[key]===true:source[key]!==false;
 });
 return out;
 }
