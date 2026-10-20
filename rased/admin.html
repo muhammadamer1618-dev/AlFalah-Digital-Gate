@@ -2671,6 +2671,7 @@ onclick="clearCurrentTeacherAssignments()">
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permGradesView" checked><span>📊 النتائج والدرجات</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permStudentFollowupView"><span>📌 متابعة الطلاب وملاحظات المعلمين</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permBlankGradeSheet"><span>🗒️ إصدار كشف فارغ مرن</span></label>
+<label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permRetestNotices"><span>🔁 إعادة الاختبار ورسائل أولياء الأمور</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permGradeSheetPrint"><span>🖨️ طباعة كشوف درجات الاختبارات المرصودة</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permExamSchedulesView" checked><span>🗓️ جداول الاختبارات</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permMessagesView" checked><span>📨 سجل الرسائل</span></label>
@@ -9710,6 +9711,7 @@ const SUPERVISOR_PERMISSION_DEFS=[
 ["gradesView","permGradesView","النتائج والدرجات"],
 ["gradeSheetPrint","permGradeSheetPrint","طباعة كشوف درجات الاختبارات"],
 ["blankGradeSheet","permBlankGradeSheet","إصدار كشف فارغ مرن"],
+["retestNotices","permRetestNotices","إعادة الاختبار ورسائل أولياء الأمور"],
 ["studentFollowupView","permStudentFollowupView","متابعة الطلاب وملاحظات المعلمين"],
 ["examSchedulesView","permExamSchedulesView","جداول الاختبارات"],
 ["messagesView","permMessagesView","سجل الرسائل"],
@@ -9813,7 +9815,7 @@ settingsItem.title="يمكن منح صلاحية إعدادات الحصص ال�
 function normalizeSupervisorPermissions(raw){
 const source=raw||{},out={};
 SUPERVISOR_PERMISSION_DEFS.forEach(([key])=>{
-out[key]=(key==="liveClassesSettings"||key==="onlineExamsManage"||key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="studentFollowupView")?source[key]===true:source[key]!==false;
+out[key]=(key==="liveClassesSettings"||key==="onlineExamsManage"||key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="retestNotices"||key==="studentFollowupView")?source[key]===true:source[key]!==false;
 });
 return out;
 }
