@@ -137,6 +137,7 @@
     <div class="supervisor-dashboard-grid">
       <button class="supervisor-dashboard-tool" data-perm="analysisView" onclick="location.href='analysis.html'"><span>📊</span><strong>تحليل النتائج</strong><small>تحليل نتائج الطلاب والفصول</small></button>
       <button class="supervisor-dashboard-tool" data-perm="comparisonView" onclick="location.href='comparison.html'"><span>📈</span><strong>مقارنة النتائج</strong><small>مقارنة الأداء والنتائج</small></button>
+      <button class="supervisor-dashboard-tool" data-perm="blankGradeSheet" onclick="location.href='blank-grade-sheet.html'"><span>🗒️</span><strong>إصدار كشف فارغ مرن</strong><small>كشف بأعمدة يحددها المشرف للمعلمين المسندين</small></button>
       <button class="supervisor-dashboard-tool" data-perm="gradeSheetPrint" onclick="location.href='grade-sheet-print.html'"><span>🖨️</span><strong>طباعة كشف الدرجات</strong><small>درجات الاختبار المرصودة للصف والفصل</small></button>
       <button class="supervisor-dashboard-tool" data-perm="studentFollowupView" onclick="location.href='student-followup.html'"><span>📌</span><strong>متابعة الطلاب</strong><small>ملخص الملاحظات وتكرارها</small></button>
       <button class="supervisor-dashboard-tool" data-perm="monitoringView" onclick="location.href='monitoring.html'"><span>📋</span><strong>حالة الرصد</strong><small>متابعة تقدم رصد الدرجات</small></button>
@@ -260,7 +261,7 @@ const t=String(type||"").toLowerCase();
 return t==="manager"?"مدير":(t==="supervisor"?"مشرف":"مشرف عام");
 }
 function hasPerm(key){
-return (key==="gradeSheetPrint"||key==="studentFollowupView")?currentPermissions[key]===true:currentPermissions[key]!==false;
+return (key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="studentFollowupView")?currentPermissions[key]===true:currentPermissions[key]!==false;
 }
 function applyPermissions(){
 document.querySelectorAll("[data-perm]").forEach(node=>{
