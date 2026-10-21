@@ -4577,48 +4577,43 @@ error.message
    WHATSAPP
 ====================================================== */
 
+async function sendViaWhatsDirect(phone,content){
+ const settings=await db.collection("systemSettings").doc("whatsDirect").get();
+ const apiKey=String(settings.exists?(settings.data().apiKey||""):"").trim();
+ if(!apiKey)throw new Error("لم يتم إعداد مفتاح واتس مباشر. اطلب من الإدارة حفظ مفتاح API في راصد أولًا.");
+ const response=await fetch("https://wa.smart-whats.com/api/messages",{method:"POST",headers:{"X-API-Key":apiKey,"Content-Type":"application/json"},body:JSON.stringify({phone:String(phone),content:String(content)})});
+ const result=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(result.message||result.error||("فشل إرسال الطلب إلى واتس مباشر (HTTP "+response.status+")"));
+ return result;
+}
+
 async function logAndOpenWhatsApp(student,phone,message,type,attendance=null,mark=null){
-
-const waWindow=window.open("about:blank","_blank");
-
-if(!waWindow){
-alert("اسمح بالنوافذ المنبثقة لهذا الموقع حتى يتم فتح واتساب.");
-return false;
-}
-
-try{
-
-await db.collection("messageLogs").add({
-teacherEmail:currentUsername,
-teacherName:currentTeacher?.name||"",
-studentCode:String(student.code||""),
-studentName:student.name||"",
-guardianPhone:phone,
-subjectId:selectedSubjectId||"",
-subjectName:selectedSubjectName||"",
-grade:selectedGrade||student.grade||"",
-section:selectedSection||student.section||"",
-testId:selectedTest?.id||"",
-testName:selectedTest?.name||"",
-testDate:selectedTest?.date||"",
-attendance:attendance,
-mark:attendance==="absent"?null:(mark===""||mark===null?null:Number(mark)),
-fullMark:selectedTest?Number(selectedTest.fullMark):null,
-messageType:type,
-message:message,
-sentAt:firebase.firestore.FieldValue.serverTimestamp()
-});
-
-waWindow.location.href="https://wa.me/"+phone+"?text="+encodeURIComponent(message);
-await loadMessageLogs();
-return true;
-
-}catch(error){
-if(waWindow&&!waWindow.closed) waWindow.close();
-console.error(error);
-alert("تعذر تسجيل الرسالة، لذلك لم يتم فتح واتساب:\n"+error.message);
-return false;
-}
+ let logRef=null;
+ try{
+  logRef=await db.collection("messageLogs").add({
+   teacherEmail:currentUsername,teacherName:currentTeacher?.name||"",
+   senderEmail:currentUsername,senderName:currentTeacher?.name||"",senderRole:"teacher",
+   studentCode:String(student.code||""),studentName:student.name||"",guardianPhone:phone,
+   subjectId:selectedSubjectId||"",subjectName:selectedSubjectName||"",
+   grade:selectedGrade||student.grade||"",section:selectedSection||"",
+   testId:selectedTest?.id||"",testName:selectedTest?.name||"",testDate:selectedTest?.date||"",
+   attendance:attendance,mark:attendance==="absent"?null:(mark===""||mark===null?null:Number(mark)),
+   fullMark:selectedTest?Number(selectedTest.fullMark):null,messageType:type,message:message,
+   provider:"whats-direct",providerStatus:"sending",sentAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  const result=await sendViaWhatsDirect(phone,message);
+  const providerStatus=String(result.status||"pending");
+  await logRef.update({providerMessageId:String(result.id||result.messageId||""),providerStatus,providerResponse:result});
+  await loadMessageLogs();
+  alert(providerStatus==="sent"?"تم إرسال الرسالة بنجاح عبر الواتس مباشر.":"تم قبول طلب الرسالة في الواتس مباشر. الحالة الحالية: "+providerStatus+"؛ ستظهر النتيجة النهائية حسب حالة الإرسال لدى الأداة.");
+  return true;
+ }catch(error){
+  if(logRef)try{await logRef.update({providerStatus:"failed",providerError:String(error.message||error)});}catch(_){}
+  console.error(error);
+  alert("تعذر إرسال الرسالة عبر الواتس مباشر:\n"+error.message);
+  await loadMessageLogs();
+  return false;
+ }
 }
 
 async function sendWhatsApp(code){
