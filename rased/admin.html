@@ -845,6 +845,8 @@ border-bottom:1px dashed #e5e7eb
 .supervisor-copy-overlay{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px}
 .supervisor-copy-dialog{width:min(100%,470px);background:#fff;border-radius:18px;padding:22px;box-shadow:0 18px 55px rgba(0,0,0,.25);color:#172554}
 .supervisor-copy-dialog select{width:100%;margin:10px 0}.supervisor-copy-note{color:#64748b;font-size:13px}
+#counselorEditor[hidden],#activityEditor[hidden]{display:none!important}
+#counselorEditor,#activityEditor{background:#f8fafc;border:1px solid #dbe5f0;border-radius:15px;padding:16px;margin:14px 0 20px}
 </style>
 
 <style id="adminCardDashboardTheme">
@@ -2778,7 +2780,7 @@ onclick="clearCurrentTeacherAssignments()">
 🧭 حسابات الموجه الطلابي
 </div>
 
-<div class="box-body">
+<div class="box-body"><div class="actions"><button type="button" class="btn-primary" onclick="openRoleAccountEditor('StudentCounselor')">➕ إضافة موجه طلابي</button></div><div id="counselorEditor" hidden>
 
 <input type="hidden" id="studentCounselorOriginalUsername">
 
@@ -2811,6 +2813,7 @@ onclick="clearCurrentTeacherAssignments()">
 يتم الدخول له من بوابة الإشراف والإدارة بنفس اسم المستخدم وكلمة المرور.
 </div>
 
+</div>
 <div class="admin-list-count">
 عدد حسابات الموجه الطلابي: <b id="studentCounselorsCount">0</b>
 </div>
@@ -2832,7 +2835,7 @@ onclick="clearCurrentTeacherAssignments()">
 🎯 حسابات رواد النشاط
 </div>
 
-<div class="box-body">
+<div class="box-body"><div class="actions"><button type="button" class="btn-primary" onclick="openRoleAccountEditor('ActivityLeader')">➕ إضافة رائد نشاط</button></div><div id="activityEditor" hidden>
 
 <input type="hidden" id="activityLeaderOriginalUsername">
 
@@ -2867,6 +2870,7 @@ onclick="clearCurrentTeacherAssignments()">
 لا يمنح هذا الحساب صلاحيات رصد الدرجات أو تعديل بيانات النظام.
 </div>
 
+</div>
 <div class="admin-list-count">
 عدد حسابات رواد النشاط: <b id="activityLeadersCount">0</b>
 </div>
@@ -10252,16 +10256,22 @@ renderStudentCounselors();
 }
 
 
+function openRoleAccountEditor(kind,username){
+ const isCounselor=kind==="StudentCounselor";const editor=document.getElementById(isCounselor?"counselorEditor":"activityEditor");if(!editor)return;
+ editor.hidden=false;
+ if(username){if(isCounselor)editStudentCounselor(username);else editActivityLeader(username)}
+ else{if(isCounselor)clearStudentCounselorForm();else clearActivityLeaderForm();document.getElementById(isCounselor?"studentCounselorsSection":"activityLeadersSection").scrollIntoView({behavior:"smooth",block:"start"})}
+}
 function renderStudentCounselors(){
  const body=document.getElementById("studentCounselorsBody"),count=document.getElementById("studentCounselorsCount");
  if(count)count.textContent=studentCounselors.length;if(!body)return;
  if(!studentCounselors.length){body.innerHTML='<div class="account-empty">لا توجد حسابات موجهين طلابيين حتى الآن.</div>';return}
  body.innerHTML=studentCounselors.map((item,index)=>{
-  const initials=Array.from(String(item.name||"موجه")).slice(0,2).join(""),panelId="counselor-account-"+index;
-  return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username,item.phone||"",supervisorTypeLabel(item.supervisorType)||"","renderStudentCounselors"].filter(Boolean).join(" "))}"><div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">موجه طلابي</span></div>
-   <div class="account-detail-tiles">${accountDetailTile(panelId,"بيانات الحساب","عرض","اسم المستخدم ونوع الحساب")}</div>
-   ${accountDetailPanel(panelId,"بيانات الحساب",["الاسم: "+item.name,"اسم المستخدم: "+item.username,"نوع الحساب: موجه طلابي"])}
-   <div class="account-card-actions"><button class="btn-warning" onclick='editStudentCounselor(${JSON.stringify(item.username)})'>✏️ تعديل</button><button class="btn-danger" onclick='deleteStudentCounselor(${JSON.stringify(item.username)})'>🗑️ حذف</button></div></article>`;
+  return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username].join(" "))}">
+  <div class="supervisor-gold-profile"><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">موجه طلابي</span></div>
+  <div class="supervisor-action-grid"><button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openRoleAccountEditor("StudentCounselor",${JSON.stringify(item.username)})'>👤 بيانات الحساب<small>عرض وتعديل البيانات</small></button><button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openRoleAccountEditor("StudentCounselor",${JSON.stringify(item.username)})'>🔑 بيانات الدخول<small>اسم المستخدم وكلمة المرور</small></button><button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openRoleAccountEditor("StudentCounselor",${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button><button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteStudentCounselor(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button></div>
+  </article>`;
+
  }).join("");
  restoreAdminAccountFilter("studentCounselorsBody");
 }
@@ -10324,12 +10334,14 @@ updatedAt:firebase.firestore.FieldValue.serverTimestamp()
 alert("تم حفظ حساب الموجه الطلابي ✅");
 
 clearStudentCounselorForm();
+ document.getElementById("counselorEditor").hidden=true;
 await loadStudentCounselors();
 
 }
 
 
 function editStudentCounselor(username){
+ document.getElementById("counselorEditor").hidden=false;
 
 const item=studentCounselors.find(x=>x.username===username);
 if(!item) return;
@@ -10412,11 +10424,11 @@ function renderActivityLeaders(){
  if(count)count.textContent=activityLeaders.length;if(!body)return;
  if(!activityLeaders.length){body.innerHTML='<div class="account-empty">لا توجد حسابات رواد نشاط حتى الآن.</div>';return}
  body.innerHTML=activityLeaders.map((item,index)=>{
-  const initials=Array.from(String(item.name||"رائد")).slice(0,2).join(""),panelId="activity-account-"+index;
-  return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username,item.phone||"",supervisorTypeLabel(item.supervisorType)||"","renderActivityLeaders"].filter(Boolean).join(" "))}"><div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">رائد نشاط</span></div>
-   <div class="account-detail-tiles">${accountDetailTile(panelId,"بيانات الحساب","عرض","اسم المستخدم ونوع الحساب")}</div>
-   ${accountDetailPanel(panelId,"بيانات الحساب",["الاسم: "+item.name,"اسم المستخدم: "+item.username,"نوع الحساب: رائد نشاط"])}
-   <div class="account-card-actions"><button class="btn-warning" onclick='editActivityLeader(${JSON.stringify(item.username)})'>✏️ تعديل</button><button class="btn-danger" onclick='deleteActivityLeader(${JSON.stringify(item.username)})'>🗑️ حذف</button></div></article>`;
+  return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username].join(" "))}">
+  <div class="supervisor-gold-profile"><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">رائد نشاط</span></div>
+  <div class="supervisor-action-grid"><button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openRoleAccountEditor("ActivityLeader",${JSON.stringify(item.username)})'>👤 بيانات الحساب<small>عرض وتعديل البيانات</small></button><button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openRoleAccountEditor("ActivityLeader",${JSON.stringify(item.username)})'>🔑 بيانات الدخول<small>اسم المستخدم وكلمة المرور</small></button><button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openRoleAccountEditor("ActivityLeader",${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button><button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteActivityLeader(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button></div>
+  </article>`;
+
  }).join("");
  restoreAdminAccountFilter("activityLeadersBody");
 }
@@ -10479,12 +10491,14 @@ updatedAt:firebase.firestore.FieldValue.serverTimestamp()
 alert("تم حفظ حساب رائد النشاط ✅");
 
 clearActivityLeaderForm();
+ document.getElementById("activityEditor").hidden=true;
 await loadActivityLeaders();
 
 }
 
 
 function editActivityLeader(username){
+ document.getElementById("activityEditor").hidden=false;
 
 const item=activityLeaders.find(x=>x.username===username);
 if(!item) return;
