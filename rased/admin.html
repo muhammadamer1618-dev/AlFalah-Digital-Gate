@@ -1089,7 +1089,14 @@ body{color:#142b51}
 .header .admin-change-password:hover{background:#edf3fc!important}
 @media(max-width:660px){.header{padding-bottom:62px!important}.header .admin-logout,.header .admin-change-password{top:auto;bottom:10px;font-size:11px!important;padding:6px 9px!important}.header .admin-logout{left:12px}.header .admin-change-password{left:116px}}
 </style>
-</head>
+<style id="rasedTeacherCompactActions">
+#teacherEditor[hidden]{display:none!important}#teacherEditor{border:1px solid #dce7f4;border-radius:12px;background:#f8fbff;padding:13px;margin:10px 0 16px}
+.teacher-soft-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.teacher-soft-actions button,.teacher-select-soft{display:flex;align-items:center;justify-content:center;gap:3px;border-radius:9px;padding:8px 3px;font:700 12px 'Cairo',Tahoma,sans-serif;cursor:pointer;border:1px solid transparent;text-align:center;min-height:42px}
+.teacher-select-soft{background:#f2f5fa;color:#344861;border-color:#dce5ef}.teacher-select-soft input{width:15px;height:15px}
+.teacher-soft-send{background:#e5f7ee;color:#176d43;border-color:#bce8d0!important}.teacher-soft-edit{background:#e9f2ff;color:#1262bf;border-color:#c5ddfa!important}.teacher-soft-delete{background:#fff0f0;color:#b9252e;border-color:#f4c9ce!important}
+@media(max-width:480px){.teacher-soft-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style></head>
 
 
 <body>
@@ -1338,67 +1345,57 @@ id="statClasses">
 </div>
 
 <div id="adminCardDashboard" class="admin-card-dashboard">
+  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">لوحة التحكم</div><div class="admin-dashboard-grid">
+    <button class="admin-dashboard-tool" type="button" onclick="location.href='academic-development.html?from=admin'"><span>📊</span><strong>منظومة التطوير الأكاديمي</strong><small>٤ وحدات للتطوير والمتابعة</small></button>
+    <button class="admin-dashboard-tool" onclick="location.href='control-center.html'"><span>🎛️</span><strong>مركز التحكم</strong><small>إدارة ومتابعة النظام</small></button>
+    <button class="admin-dashboard-tool" onclick="location.href='audit-log.html'"><span>🛡️</span><strong>سجل التدقيق</strong><small>متابعة العمليات والتغييرات</small></button>
+</div></div>
 
-  <div class="admin-dashboard-group">
-    <div class="admin-dashboard-group-title">إدارة البيانات</div>
-    <div class="admin-dashboard-grid">
-      <button class="admin-dashboard-tool" data-admin-target="studentsSection" onclick="showAdminFeature('studentsSection',this,'إدارة الطلاب')"><span>👨‍🎓</span><strong>إدارة الطلاب</strong><small>إضافة وتعديل وحذف الطلاب</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="teachersSection" onclick="showAdminFeature('teachersSection',this,'إدارة المعلمين')"><span>👨‍🏫</span><strong>إدارة المعلمين</strong><small>الحسابات والبيانات الأساسية</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="subjectsSection" onclick="showAdminFeature('subjectsSection',this,'إدارة المواد')"><span>📚</span><strong>إدارة المواد</strong><small>إضافة وتعديل مواد المدرسة</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="teacherAssignmentsSection" onclick="showAdminFeature('teacherAssignmentsSection',this,'إسناد المواد والفصول')"><span>🔗</span><strong>إسناد المواد والفصول</strong><small>إسناد المعلمين للمواد والفصول</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="bulkTeacherSendSection" onclick="showAdminFeature('bulkTeacherSendSection',this,'الإرسال الجماعي للمعلمين')"><span>📨</span><strong>الإرسال الجماعي</strong><small>إرسال بيانات دخول المعلمين</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="excelImportSection" onclick="showAdminFeature('excelImportSection',this,'استيراد الطلاب من Excel')"><span>📊</span><strong>استيراد الطلاب</strong><small>Excel ونموذج الاستيراد</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="studentProgressSection" onclick="showAdminFeature('studentProgressSection',this,'تطور مستوى الطالب')"><span>📈</span><strong>تطور مستوى الطالب</strong><small>متابعة نتائج الطالب عبر الاختبارات</small></button>
-      <button class="admin-dashboard-tool" type="button" onclick="location.href='academic-development.html?from=admin'"><span>📊</span><strong>منظومة التطوير الأكاديمي</strong><small>٤ وحدات للتطوير والمتابعة</small></button>
-    </div>
-  </div>
+  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">إدارة البيانات</div><div class="admin-dashboard-grid">
+    <button class="admin-dashboard-tool" data-admin-target="studentsSection" onclick="showAdminFeature('studentsSection',this,'إدارة الطلاب')"><span>👨‍🎓</span><strong>إدارة الطلاب</strong><small>إضافة وتعديل وحذف الطلاب</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="teachersSection" onclick="showAdminFeature('teachersSection',this,'إدارة المعلمين')"><span>👨‍🏫</span><strong>إدارة المعلمين</strong><small>الحسابات والبيانات الأساسية</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="bulkTeacherSendSection" onclick="showAdminFeature('bulkTeacherSendSection',this,'الإرسال الجماعي للمعلمين')"><span>📨</span><strong>إرسال بيانات المعلمين</strong><small>إرسال بيانات دخول المعلمين</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="subjectsSection" onclick="showAdminFeature('subjectsSection',this,'إدارة المواد')"><span>📚</span><strong>إدارة المواد</strong><small>إضافة وتعديل مواد المدرسة</small></button>
+    <button class="admin-dashboard-tool" onclick="location.href='../weekly/admin.html'"><span>🗂️</span><strong>إدارة الخطة الأسبوعية</strong><small>إدارة شاملة للحسابات والخطط والجداول</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="testsSection" onclick="showAdminFeature('testsSection',this,'إدارة الاختبارات')"><span>📝</span><strong>إدارة الاختبارات</strong><small>إنشاء وتعديل وإدارة الاختبارات</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="examAccessSection" onclick="showAdminFeature('examAccessSection',this,'إتاحة الاختبارات الإلكترونية')"><span>🎛️</span><strong>إدارة الاختبارات الإلكترونية</strong><small>تحديد المواد المسموح لها</small></button>
+    <button class="admin-dashboard-tool" onclick="location.href='interactive-admin.html?v=20261013-2'"><span>🎮</span><strong>إدارة الأنشطة التفاعلية</strong><small>متابعة الأنشطة والنشر والإدارة</small></button>
+    <button class="admin-dashboard-tool" onclick="location.href='supervisor-activities.html'"><span>🎯</span><strong>إدارة التقارير</strong><small>مراجعة واعتماد تقارير الأنشطة</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="teacherAssignmentsSection" onclick="showAdminFeature('teacherAssignmentsSection',this,'إسناد المواد والفصول')"><span>🔗</span><strong>إسناد الفصول</strong><small>إسناد المعلمين للمواد والفصول</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="excelImportSection" onclick="showAdminFeature('excelImportSection',this,'استيراد الطلاب من Excel')"><span>📊</span><strong>استيراد الطلاب</strong><small>Excel ونموذج الاستيراد</small></button>
+</div></div>
 
-  <div class="admin-dashboard-group">
-    <div class="admin-dashboard-group-title">الاختبارات والرصد</div>
-    <div class="admin-dashboard-grid">
-      <button class="admin-dashboard-tool" data-admin-target="testsSection" onclick="showAdminFeature('testsSection',this,'إدارة الاختبارات')"><span>📝</span><strong>إدارة الاختبارات</strong><small>إنشاء وتعديل وإدارة الاختبارات</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="examScheduleSection" onclick="showAdminFeature('examScheduleSection',this,'جدول الاختبارات')"><span>🗓️</span><strong>جدول الاختبارات</strong><small>إنشاء ونسخ جداول الاختبارات</small></button>
-      <button class="admin-dashboard-tool" type="button" onclick="location.href='grade-improvement.html'"><span>📈</span><strong>متابعة تحسين الدرجات</strong><small>عرض جميع التحسينات والطباعة وسجل التدقيق</small></button>
-<button class="admin-dashboard-tool" type="button" onclick="location.href='bulk-whatsapp.html'"><span>📨</span><strong>الرسائل الجماعية</strong><small>رسالة موحدة أو مخصصة لأولياء الأمور</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="gradingWindowsSection" onclick="showAdminFeature('gradingWindowsSection',this,'فترات رصد الدرجات')"><span>⏱️</span><strong>فترات رصد الدرجات</strong><small>فتح وإغلاق فترات الرصد</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="examAccessSection" onclick="showAdminFeature('examAccessSection',this,'إتاحة الاختبارات الإلكترونية')"><span>🎛️</span><strong>إتاحة الاختبارات الإلكترونية</strong><small>تحديد المواد المسموح لها</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="messagesSection" onclick="showAdminFeature('messagesSection',this,'سجل رسائل أولياء الأمور')"><span>📨</span><strong>سجل رسائل أولياء الأمور</strong><small>بحث وطباعة وحذف الرسائل</small></button>
-      <button class="admin-dashboard-tool" onclick="openMonitoring()"><span>📋</span><strong>حالة الرصد</strong><small>متابعة تقدم رصد الدرجات</small></button>
-      <button class="admin-dashboard-tool" onclick="openExamMonitoring()"><span>💻</span><strong>متابعة الاختبارات الإلكترونية</strong><small>متابعة تنفيذ الاختبارات</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='interactive-admin.html?v=20261013-2'"><span>🎮</span><strong>الأنشطة التفاعلية</strong><small>متابعة الأنشطة والنشر والإدارة</small></button>
-    </div>
-  </div>
+  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">الاختبارات والرصد</div><div class="admin-dashboard-grid">
+    <button class="admin-dashboard-tool" data-admin-target="examScheduleSection" onclick="showAdminFeature('examScheduleSection',this,'جدول الاختبارات')"><span>🗓️</span><strong>جدول الاختبارات</strong><small>إنشاء ونسخ جداول الاختبارات</small></button>
+    <button class="admin-dashboard-tool" type="button" onclick="location.href='grade-improvement.html'"><span>📈</span><strong>متابعة تحسين الدرجات</strong><small>عرض جميع التحسينات والطباعة وسجل التدقيق</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="gradingWindowsSection" onclick="showAdminFeature('gradingWindowsSection',this,'فترات رصد الدرجات')"><span>⏱️</span><strong>فترات رصد الدرجات</strong><small>فتح وإغلاق فترات الرصد</small></button>
+    <button class="admin-dashboard-tool" onclick="openMonitoring()"><span>📋</span><strong>حالة الرصد</strong><small>متابعة تقدم رصد الدرجات</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="adminGradeOverrideSection" onclick="showAdminFeature('adminGradeOverrideSection',this,'رصد وتعديل الدرجات بعد الإغلاق')"><span>✍️</span><strong>رصد وتعديل الدرجات</strong><small>صلاحية الإدارة بعد إغلاق الرصد مع سجل تدقيق</small></button>
+</div></div>
 
-  <div class="admin-dashboard-group">
-    <div class="admin-dashboard-group-title">التحليل والمتابعة</div>
-    <div class="admin-dashboard-grid">
-      <button class="admin-dashboard-tool" onclick="location.href='../weekly/supervisor-monitor.html'"><span>📅</span><strong>متابعة الخطة الأسبوعية</strong><small>عرض الخطط المحفوظة والمتأخرة لكل الفصول</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='../weekly/admin.html'"><span>🗂️</span><strong>إدارة الخطة الأسبوعية</strong><small>إدارة شاملة للحسابات والخطط والجداول</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="adminGradeOverrideSection" onclick="showAdminFeature('adminGradeOverrideSection',this,'رصد وتعديل الدرجات بعد الإغلاق')"><span>✍️</span><strong>رصد وتعديل الدرجات</strong><small>صلاحية الإدارة بعد إغلاق الرصد مع سجل تدقيق</small></button>
-      <button class="admin-dashboard-tool" onclick="openAnalysis()"><span>📊</span><strong>تحليل النتائج</strong><small>تحليل نتائج الطلاب والفصول</small></button>
-      <button class="admin-dashboard-tool" onclick="openComparison()"><span>📈</span><strong>مقارنة النتائج</strong><small>مقارنة الأداء والنتائج</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='control-center.html'"><span>🎛️</span><strong>مركز التحكم</strong><small>إدارة ومتابعة النظام</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='student-report.html'"><span>📄</span><strong>تقرير الطالب الشامل</strong><small>عرض التقرير الكامل للطالب</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='audit-log.html'"><span>🛡️</span><strong>سجل التدقيق</strong><small>متابعة العمليات والتغييرات</small></button>
-      <button class="admin-dashboard-tool" onclick="openSupportStudents()"><span>👥</span><strong>الطلاب المحتاجون للدعم</strong><small>متابعة حالات الدعم الأكاديمي</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='top10.html'"><span>🏆</span><strong>أوائل الطلاب</strong><small>عرض وترتيب الطلاب المتفوقين</small></button>
-      
-      <button class="admin-dashboard-tool" onclick="location.href='supervisor-activities.html'"><span>🎯</span><strong>تقارير الأنشطة</strong><small>مراجعة واعتماد تقارير الأنشطة</small></button>
-    </div>
-  </div>
+  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">التحليل والمتابعة</div><div class="admin-dashboard-grid">
+    <button class="admin-dashboard-tool" onclick="openExamMonitoring()"><span>💻</span><strong>متابعة الاختبارات الإلكترونية</strong><small>متابعة تنفيذ الاختبارات</small></button>
+    <button class="admin-dashboard-tool" onclick="location.href='../weekly/supervisor-monitor.html'"><span>📅</span><strong>متابعة الخطة الأسبوعية</strong><small>عرض الخطط المحفوظة والمتأخرة لكل الفصول</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="messagesSection" onclick="showAdminFeature('messagesSection',this,'سجل رسائل أولياء الأمور')"><span>📨</span><strong>متابعة رسائل أولياء الأمور</strong><small>بحث وطباعة وحذف الرسائل</small></button>
+    <button class="admin-dashboard-tool" onclick="openSupportStudents()"><span>👥</span><strong>متابعة الطلاب الضعاف</strong><small>متابعة حالات الدعم الأكاديمي</small></button>
+    <button class="admin-dashboard-tool" onclick="openAnalysis()"><span>📊</span><strong>تحليل النتائج</strong><small>تحليل نتائج الطلاب والفصول</small></button>
+    <button class="admin-dashboard-tool" onclick="location.href='student-report.html'"><span>📄</span><strong>تقرير الطالب الشامل</strong><small>عرض التقرير الكامل للطالب</small></button>
+    <button class="admin-dashboard-tool" onclick="location.href='top10.html'"><span>🏆</span><strong>أوائل الطلاب</strong><small>عرض وترتيب الطلاب المتفوقين</small></button>
+    <button class="admin-dashboard-tool" onclick="openComparison()"><span>📈</span><strong>مقارنة النتائج</strong><small>مقارنة الأداء والنتائج</small></button>
+</div></div>
 
-  <div class="admin-dashboard-group">
-    <div class="admin-dashboard-group-title">الحسابات والإعدادات</div>
-    <div class="admin-dashboard-grid">
-      <button class="admin-dashboard-tool" data-admin-target="supervisorsSection" onclick="showAdminFeature('supervisorsSection',this,'حسابات الإشراف والصلاحيات')"><span>🛡️</span><strong>حسابات المشرفين</strong><small>الحسابات والصلاحيات والإسنادات</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="studentCounselorsSection" onclick="showAdminFeature('studentCounselorsSection',this,'حسابات الموجه الطلابي')"><span>🧭</span><strong>حسابات الموجه الطلابي</strong><small>إضافة وتعديل حسابات التوجيه الطلابي</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="activityLeadersSection" onclick="showAdminFeature('activityLeadersSection',this,'حسابات رواد النشاط')"><span>🎯</span><strong>حسابات رواد النشاط</strong><small>إضافة وتعديل حسابات رواد النشاط</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="liveProviderSettingsSection" onclick="showAdminFeature('liveProviderSettingsSection',this,'إعداد مزود الحصص المباشرة')"><span>🎥</span><strong>مزود الحصص المباشرة</strong><small>إعدادات البث والقاعات</small></button>
-      <button class="admin-dashboard-tool" data-admin-target="cleanupSection" onclick="showAdminFeature('cleanupSection',this,'تنظيف بيانات راصد')"><span>⚠️</span><strong>تنظيف بيانات راصد</strong><small>عمليات الحذف الجماعي الحساسة</small></button>
-      <button class="admin-dashboard-tool" onclick="location.href='change-password.html?return=admin.html'"><span>🔐</span><strong>تغيير كلمة المرور</strong><small>تحديث كلمة مرور الإدارة</small></button>
-    </div>
-  </div>
+  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">الحسابات والإعدادات</div><div class="admin-dashboard-grid">
+    <button class="admin-dashboard-tool" data-admin-target="supervisorsSection" onclick="showAdminFeature('supervisorsSection',this,'حسابات الإشراف والصلاحيات')"><span>🛡️</span><strong>حسابات المشرفين</strong><small>الحسابات والصلاحيات والإسنادات</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="studentCounselorsSection" onclick="showAdminFeature('studentCounselorsSection',this,'حسابات الموجه الطلابي')"><span>🧭</span><strong>حسابات الموجهين</strong><small>إضافة وتعديل حسابات التوجيه الطلابي</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="activityLeadersSection" onclick="showAdminFeature('activityLeadersSection',this,'حسابات رواد النشاط')"><span>🎯</span><strong>حسابات رواد النشاط</strong><small>إضافة وتعديل حسابات رواد النشاط</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="liveProviderSettingsSection" onclick="showAdminFeature('liveProviderSettingsSection',this,'إعداد مزود الحصص المباشرة')"><span>🎥</span><strong>مزود الحصص المباشرة</strong><small>إعدادات البث والقاعات</small></button>
+    <button class="admin-dashboard-tool" data-admin-target="cleanupSection" onclick="showAdminFeature('cleanupSection',this,'تنظيف بيانات راصد')"><span>⚠️</span><strong>إعادة ضبط</strong><small>عمليات الحذف الجماعي الحساسة</small></button>
+</div></div>
 
+  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">أدوات إضافية</div><div class="admin-dashboard-grid">
+    <button class="admin-dashboard-tool" data-admin-target="studentProgressSection" onclick="showAdminFeature('studentProgressSection',this,'تطور مستوى الطالب')"><span>📈</span><strong>تطور مستوى الطالب</strong><small>متابعة نتائج الطالب عبر الاختبارات</small></button>
+    <button class="admin-dashboard-tool" type="button" onclick="location.href='bulk-whatsapp.html'"><span>📨</span><strong>الرسائل الجماعية</strong><small>رسالة موحدة أو مخصصة لأولياء الأمور</small></button>
+</div></div>
 </div>
 
 <div id="adminFeatureBar" class="admin-feature-bar">
@@ -1902,7 +1899,7 @@ id="teachersSection">
 👨‍🏫 إدارة المعلمين
 </div>
 
-<div class="box-body">
+<div class="box-body"><div class="actions"><button type="button" class="btn-primary" onclick="openTeacherEditor()">➕ إضافة معلم</button></div><div id="teacherEditor" hidden>
 
 <input
 type="hidden"
@@ -1978,7 +1975,7 @@ onclick="clearTeacherForm()">
 </div>
 
 
-<div class="admin-list-count">عدد المعلمين: <b id="teachersCount">0</b></div>
+</div><div class="admin-list-count">عدد المعلمين: <b id="teachersCount">0</b></div>
 
 <div id="teachersBody" class="account-cards-grid"></div>
 
@@ -5734,20 +5731,21 @@ function accountDetailPanel(id,title,items,emptyText){
  return '<div id="'+id+'" class="account-detail-panel" hidden><div class="account-detail-panel-title">'+escapeHtml(title)+'</div>'+(list.length?'<div class="account-detail-list">'+list.map(x=>'<div class="account-detail-item">'+escapeHtml(x)+'</div>').join("")+'</div>':'<div class="account-detail-empty">'+escapeHtml(emptyText||"لا توجد تفاصيل مسجلة.")+'</div>')+'</div>';
 }
 
+function openTeacherEditor(username){const editor=document.getElementById("teacherEditor");if(!editor)return;editor.hidden=false;if(username){editTeacher(username)}else{clearTeacherForm();document.getElementById("teachersSection").scrollIntoView({behavior:"smooth",block:"start"})}}
 function renderTeachers(){
  const body=document.getElementById("teachersBody"),countEl=document.getElementById("teachersCount");
  if(countEl)countEl.textContent=teachers.length;if(!body)return;
  if(!teachers.length){body.innerHTML='<div class="account-empty">لا يوجد معلمون حتى الآن.</div>';updateBulkTeacherCount();return}
  body.innerHTML=teachers.map((teacher,index)=>{
-  const assignments=getAssignments(teacher),initials=Array.from(String(teacher.name||teacher.email||"م")).slice(0,2).join("");
+  const assignments=getAssignments(teacher);
   const subjectNames=[...new Set(assignments.map(a=>String(a.subjectName||subjects.find(x=>String(x.id)===String(a.subjectId))?.name||"").trim()).filter(Boolean))];
   const assignmentDetails=assignments.map(a=>{const subject=a.subjectName||subjects.find(x=>String(x.id)===String(a.subjectId))?.name||"مادة غير محددة";const cls=[a.grade,a.section].filter(Boolean).join(" / ");return subject+(cls?" — "+cls:"")});
   const assignId="teacher-assignments-"+index,subjectId="teacher-subjects-"+index;
   return `<article class="account-card">
-   <div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(teacher.name||"معلم")}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(teacher.email||"—")}</span><span>📞 ${escapeHtml(teacher.phone||"غير مسجل")}</span></div></div><span class="account-role-badge">معلم</span></div>
+   <div class="supervisor-gold-profile"><div class="account-card-main"><strong class="account-card-name">${escapeHtml(teacher.name||"معلم")}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(teacher.email||"—")}</span><span>📞 ${escapeHtml(teacher.phone||"غير مسجل")}</span></div></div><span class="account-role-badge">معلم</span></div>
    <div class="account-detail-tiles">${accountDetailTile(assignId,"الإسنادات",assignments.length,"عرض المادة والصف والفصل")}${accountDetailTile(subjectId,"المواد",subjectNames.length,"عرض المواد المسندة")}</div>
    ${accountDetailPanel(assignId,"الإسنادات المسجلة",assignmentDetails,"لا توجد إسنادات لهذا المعلم.")}${accountDetailPanel(subjectId,"المواد المسندة",subjectNames,"لا توجد مواد مسندة لهذا المعلم.")}
-   <div class="account-card-actions"><label class="account-select"><input type="checkbox" class="bulkTeacherCheck" value="${escapeHtml(teacher.email)}" onchange="updateBulkTeacherCount()"> تحديد</label><button class="btn-success" onclick='sendTeacherCredentials(${JSON.stringify(teacher.email)})'>📲 إرسال</button><button class="btn-warning" onclick='editTeacher(${JSON.stringify(teacher.email)})'>✏️ تعديل</button><button class="btn-danger" onclick='deleteTeacher(${JSON.stringify(teacher.email)})'>🗑️ حذف</button></div>
+   <div class="teacher-soft-actions"><label class="teacher-select-soft"><input type="checkbox" class="bulkTeacherCheck" value="${escapeHtml(teacher.email)}" onchange="updateBulkTeacherCount()"> تحديد</label><button type="button" class="teacher-soft-send" onclick='sendTeacherCredentials(${JSON.stringify(teacher.email)})'>📲 إرسال</button><button type="button" class="teacher-soft-edit" onclick='openTeacherEditor(${JSON.stringify(teacher.email)})'>✏️ تعديل</button><button type="button" class="teacher-soft-delete" onclick='deleteTeacher(${JSON.stringify(teacher.email)})'>🗑️ حذف</button></div>
   </article>`;
  }).join("");updateBulkTeacherCount();
 }
