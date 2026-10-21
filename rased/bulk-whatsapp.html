@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>راصد | الرسائل الجماعية</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+:root{--blue:#1769aa;--blue2:#eaf4ff;--green:#087457;--gold:#c99a35;--ink:#183247;--muted:#607387;--line:#d9e4ee;--paper:#f4f8fb;--white:#fff;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Tahoma,Arial,sans-serif;line-height:1.65}
+header{background:linear-gradient(120deg,#064d47,#126b81);color:white;padding:18px max(16px,calc((100% - 1150px)/2));display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-bottom:4px solid var(--gold)}
+header h1{font-size:23px;margin:0}header p{margin:2px 0 0;opacity:.9;font-size:13px}.back{color:white;border:1px solid #ffffff88;border-radius:9px;padding:8px 14px;text-decoration:none}
+main{max-width:1150px;margin:22px auto;padding:0 14px 40px}.card{background:white;border:1px solid var(--line);border-radius:15px;padding:18px;margin-bottom:16px;box-shadow:0 4px 16px #1235}
+h2{font-size:18px;margin:0 0 12px;color:#145e80}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-weight:700;font-size:13px}.field select,.field textarea,.field input[type=text]{width:100%;border:1px solid #cbd8e3;border-radius:9px;padding:10px;font:inherit;background:white;color:var(--ink)}textarea{min-height:145px;resize:vertical}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.btn{border:0;border-radius:9px;padding:10px 15px;font:inherit;font-weight:700;cursor:pointer}.btn:disabled{opacity:.55;cursor:not-allowed}.primary{background:var(--blue);color:white}.green{background:var(--green);color:white}.light{background:#eaf0f5;color:#27465e}.gold{background:#fff5dc;color:#705015;border:1px solid #eed9a4}.note{font-size:13px;color:var(--muted);margin:7px 0}.status{padding:10px 12px;border-radius:9px;background:var(--blue2);color:#174b78;margin-top:10px;white-space:pre-wrap}.status.error{background:#fff0ef;color:var(--red)}.status.ok{background:#e9f8ef;color:#11613d}.mode{display:flex;gap:10px;flex-wrap:wrap}.mode label{display:flex;gap:7px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 13px;cursor:pointer;flex:1;min-width:220px}.mode label:has(input:checked){border-color:var(--blue);background:var(--blue2)}.students{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:420px;overflow:auto}.student{border:1px solid var(--line);border-radius:9px;padding:9px;display:flex;align-items:flex-start;gap:8px;min-width:0}.student input{margin-top:6px}.student .name{font-weight:700;overflow-wrap:anywhere}.student small{display:block;color:var(--muted);font-size:12px}.student.no-phone{background:#fff8f2;border-color:#f2d6c2}.counts{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.pill{background:#eef4f8;border-radius:999px;padding:5px 11px;font-size:13px}.pill strong{color:#135d8a}.preview{background:#f7fafc;border:1px dashed #aac0d3;border-radius:10px;padding:12px;white-space:pre-wrap;min-height:55px}.progress{height:10px;border-radius:99px;background:#e5edf4;overflow:hidden;margin:10px 0}.progress span{display:block;height:100%;background:#17835e;width:0;transition:width .2s}.footer{text-align:center;color:var(--muted);font-size:12px;padding:10px}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.students{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.grid,.students{grid-template-columns:1fr}header h1{font-size:19px}.card{padding:13px}}
+</style></head>
+<body>
+<header><div><h1>📨 الرسائل الجماعية لأولياء الأمور</h1><p>إرسال رسالة موحدة أو رسائل مخصصة تلقائيًا من راصد</p></div><a class="back" id="back" href="teacher.html">← العودة</a></header>
+<main>
+<section class="card">
+<h2>١. اختيار المستلمين</h2>
+<div class="grid">
+<div class="field" id="teacherField" style="display:none"><label for="teacher">المعلم / مصدر الإسناد</label><select id="teacher"><option value="">كل المعلمين المصرح بهم</option></select></div>
+<div class="field"><label for="grade">الصف</label><select id="grade"><option value="">اختر الصف</option></select></div>
+<div class="field"><label for="section">الفصل</label><select id="section"><option value="">اختر الفصل</option></select></div>
+<div class="field"><label for="subject">المادة (اختياري)</label><select id="subject"><option value="">كل المواد / بدون تحديد</option></select></div>
+<div class="field"><label for="test">الاختبار (اختياري لتخصيص الدرجة)</label><select id="test"><option value="">بدون اختبار</option></select></div>
+</div>
+<p class="note">المعلم يرسل لفصوله المسندة فقط، والمشرف للمعلمين المسندين إليه، والأدمن لجميع الطلاب.</p>
+<div class="counts"><span class="pill">الطلاب الظاهرون: <strong id="visibleCount">0</strong></span><span class="pill">المحددون للإرسال: <strong id="selectedCount">0</strong></span><span class="pill">بدون رقم صالح: <strong id="missingCount">0</strong></span></div>
+<div class="row" style="margin-bottom:10px"><button class="btn light" id="selectAll" type="button">تحديد كل أصحاب الأرقام</button><button class="btn light" id="clearAll" type="button">إلغاء التحديد</button></div>
+<div id="students" class="students"><div class="note">جارٍ تحميل الطلاب…</div></div>
+</section>
+<section class="card">
+<h2>٢. إعداد الرسالة</h2>
+<div class="mode">
+<label><input type="radio" name="mode" value="same" checked> <span><strong>رسالة موحدة</strong><br><small>نفس النص لكل أولياء الأمور</small></span></label>
+<label><input type="radio" name="mode" value="personalized"> <span><strong>رسالة مخصصة لكل طالب</strong><br><small>استبدال الاسم والصف والمادة والدرجة تلقائيًا</small></span></label>
+</div>
+<div class="field" style="margin-top:12px"><label for="message">نص الرسالة</label><textarea id="message" placeholder="اكتب نص الرسالة هنا…"></textarea></div>
+<div class="row" style="margin:10px 0">
+<button class="btn gold" type="button" id="insertTemplate">إدراج قالب مخصص جاهز</button>
+<button class="btn light" type="button" id="previewBtn">معاينة الرسالة</button>
+</div>
+<div class="note">رموز التخصيص في وضع الرسائل المخصصة: {{اسم_الطالب}}، {{اسم_ولي_الأمر}}، {{الصف}}، {{الفصل}}، {{المادة}}، {{المعلم}}، {{الاختبار}}، {{الدرجة}}، {{الدرجة_النهائية}}. ويمكن استخدام studentName وparentName وgrade وsection وsubject وteacherName وtestName وmark وfullMark أيضًا.</div>
+<div><strong>معاينة الرسالة</strong><div class="preview" id="preview">اكتب الرسالة ثم اضغط «معاينة الرسالة».</div></div>
+</section>
+<section class="card">
+<h2>٣. الإرسال والمتابعة</h2>
+<p class="note">تُرسل الرسائل بالتتابع لكل رقم، ويُسجَّل لكل مستلم سجل مستقل في راصد مع حالة الطلب. هذا يتيح تتبع الناجح والفاشل حتى عند استخدام رسالة موحدة.</p>
+<div class="row"><button class="btn green" id="send" type="button">🚀 إرسال الرسائل المحددة</button><span id="progressText" class="note">لم يبدأ الإرسال.</span></div>
+<div class="progress"><span id="progressBar"></span></div>
+<div id="status" class="status" role="status">جارٍ التحقق من إعدادات راصد…</div>
+</section>
+<div class="footer">تصميم محمد عامر أحمد</div>
+</main>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"});
+const db=firebase.firestore(),$=id=>document.getElementById(id),norm=v=>String(v??"").trim().toLowerCase(),esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+let role="",account="",senderName="",apiKey="",students=[],teachers=[],subjects=[],tests=[],grades=[],scopes=[],visible=[],selected=new Set(),scopeTeacher="",busy=false;
+function setStatus(text,kind=""){ $("status").className="status"+(kind?" "+kind:"");$("status").textContent=text;}
+function getSession(key){return sessionStorage.getItem(key)||localStorage.getItem(key)||"";}
+function phone(st){let p=String(st.guardianPhone||st.phone||st.parentPhone||st.guardianMobile||"").replace(/\D/g,"");if(p.startsWith("00966"))p=p.slice(2);if(p.startsWith("00"))p=p.slice(2);if(p.startsWith("05")&&p.length===10)p="966"+p.slice(1);else if(p.startsWith("5")&&p.length===9)p="966"+p;return /^[0-9]{10,15}$/.test(p)?p:"";}
+function opts(id,items,placeholder){$(id).innerHTML='<option value="">'+esc(placeholder)+'</option>'+items.map(x=>'<option value="'+esc(x.value)+'">'+esc(x.label)+'</option>').join("");}
+function currentMode(){return document.querySelector('input[name="mode"]:checked')?.value||"same";}
+function selectedScope(){return scopes.filter(x=>(!$("teacher").value||x.teacher===norm($("teacher").value))&&x.grade===$("grade").value&&x.section===$("section").value&&(!$("subject").value||x.subjectId===$("subject").value));}
+function rebuildFilters(){
+ const tVal=$("teacher").value,gVal=$("grade").value,sVal=$("section").value,subVal=$("subject").value;
+ const available=scopes.filter(x=>!tVal||x.teacher===norm(tVal));
+ const gradesList=[...new Set(available.map(x=>x.grade))].sort((a,b)=>a.localeCompare(b,"ar",{numeric:true}));
+ opts("grade",gradesList.map(x=>({value:x,label:x})),"اختر الصف");
+ $("grade").value=gradesList.includes(gVal)?gVal:"";
+ const sections=[...new Set(available.filter(x=>!$("grade").value||x.grade===$("grade").value).map(x=>x.section))].sort((a,b)=>a.localeCompare(b,"ar",{numeric:true}));
+ opts("section",sections.map(x=>({value:x,label:x})),"اختر الفصل");
+ $("section").value=sections.includes(sVal)?sVal:"";
+ const subjScopes=available.filter(x=>(!$("grade").value||x.grade===$("grade").value)&&(!$("section").value||x.section===$("section").value));
+ const subjectIds=[...new Set(subjScopes.map(x=>x.subjectId))];
+ opts("subject",subjects.filter(x=>subjectIds.includes(x.id)).map(x=>({value:x.id,label:x.name||x.id})),"كل المواد / بدون تحديد");
+ $("subject").value=subjectIds.includes(subVal)?subVal:"";
+ const classTests=tests.filter(x=>(!$("grade").value||String(x.grade||"")===$("grade").value)&&(!$("section").value||String(x.section||"")===$("section").value)&&(!$("subject").value||String(x.subjectId||"")===$("subject").value));
+ opts("test",classTests.map(x=>({value:x.id,label:(x.name||x.title||"اختبار")+" — "+(x.subjectName||subjects.find(s=>s.id===x.subjectId)?.name||"")})),"بدون اختبار");
+ updateStudents();
+}
+function updateStudents(){
+ const g=$("grade").value,sec=$("section").value,allowed=selectedScope();
+ visible=students.filter(st=>String(st.grade||"")===g&&String(st.section||"")===sec&&allowed.length>0);
+ const valid=visible.filter(st=>phone(st));
+ selected=new Set([...selected].filter(code=>valid.some(st=>String(st.code)===code)));
+ $("students").innerHTML=visible.length?visible.map(st=>{const code=String(st.code),ph=phone(st),checked=selected.has(code);return '<label class="student '+(!ph?'no-phone':'')+'"><input type="checkbox" data-code="'+esc(code)+'" '+(checked?'checked ':'')+(!ph?'disabled':'')+'><span><span class="name">'+esc(st.name||code)+'</span><small>'+esc(st.grade||"")+' / '+esc(st.section||"")+'</small><small>'+esc(ph||"لا يوجد رقم جوال صالح")+'</small></span></label>'}).join(""):'<div class="note">اختر الصف والفصل لعرض الطلاب المسندين.</div>';
+ $("visibleCount").textContent=visible.length;$("missingCount").textContent=visible.filter(x=>!phone(x)).length;updateCounts();preview();
+}
+function updateCounts(){$("selectedCount").textContent=visible.filter(x=>selected.has(String(x.code))&&phone(x)).length;}
+function replaceTokens(message,st){
+ const test=tests.find(x=>x.id===$("test").value),g=grades.find(x=>String(x.studentCode||x.code||"")===String(st.code)&&(String(x.testId||"")===(test?.id||"")));
+ const sub=subjects.find(x=>x.id===$("subject").value);
+ const parent=st.guardianName||st.parentName||st.fatherName||st.parentFullName||"";
+ const values={"اسم_الطالب":st.name||"","اسم_ولي_الأمر":parent,"الصف":st.grade||"","الفصل":st.section||"","المادة":sub?.name||test?.subjectName||"","المعلم":senderName,"الاختبار":test?(test.name||test.title||""):"","الدرجة":g?(g.attendance==="absent"?"غائب":(g.mark??"")):"","الدرجة_النهائية":g?(g.fullMark??test?.fullMark??""):(test?.fullMark??""),studentName:st.name||"",parentName:parent,grade:st.grade||"",section:st.section||"",subject:sub?.name||test?.subjectName||"",teacherName:senderName,testName:test?(test.name||test.title||""):"",mark:g?(g.attendance==="absent"?"غائب":(g.mark??"")):"",fullMark:g?(g.fullMark??test?.fullMark??""):(test?.fullMark??"")};
+ return String(message||"").replace(/\{\{\s*([^{}]+?)\s*\}\}/g,(all,key)=>Object.prototype.hasOwnProperty.call(values,key)?String(values[key]):all);
+}
+function preview(){const message=$("message").value;const st=visible.find(x=>selected.has(String(x.code)))||visible.find(x=>phone(x));$("preview").textContent=!message?"اكتب الرسالة ثم اضغط «معاينة الرسالة».":(currentMode()==="personalized"&&st?replaceTokens(message,st):message);}
+async function loadConfig(){const d=await db.collection("systemSettings").doc("whatsDirect").get();apiKey=String(d.exists?d.data().apiKey||"":"").trim();if(!apiKey)throw Error("لم يتم العثور على مفتاح API المحفوظ في إعدادات الأدمن. احفظ المفتاح أولًا.");}
+async function sendViaWhatsDirect(phoneNumber,content){const response=await fetch("https://wa.smart-whats.com/api/messages",{method:"POST",headers:{"X-API-Key":apiKey,"Content-Type":"application/json"},body:JSON.stringify({phone:phoneNumber,content:content})});const result=await response.json().catch(()=>({}));if(!response.ok)throw Error(result.message||result.error||("HTTP "+response.status));return result;}
+async function init(){
+ try{
+  role=norm(getSession("currentUserRole"));account=norm(getSession("currentUserEmail")||getSession("currentUser"));
+  if(!account||!["teacher","supervisor","admin","superadmin"].includes(role))throw Error("الحساب غير مصرح له بالدخول إلى الرسائل الجماعية.");
+  if(role==="teacher")$("back").href="teacher.html";else if(role==="supervisor")$("back").href="supervisor-dashboard.html";else $("back").href="admin.html";
+  if(role==="teacher"){
+   const td=await db.collection("teachers").doc(account).get();if(!td.exists)throw Error("بيانات المعلم غير موجودة.");senderName=td.data().name||getSession("currentUserName")||account;
+   scopes=(td.data().assignments||[]).filter(a=>a.grade&&a.section).map(a=>({teacher:account,teacherName:senderName,grade:String(a.grade),section:String(a.section),subjectId:String(a.subjectId||""),subjectName:a.subjectName||""}));
+  }else if(role==="supervisor"){
+   const ud=await db.collection("users").doc(account).get();if(!ud.exists||norm(ud.data().role)!=="supervisor"||ud.data().permissions?.bulkMessages!==true)throw Error("يجب أن يمنحك الأدمن صلاحية «الرسائل الجماعية» أولًا.");
+   senderName=ud.data().name||account;const ids=new Set((ud.data().assignedTeacherEmails||[]).map(norm));const legacy=await db.collection("supervisors").doc(account).get();if(legacy.exists)(legacy.data().teachers||[]).forEach(x=>ids.add(norm(x)));
+   const ts=await db.collection("teachers").get();teachers=ts.docs.filter(d=>ids.has(norm(d.id))||ids.has(norm(d.data().email))).map(d=>({id:norm(d.id),...d.data()}));
+   scopes=teachers.flatMap(t=>(t.assignments||[]).filter(a=>a.grade&&a.section).map(a=>({teacher:norm(t.id),teacherName:t.name||t.id,grade:String(a.grade),section:String(a.section),subjectId:String(a.subjectId||""),subjectName:a.subjectName||""})));
+   $("teacherField").style.display="flex";opts("teacher",teachers.map(t=>({value:t.id,label:t.name||t.id})),"كل المعلمين المسندين");$("teacher").value="";
+  }else{
+   const ud=await db.collection("users").doc(account).get();senderName=(ud.exists&&ud.data().name)||getSession("currentUserName")||account;
+   const ts=await db.collection("teachers").get();teachers=ts.docs.map(d=>({id:norm(d.id),...d.data()}));
+   scopes=teachers.flatMap(t=>(t.assignments||[]).filter(a=>a.grade&&a.section).map(a=>({teacher:norm(t.id),teacherName:t.name||t.id,grade:String(a.grade),section:String(a.section),subjectId:String(a.subjectId||""),subjectName:a.subjectName||""})));
+   $("teacherField").style.display="none";
+  }
+  const [ss,sub,te]=await Promise.all([db.collection("students").get(),db.collection("subjects").get(),db.collection("tests").get()]);
+  students=ss.docs.map(d=>({...d.data(),code:String(d.data().code||d.id)});subjects=sub.docs.map(d=>({id:d.id,...d.data()}));tests=te.docs.map(d=>({id:d.id,...d.data()}));
+  await loadConfig();rebuildFilters();setStatus("جاهز للإرسال. اختر الصف والفصل، وحدد المستلمين، ثم اختر نوع الرسالة.","ok");
+ }catch(e){setStatus("تعذر فتح الرسائل الجماعية: "+e.message,"error");$("send").disabled=true;}
+}
+$("teacher").addEventListener("change",()=>{selected.clear();rebuildFilters()});$("grade").addEventListener("change",()=>{selected.clear();rebuildFilters()});$("section").addEventListener("change",()=>{selected.clear();rebuildFilters()});$("subject").addEventListener("change",()=>{selected.clear();rebuildFilters()});$("test").addEventListener("change",async()=>{grades=[];if($("test").value){try{const snap=await db.collection("grades").where("testId","==",$("test").value).get();grades=snap.docs.map(d=>({...d.data(),id:d.id}));}catch(e){setStatus("تعذر تحميل درجات الاختبار: "+e.message,"error");}}preview();});
+$("students").addEventListener("change",e=>{const cb=e.target.closest('input[type="checkbox"][data-code]');if(!cb)return;if(cb.checked)selected.add(cb.dataset.code);else selected.delete(cb.dataset.code);updateCounts();preview();});
+$("selectAll").addEventListener("click",()=>{visible.filter(st=>phone(st)).forEach(st=>selected.add(String(st.code)));updateStudents()});$("clearAll").addEventListener("click",()=>{selected.clear();updateStudents()});$("message").addEventListener("input",preview);document.querySelectorAll('input[name="mode"]').forEach(x=>x.addEventListener("change",preview));$("previewBtn").addEventListener("click",preview);
+$("insertTemplate").addEventListener("click",()=>{$("message").value="المكرم ولي أمر الطالب {{اسم_الطالب}}،\nنحيطكم علمًا بأن لدينا تنبيهًا بخصوص {{المادة}} للصف {{الصف}} / الفصل {{الفصل}}.\n{{الاختبار}}: الدرجة {{الدرجة}} من {{الدرجة_النهائية}}.\nشاكرين لكم تعاونكم.\n"+senderName;document.querySelector('input[name="mode"][value="personalized"]').checked=true;preview();});
+$("send").addEventListener("click",async()=>{
+ if(busy)return;const message=$("message").value.trim(),recipients=visible.filter(st=>selected.has(String(st.code))&&phone(st));
+ if(!recipients.length)return setStatus("حدد طالبًا واحدًا على الأقل لديه رقم جوال صالح.","error");if(!message)return setStatus("اكتب نص الرسالة أولًا.","error");
+ if(currentMode()==="personalized"&&message.includes("{{")&&recipients.some(st=>replaceTokens(message,st).match(/\{\{[^{}]+\}\}/)))return setStatus("يوجد رمز تخصيص غير معروف. راجع الرموز المكتوبة بين الأقواس المزدوجة.","error");
+ if(!confirm("سيتم إرسال "+recipients.length+" رسالة عبر واتس مباشر وتسجيل كل واحدة في سجل راصد. هل تريد المتابعة؟"))return;
+ busy=true;$("send").disabled=true;$("selectAll").disabled=true;$("clearAll").disabled=true;let sent=0,failed=0,pending=0;const batchId="bulk-"+Date.now();$("progressBar").style.width="0%";
+ try{
+  for(let i=0;i<recipients.length;i++){
+   const st=recipients[i],to=phone(st),content=currentMode()==="personalized"?replaceTokens(message,st):message;
+   let ref=null;
+   try{
+    ref=await db.collection("messageLogs").add({messageType:"bulk_notice",batchId,batchMode:currentMode(),batchSize:recipients.length,senderEmail:account,senderName,senderRole:role,teacherEmail:role==="teacher"?account:"",teacherName:role==="teacher"?senderName:"",studentCode:String(st.code),studentName:st.name||"",guardianPhone:to,grade:String(st.grade||""),section:String(st.section||""),subjectId:$("subject").value||"",subjectName:subjects.find(x=>x.id===$("subject").value)?.name||"",testId:$("test").value||"",testName:tests.find(x=>x.id===$("test").value)?.name||tests.find(x=>x.id===$("test").value)?.title||"",message:content,provider:"whats-direct",providerStatus:"sending",sentAt:firebase.firestore.FieldValue.serverTimestamp()});
+    const result=await sendViaWhatsDirect(to,content),state=String(result.status||"pending");
+    await ref.update({providerMessageId:String(result.id||result.messageId||result._id||""),providerStatus:state,providerResponse:result,providerUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if(state==="sent")sent++;else pending++;
+   }catch(e){failed++;if(ref)try{await ref.update({providerStatus:"failed",providerError:String(e.message||e),providerUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()})}catch(_){}}
+   $("progressBar").style.width=Math.round((i+1)/recipients.length*100)+"%";$("progressText").textContent=(i+1)+" / "+recipients.length+" — ناجح: "+sent+" — انتظار/قيد المعالجة: "+pending+" — فاشل: "+failed;
+   if(i<recipients.length-1)await new Promise(resolve=>setTimeout(resolve,350));
+  }
+  setStatus("انتهت العملية. إجمالي: "+recipients.length+"، أُبلغ عن إرسالها: "+sent+"، انتظار/قيد المعالجة: "+pending+"، فشل: "+failed+". راجع سجل الرسائل لكل حالة.","ok");
+ }catch(e){setStatus("توقفت العملية: "+e.message,"error");}
+ finally{busy=false;$("send").disabled=false;$("selectAll").disabled=false;$("clearAll").disabled=false;}
+});
+init();
+</script></body></html>
