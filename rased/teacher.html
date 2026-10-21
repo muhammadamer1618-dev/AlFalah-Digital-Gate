@@ -1673,8 +1673,8 @@ body{
 </div>
 <div class="table-wrap">
 <table class="message-log-table">
-<thead><tr><th>#</th><th>التاريخ والوقت</th><th>الطالب</th><th>الفصل</th><th>المادة</th><th>الاختبار / النوع</th><th>جوال ولي الأمر</th><th>الرسالة</th><th>حذف</th></tr></thead>
-<tbody id="messageLogsBody"><tr><td colspan="9">جاري تحميل السجل...</td></tr></tbody>
+<thead><tr><th>#</th><th>التاريخ والوقت</th><th>الطالب</th><th>الفصل</th><th>المادة</th><th>الاختبار / النوع</th><th>جوال ولي الأمر</th><th>الرسالة</th><th>حالة الإرسال</th><th>حذف</th></tr></thead>
+<tbody id="messageLogsBody"><tr><td colspan="10">جاري تحميل السجل...</td></tr></tbody>
 </table>
 </div>
 </div>
@@ -4722,8 +4722,8 @@ return messageLogs.filter(log=>{if(!q)return true;return [log.studentName,log.st
 
 function renderMessageLogs(){
 const rows=getFilteredTeacherLogs(),body=el("messageLogsBody");
-if(!rows.length){body.innerHTML='<tr><td colspan="9">لا توجد رسائل مسجلة.</td></tr>';return;}
-body.innerHTML=rows.map((log,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(formatMessageDate(log.sentAt))}</td><td><strong>${escapeHtml(log.studentName||"-")}</strong><br><small>${escapeHtml(log.studentCode||"")}</small></td><td>${escapeHtml(log.grade||"-")} / ${escapeHtml(log.section||"-")}</td><td>${escapeHtml(log.subjectName||"-")}</td><td>${escapeHtml(log.messageType==="custom"?"رسالة عامة":(log.testName||"نتيجة اختبار"))}</td><td style="direction:ltr">${escapeHtml(log.guardianPhone||"-")}</td><td class="message-log-text">${escapeHtml(log.message||"-")}${log.fileUrl?`<br><a class="file-link" href="${escapeHtml(log.fileUrl)}" target="_blank">📎 فتح ${escapeHtml(log.fileName||"الملف")}</a>`:""}</td><td><button class="mini-btn delete-btn" onclick='deleteMyMessageLog(${JSON.stringify(log.id)})'>🗑️ حذف</button></td></tr>`).join("");
+if(!rows.length){body.innerHTML='<tr><td colspan="10">لا توجد رسائل مسجلة.</td></tr>';return;}
+body.innerHTML=rows.map((log,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(formatMessageDate(log.sentAt))}</td><td><strong>${escapeHtml(log.studentName||"-")}</strong><br><small>${escapeHtml(log.studentCode||"")}</small></td><td>${escapeHtml(log.grade||"-")} / ${escapeHtml(log.section||"-")}</td><td>${escapeHtml(log.subjectName||"-")}</td><td>${escapeHtml(log.messageType==="custom"?"رسالة عامة":(log.testName||"نتيجة اختبار"))}</td><td style="direction:ltr">${escapeHtml(log.guardianPhone||"-")}</td><td class="message-log-text">${escapeHtml(log.message||"-")}${log.fileUrl?`<br><a class="file-link" href="${escapeHtml(log.fileUrl)}" target="_blank">📎 فتح ${escapeHtml(log.fileName||"الملف")}</a>`:""}</td><td>${escapeHtml(log.providerStatus?({pending:"في الانتظار",sending:"جارٍ الإرسال",sent:"تم الإرسال",failed:"فشل الإرسال"}[log.providerStatus]||log.providerStatus):(log.provider==="whats-direct"?"غير محدد":"واتساب ويب / سجل قديم"))}</td><td><button class="mini-btn delete-btn" onclick='deleteMyMessageLog(${JSON.stringify(log.id)})'>🗑️ حذف</button></td></tr>`).join("");
 }
 
 
