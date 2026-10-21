@@ -2554,6 +2554,7 @@ onclick="clearCurrentTeacherAssignments()">
 <th>الاختبار</th>
 <th>جوال ولي الأمر</th>
 <th>الرسالة</th>
+<th>حالة الإرسال</th>
 <th>حذف</th>
 </tr>
 </thead>
@@ -9152,7 +9153,7 @@ body.innerHTML="";
 if(!filteredMessageLogs.length){
 
 body.innerHTML=
-'<tr><td colspan="10">لا توجد رسائل مطابقة.</td></tr>';
+'<tr><td colspan="11">لا توجد رسائل مطابقة.</td></tr>';
 
 return;
 
@@ -9198,6 +9199,7 @@ ${escapeHtml(log.guardianPhone||"-")}
 ${escapeHtml(log.message||"-")}${log.fileUrl?`<br><a class="file-link" href="${escapeHtml(log.fileUrl)}" target="_blank">📎 فتح ${escapeHtml(log.fileName||"الملف")}</a>`:""}
 </td>
 
+<td>${escapeHtml(log.providerStatus?({pending:"في الانتظار",sending:"جارٍ الإرسال",sent:"تم الإرسال",failed:"فشل الإرسال"}[log.providerStatus]||log.providerStatus):(log.provider==="whats-direct"?"غير محدد":"واتساب ويب / سجل قديم"))}</td>
 <td>
 <button class="small-btn btn-danger" onclick='deleteMessageLog(${JSON.stringify(log.id)})'>🗑️ حذف</button>
 </td>
