@@ -1081,6 +1081,14 @@ body{color:#142b51}
 .admin-dashboard-group-title{color:#111111!important;font-size:19px!important;font-weight:800!important;line-height:1.6!important}
 @media(max-width:620px){.admin-dashboard-group-title{font-size:18px!important}}
 </style>
+<style id="rasedHeaderSoftActions">
+.header .admin-logout,.header .admin-change-password{position:absolute;top:15px;border-radius:10px!important;padding:9px 15px!important;font-family:'Cairo',Tahoma,Arial,sans-serif!important;font-size:13px!important;font-weight:800!important;box-shadow:0 2px 7px rgba(0,0,0,.08)!important}
+.header .admin-logout{left:15px;background:#eaf5ff!important;color:#c62828!important;border:1px solid #c6e4fc!important}
+.header .admin-change-password{left:145px;background:#fff!important;color:#1b2638!important;border:1px solid #d9e3f0!important}
+.header .admin-logout:hover{background:#d9edff!important}
+.header .admin-change-password:hover{background:#edf3fc!important}
+@media(max-width:660px){.header{padding-bottom:62px!important}.header .admin-logout,.header .admin-change-password{top:auto;bottom:10px;font-size:11px!important;padding:6px 9px!important}.header .admin-logout{left:12px}.header .admin-change-password{left:116px}}
+</style>
 </head>
 
 
@@ -1098,7 +1106,7 @@ alt="شعار المدرسة">
 <p>نظام راصد - لوحة الإدارة</p>
 
 <button
-class="btn-danger logout"
+class="btn-danger logout admin-logout"
 onclick="logout()">
 
 تسجيل الخروج
@@ -1107,7 +1115,7 @@ onclick="logout()">
 
 <button
 class="btn-warning"
-style="position:absolute;left:150px;top:16px"
+class="admin-change-password"
 onclick="location.href='change-password.html?return=admin.html'">
 
 🔐 تغيير كلمة المرور
