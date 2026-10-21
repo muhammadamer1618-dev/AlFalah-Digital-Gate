@@ -1195,6 +1195,7 @@ body{
   <div class="dashboard-section-title">الخدمات الرئيسية</div>
   <div class="teacher-dashboard-grid teacher-dashboard-main">
     <button class="dashboard-tool dashboard-tool-primary" onclick="location.href='blank-grade-sheet.html'"><span class="dashboard-tool-icon">🗒️</span><span class="dashboard-tool-text"><strong>إصدار كشف درجات فارغ</strong><small>كشف مرن بأعمدة حسب اختيار المعلم للطباعة</small></span><span class="dashboard-tool-arrow">←</span></button>
+    <button class="dashboard-tool dashboard-tool-primary" onclick="location.href='grade-improvement.html'"><span class="dashboard-tool-icon">📈</span><span class="dashboard-tool-text"><strong>تحسين الدرجات</strong><small>اعتماد الدرجة الأعلى وحفظ جميع المحاولات</small></span><span class="dashboard-tool-arrow">←</span></button>
     <button class="dashboard-tool dashboard-tool-primary" onclick="location.href='retest-notices.html'"><span class="dashboard-tool-icon">🔁</span><span class="dashboard-tool-text"><strong>إعادة الاختبار</strong><small>طلاب أقل من الدرجة النهائية ورسائل أولياء الأمور</small></span><span class="dashboard-tool-arrow">←</span></button>
     <button class="dashboard-tool dashboard-tool-primary" data-feature="grading" onclick="showTeacherFeature('grading',this)">
       <span class="dashboard-tool-icon">📝</span>
@@ -3973,8 +3974,9 @@ return;
 
 
 const records=[];
-
-
+// Protect improved grades from ordinary bulk grading overwrites.
+const protectedStudents=currentStudents.filter(st=>{const x=savedGrades[String(st.code)];return x&&Array.isArray(x.improvementHistory)&&x.improvementHistory.length>0});
+if(protectedStudents.length){alert("توجد درجات تحسين محفوظة في هذا الفصل. لا يمكن استخدام الحفظ الجماعي المعتاد حتى لا تضيع الدرجة المعتمدة. استخدم صفحة تحسين الدرجات أو اطلب تصحيحًا إداريًا.\nالطلاب: "+protectedStudents.map(x=>x.name).join("، "));return;}
 for(
 const student of currentStudents
 ){
