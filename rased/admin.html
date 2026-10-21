@@ -879,6 +879,29 @@ body{background:#f2f5fa;color:#24354b}
 .supervisor-action-tile small{font-size:10px}
 .supervisor-action-copy{min-height:39px}
 @media(max-width:700px){.admin-dashboard-tool{min-height:79px;padding:9px 6px}.admin-dashboard-tool strong{font-size:12px}.admin-dashboard-tool small{font-size:9px}.header h1{font-size:20px}}
+
+/* Rased Admin Pro repair: final cascade after legacy dashboard rules */
+.admin-dashboard-group{margin:0 0 20px;padding:13px 15px 16px;border:1px solid #e3e9f1;border-radius:16px;background:#f9fbfe}
+.admin-dashboard-group-title{font-size:15px;color:#213d61;margin:0 0 13px;padding-right:11px;border-right:4px solid #2b65b0}
+.admin-dashboard-group:nth-of-type(2n) .admin-dashboard-group-title{border-right-color:#bc8b30}
+.admin-dashboard-group:nth-of-type(3n) .admin-dashboard-group-title{border-right-color:#23916c}
+.admin-dashboard-group:nth-of-type(4n) .admin-dashboard-group-title{border-right-color:#8156bd}
+.admin-dashboard-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px!important}
+.admin-dashboard-grid .admin-dashboard-tool{min-height:112px;background:#fff!important;color:#243a55!important;border:1px solid #dfe7f1!important;border-top:4px solid var(--tool-accent,#2c61ad)!important;border-radius:14px;padding:13px 10px;box-shadow:0 3px 12px rgba(23,50,84,.065);text-shadow:none!important;filter:none}
+.admin-dashboard-grid .admin-dashboard-tool span{font-size:26px;line-height:1.3}
+.admin-dashboard-grid .admin-dashboard-tool strong{font-size:15px;line-height:1.5;color:#243a55!important}
+.admin-dashboard-grid .admin-dashboard-tool small{font-size:11px;line-height:1.5;color:#697b93!important}
+.admin-dashboard-grid .admin-dashboard-tool:hover{transform:translateY(-2px);background:#f5f9ff!important;box-shadow:0 7px 18px rgba(25,54,89,.12)}
+.admin-dashboard-grid .admin-dashboard-tool.active{background:#e8f1ff!important;border-color:#2860ae!important}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+1){--tool-accent:#2861af}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+2){--tool-accent:#bc8b30}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+3){--tool-accent:#238b65}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+4){--tool-accent:#8255b8}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+5){--tool-accent:#14849c}
+.admin-dashboard-grid .admin-dashboard-tool:nth-child(6n+6){--tool-accent:#6c7d93}
+@media(min-width:1450px){.admin-dashboard-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:980px){.admin-dashboard-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.admin-dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important}.admin-dashboard-grid .admin-dashboard-tool{min-height:103px;padding:10px 7px}.admin-dashboard-grid .admin-dashboard-tool strong{font-size:13px}.admin-dashboard-grid .admin-dashboard-tool small{font-size:10px}.admin-dashboard-group{padding:10px}}
 </style>
 
 <style id="adminCardDashboardTheme">
