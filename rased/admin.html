@@ -11484,6 +11484,14 @@ async function saveAdminGradeMatrix(){
   const val=el.value.trim(),full=Number(t.fullMark);
   if(!Number.isFinite(full)||full<=0){alert("درجة الاختبار النهائية غير صحيحة لمادة "+t.subjectName);return;}
   if(val!==""&&val!=="غ"&&(!Number.isFinite(Number(val))||Number(val)<0||Number(val)>full)){alert("درجة غير صحيحة للطالب "+st.name+" في "+t.subjectName+"؛ المسموح من صفر إلى "+full+" أو غ");el.focus();return;}
+  const existing=adminMatrixOriginal.get(adminMatrixKey(t,st.code));
+  if(existing&&Array.isArray(existing.improvementHistory)&&existing.improvementHistory.length){
+    const approved=Number(existing.mark);
+    if(val==="غ"||val===""||(!Number.isNaN(approved)&&Number(val)<approved)){
+      alert("لا يمكن خفض درجة محسّنة أو تحويلها إلى غياب من مصفوفة التعديل العامة. استخدم إجراء تصحيح إداري منفصل مع توثيق السبب. الطالب: "+st.name);
+      el.focus();return;
+    }
+  }
   edits.push({t,st,val,mark:val===""||val==="غ"?null:Number(val),attendance:val==="غ"?"absent":"present"});
  }
  if(!confirm("تأكيد حفظ "+edits.length+" تعديلًا؟ سيتم تسجيل السبب لكل درجة، ولن يُفتح الرصد للمعلمين."))return;
