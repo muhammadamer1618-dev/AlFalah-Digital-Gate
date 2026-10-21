@@ -1820,32 +1820,7 @@ onclick="clearTeacherForm()">
 
 <div class="admin-list-count">عدد المعلمين: <b id="teachersCount">0</b></div>
 
-<div class="table-wrap">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="width:55px">#</th>
-<th style="width:55px">تحديد</th>
-<th>اسم المعلم</th>
-<th>اسم المستخدم</th>
-<th>رقم الجوال</th>
-<th>عدد الإسنادات</th>
-<th>الإجراءات</th>
-
-</tr>
-
-</thead>
-
-
-<tbody id="teachersBody"></tbody>
-
-</table>
-
-</div>
+<div id="teachersBody" class="account-cards-grid"></div>
 
 
 <div class="danger-zone">
@@ -2761,12 +2736,7 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="admin-list-count">عدد حسابات الإشراف: <b id="supervisorsCount">0</b></div>
 
-<div class="table-wrap">
-<table style="min-width:1180px">
-<thead><tr><th>#</th><th>الاسم</th><th>رقم الهوية / الإقامة</th><th>رقم الجوال</th><th>نوع الحساب</th><th>المعلمون المسندون</th><th>الصلاحيات</th><th>الإجراءات</th></tr></thead>
-<tbody id="supervisorsBody"></tbody>
-</table>
-</div>
+<div id="supervisorsBody" class="account-cards-grid"></div>
 
 </div>
 </div>
@@ -2818,19 +2788,7 @@ onclick="clearCurrentTeacherAssignments()">
 عدد حسابات الموجه الطلابي: <b id="studentCounselorsCount">0</b>
 </div>
 
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>اسم الموجه الطلابي</th>
-<th>اسم المستخدم</th>
-<th>الإجراءات</th>
-</tr>
-</thead>
-<tbody id="studentCounselorsBody"></tbody>
-</table>
-</div>
+<div id="studentCounselorsBody" class="account-cards-grid"></div>
 
 </div>
 </div>
@@ -2885,19 +2843,7 @@ onclick="clearCurrentTeacherAssignments()">
 عدد حسابات رواد النشاط: <b id="activityLeadersCount">0</b>
 </div>
 
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>اسم رائد النشاط</th>
-<th>اسم المستخدم</th>
-<th>الإجراءات</th>
-</tr>
-</thead>
-<tbody id="activityLeadersBody"></tbody>
-</table>
-</div>
+<div id="activityLeadersBody" class="account-cards-grid"></div>
 
 </div>
 </div>
@@ -5600,117 +5546,39 @@ return [];
 
 
 function renderTeachers(){
-
-const body=
-document.getElementById(
-"teachersBody"
-);
-
-
-body.innerHTML="";
-
-const countEl=document.getElementById("teachersCount");
-if(countEl)countEl.textContent=teachers.length;
-
-if(!teachers.length){
-
-body.innerHTML=
-
-"<tr><td colspan='7'>لا يوجد معلمون</td></tr>";
-
-return;
-
+ const body=document.getElementById("teachersBody");
+ const countEl=document.getElementById("teachersCount");
+ if(countEl)countEl.textContent=teachers.length;
+ if(!body)return;
+ if(!teachers.length){body.innerHTML='<div class="account-empty">لا يوجد معلمون حتى الآن.</div>';updateBulkTeacherCount();return}
+ body.innerHTML=teachers.map((teacher,index)=>{
+  const assignments=getAssignments(teacher);
+  const initials=Array.from(String(teacher.name||teacher.email||"م")).slice(0,2).join("");
+  const subjectsCount=new Set(assignments.map(a=>String(a.subjectId||a.subjectName||"")).filter(Boolean)).size;
+  return `<article class="account-card">
+   <div class="account-card-head">
+    <div class="account-avatar">${escapeHtml(initials)}</div>
+    <div class="account-card-main">
+     <strong class="account-card-name">${escapeHtml(teacher.name||"معلم")}</strong>
+     <div class="account-card-meta"><span>👤 ${escapeHtml(teacher.email||"—")}</span><span>📞 ${escapeHtml(teacher.phone||"غير مسجل")}</span></div>
+    </div>
+    <span class="account-role-badge">معلم</span>
+   </div>
+   <div class="account-card-chips">
+    <span class="account-chip account-chip-green">الإسنادات: ${assignments.length}</span>
+    <span class="account-chip account-chip-blue">المواد: ${subjectsCount}</span>
+    <span class="account-chip account-chip-muted">حساب المعلم</span>
+   </div>
+   <div class="account-card-actions">
+    <label class="account-select"><input type="checkbox" class="bulkTeacherCheck" value="${escapeHtml(teacher.email)}" onchange="updateBulkTeacherCount()"> تحديد</label>
+    <button class="btn-success" onclick='sendTeacherCredentials(${JSON.stringify(teacher.email)})'>📲 إرسال</button>
+    <button class="btn-warning" onclick='editTeacher(${JSON.stringify(teacher.email)})'>✏️ تعديل</button>
+    <button class="btn-danger" onclick='deleteTeacher(${JSON.stringify(teacher.email)})'>🗑️ حذف</button>
+   </div>
+  </article>`;
+ }).join("");
+ updateBulkTeacherCount();
 }
-
-
-teachers.forEach((teacher,index)=>{
-
-const assignments=
-getAssignments(
-teacher
-);
-
-
-const tr=
-document.createElement("tr");
-
-
-tr.innerHTML=`
-
-<td class="admin-row-number">${index+1}</td>
-
-<td style="text-align:center">
-<input type="checkbox" class="bulkTeacherCheck" value="${escapeHtml(teacher.email)}" onchange="updateBulkTeacherCount()">
-</td>
-
-<td>
-
-${escapeHtml(
-teacher.name
-)}
-
-</td>
-
-<td>
-
-${escapeHtml(
-teacher.email
-)}
-
-</td>
-
-<td>
-
-${escapeHtml(teacher.phone||"-")}
-
-</td>
-
-<td>
-
-${assignments.length}
-
-</td>
-
-<td>
-
-<button
-class="small-btn btn-success"
-onclick='sendTeacherCredentials(${JSON.stringify(teacher.email)})'>
-
-📲 إرسال
-
-</button>
-
-<button
-class="small-btn btn-warning"
-onclick='editTeacher(${JSON.stringify(teacher.email)})'>
-
-تعديل
-
-</button>
-
-
-<button
-class="small-btn btn-danger"
-onclick='deleteTeacher(${JSON.stringify(teacher.email)})'>
-
-حذف
-
-</button>
-
-</td>
-
-`;
-
-
-body.appendChild(tr);
-
-});
-
-updateBulkTeacherCount();
-
-}
-
 
 function renderBulkTeacherSelectionList(){
 
@@ -9615,6 +9483,140 @@ font-size:6.5pt;
   .grading-window-grid .wide{grid-column:span 1}
 }
 
+
+/* ===== بطاقة موحدة لحسابات الإدارة ===== */
+.account-cards-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-top:14px;
+  align-items:stretch;
+}
+.account-card{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:14px;
+  background:#fff;
+  border:1px solid #e0e7ef;
+  border-radius:17px;
+  box-shadow:0 2px 5px rgba(15,23,42,.06),0 7px 18px rgba(15,23,42,.035);
+}
+.account-card-head{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  min-width:0;
+}
+.account-avatar{
+  flex:0 0 46px;
+  width:46px;
+  height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:15px;
+  background:#e8edff;
+  color:#244bd8;
+  font-size:17px;
+  font-weight:900;
+}
+.account-card-main{flex:1;min-width:0}
+.account-card-name{
+  display:block;
+  font-size:15px;
+  line-height:1.55;
+  font-weight:900;
+  color:#101d3b;
+  overflow-wrap:anywhere;
+}
+.account-card-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px 9px;
+  margin-top:3px;
+  color:#718096;
+  font-size:11px;
+  line-height:1.6;
+  overflow-wrap:anywhere;
+}
+.account-card-meta span{display:inline-flex;align-items:center;gap:4px}
+.account-role-badge{
+  flex:0 0 auto;
+  padding:5px 10px;
+  border-radius:999px;
+  background:#eef1f6;
+  color:#334155;
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.account-card-chips{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
+  min-height:27px;
+}
+.account-chip{
+  display:inline-flex;
+  align-items:center;
+  max-width:100%;
+  padding:5px 8px;
+  border:1px solid transparent;
+  border-radius:8px;
+  font-size:11px;
+  line-height:1.35;
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+.account-chip-green{background:#dcfce7;color:#087747;border-color:#d1fae5}
+.account-chip-blue{background:#e0f2fe;color:#0879b6;border-color:#cceafe}
+.account-chip-muted{background:#f5f7fa;color:#475569;border-color:#e2e8f0}
+.account-chip-gold{background:#fff5d9;color:#956300;border-color:#f8e9b6}
+.account-card-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  align-items:center;
+  margin-top:auto;
+  padding-top:3px;
+}
+.account-card-actions button{
+  padding:8px 11px;
+  font-size:12px;
+  border-radius:10px;
+}
+.account-select{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  margin:0 auto 0 0;
+  color:#475569;
+  font-size:11px;
+  font-weight:700;
+}
+.account-select input{
+  width:17px!important;height:17px!important;margin:0;accent-color:#2450e6;cursor:pointer;
+}
+.account-empty{
+  grid-column:1/-1;
+  text-align:center;
+  padding:24px 14px;
+  background:#f8fafc;
+  border:1px dashed #cbd5e1;
+  color:#64748b;
+  border-radius:14px;
+}
+@media(max-width:1100px){.account-cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){
+  .account-cards-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .account-card{padding:12px}
+  .account-card-name{font-size:14px}
+  .account-card-actions button{flex:1}
+}
+
 </style>
 
 </head>
@@ -9965,35 +9967,40 @@ return labels.length?labels.join(" • "):"بدون صلاحيات";
 }
 
 function renderSupervisors(){
-const body=document.getElementById("supervisorsBody");
-const count=document.getElementById("supervisorsCount");
-if(count)count.textContent=supervisors.length;
-if(!body)return;
-body.innerHTML="";
-if(!supervisors.length){body.innerHTML="<tr><td colspan='8'>لا توجد حسابات إشراف</td></tr>";return}
-supervisors.forEach((s,index)=>{
-const tr=document.createElement("tr");
-tr.innerHTML=`
-<td class="admin-row-number">${index+1}</td>
-<td>${escapeHtml(s.name)}</td>
-<td>${escapeHtml(s.username)}</td>
-<td>${escapeHtml(s.phone||"")}</td>
-<td><span class="role-badge">${escapeHtml(supervisorTypeLabel(s.supervisorType))}</span></td>
-<td>${String(s.supervisorType||"").toLowerCase()==="supervisor"
-  ?(s.assignedTeacherEmails?.length
-    ?escapeHtml(s.assignedTeacherEmails.map(email=>{
-      const t=teachers.find(x=>normalizeTeacherEmail(x.email||x.username)===email);
-      return t?.name||email;
-    }).join(" • "))
-    :"بدون إسناد")
-  :"كل المعلمين"}</td>
-<td class="permission-summary-cell">${escapeHtml(permissionSummary(s.permissions))}</td>
-<td>
-<button class="small-btn btn-warning" onclick='editSupervisor(${JSON.stringify(s.username)})'>تعديل</button>
-<button class="small-btn btn-danger" onclick='deleteSupervisor(${JSON.stringify(s.username)})'>حذف</button>
-</td>`;
-body.appendChild(tr);
-});
+ const body=document.getElementById("supervisorsBody");
+ const count=document.getElementById("supervisorsCount");
+ if(count)count.textContent=supervisors.length;
+ if(!body)return;
+ if(!supervisors.length){body.innerHTML='<div class="account-empty">لا توجد حسابات إشراف حتى الآن.</div>';return}
+ body.innerHTML=supervisors.map((item,index)=>{
+  const initials=Array.from(String(item.name||"مشرف")).slice(0,2).join("");
+  const perms=SUPERVISOR_PERMISSION_DEFS.filter(([key])=>normalizeSupervisorPermissions(item.permissions)[key]);
+  const visible=perms.slice(0,8);
+  const assigned=String(item.supervisorType||"").toLowerCase()==="supervisor"
+   ?(item.assignedTeacherEmails?.length?item.assignedTeacherEmails.map(email=>{const t=teachers.find(x=>normalizeTeacherEmail(x.email||x.username)===email);return t?.name||email}).join("، "):"بدون إسناد")
+   :"كل المعلمين";
+  const chips=visible.map(([key,,label])=>'<span class="account-chip '+(/View$/.test(key)?'account-chip-blue':'account-chip-green')+'">'+escapeHtml(label)+'</span>').join("");
+  const more=perms.length>visible.length?'<span class="account-chip account-chip-muted">+'+(perms.length-visible.length)+' صلاحيات أخرى</span>':"";
+  return `<article class="account-card">
+   <div class="account-card-head">
+    <div class="account-avatar">${escapeHtml(initials)}</div>
+    <div class="account-card-main">
+     <strong class="account-card-name">${escapeHtml(item.name)}</strong>
+     <div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span><span>📞 ${escapeHtml(item.phone||"غير مسجل")}</span></div>
+    </div>
+    <span class="account-role-badge">${escapeHtml(supervisorTypeLabel(item.supervisorType))}</span>
+   </div>
+   <div class="account-card-chips">
+    <span class="account-chip account-chip-muted">${String(item.supervisorType||"").toLowerCase()==="supervisor"?"المعلمون المسندون":"نطاق الإشراف"}: ${escapeHtml(assigned)}</span>
+    <span class="account-chip account-chip-gold">الصلاحيات: ${perms.length}</span>
+   </div>
+   <div class="account-card-chips">${chips}${more}</div>
+   <div class="account-card-actions">
+    <button class="btn-warning" onclick='editSupervisor(${JSON.stringify(item.username)})'>✏️ تعديل</button>
+    <button class="btn-danger" onclick='deleteSupervisor(${JSON.stringify(item.username)})'>🗑️ حذف</button>
+   </div>
+  </article>`;
+ }).join("");
 }
 
 function readSupervisorPermissions(){
@@ -10159,42 +10166,33 @@ renderStudentCounselors();
 
 
 function renderStudentCounselors(){
-
-const body=document.getElementById("studentCounselorsBody");
-const count=document.getElementById("studentCounselorsCount");
-
-if(count) count.textContent=studentCounselors.length;
-if(!body) return;
-
-body.innerHTML="";
-
-if(!studentCounselors.length){
-
-body.innerHTML="<tr><td colspan='4'>لا توجد حسابات موجهين طلابيين</td></tr>";
-return;
-
+ const body=document.getElementById("studentCounselorsBody");
+ const count=document.getElementById("studentCounselorsCount");
+ if(count)count.textContent=studentCounselors.length;
+ if(!body)return;
+ if(!studentCounselors.length){body.innerHTML='<div class="account-empty">لا توجد حسابات موجهين طلابيين حتى الآن.</div>';return}
+ body.innerHTML=studentCounselors.map(item=>{
+  const initials=Array.from(String(item.name||"موجه")).slice(0,2).join("");
+  return `<article class="account-card">
+   <div class="account-card-head">
+    <div class="account-avatar">${escapeHtml(initials)}</div>
+    <div class="account-card-main">
+     <strong class="account-card-name">${escapeHtml(item.name)}</strong>
+     <div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div>
+    </div>
+    <span class="account-role-badge">موجه طلابي</span>
+   </div>
+   <div class="account-card-chips">
+    <span class="account-chip account-chip-green">التوجيه والإرشاد الطلابي</span>
+    <span class="account-chip account-chip-muted">حساب مخصص</span>
+   </div>
+   <div class="account-card-actions">
+    <button class="btn-warning" onclick='editStudentCounselor(${JSON.stringify(item.username)})'>✏️ تعديل</button>
+    <button class="btn-danger" onclick='deleteStudentCounselor(${JSON.stringify(item.username)})'>🗑️ حذف</button>
+   </div>
+  </article>`;
+ }).join("");
 }
-
-studentCounselors.forEach((item,index)=>{
-
-const tr=document.createElement("tr");
-
-tr.innerHTML=`
-<td class="admin-row-number">${index+1}</td>
-<td>${escapeHtml(item.name)}</td>
-<td>${escapeHtml(item.username)}</td>
-<td>
-<button class="small-btn btn-warning" onclick='editStudentCounselor(${JSON.stringify(item.username)})'>تعديل</button>
-<button class="small-btn btn-danger" onclick='deleteStudentCounselor(${JSON.stringify(item.username)})'>حذف</button>
-</td>
-`;
-
-body.appendChild(tr);
-
-});
-
-}
-
 
 async function saveStudentCounselor(){
 
@@ -10338,42 +10336,34 @@ renderActivityLeaders();
 
 
 function renderActivityLeaders(){
-
-const body=document.getElementById("activityLeadersBody");
-const count=document.getElementById("activityLeadersCount");
-
-if(count) count.textContent=activityLeaders.length;
-if(!body) return;
-
-body.innerHTML="";
-
-if(!activityLeaders.length){
-
-body.innerHTML="<tr><td colspan='4'>لا توجد حسابات رواد نشاط</td></tr>";
-return;
-
+ const body=document.getElementById("activityLeadersBody");
+ const count=document.getElementById("activityLeadersCount");
+ if(count)count.textContent=activityLeaders.length;
+ if(!body)return;
+ if(!activityLeaders.length){body.innerHTML='<div class="account-empty">لا توجد حسابات رواد نشاط حتى الآن.</div>';return}
+ body.innerHTML=activityLeaders.map(item=>{
+  const initials=Array.from(String(item.name||"رائد")).slice(0,2).join("");
+  return `<article class="account-card">
+   <div class="account-card-head">
+    <div class="account-avatar">${escapeHtml(initials)}</div>
+    <div class="account-card-main">
+     <strong class="account-card-name">${escapeHtml(item.name)}</strong>
+     <div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div>
+    </div>
+    <span class="account-role-badge">رائد نشاط</span>
+   </div>
+   <div class="account-card-chips">
+    <span class="account-chip account-chip-green">توثيق الأنشطة</span>
+    <span class="account-chip account-chip-blue">رفع التقارير</span>
+    <span class="account-chip account-chip-muted">بدون صلاحيات رصد الدرجات</span>
+   </div>
+   <div class="account-card-actions">
+    <button class="btn-warning" onclick='editActivityLeader(${JSON.stringify(item.username)})'>✏️ تعديل</button>
+    <button class="btn-danger" onclick='deleteActivityLeader(${JSON.stringify(item.username)})'>🗑️ حذف</button>
+   </div>
+  </article>`;
+ }).join("");
 }
-
-activityLeaders.forEach((item,index)=>{
-
-const tr=document.createElement("tr");
-
-tr.innerHTML=`
-<td class="admin-row-number">${index+1}</td>
-<td>${escapeHtml(item.name)}</td>
-<td>${escapeHtml(item.username)}</td>
-<td>
-<button class="small-btn btn-warning" onclick='editActivityLeader(${JSON.stringify(item.username)})'>تعديل</button>
-<button class="small-btn btn-danger" onclick='deleteActivityLeader(${JSON.stringify(item.username)})'>حذف</button>
-</td>
-`;
-
-body.appendChild(tr);
-
-});
-
-}
-
 
 async function saveActivityLeader(){
 
