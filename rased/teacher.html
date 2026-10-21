@@ -1670,6 +1670,7 @@ body{
 <div class="message-tools">
 <input id="messageLogSearch" class="message-search" placeholder="بحث باسم الطالب أو نص الرسالة" oninput="renderMessageLogs()">
 <button class="action-btn print-btn" onclick="printMessageLog()">🖨️ طباعة سجل الرسائل</button>
+<button class="action-btn messages-btn" id="refreshMessageStatuses" onclick="refreshWhatsDirectStatuses()">↻ تحديث حالات الإرسال</button>
 <button class="action-btn danger-btn" onclick="deleteAllMyMessageLogs()">🗑️ حذف جميع رسائلي</button>
 </div>
 <div class="table-wrap">
@@ -4707,12 +4708,70 @@ if(!ts) return "الآن";
 try{const d=ts.toDate?ts.toDate():new Date(ts);return new Intl.DateTimeFormat("ar-SA",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d);}catch{return "-";}
 }
 
+
+async function refreshWhatsDirectStatuses(showResult=true){
+ const btn=el("refreshMessageStatuses");
+ if(btn)btn.disabled=true;
+ try{
+  const settings=await db.collection("systemSettings").doc("whatsDirect").get();
+  const key=String(settings.exists?settings.data().apiKey||"":"").trim();
+  if(!key)throw new Error("مفتاح API غير محفوظ في إعدادات راصد.");
+  const targets=(messageLogs||[]).filter(x=>x.provider==="whats-direct"&&x.providerMessageId&&["pending","sending","queued","processing",""].includes(String(x.providerStatus||"").toLowerCase()));
+  if(!targets.length){if(showResult)alert("لا توجد رسائل معلقة لها معرّف من أداة الواتساب لتحديث حالتها.");return;}
+  const wanted=new Set(targets.map(x=>String(x.providerMessageId)));
+  const found=new Map();
+  let page=1;
+  for(;page<=10;page++){
+   const response=await fetch("https://wa.smart-whats.com/api/messages?page="+page,{headers:{"X-API-Key":key}});
+   const payload=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(payload.message||payload.error||("HTTP "+response.status));
+   function findItems(value,depth=0){
+    if(Array.isArray(value))return value;
+    if(!value||typeof value!=="object"||depth>4)return [];
+    for(const k of ["messages","items","results","rows","data"]){
+     if(Array.isArray(value[k]))return value[k];
+     if(value[k]&&typeof value[k]==="object"){const nested=findItems(value[k],depth+1);if(nested.length)return nested;}
+    }
+    return [];
+   }
+   const items=findItems(payload);
+   for(const item of items){
+    const id=String(item.id||item._id||item.messageId||item.message_id||item.uuid||"");
+    const raw=String(item.status||item.state||item.deliveryStatus||item.delivery_status||"").toLowerCase();
+    if(!id||!wanted.has(id)||!raw)continue;
+    let status="";
+    if(["sent","delivered","success","successful","completed","complete","done"].includes(raw))status="sent";
+    else if(["failed","failure","error","rejected","undelivered"].includes(raw))status="failed";
+    else if(["sending","processing","in_progress","in-progress"].includes(raw))status="sending";
+    else if(["pending","queued","queue","waiting"].includes(raw))status="pending";
+    if(status)found.set(id,{status,raw});
+   }
+   if([...wanted].every(id=>found.has(id)))break;
+   const pagination=payload.pagination||payload.meta?.pagination||payload.meta||{};
+   const totalPages=Number(pagination.totalPages||pagination.total_pages||pagination.pages||pagination.lastPage||pagination.last_page||0);
+   if(totalPages&&page>=totalPages)break;
+   if(!items.length||items.length<10)break;
+  }
+  let updated=0;
+  for(const log of targets){
+   const match=found.get(String(log.providerMessageId));
+   if(!match||match.status===String(log.providerStatus||"").toLowerCase())continue;
+   await db.collection("messageLogs").doc(log.id).update({providerStatus:match.status,providerStatusRaw:match.raw,providerStatusSyncedAt:firebase.firestore.FieldValue.serverTimestamp()});
+   log.providerStatus=match.status;log.providerStatusRaw=match.raw;updated++;
+  }
+  renderMessageLogs();
+  if(showResult)alert(updated?"تم تحديث حالة "+updated+" رسالة من أداة الواتساب.":"لم ترجع أداة الواتساب حالة أحدث للرسائل المحددة؛ لم نغيّر أي حالة بالتخمين.");
+ }catch(error){console.error("WHATS DIRECT STATUS SYNC ERROR",error);if(showResult)alert("تعذر تحديث حالات الرسائل من أداة الواتساب:\\n"+error.message);}
+ finally{if(btn)btn.disabled=false;}
+}
+
 async function loadMessageLogs(){
 try{
 const snap=await db.collection("messageLogs").where("teacherEmail","==",currentUsername).get();
 messageLogs=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
 messageLogs.sort((a,b)=>(b.sentAt?.toMillis?.()||0)-(a.sentAt?.toMillis?.()||0));
 renderMessageLogs();
+refreshWhatsDirectStatuses(false);
 }catch(error){console.error(error);el("messageLogsBody").innerHTML='<tr><td colspan="9">تعذر تحميل سجل الرسائل.</td></tr>';}
 }
 
