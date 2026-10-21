@@ -2494,6 +2494,18 @@ onclick="clearCurrentTeacherAssignments()">
 يمكن البحث والتصفية ثم طباعة النتائج الظاهرة فقط.
 </div>
 
+<div style="border:1px solid #cbdff0;background:#f5faff;border-radius:12px;padding:16px;margin:14px 0">
+ <h3 style="margin:0 0 8px;color:#174f7c">🔗 ربط الواتس مباشر (API)</h3>
+ <p style="margin:0 0 12px;color:#526477">احفظ مفتاح API مرة واحدة، ثم تستخدمه صفحات المعلم والمشرف والمخالفات وإعادة الاختبار لإرسال الرسائل مباشرة وتسجيل حالة الطلب.</p>
+ <label for="whatsDirectApiKey">مفتاح API</label>
+ <input id="whatsDirectApiKey" type="password" autocomplete="new-password" placeholder="الصق مفتاح API الذي يبدأ بـ wsk_ هنا" style="width:100%;margin:6px 0 10px;padding:11px;border:1px solid #cbd5e1;border-radius:8px">
+ <div class="actions">
+  <button class="btn-primary" type="button" onclick="saveWhatsDirectConfig()">💾 حفظ مفتاح API</button>
+  <button class="btn-light" type="button" onclick="testWhatsDirectConfig()">🧪 اختبار الاتصال</button>
+ </div>
+ <div id="whatsDirectConfigStatus" role="status" style="margin-top:10px;font-weight:bold">لم يتم التحقق من إعداد الواتس مباشر بعد.</div>
+</div>
+
 <div class="message-filters">
 
 <div>
