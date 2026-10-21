@@ -835,6 +835,16 @@ border-bottom:1px dashed #e5e7eb
 .supervisor-action-cyan{background:#e7f6ff;color:#075985;border-color:#b6e3fa}
 .supervisor-action-edit{background:#174cdb;color:white;align-items:center;text-align:center}
 .supervisor-action-delete{background:#fff0f0;color:#b91c1c;border-color:#fecaca;align-items:center;text-align:center}
+
+.supervisor-gold-profile{display:flex;align-items:flex-start;gap:10px;padding:16px;border-radius:14px;background:linear-gradient(125deg,#fff2c5,#f7d980 60%,#e8b64b);border:1px solid #d5aa4e;box-shadow:inset 0 1px 0 #fff8df;color:#5e410e}
+.supervisor-gold-profile .account-card-name{color:#533708;font-size:17px}
+.supervisor-gold-profile .account-card-meta{color:#765820}
+.supervisor-gold-profile .account-role-badge{background:#fff9e7;color:#7a5010;border:1px solid #e7c875}
+.supervisor-action-copy{grid-column:1/-1;background:#f0eaff;color:#5630a0;border-color:#d9c9fc;align-items:center;text-align:center;min-height:48px}
+.supervisor-copy-overlay[hidden]{display:none!important}
+.supervisor-copy-overlay{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.supervisor-copy-dialog{width:min(100%,470px);background:#fff;border-radius:18px;padding:22px;box-shadow:0 18px 55px rgba(0,0,0,.25);color:#172554}
+.supervisor-copy-dialog select{width:100%;margin:10px 0}.supervisor-copy-note{color:#64748b;font-size:13px}
 </style>
 
 <style id="adminCardDashboardTheme">
@@ -2752,6 +2762,8 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="account-list-toolbar"><label class="account-search-label" for="supervisorsBodySearch">🔎 بحث في المشرفين</label><input id="supervisorsBodySearch" class="account-search-input" type="search" placeholder="ابحث بالاسم أو اسم المستخدم" oninput="filterAdminAccountCards('supervisorsBody',this.value)" autocomplete="off"></div>
 <div id="supervisorsBody" class="account-cards-grid"></div>
+<div id="supervisorCopyModal" class="supervisor-copy-overlay" hidden><div class="supervisor-copy-dialog" role="dialog" aria-modal="true" aria-labelledby="supervisorCopyTitle"><h3 id="supervisorCopyTitle">📋 نسخ صلاحيات مشرف</h3><p>نسخ الصلاحيات إلى: <strong id="supervisorCopyTarget"></strong></p><label for="supervisorCopySource">نسخ الصلاحيات من</label><select id="supervisorCopySource"></select><p class="supervisor-copy-note">سيتم نسخ الصلاحيات فقط، دون نسخ المعلمين المسندين أو تغيير بيانات الدخول.</p><div class="actions"><button type="button" id="supervisorCopyConfirm" class="btn-primary" onclick="confirmSupervisorPermissionCopy()">💾 تأكيد النسخ</button><button type="button" class="btn-light" onclick="closeSupervisorPermissionCopy()">إلغاء</button></div></div></div>
+
 
 </div>
 </div>
@@ -10028,19 +10040,20 @@ function renderSupervisors(){
  if(count)count.textContent=supervisors.length;if(!body)return;
  if(!supervisors.length){body.innerHTML='<div class="account-empty">لا توجد حسابات إشراف حتى الآن.</div>';return}
  body.innerHTML=supervisors.map((item,index)=>{
-  const initials=Array.from(String(item.name||"مشرف")).slice(0,2).join(""),normalized=normalizeSupervisorPermissions(item.permissions);
+  const normalized=normalizeSupervisorPermissions(item.permissions);
   const perms=SUPERVISOR_PERMISSION_DEFS.filter(([key])=>normalized[key]).map(([, ,label])=>label),isScoped=String(item.supervisorType||"").toLowerCase()==="supervisor";
   const assignedEmails=isScoped?(item.assignedTeacherEmails||[]):teachers.map(t=>normalizeTeacherEmail(t.email||t.username));
   const assignedNames=assignedEmails.map(email=>{const t=teachers.find(x=>normalizeTeacherEmail(x.email||x.username)===normalizeTeacherEmail(email));return t?(t.name||t.email):email}).filter(Boolean);
   const teacherPanelItems=isScoped?assignedNames:["نطاق الحساب يشمل جميع المعلمين ("+teachers.length+")"];
   const teacherPanelId="supervisor-teachers-"+index,permissionPanelId="supervisor-permissions-"+index;
   return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username,item.phone||"",supervisorTypeLabel(item.supervisorType)||"","renderSupervisors"].filter(Boolean).join(" "))}">
-   <div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span><span>📞 ${escapeHtml(item.phone||"غير مسجل")}</span></div></div><span class="account-role-badge">${escapeHtml(supervisorTypeLabel(item.supervisorType))}</span></div>
+   <div class="supervisor-gold-profile"><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span><span>📞 ${escapeHtml(item.phone||"غير مسجل")}</span></div></div><span class="account-role-badge">${escapeHtml(supervisorTypeLabel(item.supervisorType))}</span></div>
    <div class="supervisor-action-grid">
     <button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"permissions")'><span>🔐 الصلاحيات</span><strong>${perms.length} مفعّلة</strong><small>☑ اختيار وتعديل</small></button>
     <button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"teachers")'><span>👨‍🏫 المعلمون المسندون</span><strong>${isScoped?assignedNames.length:teachers.length} معلم</strong><small>☑ عرض وتحديد</small></button>
     <button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openSupervisorEditor(${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button>
     <button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteSupervisor(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button>
+    <button type="button" class="supervisor-action-tile supervisor-action-copy" onclick='openSupervisorPermissionCopy(${JSON.stringify(item.username)})'>📋 نسخ الصلاحيات</button>
    </div>
 
   </article>`;
@@ -10048,6 +10061,33 @@ function renderSupervisors(){
  restoreAdminAccountFilter("supervisorsBody");
 }
 
+async function openSupervisorPermissionCopy(targetUsername){
+ const target=supervisors.find(x=>x.username===targetUsername);if(!target)return;
+ const sources=supervisors.filter(x=>x.username!==targetUsername);
+ if(!sources.length){alert("لا يوجد مشرف آخر لنسخ صلاحياته.");return}
+ const modal=document.getElementById("supervisorCopyModal");if(!modal)return;
+ document.getElementById("supervisorCopyTarget").textContent=target.name;
+ const select=document.getElementById("supervisorCopySource");
+ select.innerHTML='<option value="">اختر المشرف المصدر</option>'+sources.map(x=>'<option value="'+escapeHtml(x.username)+'">'+escapeHtml(x.name+" — "+supervisorTypeLabel(x.supervisorType))+'</option>').join("");
+ modal.dataset.target=targetUsername;modal.hidden=false;
+}
+function closeSupervisorPermissionCopy(){document.getElementById("supervisorCopyModal").hidden=true}
+async function confirmSupervisorPermissionCopy(){
+ const modal=document.getElementById("supervisorCopyModal"),targetUsername=modal.dataset.target,sourceUsername=document.getElementById("supervisorCopySource").value;
+ const source=supervisors.find(x=>x.username===sourceUsername),target=supervisors.find(x=>x.username===targetUsername);
+ if(!source||!target||sourceUsername===targetUsername){alert("اختر مشرفًا صحيحًا.");return}
+ if(!confirm("نسخ صلاحيات "+source.name+" إلى "+target.name+"؟ سيتم استبدال صلاحيات الوجهة فقط دون تغيير المعلمين أو بيانات الحساب."))return;
+ const btn=document.getElementById("supervisorCopyConfirm");btn.disabled=true;
+ try{
+  const ref=db.collection("users").doc(targetUsername),snap=await ref.get();
+  if(!snap.exists||snap.data().role!=="supervisor")throw Error("حساب الوجهة غير موجود.");
+  const previous=snap.data().permissions||{};
+  const permissions={...normalizeSupervisorPermissions(source.permissions)};
+  await ref.update({permissions,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await writeAuditLog("supervisor_permissions_copy","supervisor",targetUsername,target.name,{permissions:previous},{permissions,sourceSupervisor:sourceUsername});
+  closeSupervisorPermissionCopy();await loadSupervisors();alert("تم نسخ الصلاحيات بنجاح دون تغيير الإسنادات.");
+ }catch(error){console.error(error);alert("تعذر نسخ الصلاحيات: "+error.message)}finally{btn.disabled=false}
+}
 function readSupervisorPermissions(){
 const permissions={};
 SUPERVISOR_PERMISSION_DEFS.forEach(([key,id])=>{
