@@ -2736,6 +2736,7 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="admin-list-count">عدد حسابات الإشراف: <b id="supervisorsCount">0</b></div>
 
+<div class="account-list-toolbar"><label class="account-search-label" for="supervisorsBodySearch">🔎 بحث في المشرفين</label><input id="supervisorsBodySearch" class="account-search-input" type="search" placeholder="ابحث بالاسم أو اسم المستخدم" oninput="filterAdminAccountCards('supervisorsBody',this.value)" autocomplete="off"></div>
 <div id="supervisorsBody" class="account-cards-grid"></div>
 
 </div>
@@ -2788,6 +2789,7 @@ onclick="clearCurrentTeacherAssignments()">
 عدد حسابات الموجه الطلابي: <b id="studentCounselorsCount">0</b>
 </div>
 
+<div class="account-list-toolbar"><label class="account-search-label" for="studentCounselorsBodySearch">🔎 بحث في الموجهين الطلابيين</label><input id="studentCounselorsBodySearch" class="account-search-input" type="search" placeholder="ابحث بالاسم أو اسم المستخدم" oninput="filterAdminAccountCards('studentCounselorsBody',this.value)" autocomplete="off"></div>
 <div id="studentCounselorsBody" class="account-cards-grid"></div>
 
 </div>
@@ -2843,6 +2845,7 @@ onclick="clearCurrentTeacherAssignments()">
 عدد حسابات رواد النشاط: <b id="activityLeadersCount">0</b>
 </div>
 
+<div class="account-list-toolbar"><label class="account-search-label" for="activityLeadersBodySearch">🔎 بحث في رواد النشاط</label><input id="activityLeadersBodySearch" class="account-search-input" type="search" placeholder="ابحث بالاسم أو اسم المستخدم" oninput="filterAdminAccountCards('activityLeadersBody',this.value)" autocomplete="off"></div>
 <div id="activityLeadersBody" class="account-cards-grid"></div>
 
 </div>
@@ -5545,6 +5548,12 @@ return [];
 }
 
 
+function filterAdminAccountCards(containerId,query){
+ const container=document.getElementById(containerId);if(!container)return;
+ const needle=String(query||"").trim().toLocaleLowerCase();
+ container.querySelectorAll(".account-card").forEach(card=>{const haystack=String(card.dataset.accountSearch||"").toLocaleLowerCase();card.hidden=!!needle&&!haystack.includes(needle)});
+}
+function restoreAdminAccountFilter(containerId){const input=document.getElementById(containerId+"Search");if(input)filterAdminAccountCards(containerId,input.value)}
 function toggleAccountPanel(panelId,button){
  const panel=document.getElementById(panelId);if(!panel)return;
  const opening=panel.hidden;panel.hidden=!opening;
@@ -9633,6 +9642,16 @@ font-size:6.5pt;
 .account-card .account-detail-tiles+.account-detail-panel{margin-top:-2px}
 @media(max-width:420px){.account-detail-tiles{grid-template-columns:minmax(0,1fr)}}
 
+
+/* Admin account directory — presentation only; persistence unchanged */
+.account-list-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:18px 0 4px;padding:12px 14px;background:#f4f7fd;border:1px solid #e0e7f1;border-radius:14px}
+.account-search-label{font-weight:800;color:#334155;font-size:13px}
+.account-search-input{width:min(100%,390px);min-width:200px;border:1px solid #cbd5e1!important;border-radius:11px!important;padding:11px 14px!important;background:white!important}
+.account-card[hidden]{display:none!important}
+.account-card{transition:box-shadow .16s,transform .16s}
+.account-card:hover{box-shadow:0 6px 22px rgba(20,45,90,.12);transform:translateY(-1px)}
+.account-card-actions{margin-top:auto}
+@media(max-width:650px){.account-list-toolbar{align-items:stretch}.account-search-input{width:100%;min-width:0}}
 </style>
 
 </head>
@@ -9993,13 +10012,14 @@ function renderSupervisors(){
   const assignedNames=assignedEmails.map(email=>{const t=teachers.find(x=>normalizeTeacherEmail(x.email||x.username)===normalizeTeacherEmail(email));return t?(t.name||t.email):email}).filter(Boolean);
   const teacherPanelItems=isScoped?assignedNames:["نطاق الحساب يشمل جميع المعلمين ("+teachers.length+")"];
   const teacherPanelId="supervisor-teachers-"+index,permissionPanelId="supervisor-permissions-"+index;
-  return `<article class="account-card">
+  return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username,item.phone||\"\",supervisorTypeLabel?.(item.supervisorType)||\"\",\"renderSupervisors\"].filter(Boolean).join(\" \"))}">
    <div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span><span>📞 ${escapeHtml(item.phone||"غير مسجل")}</span></div></div><span class="account-role-badge">${escapeHtml(supervisorTypeLabel(item.supervisorType))}</span></div>
    <div class="account-detail-tiles">${accountDetailTile(teacherPanelId,"المعلمون",isScoped?assignedNames.length:teachers.length,isScoped?"المعلمون المسندون لهذا المشرف":"نطاق الإشراف")}${accountDetailTile(permissionPanelId,"الصلاحيات",perms.length,"عرض الصلاحيات المفعّلة")}</div>
    ${accountDetailPanel(teacherPanelId,"المعلمون المسندون",teacherPanelItems,isScoped?"لم يتم إسناد معلمين لهذا المشرف.":"لا يوجد معلمون مسجلون حاليًا.")}${accountDetailPanel(permissionPanelId,"الصلاحيات المفعّلة",perms,"لا توجد صلاحيات مفعّلة لهذا الحساب.")}
    <div class="account-card-actions"><button class="btn-warning" onclick='editSupervisor(${JSON.stringify(item.username)})'>✏️ تعديل</button><button class="btn-danger" onclick='deleteSupervisor(${JSON.stringify(item.username)})'>🗑️ حذف</button></div>
   </article>`;
  }).join("");
+ restoreAdminAccountFilter("supervisorsBody");
 }
 
 function readSupervisorPermissions(){
@@ -10170,11 +10190,12 @@ function renderStudentCounselors(){
  if(!studentCounselors.length){body.innerHTML='<div class="account-empty">لا توجد حسابات موجهين طلابيين حتى الآن.</div>';return}
  body.innerHTML=studentCounselors.map((item,index)=>{
   const initials=Array.from(String(item.name||"موجه")).slice(0,2).join(""),panelId="counselor-account-"+index;
-  return `<article class="account-card"><div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">موجه طلابي</span></div>
+  return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username,item.phone||\"\",supervisorTypeLabel?.(item.supervisorType)||\"\",\"renderStudentCounselors\"].filter(Boolean).join(\" \"))}"><div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">موجه طلابي</span></div>
    <div class="account-detail-tiles">${accountDetailTile(panelId,"بيانات الحساب","عرض","اسم المستخدم ونوع الحساب")}</div>
    ${accountDetailPanel(panelId,"بيانات الحساب",["الاسم: "+item.name,"اسم المستخدم: "+item.username,"نوع الحساب: موجه طلابي"])}
    <div class="account-card-actions"><button class="btn-warning" onclick='editStudentCounselor(${JSON.stringify(item.username)})'>✏️ تعديل</button><button class="btn-danger" onclick='deleteStudentCounselor(${JSON.stringify(item.username)})'>🗑️ حذف</button></div></article>`;
  }).join("");
+ restoreAdminAccountFilter("studentCounselorsBody");
 }
 
 async function saveStudentCounselor(){
@@ -10324,11 +10345,12 @@ function renderActivityLeaders(){
  if(!activityLeaders.length){body.innerHTML='<div class="account-empty">لا توجد حسابات رواد نشاط حتى الآن.</div>';return}
  body.innerHTML=activityLeaders.map((item,index)=>{
   const initials=Array.from(String(item.name||"رائد")).slice(0,2).join(""),panelId="activity-account-"+index;
-  return `<article class="account-card"><div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">رائد نشاط</span></div>
+  return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username,item.phone||\"\",supervisorTypeLabel?.(item.supervisorType)||\"\",\"renderActivityLeaders\"].filter(Boolean).join(\" \"))}"><div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">رائد نشاط</span></div>
    <div class="account-detail-tiles">${accountDetailTile(panelId,"بيانات الحساب","عرض","اسم المستخدم ونوع الحساب")}</div>
    ${accountDetailPanel(panelId,"بيانات الحساب",["الاسم: "+item.name,"اسم المستخدم: "+item.username,"نوع الحساب: رائد نشاط"])}
    <div class="account-card-actions"><button class="btn-warning" onclick='editActivityLeader(${JSON.stringify(item.username)})'>✏️ تعديل</button><button class="btn-danger" onclick='deleteActivityLeader(${JSON.stringify(item.username)})'>🗑️ حذف</button></div></article>`;
  }).join("");
+ restoreAdminAccountFilter("activityLeadersBody");
 }
 
 async function saveActivityLeader(){
