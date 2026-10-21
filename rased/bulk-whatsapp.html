@@ -78,7 +78,7 @@ function rebuildFilters(){
  const subjectIds=[...new Set(subjScopes.map(x=>x.subjectId))];
  opts("subject",subjects.filter(x=>subjectIds.includes(x.id)).map(x=>({value:x.id,label:x.name||x.id})),"كل المواد / بدون تحديد");
  $("subject").value=subjectIds.includes(subVal)?subVal:"";
- const classTests=tests.filter(x=>(!$("grade").value||String(x.grade||"")===$("grade").value)&&(!$("section").value||String(x.section||"")===$("section").value)&&(!$("subject").value||String(x.subjectId||"")===$("subject").value));
+ const classTests=$("grade").value&&$("section").value?tests.filter(x=>(!$("subject").value||String(x.subjectId||"")===$("subject").value)&&Array.isArray(x.classes)&&x.classes.some(c=>String(c.grade)=== $("grade").value&&String(c.section)===$("section").value)):[];
  opts("test",classTests.map(x=>({value:x.id,label:(x.name||x.title||"اختبار")+" — "+(x.subjectName||subjects.find(s=>s.id===x.subjectId)?.name||"")})),"بدون اختبار");
  updateStudents();
 }
