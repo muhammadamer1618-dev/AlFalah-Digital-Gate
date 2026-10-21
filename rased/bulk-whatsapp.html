@@ -121,7 +121,7 @@ async function init(){
    $("teacherField").style.display="none";
   }
   const [ss,sub,te]=await Promise.all([db.collection("students").get(),db.collection("subjects").get(),db.collection("tests").get()]);
-  students=ss.docs.map(d=>({...d.data(),code:String(d.data().code||d.id)});subjects=sub.docs.map(d=>({id:d.id,...d.data()}));tests=te.docs.map(d=>({id:d.id,...d.data()}));
+  students=ss.docs.map(d=>({...d.data(),code:String(d.data().code||d.id)}));subjects=sub.docs.map(d=>({id:d.id,...d.data()}));tests=te.docs.map(d=>({id:d.id,...d.data()}));
   await loadConfig();rebuildFilters();setStatus("جاهز للإرسال. اختر الصف والفصل، وحدد المستلمين، ثم اختر نوع الرسالة.","ok");
  }catch(e){setStatus("تعذر فتح الرسائل الجماعية: "+e.message,"error");$("send").disabled=true;}
 }
