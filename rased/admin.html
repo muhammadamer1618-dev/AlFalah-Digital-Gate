@@ -824,6 +824,17 @@ border-bottom:1px dashed #e5e7eb
 .supervisor-teacher-count{font-weight:bold;color:#174f7c}
 
 
+
+#supervisorEditor[hidden]{display:none!important}
+#supervisorEditor{border:1px solid #dbe5f0;border-radius:15px;padding:16px;background:#f8fafc;margin:14px 0 20px}
+.supervisor-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:4px}
+.supervisor-action-tile{border:1px solid transparent;border-radius:13px;min-height:65px;padding:11px;text-align:right;cursor:pointer;display:flex;flex-direction:column;gap:4px;justify-content:center;font:inherit;font-weight:800;transition:transform .15s,box-shadow .15s}
+.supervisor-action-tile:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(15,23,42,.12)}
+.supervisor-action-tile strong{font-size:16px}.supervisor-action-tile small{font-size:11px;font-weight:500}
+.supervisor-action-blue{background:#e8efff;color:#1746c8;border-color:#c3d4ff}
+.supervisor-action-cyan{background:#e7f6ff;color:#075985;border-color:#b6e3fa}
+.supervisor-action-edit{background:#174cdb;color:white;align-items:center;text-align:center}
+.supervisor-action-delete{background:#fff0f0;color:#b91c1c;border-color:#fecaca;align-items:center;text-align:center}
 </style>
 
 <style id="adminCardDashboardTheme">
@@ -2599,6 +2610,8 @@ onclick="clearCurrentTeacherAssignments()">
 <div class="box" id="supervisorsSection">
 <div class="box-title">🛡️ حسابات الإشراف والصلاحيات</div>
 <div class="box-body">
+<div class="actions"><button type="button" class="btn-primary" onclick="openSupervisorEditor()">➕ إضافة مشرف</button></div>
+<div id="supervisorEditor" hidden>
 
 <input type="hidden" id="supervisorOriginalUsername">
 
@@ -2734,6 +2747,7 @@ onclick="clearCurrentTeacherAssignments()">
 كل مربع محدد يعني أن القسم سيظهر لهذا الحساب في لوحة الإشراف.
 </div>
 
+</div>
 <div class="admin-list-count">عدد حسابات الإشراف: <b id="supervisorsCount">0</b></div>
 
 <div class="account-list-toolbar"><label class="account-search-label" for="supervisorsBodySearch">🔎 بحث في المشرفين</label><input id="supervisorsBodySearch" class="account-search-input" type="search" placeholder="ابحث بالاسم أو اسم المستخدم" oninput="filterAdminAccountCards('supervisorsBody',this.value)" autocomplete="off"></div>
@@ -10001,6 +10015,14 @@ SUPERVISOR_PERMISSION_DEFS.forEach(([key,,label])=>{if(perms[key])labels.push(la
 return labels.length?labels.join(" • "):"بدون صلاحيات";
 }
 
+function openSupervisorEditor(username,section){
+ const editor=document.getElementById("supervisorEditor");if(!editor)return;
+ editor.hidden=false;
+ if(username)editSupervisor(username);else{clearSupervisorForm();scrollToSection("supervisorsSection")}
+ const target=section==="permissions"?document.querySelector("#supervisorEditor .supervisor-permissions-panel"):section==="teachers"?document.getElementById("supervisorTeacherScope"):null;
+ if(target&&target.style.display!=="none")target.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function closeSupervisorEditor(){const editor=document.getElementById("supervisorEditor");if(editor)editor.hidden=true}
 function renderSupervisors(){
  const body=document.getElementById("supervisorsBody"),count=document.getElementById("supervisorsCount");
  if(count)count.textContent=supervisors.length;if(!body)return;
@@ -10014,9 +10036,13 @@ function renderSupervisors(){
   const teacherPanelId="supervisor-teachers-"+index,permissionPanelId="supervisor-permissions-"+index;
   return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username,item.phone||"",supervisorTypeLabel(item.supervisorType)||"","renderSupervisors"].filter(Boolean).join(" "))}">
    <div class="account-card-head"><div class="account-avatar">${escapeHtml(initials)}</div><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span><span>📞 ${escapeHtml(item.phone||"غير مسجل")}</span></div></div><span class="account-role-badge">${escapeHtml(supervisorTypeLabel(item.supervisorType))}</span></div>
-   <div class="account-detail-tiles">${accountDetailTile(teacherPanelId,"المعلمون",isScoped?assignedNames.length:teachers.length,isScoped?"المعلمون المسندون لهذا المشرف":"نطاق الإشراف")}${accountDetailTile(permissionPanelId,"الصلاحيات",perms.length,"عرض الصلاحيات المفعّلة")}</div>
-   ${accountDetailPanel(teacherPanelId,"المعلمون المسندون",teacherPanelItems,isScoped?"لم يتم إسناد معلمين لهذا المشرف.":"لا يوجد معلمون مسجلون حاليًا.")}${accountDetailPanel(permissionPanelId,"الصلاحيات المفعّلة",perms,"لا توجد صلاحيات مفعّلة لهذا الحساب.")}
-   <div class="account-card-actions"><button class="btn-warning" onclick='editSupervisor(${JSON.stringify(item.username)})'>✏️ تعديل</button><button class="btn-danger" onclick='deleteSupervisor(${JSON.stringify(item.username)})'>🗑️ حذف</button></div>
+   <div class="supervisor-action-grid">
+    <button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"permissions")'><span>🔐 الصلاحيات</span><strong>${perms.length} مفعّلة</strong><small>☑ اختيار وتعديل</small></button>
+    <button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"teachers")'><span>👨‍🏫 المعلمون المسندون</span><strong>${isScoped?assignedNames.length:teachers.length} معلم</strong><small>☑ عرض وتحديد</small></button>
+    <button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openSupervisorEditor(${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button>
+    <button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteSupervisor(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button>
+   </div>
+
   </article>`;
  }).join("");
  restoreAdminAccountFilter("supervisorsBody");
@@ -10095,10 +10121,12 @@ await writeAuditLog(
 
 alert("تم حفظ حساب "+supervisorTypeLabel(supervisorType)+" وصلاحياته ✅");
 clearSupervisorForm();
+closeSupervisorEditor();
 await loadSupervisors();
 }
 
 function editSupervisor(username){
+ const editor=document.getElementById("supervisorEditor");if(editor)editor.hidden=false;
 const s=supervisors.find(x=>x.username===username);if(!s)return;
 document.getElementById("supervisorOriginalUsername").value=s.username;
 document.getElementById("supervisorName").value=s.name||"";
