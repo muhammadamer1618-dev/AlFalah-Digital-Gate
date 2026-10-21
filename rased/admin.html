@@ -1056,6 +1056,27 @@ body{color:#142b51}
 .stats .stat-number,.stats strong{color:#0874DF!important}
 .supervisor-action-delete{color:#D82332!important}
 </style>
+<style id="rasedDashboardSelectedWhiteFix">
+/* Keep selected dashboard tiles white, with legible vivid-blue text */
+.admin-dashboard-grid .admin-dashboard-tool.active,
+.admin-dashboard-grid .admin-dashboard-tool.active:hover,
+.admin-dashboard-grid .admin-dashboard-tool[aria-pressed="true"],
+.admin-dashboard-grid .admin-dashboard-tool[aria-current="true"]{
+ background:#fff!important;
+ color:#0866D8!important;
+ border:1px solid #cdddf4!important;
+ border-right:4px solid #1680F0!important;
+ box-shadow:0 2px 8px rgba(25,90,170,.10)!important;
+ filter:none!important;
+}
+.admin-dashboard-grid .admin-dashboard-tool.active strong,
+.admin-dashboard-grid .admin-dashboard-tool.active:hover strong,
+.admin-dashboard-grid .admin-dashboard-tool[aria-pressed="true"] strong,
+.admin-dashboard-grid .admin-dashboard-tool[aria-current="true"] strong{color:#0866D8!important}
+.admin-dashboard-grid .admin-dashboard-tool.active small,
+.admin-dashboard-grid .admin-dashboard-tool[aria-pressed="true"] small,
+.admin-dashboard-grid .admin-dashboard-tool[aria-current="true"] small{color:#63718a!important}
+</style>
 </head>
 
 
