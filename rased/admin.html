@@ -8971,6 +8971,39 @@ unique.size;
    سجل الرسائل
 ========================================= */
 
+async function loadWhatsDirectConfig(){
+ const status=document.getElementById("whatsDirectConfigStatus");
+ if(!status)return;
+ try{
+  const d=await db.collection("systemSettings").doc("whatsDirect").get();
+  status.textContent=d.exists&&d.data().apiKey?"✅ مفتاح API محفوظ. يمكنك اختبار الاتصال.":"لم يتم حفظ مفتاح API بعد.";
+ }catch(e){status.textContent="تعذر قراءة إعداد الواتس مباشر: "+e.message;}
+}
+async function saveWhatsDirectConfig(){
+ const input=document.getElementById("whatsDirectApiKey"),status=document.getElementById("whatsDirectConfigStatus");
+ const apiKey=String(input?.value||"").trim();
+ if(!apiKey){status.textContent="الصق مفتاح API أولًا.";return;}
+ status.textContent="جارٍ حفظ الإعداد...";
+ try{
+  await db.collection("systemSettings").doc("whatsDirect").set({apiKey,enabled:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  input.value="";
+  status.textContent="✅ تم حفظ مفتاح API. اختبر الاتصال للتأكد من عمله.";
+ }catch(e){status.textContent="تعذر حفظ الإعداد: "+e.message;}
+}
+async function testWhatsDirectConfig(){
+ const status=document.getElementById("whatsDirectConfigStatus");
+ status.textContent="جارٍ اختبار الاتصال...";
+ try{
+  const d=await db.collection("systemSettings").doc("whatsDirect").get();
+  const apiKey=String(d.exists?d.data().apiKey||"":"").trim();
+  if(!apiKey)throw new Error("احفظ مفتاح API أولًا.");
+  const response=await fetch("https://wa.smart-whats.com/api/stats",{headers:{"X-API-Key":apiKey}});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.message||data.error||("HTTP "+response.status));
+  status.textContent="✅ الاتصال ناجح. إجمالي الطلبات: "+(data.total??"—")+"، في الانتظار: "+(data.pending??"—")+"، المرسلة: "+(data.sent??"—")+"، الفاشلة: "+(data.failed??"—")+".";
+ }catch(e){status.textContent="❌ فشل اختبار الاتصال: "+e.message+" (قد تكون المشكلة في المفتاح أو سماح API بطلبات المتصفح).";}
+}
+
 async function loadMessageLogs(){
 
 const body=document.getElementById("messagesBody");
@@ -11532,6 +11565,7 @@ async function saveAdminGradeMatrix(){
 async function savePortfolioParentEnabled(){const msg=document.getElementById("portfolioPublishMessage");try{const enabled=document.getElementById("portfolioParentEnabled").checked;await db.collection("systemSettings").doc("studentPortfolio").set({parentVisible:enabled},{merge:true});msg.textContent="تم حفظ الإعداد";}catch(e){msg.textContent="تعذر الحفظ: "+e.message;}}
 async function loadPortfolioParentEnabled(){try{const d=await db.collection("systemSettings").doc("studentPortfolio").get();document.getElementById("portfolioParentEnabled").checked=d.exists&&d.data().parentVisible===true;}catch(e){document.getElementById("portfolioPublishMessage").textContent="تعذر قراءة الإعداد";}}
 window.addEventListener("load",loadPortfolioParentEnabled);
+window.addEventListener("load",loadWhatsDirectConfig);
 </script>
 </body>
 </html>
