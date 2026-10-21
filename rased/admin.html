@@ -972,7 +972,7 @@ onclick="location.href='change-password.html?return=admin.html'">
      أزرار أعلى الصفحة
 ========================================= -->
 
-<div class="top-actions">
+<div class="top-actions"><button class="btn-gold" onclick="location.href='grade-improvement.html'">📈 تحسين الدرجات</button>
 
 <button
 class="btn-purple"
@@ -2671,6 +2671,7 @@ onclick="clearCurrentTeacherAssignments()">
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permGradesView" checked><span>📊 النتائج والدرجات</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permStudentFollowupView"><span>📌 متابعة الطلاب وملاحظات المعلمين</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permBlankGradeSheet"><span>🗒️ إصدار كشف فارغ مرن</span></label>
+<label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permGradeImprovement"><span>📈 تحسين الدرجات بعد إغلاق الرصد</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permRetestNotices"><span>🔁 إعادة الاختبار ورسائل أولياء الأمور</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permGradeSheetPrint"><span>🖨️ طباعة كشوف درجات الاختبارات المرصودة</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permExamSchedulesView" checked><span>🗓️ جداول الاختبارات</span></label>
@@ -9712,6 +9713,7 @@ const SUPERVISOR_PERMISSION_DEFS=[
 ["gradeSheetPrint","permGradeSheetPrint","طباعة كشوف درجات الاختبارات"],
 ["blankGradeSheet","permBlankGradeSheet","إصدار كشف فارغ مرن"],
 ["retestNotices","permRetestNotices","إعادة الاختبار ورسائل أولياء الأمور"],
+["gradeImprovement","permGradeImprovement","تحسين الدرجات بعد إغلاق الرصد"],
 ["studentFollowupView","permStudentFollowupView","متابعة الطلاب وملاحظات المعلمين"],
 ["examSchedulesView","permExamSchedulesView","جداول الاختبارات"],
 ["messagesView","permMessagesView","سجل الرسائل"],
@@ -9815,7 +9817,7 @@ settingsItem.title="يمكن منح صلاحية إعدادات الحصص ال�
 function normalizeSupervisorPermissions(raw){
 const source=raw||{},out={};
 SUPERVISOR_PERMISSION_DEFS.forEach(([key])=>{
-out[key]=(key==="liveClassesSettings"||key==="onlineExamsManage"||key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="retestNotices"||key==="studentFollowupView")?source[key]===true:source[key]!==false;
+out[key]=(key==="liveClassesSettings"||key==="onlineExamsManage"||key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="gradeImprovement"||key==="retestNotices"||key==="studentFollowupView")?source[key]===true:source[key]!==false;
 });
 return out;
 }
