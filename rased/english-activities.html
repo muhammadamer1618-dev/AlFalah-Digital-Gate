@@ -7,6 +7,10 @@
 </style></head><body>
 <header><h1>🎧 أنشطة اللغة الإنجليزية</h1><div>مدارس الفلاح الأهلية — نظام راصد</div></header>
 <main><div id="status" role="status"></div>
+<section id="accessManager" class="panel hidden"><h2>صلاحيات أنشطة اللغة الإنجليزية</h2><p class="muted">الأدمن يمنح صلاحية الإدارة لمشرف الإنجليزي، والمشرف المخوّل يمنح الوصول لمعلمي الإنجليزية فقط.</p>
+<div id="adminGrant" class="hidden"><label>اسم مستخدم مشرف اللغة الإنجليزية</label><input id="supervisorUsername" placeholder="اسم المستخدم في راصد"><button onclick="grantEnglishSupervisor()">منح صلاحية إدارة الأنشطة</button></div>
+<div id="teacherGrant" class="hidden"><label>المعلمون المسند إليهم اللغة الإنجليزية</label><div id="grantTeachers" class="grid"></div><button onclick="saveTeacherGrants()">حفظ صلاحيات المعلمين المحددين</button></div>
+<div id="accessStatus" class="muted"></div></section>
 <section id="manager" class="panel hidden"><h2>إنشاء وإدارة الأنشطة</h2><div class="grid">
 <div><label>عنوان النشاط</label><input id="title" placeholder="Unit 3 - Vocabulary"></div>
 <div><label>المادة المسندة</label><select id="subject"></select></div>
@@ -36,11 +40,21 @@ function teacherAssignments(){return (currentTeacher?.assignments||[]).filter(al
 function selectOptions(){const ass=teacherAssignments(),subs=[...new Map(ass.map(a=>[String(a.subjectId),a.subjectName||a.subjectId])).entries()];$("subject").innerHTML=subs.map(([id,name])=>'<option value="'+esc(id)+'">'+esc(name)+'</option>').join("");updateClasses()}
 function updateClasses(){const ass=teacherAssignments().filter(a=>String(a.subjectId)===$("subject").value);$("classroom").innerHTML=ass.map(a=>'<option value="'+esc(a.grade+'||'+a.section)+'">'+esc(a.grade+' — '+a.section)+'</option>').join("")}
 $("subject").addEventListener("change",updateClasses);
+let accessTeachers=[];
 async function init(){const params=new URLSearchParams(location.search);if(params.get("activity")){$("activityCode").value=params.get("activity");await openActivity()}
-if(!isStaff())return;
-try{if(role()==="teacher"){const snap=await db.collection("teachers").doc(username()).get();if(!snap.exists)throw Error("حساب المعلم غير موجود");currentTeacher=snap.data();if(!teacherAssignments().length){status("لا توجد إسنادات لغة إنجليزية لهذا المعلم.");return}selectOptions();$("manager").classList.remove("hidden")}
-else{status("إنشاء الأنشطة متاح حاليًا للمعلم صاحب إسناد اللغة الإنجليزية؛ عرض التقارير الإشرافية يحتاج ربط الصلاحيات.");return}
-await loadActivities()}catch(e){status("تعذر تحميل بيانات المعلم: "+e.message,true)}}
+const r=role(),u=username();if(!u)return;
+try{
+if(r==="admin"){ $("accessManager").classList.remove("hidden");$("adminGrant").classList.remove("hidden");await loadGrantedTeachers();return; }
+if(r==="supervisor"){const us=await db.collection("users").doc(u).get();const p=us.exists?(us.data().permissions||{}):{};if(p.englishActivitiesManage!==true){status("ليس لديك صلاحية إدارة أنشطة اللغة الإنجليزية. اطلب من الأدمن تفعيلها.",true);return}
+$("accessManager").classList.remove("hidden");$("teacherGrant").classList.remove("hidden");await loadEnglishTeachers();await loadGrantedTeachers();return}
+if(r==="teacher"){const gate=await db.collection("englishActivityAccess").doc(u).get();if(!gate.exists||gate.data().enabled!==true){status("لم يمنحك مشرف اللغة الإنجليزية صلاحية استخدام الأنشطة بعد.",true);return}
+const snap=await db.collection("teachers").doc(u).get();if(!snap.exists)throw Error("حساب المعلم غير موجود");currentTeacher=snap.data();if(!teacherAssignments().length){status("لا توجد إسنادات لغة إنجليزية لهذا المعلم.");return}selectOptions();$("manager").classList.remove("hidden");await loadActivities();return}
+status("هذا الحساب غير مخوّل لإدارة أنشطة اللغة الإنجليزية."); 
+}catch(e){status("تعذر تحميل الصلاحيات أو بيانات الحساب: "+e.message,true)}}
+async function grantEnglishSupervisor(){if(role()!=="admin")return;const id=$("supervisorUsername").value.trim().toLowerCase();if(!id)return $("accessStatus").textContent="أدخل اسم مستخدم المشرف.";try{const snap=await db.collection("users").doc(id).get();if(!snap.exists||String(snap.data().role||"").toLowerCase()!=="supervisor")throw Error("حساب المشرف غير موجود");await db.collection("users").doc(id).set({permissions:{...(snap.data().permissions||{}),englishActivitiesManage:true}}, {merge:true});$("accessStatus").textContent="تم منح الصلاحية للمشرف "+id; }catch(e){$("accessStatus").textContent="تعذر منح الصلاحية: "+e.message}}
+async function loadEnglishTeachers(){const snap=await db.collection("teachers").get();accessTeachers=snap.docs.map(d=>({id:d.id,...d.data()})).filter(t=>(t.assignments||[]).some(a=>a.subjectId&&a.grade&&a.section&&/english|إنجليزي|اللغة الإنجليزية/i.test(a.subjectName||"")));const granted=await db.collection("englishActivityAccess").get();const ids=new Set(granted.docs.filter(d=>d.data().enabled===true).map(d=>d.id));$("grantTeachers").innerHTML=accessTeachers.map(t=>'<label class="activity"><input type="checkbox" class="teacher-grant-check" value="'+esc(t.email||t.id)+'" '+(ids.has(t.email||t.id)?"checked":"")+'><b>'+esc(t.name||t.email||t.id)+'</b><div class="muted">'+esc(t.email||t.id)+'</div></label>').join("")||"<p>لم يتم العثور على معلمين لديهم إسناد لغة إنجليزية.</p>"}
+async function loadGrantedTeachers(){try{const snap=await db.collection("englishActivityAccess").get();$("accessStatus").textContent="عدد حسابات المعلمين المفعّلة: "+snap.docs.filter(d=>d.data().enabled===true).length}catch(e){}}
+async function saveTeacherGrants(){if(role()!=="supervisor"||!accessTeachers.length)return;const chosen=new Set([...document.querySelectorAll(".teacher-grant-check:checked")].map(x=>x.value));try{const batch=db.batch();accessTeachers.forEach(t=>{const id=t.email||t.id;batch.set(db.collection("englishActivityAccess").doc(id),{enabled:chosen.has(id),teacherId:id,grantedBy:username(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})});await batch.commit();$("accessStatus").textContent="تم حفظ صلاحيات المعلمين المحددين."}catch(e){$("accessStatus").textContent="تعذر حفظ الصلاحيات: "+e.message}}
 function clearForm(){editing=null;$("title").value="";$("items").value=""}
 async function loadActivities(){const snap=await db.collection("englishActivities").where("teacherId","==",username()).get();activities=snap.docs.map(d=>({id:d.id,...d.data()}));$("myActivities").innerHTML=activities.length?activities.map(a=>'<div class="activity"><strong>'+esc(a.title)+'</strong><div class="muted">'+esc(a.grade+' / '+a.section)+' · '+(a.items||[]).length+' بند</div><button onclick="editActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">تعديل</button><button class="secondary" onclick="copyLink('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">نسخ الرابط</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">النتائج</button></div>').join(""):'<p>لا توجد أنشطة منشورة.</p>'}
 function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("title").value=a.title;$("items").value=(a.items||[]).join("\n");$("subject").value=a.subjectId;updateClasses();$("classroom").value=a.grade+'||'+a.section;scrollTo({top:0,behavior:"smooth"})}
