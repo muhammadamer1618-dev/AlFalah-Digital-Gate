@@ -94,6 +94,7 @@
 <a data-perm="trainingManage" href="supervisor-training.html">🎓 الدورات والاجتماعات</a>
 <a data-perm="liveClassesView" href="supervisor-live-classes.html">💻 الحصص المباشرة</a>
 <a data-perm="activitiesView" id="activitiesLink" href="supervisor-activities.html">🎯 تقارير الأنشطة</a>
+<a data-perm="englishActivitiesManage" href="english-activities.html">🎧 إدارة أنشطة اللغة الإنجليزية</a>
 <a data-perm="topStudentsView" href="top10.html">🏆 أوائل الطلاب</a>
 <a data-perm="studentReportView" href="student-report.html">📄 تقرير الطالب الشامل</a>
 <a data-perm="archiveView" href="archive.html">🗂️ الأرشيف</a>
@@ -264,7 +265,7 @@ const t=String(type||"").toLowerCase();
 return t==="manager"?"مدير":(t==="supervisor"?"مشرف":"مشرف عام");
 }
 function hasPerm(key){
-return (key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="gradeImprovement"||key==="retestNotices"||key==="bulkMessages"||key==="studentFollowupView")?currentPermissions[key]===true:currentPermissions[key]!==false;
+return (key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="gradeImprovement"||key==="retestNotices"||key==="bulkMessages"||key==="studentFollowupView"||key==="englishActivitiesManage")?currentPermissions[key]===true:currentPermissions[key]!==false;
 }
 function applyPermissions(){
 document.querySelectorAll("[data-perm]").forEach(node=>{
