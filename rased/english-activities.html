@@ -41,9 +41,16 @@ function teacherAssignments(){return (currentTeacher?.assignments||[]).filter(al
 function selectOptions(){const ass=teacherAssignments(),subs=[...new Map(ass.map(a=>[String(a.subjectId),a.subjectName||a.subjectId])).entries()];$("subject").innerHTML=subs.map(([id,name])=>'<option value="'+esc(id)+'">'+esc(name)+'</option>').join("");updateClasses()}
 function updateClasses(){const ass=teacherAssignments().filter(a=>String(a.subjectId)===$("subject").value);$("classroom").innerHTML=ass.map(a=>'<option value="'+esc(a.grade+'||'+a.section)+'">'+esc(a.grade+' — '+a.section)+'</option>').join("")}
 $("subject").addEventListener("change",updateClasses);
+const isStudentPortal=()=>new URLSearchParams(location.search).get("portal")==="student";
+if(isStudentPortal()){
+ document.getElementById("accessManager").remove();
+ document.getElementById("manager").remove();
+ document.getElementById("reports").remove();
+}
 let accessTeachers=[];
 async function init(){const params=new URLSearchParams(location.search);if(params.get("activity")){$("activityCode").value=params.get("activity");await openActivity()}
 if(params.get("studentCode")){await loadParentActivities(params.get("studentCode"))}
+if(isStudentPortal())return;
 const r=role(),u=username();if(!u)return;
 try{
 if(r==="admin"||r==="superadmin"){ $("accessManager").classList.remove("hidden");$("adminGrant").classList.remove("hidden");await loadGrantedTeachers();return; }
