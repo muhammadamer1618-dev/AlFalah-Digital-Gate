@@ -10199,13 +10199,16 @@ function renderSupervisors(){
   const perms=SUPERVISOR_PERMISSION_DEFS.filter(([key])=>normalized[key]).map(([, ,label])=>label),isScoped=String(item.supervisorType||"").toLowerCase()==="supervisor";
   const assignedEmails=isScoped?(item.assignedTeacherEmails||[]):teachers.map(t=>normalizeTeacherEmail(t.email||t.username));
   const assignedNames=assignedEmails.map(email=>{const t=teachers.find(x=>normalizeTeacherEmail(x.email||x.username)===normalizeTeacherEmail(email));return t?(t.name||t.email):email}).filter(Boolean);
-  const teacherPanelItems=isScoped?assignedNames:["نطاق الحساب يشمل جميع المعلمين ("+teachers.length+")"];
+  const teacherPanelItems=assignedNames;
   const teacherPanelId="supervisor-teachers-"+index,permissionPanelId="supervisor-permissions-"+index;
   return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username,item.phone||"",supervisorTypeLabel(item.supervisorType)||"","renderSupervisors"].filter(Boolean).join(" "))}">
    <div class="supervisor-gold-profile"><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span><span>📞 ${escapeHtml(item.phone||"غير مسجل")}</span></div></div><span class="account-role-badge">${escapeHtml(supervisorTypeLabel(item.supervisorType))}</span></div>
+   <div class="account-detail-tiles">${accountDetailTile(teacherPanelId,isScoped?"المعلمون المسندون":"المعلمون ضمن النطاق",assignedNames.length,"عرض أسماء المعلمين")}${accountDetailTile(permissionPanelId,"الصلاحيات",perms.length+" / "+SUPERVISOR_PERMISSION_DEFS.length,"عرض الصلاحيات المفعّلة")}</div>
+   ${accountDetailPanel(teacherPanelId,isScoped?"المعلمون المسندون":"جميع المعلمين ضمن النطاق",teacherPanelItems,"لا يوجد معلمون مرتبطون بهذا الحساب.")}
+   ${accountDetailPanel(permissionPanelId,"الصلاحيات المفعّلة",perms,"لا توجد صلاحيات مفعّلة.")}
    <div class="supervisor-action-grid">
-    <button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"permissions")'><span>🔐 الصلاحيات</span><strong>${perms.length} مفعّلة</strong><small>☑ اختيار وتعديل</small></button>
-    <button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"teachers")'><span>👨‍🏫 المعلمون المسندون</span><strong>${isScoped?assignedNames.length:teachers.length} معلم</strong><small>☑ عرض وتحديد</small></button>
+    <button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"permissions")'>🔐 تعديل الصلاحيات</button>
+    <button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"teachers")'>👨‍🏫 تعديل إسناد المعلمين</button>
     <button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openSupervisorEditor(${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button>
     <button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteSupervisor(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button>
     <button type="button" class="supervisor-action-tile supervisor-action-copy" onclick='openSupervisorPermissionCopy(${JSON.stringify(item.username)})'>📋 نسخ الصلاحيات</button>
@@ -10420,7 +10423,10 @@ function renderStudentCounselors(){
  body.innerHTML=studentCounselors.map((item,index)=>{
   return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username].join(" "))}">
   <div class="supervisor-gold-profile"><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">موجه طلابي</span></div>
-  <div class="supervisor-action-grid"><button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openRoleAccountEditor("StudentCounselor",${JSON.stringify(item.username)})'>👤 بيانات الحساب<small>عرض وتعديل البيانات</small></button><button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openRoleAccountEditor("StudentCounselor",${JSON.stringify(item.username)})'>🔑 بيانات الدخول<small>اسم المستخدم وكلمة المرور</small></button><button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openRoleAccountEditor("StudentCounselor",${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button><button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteStudentCounselor(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button></div>
+  <div class="account-detail-tiles">${accountDetailTile("counselor-account-"+index,"بيانات الحساب",1,"عرض بيانات الحساب")}${accountDetailTile("counselor-login-"+index,"بيانات الدخول",1,"عرض اسم المستخدم")}</div>
+  ${accountDetailPanel("counselor-account-"+index,"بيانات الحساب",["الاسم: "+item.name,"الدور: موجه طلابي"],"لا توجد بيانات.")}
+  ${accountDetailPanel("counselor-login-"+index,"بيانات الدخول",["اسم المستخدم: "+item.username],"لا توجد بيانات دخول.")}
+  <div class="supervisor-action-grid"><button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openRoleAccountEditor("StudentCounselor",${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button><button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteStudentCounselor(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button></div>
   </article>`;
 
  }).join("");
@@ -10577,7 +10583,10 @@ function renderActivityLeaders(){
  body.innerHTML=activityLeaders.map((item,index)=>{
   return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username].join(" "))}">
   <div class="supervisor-gold-profile"><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span></div></div><span class="account-role-badge">رائد نشاط</span></div>
-  <div class="supervisor-action-grid"><button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openRoleAccountEditor("ActivityLeader",${JSON.stringify(item.username)})'>👤 بيانات الحساب<small>عرض وتعديل البيانات</small></button><button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openRoleAccountEditor("ActivityLeader",${JSON.stringify(item.username)})'>🔑 بيانات الدخول<small>اسم المستخدم وكلمة المرور</small></button><button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openRoleAccountEditor("ActivityLeader",${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button><button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteActivityLeader(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button></div>
+  <div class="account-detail-tiles">${accountDetailTile("activity-account-"+index,"بيانات الحساب",1,"عرض بيانات الحساب")}${accountDetailTile("activity-login-"+index,"بيانات الدخول",1,"عرض اسم المستخدم")}</div>
+  ${accountDetailPanel("activity-account-"+index,"بيانات الحساب",["الاسم: "+item.name,"الدور: رائد نشاط"],"لا توجد بيانات.")}
+  ${accountDetailPanel("activity-login-"+index,"بيانات الدخول",["اسم المستخدم: "+item.username],"لا توجد بيانات دخول.")}
+  <div class="supervisor-action-grid"><button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openRoleAccountEditor("ActivityLeader",${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button><button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteActivityLeader(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button></div>
   </article>`;
 
  }).join("");
