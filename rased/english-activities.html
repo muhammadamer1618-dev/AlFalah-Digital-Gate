@@ -41,7 +41,7 @@ function teacherAssignments(){return (currentTeacher?.assignments||[]).filter(al
 function selectOptions(){const ass=teacherAssignments(),subs=[...new Map(ass.map(a=>[String(a.subjectId),a.subjectName||a.subjectId])).entries()];$("subject").innerHTML=subs.map(([id,name])=>'<option value="'+esc(id)+'">'+esc(name)+'</option>').join("");updateClasses()}
 function updateClasses(){const ass=teacherAssignments().filter(a=>String(a.subjectId)===$("subject").value);$("classroom").innerHTML=ass.map(a=>'<option value="'+esc(a.grade+'||'+a.section)+'">'+esc(a.grade+' — '+a.section)+'</option>').join("")}
 $("subject").addEventListener("change",updateClasses);
-const isStudentPortal=()=>new URLSearchParams(location.search).get("portal")==="student";
+const isStudentPortal=()=>{const p=new URLSearchParams(location.search);return p.get("portal")==="student"||p.has("studentCode")||p.get("view")==="practice"};
 if(isStudentPortal()){
  document.getElementById("accessManager").remove();
  document.getElementById("manager").remove();
