@@ -6,7 +6,19 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js">
+async function loadEnglishActivitiesSupervisorPermission(){
+ try{
+  const email=String(localStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUserEmail")||"").trim().toLowerCase();
+  if(!email)return;
+  const snap=await db.collection("users").doc(email).get();
+  if(snap.exists&&snap.data()?.permissions?.englishActivitiesManage===true){
+   document.getElementById("englishActivitiesSupervisorBox").style.display="block";
+  }
+ }catch(e){console.warn("English activities supervisor permission",e)}
+}
+window.addEventListener("DOMContentLoaded",loadEnglishActivitiesSupervisorPermission);
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
@@ -49,6 +61,12 @@ select{width:100%;padding:6px}
 
     <br>
     <button class="btn-secondary" onclick="printStudents()">طباعة / PDF</button>
+  </div>
+
+  <div class="box" id="englishActivitiesSupervisorBox" style="display:none">
+    <h3>🎧 أنشطة اللغة الإنجليزية</h3>
+    <p>إدارة صلاحيات معلمي اللغة الإنجليزية ومتابعة أنشطتهم.</p>
+    <a href="english-activities.html" style="display:inline-block;background:#1976d2;color:white;padding:12px 18px;border-radius:9px;text-decoration:none;font-weight:bold">فتح إدارة أنشطة اللغة الإنجليزية</a>
   </div>
 
   <!-- المعلمين -->
