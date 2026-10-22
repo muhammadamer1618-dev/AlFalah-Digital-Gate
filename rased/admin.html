@@ -10148,7 +10148,7 @@ settingsItem.title="يمكن منح صلاحية إعدادات الحصص ال�
 function normalizeSupervisorPermissions(raw){
 const source=raw||{},out={};
 SUPERVISOR_PERMISSION_DEFS.forEach(([key])=>{
-out[key]=(key==="liveClassesSettings"||key==="onlineExamsManage"||key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="gradeImprovement"||key==="retestNotices"||key==="bulkMessages"||key==="studentFollowupView")?source[key]===true:source[key]!==false;
+out[key]=(key==="liveClassesSettings"||key==="onlineExamsManage"||key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="gradeImprovement"||key==="retestNotices"||key==="bulkMessages"||key==="studentFollowupView"||key==="englishActivitiesManage")?source[key]===true:source[key]!==false;
 });
 return out;
 }
