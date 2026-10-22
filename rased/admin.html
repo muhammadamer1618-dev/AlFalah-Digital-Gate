@@ -2864,6 +2864,7 @@ onclick="clearCurrentTeacherAssignments()">
 <div class="permission-group-title">🎯 الأنشطة والتقارير</div>
 <div class="permission-grid">
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permActivitiesView" checked><span>👁️ عرض تقارير الأنشطة</span></label>
+<label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permEnglishActivitiesManage"><span>🎧 إدارة أنشطة اللغة الإنجليزية</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permActivitiesReview" checked><span>✔ مراجعة واعتماد التقرير</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permActivitiesPublish" checked><span>📢 النشر لولي الأمر</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permActivitiesReturn" checked><span>↩ إعادة التقرير للمعلم</span></label>
@@ -10065,7 +10066,8 @@ const SUPERVISOR_PERMISSION_DEFS=[
 ["staffFilesView","permStaffFilesView","منظومة الملفات والتوثيق الإشرافي"],
 ["trainingManage","permTrainingManage","الدورات والاجتماعات"],
 ["liveClassesView","permLiveClassesView","الحصص المباشرة"],
-["liveClassesSettings","permLiveClassesSettings","إعدادات الحصص المباشرة"]
+["liveClassesSettings","permLiveClassesSettings","إعدادات الحصص المباشرة"],
+["englishActivitiesManage","permEnglishActivitiesManage","إدارة أنشطة اللغة الإنجليزية"]
 ];
 
 function supervisorTypeLabel(type){
