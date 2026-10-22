@@ -241,15 +241,23 @@ async function viewReports(id){
 }
 async function editEnglishResult(index){
  const record=reportRecords[index];if(!record||!reportActivity||reportActivity.teacherId!==username())return;
- const x=record.data,items=reportActivity.items||[],old=x.attempts||{};
- const answer=prompt("Edit the student's total score (0–"+items.length+"). To edit individual pronunciation results, use the item editor in the next update.",String(x.correct??0));
- if(answer===null)return;
- const correct=Number(answer);
- if(!Number.isInteger(correct)||correct<0||correct>items.length)return status("Enter a whole number between 0 and "+items.length,true);
- if(!confirm("Update this student's score? This will override the calculated total while preserving the original per-word attempts."))return;
+ const items=reportActivity.items||[],old=record.data.attempts||{},max=Number(reportActivity.maxAttempts)||3;
+ const name=prompt("Student name",record.name);if(name===null)return;
+ const id=prompt("National ID",record.nationalId==="Not recorded"?"":record.nationalId);if(id===null)return;
+ const updated={};let correct=0;
+ for(let i=0;i<items.length;i++){
+  const previous=old[i]||{};
+  const entry=prompt("Item "+(i+1)+": "+items[i]+"\\nEnter attempts (0–"+max+") and correctness (Y/N), separated by a comma.",String(previous.tries||0)+","+(previous.correct?"Y":"N"));
+  if(entry===null)return;
+  const match=entry.trim().match(/^(\\d+)\\s*,\\s*([yn])$/i);
+  if(!match||Number(match[1])>max)return status("Invalid entry for item "+(i+1)+". Use e.g. 2,Y",true);
+  updated[i]={tries:Number(match[1]),correct:match[2].toUpperCase()==="Y"};
+  if(updated[i].correct)correct++;
+ }
+ if(!confirm("Save updated student details and per-word scores?"))return;
  try{
- await db.collection("englishActivityResults").doc(record.id).update({correct,total:items.length,percent:items.length?Math.round(correct*100/items.length):0,scoreEdited:true,scoreEditedAt:firebase.firestore.FieldValue.serverTimestamp(),scoreEditedBy:username()});
- await viewReports(reportActivity.id);status("Score updated successfully");
+ await db.collection("englishActivityResults").doc(record.id).update({studentName:name.trim(),studentNationalId:id.trim(),attempts:updated,correct,total:items.length,percent:items.length?Math.round(correct*100/items.length):0,scoreEdited:true,scoreEditedAt:firebase.firestore.FieldValue.serverTimestamp(),scoreEditedBy:username()});
+ await viewReports(reportActivity.id);status("Student result updated successfully");
  }catch(e){status("Unable to update result: "+e.message,true)}
 }
 async function deleteEnglishResult(index){
