@@ -1556,6 +1556,7 @@ async function searchStudent(){
 
 
         renderResults();
+        await loadParentTeacherNotes();
         const englishLink=document.getElementById("parentEnglishActivitiesLink");if(englishLink){englishLink.href="english-activities.html?studentCode="+encodeURIComponent(currentStudent.code);englishLink.style.display="inline-flex";}
         await loadParentSchedules();
 
@@ -1578,6 +1579,20 @@ async function searchStudent(){
     }
 }
 
+
+async function loadParentTeacherNotes(){
+ const area=document.getElementById("parentTeacherNotes");if(!area||!currentStudent)return;
+ area.innerHTML="";
+ try{
+  const setting=await db.collection("parentDisplaySettings").doc("teacherNotes").get();
+  if(!setting.exists||setting.data().enabled!==true)return;
+  const snap=await db.collection("studentFollowupEvents").where("studentCode","==",String(currentStudent.code)).get();
+  const notes=snap.docs.map(d=>({id:d.id,...d.data()})).filter(n=>String(n.kind||"").includes("سلوكي")||String(n.category||"").includes("مخالفة")||String(n.category||"").includes("سلوك")).sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+  if(!notes.length){area.innerHTML='<section style="background:#fff;border:1px solid #dce7f0;border-radius:16px;padding:18px"><h3 style="margin:0;color:#14547c">📝 ملاحظات المعلمين</h3><p style="color:#687b8c;margin-bottom:0">لا توجد ملاحظات سلوكية مسجلة للطالب حاليًا.</p></section>';return;}
+  const escNote=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  area.innerHTML='<section style="background:#fff;border:1px solid #dce7f0;border-radius:16px;padding:18px"><h3 style="margin:0 0 12px;color:#14547c">📝 ملاحظات المعلمين</h3><div style="display:grid;gap:10px">'+notes.map(n=>'<article style="background:#f7faff;border:1px solid #e0eaf4;border-radius:12px;padding:13px"><div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between"><strong>'+escNote(n.category||n.kind||"ملاحظة")+'</strong><span style="color:#6c7e8e;font-size:13px">'+escNote(n.date||"")+'</span></div>'+(n.subjectName?'<div style="color:#326b91;margin-top:5px">المادة: '+escNote(n.subjectName)+'</div>':'')+(n.details?'<p style="margin:8px 0 0;white-space:pre-wrap">'+escNote(n.details)+'</p>':'')+'<div style="font-size:12px;color:#718196;margin-top:8px">المعلم: '+escNote(n.teacherName||"")+'</div></article>').join("")+'</div></section>';
+ }catch(e){console.warn("parent teacher notes unavailable",e);area.innerHTML="";}
+}
 
 /* =========================
    LOAD RESULTS
@@ -1954,6 +1969,7 @@ function renderResults(){
                 </div>
 
                 ${buildGroupedResults()}
+                <div id="parentTeacherNotes" style="margin-top:22px"></div>
                 ${parentProgressSection()}
 
             </div>
