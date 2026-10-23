@@ -42,7 +42,7 @@ async function uploadSheet(){
  if(studentMode||!user())return;syncAssignedClass();
  const file=$("file").files[0],title=$("title").value.trim(),subject=assignedClasses.find(a=>String(a.subjectId)===$("subject").value)?.subjectName||$("subject").selectedOptions[0]?.textContent||"",grade=$("grade").value.trim(),section=$("section").value.trim(),id=$("editingSheet").value;
  if(!title||!subject||!grade||!section||(!id&&!file))return msg("اختر المادة والفصل واكتب العنوان وحدد الملف");
- if(file&&(file.size>10*1024*1024||!(/\\.(pdf|docx?|png|jpe?g)$/i.test(file.name))))return msg("الملف غير مدعوم أو يتجاوز 10 MB");
+ if(file&&(file.size>10*1024*1024||!(/[.](pdf|docx?|png|jpe?g)$/i.test(file.name))))return msg("الملف غير مدعوم أو يتجاوز 10 MB");
  $("upload").disabled=true;let newPath=null;
  try{
  let old=null;if(id){const d=await db.collection("questionBankSheets").doc(id).get();if(!d.exists||d.data().teacherId!==user())throw Error("غير مسموح بتعديل هذه الورقة");old=d.data()}
