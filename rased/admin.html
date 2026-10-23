@@ -1361,7 +1361,7 @@ id="statClasses">
 </div>
 
 <div id="adminCardDashboard" class="admin-card-dashboard">
-  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">لوحة التحكم</div><div class="admin-dashboard-grid">
+  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">لوحة التحكم</div><div class="admin-dashboard-grid"><button class="admin-dashboard-tool" type="button" onclick="document.getElementById('studentPortalControls').scrollIntoView({behavior:'smooth',block:'start'})"><span>🎛️</span><strong>التحكم في بوابة الطالب</strong><small>إظهار وإخفاء أيقونات البوابة</small></button>
     <button class="admin-dashboard-tool" type="button" onclick="location.href='academic-development.html?from=admin'"><span>📊</span><strong>منظومة التطوير الأكاديمي</strong><small>٤ وحدات للتطوير والمتابعة</small></button>
     <button class="admin-dashboard-tool" onclick="location.href='control-center.html'"><span>🎛️</span><strong>مركز التحكم</strong><small>إدارة ومتابعة النظام</small></button>
     <button class="admin-dashboard-tool" onclick="location.href='audit-log.html'"><span>🛡️</span><strong>سجل التدقيق</strong><small>متابعة العمليات والتغييرات</small></button>
@@ -6075,7 +6075,32 @@ try{
   whatsappWindow=window.open("about:blank","_blank");
   if(whatsappWindow){
     whatsappWindow.document.write(
-      '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>جاري فتح واتساب</title></head><body style="font-family:Arial;text-align:center;padding:40px">جاري تجهيز بيانات المعلم وفتح واتساب...</body></html>'
+      '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>جاري فتح واتساب</title></head><body style="font-family:Arial;text-align:center;padding:40px">جاري تجهيز بيانات المعلم وفتح واتساب...<section id="studentPortalControls" style="max-width:1100px;margin:28px auto;padding:24px;border:1px solid #d5e3dc;border-radius:18px;background:#fff;direction:rtl;scroll-margin-top:30px">
+<h2 style="color:#064e3b;margin:0 0 8px">🎛️ التحكم في بوابة الطالب</h2>
+<p>حدد الأيقونات التي تظهر في الصفحة الرئيسية لبوابة الطالب. التغييرات تسري على جميع الطلاب بعد الحفظ.</p>
+<div id="studentPortalToggles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"></div>
+<div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><button type="button" class="btn-primary" onclick="saveStudentPortalControls()">💾 حفظ إعدادات البوابة</button><span id="studentPortalControlStatus" role="status"></span></div>
+</section>
+<script>
+const studentPortalCards=[["exams","الاختبارات الإلكترونية"],["results","نتائج الاختبارات"],["plan","الخطة الأسبوعية"],["schedule","جدول الحصص"],["examSchedule","جدول الاختبارات"],["activities","الأنشطة الطلابية"],["interactive","الأنشطة التفاعلية"],["questionBanks","بنوك الأسئلة"],["english","أنشطة اللغة الإنجليزية"],["teacherNotes","ملاحظات المعلمين"],["guidance","التوجيه الطلابي"],["liveClasses","الحصص المباشرة"]];
+function renderStudentPortalControls(flags={}){
+ document.getElementById("studentPortalToggles").innerHTML=studentPortalCards.map(([id,name])=>'<label style="display:flex;align-items:center;gap:10px;padding:14px;border:1px solid #d7e5dc;border-radius:12px;background:#f7faf8;cursor:pointer"><input type="checkbox" data-portal-card="'+id+'" '+(flags[id]!==false?'checked':'')+' style="width:20px;height:20px"><span>'+name+'</span></label>').join("");
+}
+async function loadStudentPortalControls(){
+ const status=document.getElementById("studentPortalControlStatus");renderStudentPortalControls();
+ try{const d=await db.collection("systemSettings").doc("studentPortalCards").get();renderStudentPortalControls(d.exists?(d.data().visibility||{}):{});status.textContent="تم تحميل الإعدادات";}
+ catch(e){status.textContent="تعذر قراءة الإعدادات: "+e.message;}
+}
+async function saveStudentPortalControls(){
+ const status=document.getElementById("studentPortalControlStatus"),visibility={};
+ document.querySelectorAll("[data-portal-card]").forEach(x=>visibility[x.dataset.portalCard]=x.checked);
+ status.textContent="جارٍ الحفظ...";
+ try{await db.collection("systemSettings").doc("studentPortalCards").set({visibility,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});status.textContent="✅ تم حفظ إعدادات بوابة الطالب";}
+ catch(e){status.textContent="❌ تعذر الحفظ: "+e.message}
+}
+window.addEventListener("load",loadStudentPortalControls);
+</script>
+</body></html>'
     );
   }
 }catch(error){
