@@ -653,4 +653,20 @@ async function ensureVisitSupervisorSession(){
   }
 }
 </script>
+<script>
+/* Admin-controlled dashboard card visibility; default is visible. */
+(function(){
+ const selector=".supervisor-dashboard-tool",role="supervisor";
+ async function applyVisibility(){
+  try{
+   const cards=Array.from(document.querySelectorAll(selector));
+   if(!cards.length)return;
+   const settings=await db.collection("systemSettings").doc(role+"PortalCards").get();
+   const flags=settings.exists?(settings.data().visibility||{}):{};
+   cards.forEach((card,i)=>{if(flags["card"+i]===false)card.style.setProperty("display","none","important")});
+  }catch(e){console.warn("Dashboard visibility could not be loaded",e)}
+ }
+ window.addEventListener("load",applyVisibility);
+})();
+</script>
 </body></html>
