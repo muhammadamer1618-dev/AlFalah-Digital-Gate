@@ -5320,7 +5320,7 @@ window.addEventListener("load",async()=>{try{const role=sessionStorage.getItem("
 <script>
 /* Admin-controlled dashboard card visibility; default is visible. */
 (function(){
- const selector=".dashboard-tool.dashboard-tool-primary",role="teacher";
+ const selector=".dashboard-tool",role="teacher";
  async function applyVisibility(){
   try{
    const cards=Array.from(document.querySelectorAll(selector));
