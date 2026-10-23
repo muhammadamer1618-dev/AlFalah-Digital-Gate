@@ -5317,5 +5317,21 @@ document.addEventListener("keydown",function(e){
 <script>
 window.addEventListener("load",async()=>{try{const role=sessionStorage.getItem("currentUserRole")||localStorage.getItem("currentUserRole")||"";const email=String(sessionStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUser")||localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"").trim().toLowerCase();if(role!=="teacher"||!email||!window.firebase||!firebase.firestore)return;const db=firebase.firestore();const access=await db.collection("englishActivityAccess").doc(email).get();if(access.exists&&access.data().enabled===true){const btn=document.getElementById("englishActivitiesTeacherBtn");if(btn)btn.style.display="flex"}}catch(e){console.warn("English activities permission check",e)}});
 </script>
+<script>
+/* Admin-controlled dashboard card visibility; default is visible. */
+(function(){
+ const selector=".dashboard-tool.dashboard-tool-primary",role="teacher";
+ async function applyVisibility(){
+  try{
+   const cards=Array.from(document.querySelectorAll(selector));
+   if(!cards.length)return;
+   const settings=await db.collection("systemSettings").doc(role+"PortalCards").get();
+   const flags=settings.exists?(settings.data().visibility||{}):{};
+   cards.forEach((card,i)=>{if(flags["card"+i]===false)card.style.setProperty("display","none","important")});
+  }catch(e){console.warn("Dashboard visibility could not be loaded",e)}
+ }
+ window.addEventListener("load",applyVisibility);
+})();
+</script>
 </body>
 </html>
