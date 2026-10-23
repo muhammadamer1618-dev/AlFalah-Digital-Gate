@@ -37,7 +37,27 @@ let currentUploadTask=null,visibleSheets=[];
 function resetSheetForm(){$("editingSheet").value="";$("title").value="";$("file").value="";$("upload").textContent="رفع ونشر";$("cancelEdit").style.display="none"}
 function editSheet(id){const x=visibleSheets.find(v=>v.id===id);if(!x||x.teacherId!==user())return msg("غير مسموح بتعديل هذه الورقة");$("editingSheet").value=id;$("title").value=x.title||"";const subject=assignedClasses.find(a=>(a.subjectName||a.subject||a.subjectId)===x.subject&&String(a.grade)===String(x.grade)&&String(a.section)===String(x.section));if(subject){$("subject").value=String(subject.subjectId);updateAssignedClasses();const rows=assignedClasses.filter(a=>String(a.subjectId)===$("subject").value);$("classroom").value=String(rows.findIndex(a=>String(a.grade)===String(x.grade)&&String(a.section)===String(x.section)));syncAssignedClass()}$("upload").textContent="حفظ التعديلات";$("cancelEdit").style.display="inline-block";$("editor").scrollIntoView({behavior:"smooth"});msg("يمكن تعديل العنوان والفصل أو اختيار ملف بديل. اترك الملف فارغًا للاحتفاظ بالملف الحالي.")}
 function cancelSheetUpload(){if(currentUploadTask){currentUploadTask.cancel();msg("تم إلغاء الرفع")}}
-function uploadWithProgress(ref,file){return new Promise((resolve,reject)=>{const task=ref.put(file);currentUploadTask=task;$("uploadProgress").style.display="block";task.on("state_changed",snapshot=>{const p=Math.round(snapshot.bytesTransferred*100/snapshot.totalBytes);$("uploadBar").value=p;$("uploadPercent").textContent=p+"%";msg("جارٍ رفع الملف: "+p+"%")},reject,()=>resolve(task.snapshot))})}
+function uploadWithProgress(ref,file){return new Promise((resolve,reject)=>{
+ let done=false,lastBytes=0,lastActivity=Date.now();
+ const task=ref.put(file);currentUploadTask=task;
+ $("uploadProgress").style.display="block";
+ const finish=(error,snapshot)=>{if(done)return;done=true;clearInterval(watchdog);if(error)reject(error);else resolve(snapshot)};
+ const watchdog=setInterval(()=>{
+  if(done)return;
+  if(Date.now()-lastActivity>25000){
+   const error=new Error("لم يبدأ نقل الملف أو توقف لمدة 25 ثانية. تحقق من تفعيل Firebase Storage وقواعد الكتابة والمصادقة، أو افتح أدوات المطور لمعرفة استجابة طلب التخزين.");
+   error.code="storage/upload-stalled";
+   task.cancel();finish(error);
+  }
+ },2000);
+ task.on("state_changed",snapshot=>{
+  const bytes=snapshot.bytesTransferred||0;
+  if(bytes!==lastBytes){lastBytes=bytes;lastActivity=Date.now()}
+  const p=snapshot.totalBytes?Math.round(bytes*100/snapshot.totalBytes):0;
+  $("uploadBar").value=p;$("uploadPercent").textContent=p+"%";
+  msg(p===0?"جارٍ الاتصال بخدمة التخزين...":"جارٍ رفع الملف: "+p+"%");
+ },error=>finish(error),()=>finish(null,task.snapshot));
+})}
 async function uploadSheet(){
  if(studentMode||!user())return;syncAssignedClass();
  const file=$("file").files[0],title=$("title").value.trim(),subject=assignedClasses.find(a=>String(a.subjectId)===$("subject").value)?.subjectName||$("subject").selectedOptions[0]?.textContent||"",grade=$("grade").value.trim(),section=$("section").value.trim(),id=$("editingSheet").value;
