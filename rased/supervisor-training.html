@@ -586,7 +586,7 @@ function printMeetingMinutes(id){
     return `<tr>
       <td>${arDigits(i+1)}</td>
       <td>${esc(row.teacher.name||row.teacher.email)}</td>
-      <td>${present?"معلم":"—"}</td>
+      <td>${esc(String(row.teacher.jobTitle||row.teacher.jobRole||row.teacher.position||row.teacher.job||row.teacher.roleTitle||"").trim()||"معلم")}</td>
       <td>${signText}</td>
     </tr>`;
   }).join("");
