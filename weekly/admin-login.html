@@ -1050,6 +1050,7 @@ from
 import {
     getAuth,
     signInWithEmailAndPassword,
+    onAuthStateChanged,
     signOut
 }
 from
@@ -1137,6 +1138,23 @@ function showMessage(
 
 }
 
+
+// Reuse the existing authenticated weekly-plan admin session.
+onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
+    try {
+        const snapshot = await getDoc(doc(db, "users", user.uid));
+        const profile = snapshot.exists() ? snapshot.data() : null;
+        if (profile && profile.role === "admin" && profile.active !== false) {
+            window.location.replace("admin.html");
+        } else {
+            showMessage("الجلسة الحالية ليست لحساب أدمن الخطة. سجّل دخول الأدمن أدناه.", "error");
+        }
+    } catch (error) {
+        console.error("Weekly admin session verification failed", error);
+        showMessage("تعذر التحقق من الجلسة الحالية. يمكنك تسجيل الدخول أدناه.", "error");
+    }
+});
 
 loginForm.addEventListener(
     "submit",
