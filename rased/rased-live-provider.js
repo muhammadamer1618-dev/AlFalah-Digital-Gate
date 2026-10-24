@@ -311,7 +311,26 @@
 
     if(useDemo){
 
-      await loadDemoExternalApi();
+      try {
+        await loadDemoExternalApi();
+      } catch (loadError) {
+        // Restore the original in-page room experience when the external API
+        // cannot be loaded (e.g. mobile content blockers / script CDN failure).
+        const frame=document.createElement("iframe");
+        frame.src="https://meet.jit.si/"+encodeURIComponent(key)+"#config.prejoinPageEnabled=false&config.disableDeepLinking=true";
+        frame.title="قاعة راصد المباشرة";
+        frame.allow="camera; microphone; fullscreen; display-capture; autoplay";
+        frame.referrerPolicy="strict-origin-when-cross-origin";
+        frame.style.cssText="width:100%;height:100%;min-height:520px;border:0;background:#0b1f25;display:block";
+        container.appendChild(frame);
+        // An iframe load does not prove the teacher joined the conference.
+        // Never mark attendance or enable signature based only on iframe load.
+        const note=document.createElement("div");
+        note.style.cssText="padding:8px;background:#fff5d9;color:#6b4500;font-size:13px";
+        note.textContent="تم فتح القاعة بالطريقة البديلة داخل راصد. لن يُحتسب الحضور تلقائيًا ما لم يؤكد مزود القاعة الانضمام.";
+        container.prepend(note);
+        return {mode:"embedded-fallback",roomKey:key,dispose(){frame.remove();note.remove();container.innerHTML=""}};
+      }
 
       const api=
         new window.JitsiMeetExternalAPI(
