@@ -178,7 +178,7 @@ function renderCourses(){
     let progressHtml="";
 
     if(meeting){
-      const signEnabled=meetingEntered&&viewed&&!signedMeeting;
+      const signEnabled=viewed&&!signedMeeting;
 
       progressHtml=`
         <div style="font-size:11px;margin-bottom:10px">
@@ -343,10 +343,6 @@ async function signMeeting(id){
     !!p.firstLiveJoinedAt ||
     p.attended===true;
 
-  if(!attended){
-    alert("لا يمكن التوقيع قبل تسجيل حضورك للاجتماع.");
-    return;
-  }
 
   if(!meetingMinutesViewed(p)){
     alert("يجب أولًا فتح بنود الاجتماع والتوصيات والضغط على «اطلعت على بنود الاجتماع والتوصيات» قبل التوقيع.");
@@ -376,12 +372,13 @@ async function signMeeting(id){
     teacherEmail:currentUser,
     teacherName:name,
     meetingSigned:true,
+    meetingSignatureMode:attended?"attended-and-reviewed":"minutes-acknowledgement-only",
     meetingSignatureName:name,
     meetingSignedAt:firebase.firestore.FieldValue.serverTimestamp(),
     lastActivityAt:firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true});
 
-  alert("تم التوقيع الإلكتروني على محضر الاجتماع بنجاح ✅");
+  alert(attended?"تم التوقيع الإلكتروني على محضر الاجتماع بنجاح ✅":"تم توقيع إقرار الاطلاع على المحضر ✅ — لا يُحتسب هذا حضورًا للاجتماع.");
   await loadAll();
 }
 
