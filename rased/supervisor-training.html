@@ -582,7 +582,7 @@ function printMeetingMinutes(id){
     const present=Number(p.liveJoinCount||0)>0||!!p.firstLiveJoinedAt||p.attended===true;
     const signed=p.meetingSigned===true;
     const signedAt=signed&&p.meetingSignedAt?fmt(p.meetingSignedAt):"";
-    const signText=signed?`✓ توقيع إلكتروني${signedAt?`<small>${esc(signedAt)}</small>`:""}`:"";
+    const signText=signed?`✓ توقيع إلكتروني${p.meetingSignatureMode==="minutes-acknowledgement-only"?" (اطلاع فقط — دون إثبات حضور)":""}${signedAt?`<small>${esc(signedAt)}</small>`:""}`:"";
     return `<tr>
       <td>${arDigits(i+1)}</td>
       <td>${esc(row.teacher.name||row.teacher.email)}</td>
