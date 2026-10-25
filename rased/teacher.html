@@ -1196,7 +1196,6 @@ body{
   <div class="teacher-dashboard-grid teacher-dashboard-main">
     <button class="dashboard-tool dashboard-tool-primary" onclick="location.href='blank-grade-sheet.html'"><span class="dashboard-tool-icon">🗒️</span><span class="dashboard-tool-text"><strong>إصدار كشف درجات فارغ</strong><small>كشف مرن بأعمدة حسب اختيار المعلم للطباعة</small></span><span class="dashboard-tool-arrow">←</span></button>
     <button class="dashboard-tool dashboard-tool-primary" onclick="location.href='grade-improvement.html'"><span class="dashboard-tool-icon">📈</span><span class="dashboard-tool-text"><strong>تحسين الدرجات</strong><small>اعتماد الدرجة الأعلى وحفظ جميع المحاولات</small></span><span class="dashboard-tool-arrow">←</span></button>
-    <button class="dashboard-tool dashboard-tool-primary" style="background:#1769aa" onclick="location.href='bulk-whatsapp.html'"><span class="dashboard-tool-icon">📨</span><span class="dashboard-tool-text"><strong>الرسائل الجماعية</strong><small>رسالة موحدة أو مخصصة لأولياء الأمور</small></span><span class="dashboard-tool-arrow">←</span></button>
     <button class="dashboard-tool dashboard-tool-primary" onclick="location.href='retest-notices.html'"><span class="dashboard-tool-icon">🔁</span><span class="dashboard-tool-text"><strong>إعادة الاختبار</strong><small>طلاب أقل من الدرجة النهائية ورسائل أولياء الأمور</small></span><span class="dashboard-tool-arrow">←</span></button>
     <button class="dashboard-tool dashboard-tool-primary" data-feature="grading" onclick="showTeacherFeature('grading',this)">
       <span class="dashboard-tool-icon">📝</span>
@@ -1550,9 +1549,7 @@ body{
 🖨️ طباعة كشف الدرجات
 </button>
 
-<button class="action-btn messages-btn" id="sendResultsBulkBtn" onclick="sendResultsBulk()">
-📨 إرسال النتائج جماعيًا
-</button>
+
 
 </div>
 
@@ -4679,35 +4676,6 @@ await logAndOpenWhatsApp(student,phone,message,"result",attendance,mark);
 }
 
 
-async function sendResultsBulk(){
- if(!selectedTest){alert("اختر الاختبار أولًا.");return;}
- const full=Number(selectedTest.fullMark),recipients=[];let noGrade=0,noPhone=0,invalid=0;
- for(const student of currentStudents){
-  const attendanceNode=el("attendance_"+String(student.code)),markNode=el("mark_"+String(student.code));
-  if(!attendanceNode||!markNode){noGrade++;continue;}
-  const attendance=attendanceNode.value,raw=String(markNode.value??"").trim();
-  if(attendance==="absent"){const phone=normalizeSaudiPhone(student.guardianPhone||student.phone||"");if(!phone){noPhone++;continue;}recipients.push({student,phone,attendance,mark:null});continue;}
-  if(raw===""){noGrade++;continue;}
-  const mark=Number(raw);if(!Number.isFinite(mark)||mark<0||!Number.isFinite(full)||full<=0||mark>full){invalid++;continue;}
-  const phone=normalizeSaudiPhone(student.guardianPhone||student.phone||"");if(!phone){noPhone++;continue;}
-  recipients.push({student,phone,attendance,mark:raw});
- }
- if(!recipients.length){alert("لا توجد نتائج جاهزة للإرسال. راجع الدرجات والحضور وأرقام أولياء الأمور.");return;}
- if(!confirm("سيتم إرسال رسالة مستقلة لولي أمر كل طالب، تحتوي على درجة ابنه أو حالة غيابه.\n\nعدد الرسائل: "+recipients.length+"\nطلاب بدون درجة: "+noGrade+"\nأرقام غير متاحة: "+noPhone+"\nدرجات غير صحيحة: "+invalid+"\n\nتأكد من حفظ الدرجات ومراجعتها قبل الإرسال. هل تريد المتابعة؟"))return;
- const btn=el("sendResultsBulkBtn");if(btn)btn.disabled=true;let accepted=0,failed=0;
- try{
-  for(let i=0;i<recipients.length;i++){
-   const r=recipients[i],student=r.student;
-   const message=r.attendance==="absent"
-    ?"مدارس الفلاح الأهلية\n\nولي أمر الطالب: "+student.name+"\n\nنفيدكم بغياب الطالب عن اختبار:\n"+selectedTest.name+"\n\nالمادة: "+selectedSubjectName+"\nالفصل: "+selectedGrade+" / "+selectedSection+"\nتاريخ الاختبار: "+(selectedTest.date||"-")+"\n\nمعلم المادة:\n"+(currentTeacher.name||"")
-    :"مدارس الفلاح الأهلية\n\nولي أمر الطالب: "+student.name+"\n\nنتيجة اختبار:\n"+selectedTest.name+"\n\nالمادة: "+selectedSubjectName+"\nالدرجة: "+r.mark+" من "+selectedTest.fullMark+"\nالفصل: "+selectedGrade+" / "+selectedSection+"\nتاريخ الاختبار: "+(selectedTest.date||"-")+"\n\nمعلم المادة:\n"+(currentTeacher.name||"");
-   const ok=await logAndOpenWhatsApp(student,r.phone,message,"result",r.attendance,r.mark,{quiet:true,skipReload:true});if(ok)accepted++;else failed++;
-   if(el("msg"))el("msg").textContent="إرسال النتائج: "+(i+1)+" / "+recipients.length+" — قُبل: "+accepted+" — فشل: "+failed;
-   if(i<recipients.length-1)await new Promise(resolve=>setTimeout(resolve,350));
-  }
-  await loadMessageLogs();alert("انتهى إرسال النتائج الجماعي.\nالطلبات المقبولة لدى الأداة: "+accepted+"\nالفاشلة: "+failed+"\nتم إنشاء سجل مستقل لكل رسالة. الحالات النهائية تُحدّث حسب ما ترجع به أداة الواتساب.");
- }finally{if(btn)btn.disabled=false;}
-}
 function openCustomMessage(code){
 const student=currentStudents.find(s=>String(s.code)===String(code));
 if(!student) return;
