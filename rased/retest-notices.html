@@ -32,6 +32,5 @@ async function openWhatsApp(index){
  }catch(e){console.warn("Could not log WhatsApp link",e)}
  msg("تم فتح محادثة ولي الأمر في واتساب. اضغط إرسال من حسابك؛ لم تُرسل تلقائيًا.");
 }
-async function sendAllRetestNotices(){msg("الإرسال الجماعي غير متاح للمعلمين. استخدم زر واتساب أمام كل طالب.");}
 ["teacher","subject","grade","section"].forEach(id=>el(id).addEventListener("change",filters));el("load").addEventListener("click",load);init();
 </script></body></html>
