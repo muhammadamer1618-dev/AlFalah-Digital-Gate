@@ -33,6 +33,8 @@ th,td{padding:10px;border-bottom:1px solid #edf0ee;text-align:center;font-size:1
 .day{margin:12px 0;border:1px solid #e1e6e3;border-radius:11px;overflow:hidden}.day h3{margin:0;background:#f5f8f6;padding:8px 10px;color:var(--g);font-size:13px}.day table{min-width:0}.day th,.day td{font-size:11px;padding:7px}
 @media(max-width:760px){.toolbar{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.meta{grid-template-columns:1fr}.logo{width:60px;height:60px}h1{font-size:21px}}
 </style>
+
+<link rel="stylesheet" href="../rased/rased-theme.css">
 </head>
 <body>
 <header class="hero"><div class="hero-in"><img src="logo.jpeg" class="logo"><div><h1>متابعة الخطة الأسبوعية</h1><p>مدارس الفلاح الأهلية — متابعة خطط رواد الفصول</p></div></div></header>
@@ -124,5 +126,7 @@ $("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("sho
 $("week").onchange=render;$("search").oninput=render;$("refresh").onclick=load;
 load().catch(e=>{$("rows").innerHTML='<tr><td colspan="8" class="empty">تعذر تحميل متابعة الخطة الأسبوعية.</td></tr>';console.error(e)});
 </script>
+
+<footer class="rased-credit" lang="ar" dir="rtl">تصميم محمد عامر أحمد</footer>
 </body>
 </html>
