@@ -4587,43 +4587,36 @@ error.message
    WHATSAPP
 ====================================================== */
 
-async function sendViaWhatsDirect(phone,content){
- const settings=await db.collection("systemSettings").doc("whatsDirect").get();
- const apiKey=String(settings.exists?(settings.data().apiKey||""):"").trim();
- if(!apiKey)throw new Error("لم يتم إعداد مفتاح واتس مباشر. اطلب من الإدارة حفظ مفتاح API في راصد أولًا.");
- const response=await fetch("https://wa.smart-whats.com/api/messages",{method:"POST",headers:{"X-API-Key":apiKey,"Content-Type":"application/json"},body:JSON.stringify({phone:String(phone),content:String(content)})});
- const result=await response.json().catch(()=>({}));
- if(!response.ok)throw new Error(result.message||result.error||("فشل إرسال الطلب إلى واتس مباشر (HTTP "+response.status+")"));
- return result;
+function teacherWhatsAppLink(phone,message){
+ const normalized=String(phone||"").replace(/\D/g,"");
+ return "https://wa.me/"+normalized+"?text="+encodeURIComponent(String(message||""));
 }
 
 async function logAndOpenWhatsApp(student,phone,message,type,attendance=null,mark=null,options={}){
- let logRef=null;
+ // Teacher messages must never use the school's shared WhatsDirect API credentials.
+ const url=teacherWhatsAppLink(phone,message);
+ const opened=window.open(url,"_blank","noopener,noreferrer");
+ if(!opened){
+  // Popup blocked: navigate the teacher's own browser to WhatsApp.
+  window.location.href=url;
+ }
  try{
-  logRef=await db.collection("messageLogs").add({
+  await db.collection("messageLogs").add({
    teacherEmail:currentUsername,teacherName:currentTeacher?.name||"",
    senderEmail:currentUsername,senderName:currentTeacher?.name||"",senderRole:"teacher",
    studentCode:String(student.code||""),studentName:student.name||"",guardianPhone:phone,
    subjectId:selectedSubjectId||"",subjectName:selectedSubjectName||"",
    grade:selectedGrade||student.grade||"",section:selectedSection||"",
    testId:selectedTest?.id||"",testName:selectedTest?.name||"",testDate:selectedTest?.date||"",
-   attendance:attendance,mark:attendance==="absent"?null:(mark===""||mark===null?null:Number(mark)),
-   fullMark:selectedTest?Number(selectedTest.fullMark):null,messageType:type,message:message,
-   provider:"whats-direct",providerStatus:"sending",sentAt:firebase.firestore.FieldValue.serverTimestamp()
+   attendance,mark:attendance==="absent"?null:(mark===""||mark===null?null:Number(mark)),
+   fullMark:selectedTest?Number(selectedTest.fullMark):null,messageType:type,message,
+   provider:"teacher-whatsapp-link",providerStatus:"opened-not-confirmed",
+   sentAt:firebase.firestore.FieldValue.serverTimestamp()
   });
-  const result=await sendViaWhatsDirect(phone,message);
-  const providerStatus=String(result.status||"pending");
-  await logRef.update({providerMessageId:String(result.id||result.messageId||""),providerStatus,providerResponse:result});
-  if(!options.skipReload) await loadMessageLogs();
-  if(!options.quiet) alert(providerStatus==="sent"?"تم إرسال الرسالة بنجاح عبر الواتس مباشر.":"تم قبول طلب الرسالة في الواتس مباشر. الحالة الحالية: "+providerStatus+"؛ ستظهر النتيجة النهائية حسب حالة الإرسال لدى الأداة.");
-  return true;
- }catch(error){
-  if(logRef)try{await logRef.update({providerStatus:"failed",providerError:String(error.message||error)});}catch(_){}
-  console.error(error);
-  if(!options.quiet) alert("تعذر إرسال الرسالة عبر الواتس مباشر:\n"+error.message);
-  if(!options.skipReload) await loadMessageLogs();
-  return false;
- }
+  if(!options.skipReload)await loadMessageLogs();
+ }catch(error){console.warn("Teacher WhatsApp log unavailable",error);}
+ if(!options.quiet)alert("تم فتح واتساب لإرسال الرسالة من حسابك أنت. راجع الرسالة واضغط إرسال داخل واتساب؛ فتح الرابط لا يعني إرسالها.");
+ return true;
 }
 
 async function sendWhatsApp(code){
