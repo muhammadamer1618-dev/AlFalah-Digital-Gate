@@ -13,7 +13,7 @@ function notice(x,t){
   :!x.recorded
    ?"لم تُرصد له درجة في اختبار «"+(t.name||"الاختبار")+"» في مادة «"+(x.subjectName||t.subjectName||"المادة")+"» حتى الآن."
    :"حصل في اختبار «"+(t.name||"الاختبار")+"» بمادة «"+(x.subjectName||t.subjectName||"المادة")+"» على "+x.mark+" من "+x.full+".";
- return "المكرم ولي أمر الطالب "+x.studentName+"،\\nنحيطكم علمًا بأن ابنكم "+condition+"\\nوسيتم إعادة الاختبار حسب اليوم المرسل لكم في مجموعة الصف، لذا يرجى الاستعداد الجيد للاختبار.\\nوفي حالة عدم الرغبة في الإعادة، يرجى إبلاغنا بذلك.\\nمع خالص التقدير.\\n"+(role==="supervisor"?"المشرف التربوي: ":(role==="admin"||role==="superadmin"?"إدارة المدرسة: ":"معلم المادة: "))+senderName
+ return "المكرم ولي أمر الطالب "+x.studentName+"،\nنحيطكم علمًا بأن ابنكم "+condition+"\nوسيتم إعادة الاختبار حسب اليوم المرسل لكم في مجموعة الصف، لذا يرجى الاستعداد الجيد للاختبار.\nوفي حالة عدم الرغبة في الإعادة، يرجى إبلاغنا بذلك.\nمع خالص التقدير.\n"+(role==="supervisor"?"المشرف التربوي: ":(role==="admin"||role==="superadmin"?"إدارة المدرسة: ":"معلم المادة: "))+senderName
 }
 async function init(){try{
  role=norm(sessionStorage.getItem("currentUserRole")||localStorage.getItem("currentUserRole"));
