@@ -248,6 +248,21 @@
     return token;
   }
 
+  function openEmbeddedFallback(container,key,reason){
+    container.innerHTML="";
+    const notice=document.createElement("div");
+    notice.style.cssText="padding:10px;background:#fff2cf;color:#583c00;font-size:13px";
+    notice.textContent="تعذر الاتصال بمزود القاعات المخصص ("+reason+"). محاولة فتح القاعة داخل راصد؛ لا يُحتسب الحضور تلقائيًا في الوضع البديل.";
+    const iframe=document.createElement("iframe");
+    iframe.src="https://meet.jit.si/"+encodeURIComponent(key)+"#config.prejoinPageEnabled=false&config.disableDeepLinking=true";
+    iframe.title="القاعة المباشرة داخل راصد";
+    iframe.allow="camera; microphone; fullscreen; display-capture; autoplay";
+    iframe.referrerPolicy="strict-origin-when-cross-origin";
+    iframe.style.cssText="display:block;width:100%;height:100%;min-height:480px;border:0;background:#0b1f25";
+    container.append(notice,iframe);
+    return {mode:"embedded-fallback",roomKey:key,dispose(){container.innerHTML=""}};
+  }
+
   async function mount(opts){
 
     const {
@@ -458,7 +473,8 @@
         appId
       );
 
-      const token=
+      let token;
+      try { token=
         await requestJaasToken(
           cfg,
           {
@@ -487,6 +503,10 @@
             context
           }
         );
+      } catch(error) {
+        console.error("JaaS token endpoint unavailable",error);
+        return openEmbeddedFallback(container,key,"خدمة تصريح الدخول");
+      }
 
       const fullRoom=
         appId+"/"+key;
