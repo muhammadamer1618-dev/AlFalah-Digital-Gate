@@ -274,8 +274,13 @@
       );
     }
 
-    const cfg=
-      await loadConfig(db,true);
+    let cfg;
+    try {
+      cfg=await loadConfig(db,true);
+    } catch(error) {
+      console.warn("Room provider settings unavailable; trying default in-page room",error);
+      cfg={type:"none"};
+    }
 
     const status=
       configStatus(cfg);
@@ -311,7 +316,23 @@
 
     if(useDemo){
 
-      await loadDemoExternalApi();
+      try {
+        await loadDemoExternalApi();
+      } catch(error) {
+        console.warn("External meeting API failed; trying embedded room",error);
+        const iframe=document.createElement("iframe");
+        iframe.src="https://meet.jit.si/"+encodeURIComponent(key)+"#config.prejoinPageEnabled=false&config.disableDeepLinking=true";
+        iframe.title="قاعة راصد المباشرة";
+        iframe.allow="camera; microphone; fullscreen; display-capture; autoplay";
+        iframe.referrerPolicy="strict-origin-when-cross-origin";
+        iframe.style.cssText="width:100%;height:100%;min-height:480px;border:0;display:block;background:#0c2028";
+        container.appendChild(iframe);
+        const note=document.createElement("div");
+        note.style.cssText="padding:8px;background:#fff5d9;color:#654400";
+        note.textContent="تم تشغيل القاعة بطريقة بديلة. لا يُحتسب الحضور تلقائيًا حتى نتأكد من دخول المشارك.";
+        container.prepend(note);
+        return {mode:"embedded-fallback",roomKey:key,dispose(){iframe.remove();note.remove();}};
+      }
 
       const api=
         new window.JitsiMeetExternalAPI(
