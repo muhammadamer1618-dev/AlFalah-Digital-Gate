@@ -3349,27 +3349,14 @@ let examAccessEnabledSubjectIds=null;
 ========================================= */
 
 function protectAdmin(){
-
-const role=
-rasedAuthGet("currentUserRole")||"";
-
-
-if(
-role!=="superadmin" &&
-role!=="admin"
-){
-
-alert(
-"هذه الصفحة للإدارة فقط"
-);
-
-location.href=
-"index.html";
-
+ const role=String(rasedAuthGet("currentUserRole")||"").trim().toLowerCase();
+ if(role!=="superadmin"&&role!=="admin"){
+  alert("هذه الصفحة للإدارة فقط");
+  location.href="index.html";
+  return false;
+ }
+ return true;
 }
-
-}
-
 
 /* =========================================
    أدوات
@@ -11157,7 +11144,7 @@ location.href="index.html";
 
 async function start(){
 
-protectAdmin();
+if(!protectAdmin())return;
 
 fillSelectors();
 
