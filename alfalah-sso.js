@@ -97,9 +97,6 @@ async function findRasedUser(username){
 }
 async function rasedLogin(username,password,type){
   const u=String(username||"").trim();
-  if(type==="supervision"&&u.toLowerCase()==="manager"&&password==="123456"){
-    return {username:"manager",name:"أحمد سمير",rasedRole:"manager",sourceRole:"manager",type};
-  }
   const data=await findRasedUser(u);
   if(!data||String(data.password??"")!==String(password))throw new Error("اسم المستخدم أو كلمة المرور غير صحيحة.");
   const role=String(data.role||"").trim().toLowerCase();
