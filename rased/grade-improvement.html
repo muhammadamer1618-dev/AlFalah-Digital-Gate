@@ -75,7 +75,7 @@ function sendImprovementNotice(code){
  const subject=subjects.find(x=>x.id===String(test.subjectId))?.name||g.subjectName||"غير محددة";
  const max=test.fullMark??g.fullMark??"—";
  const mark=g.mark??"غائب";
- const message="المكرم ولي أمر الطالب "+(st.name||g.studentName||"")+"\\nنحيطكم علمًا بأن درجة ابنكم في اختبار «"+(test.name||test.title||"الاختبار")+"» بمادة «"+subject+"» هي: "+mark+" من "+max+".\\nحرصًا على تحسين مستوى ابنكم، نرجو إفادتنا: هل ترغبون في إعادة الاختبار لتحسين الدرجة؟\\nيرجى الرد بـ (نعم، أرغب في الإعادة) أو (لا، لا أرغب في الإعادة).\\nمع خالص التقدير.\\n"+(role==="supervisor"?"المشرف التربوي: ":"معلم المادة: ")+actorName;
+ const message="المكرم ولي أمر الطالب "+(st.name||g.studentName||"")+"،\\nنحيطكم علمًا بأن ابنكم حصل في اختبار «"+(test.name||test.title||"الاختبار")+"» بمادة «"+subject+"» على "+mark+" من "+max+".\\nوسيتم إعادة الاختبار حسب اليوم المرسل لكم في مجموعة الصف، لذا يرجى الاستعداد الجيد للاختبار.\\nوفي حالة عدم الرغبة في الإعادة، يرجى إبلاغنا بذلك.\\nمع خالص التقدير.\\n"+(role==="supervisor"?"المشرف التربوي: ":"معلم المادة: ")+actorName;
  const url="https://wa.me/"+phone+"?text="+encodeURIComponent(message);
  const opened=window.open(url,"_blank","noopener,noreferrer");
  if(!opened)say("إذا لم تُفتح محادثة واتساب، اسمح بالنوافذ المنبثقة لهذا الموقع ثم اضغط زر الإرسال مرة أخرى.");
