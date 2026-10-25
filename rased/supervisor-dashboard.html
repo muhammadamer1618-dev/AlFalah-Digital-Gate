@@ -655,16 +655,52 @@ async function ensureVisitSupervisorSession(){
 }
 </script>
 <script>
-/* Admin-controlled dashboard card visibility; default is visible. */
+/* Admin-controlled supervisor card visibility, matched to stable titles. */
 (function(){
- const selector=".supervisor-dashboard-tool",role="supervisor";
+ const role="supervisor";
+ const cardKeysByTitle={
+  "متابعة الخطة الأسبوعية":"card0",
+  "الزيارات الفنية":"card1",
+  "تقارير الأنشطة":"card2",
+  "متابعة بنوك الأسئلة":"card3",
+  "إدارة أنشطة اللغة الإنجليزية":"card4",
+  "تحليل النتائج":"card5",
+  "مقارنة النتائج":"card6",
+  "إصدار كشف فارغ مرن":"card7",
+  "تحسين الدرجات":"card8",
+  "حصر مستحقي إعادة الاختبار":"card10",
+  "طباعة كشف الدرجات":"card11",
+  "متابعة الطلاب":"card12",
+  "حالة الرصد":"card13",
+  "الطلاب المحتاجون للدعم":"card14",
+  "متابعة الاختبارات الإلكترونية":"card15",
+  "إنشاء وإدارة الاختبارات الإلكترونية":"card16",
+  "أوائل الطلاب":"card17",
+  "تقرير الطالب الشامل":"card18",
+  "الأرشيف":"card19",
+  "التوجيه الطلابي":"card20",
+  "الملفات والتوثيق":"card21",
+  "الدورات والاجتماعات":"card22",
+  "الحصص المباشرة":"card23",
+  "الطلاب":"card24",
+  "المعلمون":"card25",
+  "المواد":"card26",
+  "الاختبارات":"card27",
+  "جداول الاختبارات":"card28",
+  "سجل الرسائل":"card29",
+  "تغيير كلمة المرور":"card30"
+ };
  async function applyVisibility(){
   try{
-   const cards=Array.from(document.querySelectorAll(selector));
+   const cards=Array.from(document.querySelectorAll(".supervisor-dashboard-tool"));
    if(!cards.length)return;
    const settings=await db.collection("systemSettings").doc(role+"PortalCards").get();
    const flags=settings.exists?(settings.data().visibility||{}):{};
-   cards.forEach((card,i)=>{if(flags["card"+i]===false)card.style.setProperty("display","none","important")});
+   cards.forEach(card=>{
+    const title=card.querySelector("strong")?.textContent.trim();
+    const key=cardKeysByTitle[title];
+    if(key&&flags[key]===false)card.style.setProperty("display","none","important");
+   });
   }catch(e){console.warn("Dashboard visibility could not be loaded",e)}
  }
  window.addEventListener("load",applyVisibility);
