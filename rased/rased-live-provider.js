@@ -248,13 +248,13 @@
     return token;
   }
 
-  function openEmbeddedFallback(container,key,reason){
+  function openEmbeddedFallback(container,key,reason,user){
     container.innerHTML="";
     const notice=document.createElement("div");
     notice.style.cssText="padding:10px;background:#fff2cf;color:#583c00;font-size:13px";
     notice.textContent="تعذر الاتصال بمزود القاعات المخصص ("+reason+"). محاولة فتح القاعة داخل راصد؛ لا يُحتسب الحضور تلقائيًا في الوضع البديل.";
     const iframe=document.createElement("iframe");
-    iframe.src="https://meet.jit.si/"+encodeURIComponent(key)+"#config.prejoinPageEnabled=false&config.disableDeepLinking=true";
+    iframe.src="https://meet.jit.si/"+encodeURIComponent(key)+"#config.prejoinPageEnabled=false&config.disableDeepLinking=true&userInfo.displayName="+encodeURIComponent(String(user?.name||user?.email||"مستخدم راصد"));
     iframe.title="القاعة المباشرة داخل راصد";
     iframe.allow="camera; microphone; fullscreen; display-capture; autoplay";
     iframe.referrerPolicy="strict-origin-when-cross-origin";
@@ -336,7 +336,7 @@
       } catch(error) {
         console.warn("External meeting API failed; trying embedded room",error);
         const iframe=document.createElement("iframe");
-        iframe.src="https://meet.jit.si/"+encodeURIComponent(key)+"#config.prejoinPageEnabled=false&config.disableDeepLinking=true";
+        iframe.src="https://meet.jit.si/"+encodeURIComponent(key)+"#config.prejoinPageEnabled=false&config.disableDeepLinking=true&userInfo.displayName="+encodeURIComponent(String(user?.name||user?.email||"مستخدم راصد"));
         iframe.title="قاعة راصد المباشرة";
         iframe.allow="camera; microphone; fullscreen; display-capture; autoplay";
         iframe.referrerPolicy="strict-origin-when-cross-origin";
@@ -505,7 +505,7 @@
         );
       } catch(error) {
         console.error("JaaS token endpoint unavailable",error);
-        return openEmbeddedFallback(container,key,"خدمة تصريح الدخول");
+        return openEmbeddedFallback(container,key,"خدمة تصريح الدخول",user);
       }
 
       const fullRoom=
