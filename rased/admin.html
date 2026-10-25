@@ -1257,13 +1257,6 @@ onclick="scrollToSection('supervisorsSection')">
 
 </button>
 
-<button
-class="btn-dark"
-onclick="scrollToSection('liveProviderSettingsSection')">
-
-🎥 إعداد مزود الحصص المباشرة
-
-</button>
 </div>
 
 
@@ -1408,7 +1401,7 @@ id="statClasses">
     <button class="admin-dashboard-tool" data-admin-target="supervisorsSection" onclick="showAdminFeature('supervisorsSection',this,'حسابات الإشراف والصلاحيات')"><span>🛡️</span><strong>حسابات المشرفين</strong><small>الحسابات والصلاحيات والإسنادات</small></button>
     <button class="admin-dashboard-tool" data-admin-target="studentCounselorsSection" onclick="showAdminFeature('studentCounselorsSection',this,'حسابات الموجه الطلابي')"><span>🧭</span><strong>حسابات الموجهين</strong><small>إضافة وتعديل حسابات التوجيه الطلابي</small></button>
     <button class="admin-dashboard-tool" data-admin-target="activityLeadersSection" onclick="showAdminFeature('activityLeadersSection',this,'حسابات رواد النشاط')"><span>🎯</span><strong>حسابات رواد النشاط</strong><small>إضافة وتعديل حسابات رواد النشاط</small></button>
-    <button class="admin-dashboard-tool" data-admin-target="liveProviderSettingsSection" onclick="showAdminFeature('liveProviderSettingsSection',this,'إعداد مزود الحصص المباشرة')"><span>🎥</span><strong>مزود الحصص المباشرة</strong><small>إعدادات البث والقاعات</small></button>
+
     <button class="admin-dashboard-tool" data-admin-target="cleanupSection" onclick="showAdminFeature('cleanupSection',this,'تنظيف بيانات راصد')"><span>⚠️</span><strong>إعادة ضبط</strong><small>عمليات الحذف الجماعي الحساسة</small></button>
 </div></div>
 
@@ -2664,55 +2657,6 @@ onclick="clearCurrentTeacherAssignments()">
 ========================================= -->
 
 
-<!-- =========================================
-     إعداد مزود الحصص المباشرة
-========================================= -->
-<div class="box" id="liveProviderSettingsSection">
-<div class="box-title">🎥 إعداد مزود الحصص المباشرة — إعداد إداري</div>
-<div class="box-body">
-
-<div class="note" style="margin-top:0">
-هذه إعدادات عامة للنظام كله، لذلك يتم ضبطها من صفحة الأدمن فقط.
-لا يحتاج المشرف أو المعلم أو الطالب إلى إدخال App ID أو Token Endpoint.
-</div>
-
-<div class="row">
-<div class="col">
-<label>نوع مزود القاعة</label>
-<select id="adminProviderType" onchange="toggleAdminProviderFields()">
-<option value="none">غير مهيأ</option>
-<option value="jaas">Jitsi as a Service (JaaS)</option>
-<option value="iframe">رابط تضمين مخصص</option>
-</select>
-</div>
-
-<div class="col" id="adminJaasAppWrap">
-<label>JaaS App ID</label>
-<input id="adminJaasAppId" placeholder="vpaas-magic-cookie-...">
-</div>
-
-<div class="col" id="adminTokenWrap">
-<label>Token Endpoint</label>
-<input id="adminTokenEndpoint" placeholder="https://...workers.dev">
-</div>
-</div>
-
-<div class="row" id="adminIframeWrap" style="margin-top:12px">
-<div class="col">
-<label>رابط التضمين — يجب أن يحتوي {room}</label>
-<input id="adminEmbedUrlTemplate" placeholder="https://provider.example/embed/{room}?name={name}">
-</div>
-</div>
-
-<div class="actions">
-<button class="btn-success" onclick="saveAdminLiveProvider()">💾 حفظ / تعديل إعداد المزود</button>
-<button class="btn-danger" onclick="deleteAdminLiveProvider()">🗑️ حذف إعداد المزود</button>
-<span id="adminProviderState" class="info-box" style="margin:0;padding:8px 12px">جاري تحميل الإعداد...</span>
-</div>
-
-</div>
-</div>
-
 <div class="box" id="supervisorsSection">
 <div class="box-title">🛡️ حسابات الإشراف والصلاحيات</div>
 <div class="box-body">
@@ -2825,12 +2769,11 @@ onclick="clearCurrentTeacherAssignments()">
 </div>
 
 <div class="permission-group">
-<div class="permission-group-title">🎓 الدورات والاجتماعات والحصص المباشرة</div>
+<div class="permission-group-title">🎓 الدورات والاجتماعات</div>
 <div class="permission-grid">
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permStaffFilesView" checked><span>📁 منظومة الملفات والتوثيق الإشرافي (طلبات المعلمين ومراجعة الشواهد)</span></label>
 <label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permTrainingManage" checked><span>🎓 إدارة الدورات والاجتماعات</span></label>
-<label class="permission-item"><input type="checkbox" class="supervisor-permission-check" id="permLiveClassesView" checked><span>💻 متابعة الحصص المباشرة</span></label>
-<label class="permission-item" id="liveClassesSettingsPermissionItem"><input type="checkbox" class="supervisor-permission-check" id="permLiveClassesSettings"><span>⚙️ إعدادات الحصص المباشرة <small style="display:block;color:#64748b;margin-top:3px">متاحة لأي نوع حساب إشراف عند تفعيلها: أيام التعليق وأوقات الحصص</small></span></label>
+
 </div>
 </div>
 
@@ -3951,7 +3894,7 @@ async function migrateStudentRecords(oldCode,newCode,moveStudent,studentFields){
   }else if(!newStudent.exists){
     throw Error("الطالب بالكود الجديد غير موجود؛ لا يمكن استعادة درجاته");
   }
-  const names=["grades","studentAchievements","studentCertificates","guidanceIncidents","liveClassAttendance","messageLogs","examSchedules"];
+  const names=["grades","studentAchievements","studentCertificates","guidanceIncidents","messageLogs","examSchedules"];
   const records=[];
   for(const name of names){
     const q=await db.collection(name).where("studentCode","==",oldCode).get();
@@ -3966,8 +3909,6 @@ async function migrateStudentRecords(oldCode,newCode,moveStudent,studentFields){
     if(item.name==="grades"){
       if(!item.data.testId)throw Error("درجة بلا رقم اختبار؛ أُوقف النقل لحمايتها");
       dest=db.collection("grades").doc(String(item.data.testId)+"_"+newCode);
-    }else if(item.name==="liveClassAttendance"&&item.data.classId){
-      dest=db.collection("liveClassAttendance").doc(String(item.data.classId)+"_"+newCode.replace(/[^0-9A-Za-z_-]/g,"_"));
     }
     if(dest.path!==item.doc.ref.path && (await dest.get()).exists)
       throw Error("تعارض في "+item.name+"؛ لم يتم تعديل أي شيء");
@@ -9504,87 +9445,7 @@ printWindow.document.close();
 }
 
 
-/* =========================================
-   إعداد مزود الحصص المباشرة - للأدمن فقط
-========================================= */
 
-function toggleAdminProviderFields(){
-const type=document.getElementById("adminProviderType")?.value||"none";
-const jaas=document.getElementById("adminJaasAppWrap");
-const token=document.getElementById("adminTokenWrap");
-const iframe=document.getElementById("adminIframeWrap");
-if(jaas)jaas.style.display=type==="jaas"?"block":"none";
-if(token)token.style.display=type==="jaas"?"block":"none";
-if(iframe)iframe.style.display=type==="iframe"?"flex":"none";
-}
-
-function adminProviderStatus(cfg){
-const type=String(cfg?.type||"none").toLowerCase();
-if(type==="jaas"){
-if(!String(cfg?.jaasAppId||"").trim()||!String(cfg?.tokenEndpoint||"").trim()){
-return {ok:false,text:"⚠️ إعداد JaaS غير مكتمل"};
-}
-return {ok:true,text:"✅ JaaS مهيأ للإنتاج"};
-}
-if(type==="iframe"){
-if(!String(cfg?.embedUrlTemplate||"").includes("{room}")){
-return {ok:false,text:"⚠️ رابط التضمين يجب أن يحتوي {room}"};
-}
-return {ok:true,text:"✅ مزود التضمين مهيأ"};
-}
-return {ok:false,text:"⚠️ لا يوجد مزود قاعات مهيأ"};
-}
-
-async function loadAdminLiveProvider(){
-const d=await db.collection("systemSettings").doc("liveMeetingProvider").get();
-const cfg=d.exists?(d.data()||{}):{type:"none"};
-document.getElementById("adminProviderType").value=cfg.type||"none";
-document.getElementById("adminJaasAppId").value=cfg.jaasAppId||"";
-document.getElementById("adminTokenEndpoint").value=cfg.tokenEndpoint||"";
-document.getElementById("adminEmbedUrlTemplate").value=cfg.embedUrlTemplate||"";
-toggleAdminProviderFields();
-const st=adminProviderStatus(cfg);
-const node=document.getElementById("adminProviderState");
-if(node){
-node.textContent=st.text;
-node.style.background=st.ok?"#e8f7ee":"#fff8db";
-node.style.color=st.ok?"#146b3a":"#715d00";
-}
-}
-
-async function saveAdminLiveProvider(){
-const cfg={
-type:document.getElementById("adminProviderType").value,
-jaasAppId:document.getElementById("adminJaasAppId").value.trim(),
-tokenEndpoint:document.getElementById("adminTokenEndpoint").value.trim(),
-embedUrlTemplate:document.getElementById("adminEmbedUrlTemplate").value.trim()
-};
-if(cfg.type==="jaas"&&(!cfg.jaasAppId||!cfg.tokenEndpoint)){
-alert("أدخل JaaS App ID و Token Endpoint.");return;
-}
-if(cfg.type==="iframe"&&!cfg.embedUrlTemplate.includes("{room}")){
-alert("رابط التضمين يجب أن يحتوي على {room}.");return;
-}
-await db.collection("systemSettings").doc("liveMeetingProvider").set({
-...cfg,
-updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
-updatedBy:rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"admin"
-},{merge:true});
-await loadAdminLiveProvider();
-alert("تم حفظ إعداد مزود الحصص المباشرة ✅");
-}
-
-async function deleteAdminLiveProvider(){
-if(!confirm("حذف إعداد مزود القاعات؟\n\nلن تُحذف الحصص أو التقارير، لكن لن تعمل القاعات الإنتاجية حتى يتم إعداد المزود مرة أخرى."))return;
-if(prompt("اكتب: حذف")!=="حذف")return;
-await db.collection("systemSettings").doc("liveMeetingProvider").delete();
-await loadAdminLiveProvider();
-alert("تم حذف إعداد مزود القاعات.");
-}
-
-/* =========================================
-   حسابات المشرفين العامين والصلاحيات
-========================================= */
 
 const SUPERVISOR_PERMISSION_DEFS=[
 ["studentsView","permStudentsView","الطلاب"],
@@ -9620,8 +9481,8 @@ const SUPERVISOR_PERMISSION_DEFS=[
 ["guidanceDelete","permGuidanceDelete","حذف سجلات التوجيه"],
 ["staffFilesView","permStaffFilesView","منظومة الملفات والتوثيق الإشرافي"],
 ["trainingManage","permTrainingManage","الدورات والاجتماعات"],
-["liveClassesView","permLiveClassesView","الحصص المباشرة"],
-["liveClassesSettings","permLiveClassesSettings","إعدادات الحصص المباشرة"],
+
+
 ["englishActivitiesManage","permEnglishActivitiesManage","إدارة أنشطة اللغة الإنجليزية"],["questionBanksView","permQuestionBanksView","متابعة بنوك الأسئلة"]
 ];
 
@@ -9689,21 +9550,12 @@ if(panel){
 panel.style.display=type==="supervisor"?"block":"none";
 if(type==="supervisor")renderSupervisorTeacherAssignmentList(forceSelected);
 }
-const settingsBox=document.getElementById("permLiveClassesSettings");
-const settingsItem=document.getElementById("liveClassesSettingsPermissionItem");
-if(settingsBox){
-settingsBox.disabled=false;
-if(settingsItem){
-settingsItem.style.opacity="1";
-settingsItem.title="يمكن منح صلاحية إعدادات الحصص المباشرة لأي حساب إشراف.";
-}
-}
 }
 
 function normalizeSupervisorPermissions(raw){
 const source=raw||{},out={};
 SUPERVISOR_PERMISSION_DEFS.forEach(([key])=>{
-out[key]=(key==="liveClassesSettings"||key==="onlineExamsManage"||key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="gradeImprovement"||key==="retestNotices"||key==="studentFollowupView"||key==="englishActivitiesManage")?source[key]===true:source[key]!==false;
+out[key]=(key===key==="onlineExamsManage"||key==="gradeSheetPrint"||key==="blankGradeSheet"||key==="gradeImprovement"||key==="retestNotices"||key==="studentFollowupView"||key==="englishActivitiesManage")?source[key]===true:source[key]!==false;
 });
 return out;
 }
@@ -9910,8 +9762,7 @@ toggleSupervisorTeacherScope([]);
 setAllSupervisorPermissions(true);
 const onlineExamsBox=document.getElementById("permOnlineExamsManage");
 if(onlineExamsBox)onlineExamsBox.checked=false;
-const liveSettingsBox=document.getElementById("permLiveClassesSettings");
-if(liveSettingsBox)liveSettingsBox.checked=false;
+
 }
 
 async function deleteSupervisor(username){
@@ -11170,7 +11021,7 @@ clearGradingWindowForm();
 
 await loadMessageLogs();
 await loadExamSchedules();
-await loadAdminLiveProvider();
+
 clearExamScheduleForm();
 
 }
@@ -11415,7 +11266,7 @@ window.addEventListener("load",loadPortfolioParentEnabled);
 <div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><button type="button" class="btn-primary" onclick="saveStudentPortalControls()">💾 حفظ إعدادات البوابة</button><span id="studentPortalControlStatus" role="status"></span></div>
 </section>
 <script>
-const studentPortalCards=[["exams","الاختبارات الإلكترونية"],["results","نتائج الاختبارات"],["plan","الخطة الأسبوعية"],["schedule","جدول الحصص"],["examSchedule","جدول الاختبارات"],["activities","الأنشطة الطلابية"],["interactive","الأنشطة التفاعلية"],["questionBanks","بنوك الأسئلة"],["english","أنشطة اللغة الإنجليزية"],["teacherNotes","ملاحظات المعلمين"],["guidance","التوجيه الطلابي"],["liveClasses","الحصص المباشرة"]];
+const studentPortalCards=[["exams","الاختبارات الإلكترونية"],["results","نتائج الاختبارات"],["plan","الخطة الأسبوعية"],["schedule","جدول الحصص"],["examSchedule","جدول الاختبارات"],["activities","الأنشطة الطلابية"],["interactive","الأنشطة التفاعلية"],["questionBanks","بنوك الأسئلة"],["english","أنشطة اللغة الإنجليزية"],["teacherNotes","ملاحظات المعلمين"],["guidance","التوجيه الطلابي"]];
 function renderStudentPortalControls(flags={}){
  document.getElementById("studentPortalToggles").innerHTML=studentPortalCards.map(([id,name])=>'<label style="display:flex;align-items:center;gap:10px;padding:14px;border:1px solid #d7e5dc;border-radius:12px;background:#f7faf8;cursor:pointer"><input type="checkbox" data-portal-card="'+id+'" '+(flags[id]!==false?'checked':'')+' style="width:20px;height:20px"><span>'+name+'</span></label>').join("");
 }
@@ -11444,7 +11295,7 @@ window.addEventListener("load",loadStudentPortalControls);
 <div id="supervisorPortalToggles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"></div>
 <button type="button" class="btn-primary" onclick="saveRolePortal('supervisor')">💾 حفظ إعدادات بوابة المشرف</button>
 <span id="supervisorPortalStatus" role="status"></span></section><script>
-const rolePortalNames={"teacher":["إصدار كشف درجات فارغ","تحسين الدرجات","","حصر مستحقي إعادة الاختبار","رصد الدرجات","متابعة الطالب","الخطة الأسبوعية","زياراتي الفنية","عرض مستوى الطالب","سجل رسائل أولياء الأمور","تحليل نتائج الفصل","الاختبارات الإلكترونية","الأنشطة التفاعلية","مركز الملفات والتوثيق","الدورات والاجتماعات","الحصص المباشرة","رفع أوراق العمل","أنشطة اللغة الإنجليزية","الأنشطة والتقارير","رفع ملف وتوليد رابط","تغيير كلمة المرور"],"supervisor":["متابعة الخطة الأسبوعية","الزيارات الفنية","تقارير الأنشطة","متابعة بنوك الأسئلة","إدارة أنشطة اللغة الإنجليزية","تحليل النتائج","مقارنة النتائج","إصدار كشف فارغ مرن","تحسين الدرجات","","حصر مستحقي إعادة الاختبار","طباعة كشف الدرجات","متابعة الطلاب","حالة الرصد","الطلاب المحتاجون للدعم","متابعة الاختبارات الإلكترونية","إنشاء وإدارة الاختبارات","أوائل الطلاب","تقرير الطالب الشامل","الأرشيف","التوجيه الطلابي","الملفات والتوثيق","الدورات والاجتماعات","الحصص المباشرة","الطلاب","المعلمون","المواد","الاختبارات","جداول الاختبارات","سجل الرسائل","تغيير كلمة المرور"]};
+const rolePortalNames={"teacher":["إصدار كشف درجات فارغ","تحسين الدرجات","","حصر مستحقي إعادة الاختبار","رصد الدرجات","متابعة الطالب","الخطة الأسبوعية","زياراتي الفنية","عرض مستوى الطالب","سجل رسائل أولياء الأمور","تحليل نتائج الفصل","الاختبارات الإلكترونية","الأنشطة التفاعلية","مركز الملفات والتوثيق","الدورات والاجتماعات","","رفع أوراق العمل","أنشطة اللغة الإنجليزية","الأنشطة والتقارير","رفع ملف وتوليد رابط","تغيير كلمة المرور"],"supervisor":["متابعة الخطة الأسبوعية","الزيارات الفنية","تقارير الأنشطة","متابعة بنوك الأسئلة","إدارة أنشطة اللغة الإنجليزية","تحليل النتائج","مقارنة النتائج","إصدار كشف فارغ مرن","تحسين الدرجات","","حصر مستحقي إعادة الاختبار","طباعة كشف الدرجات","متابعة الطلاب","حالة الرصد","الطلاب المحتاجون للدعم","متابعة الاختبارات الإلكترونية","إنشاء وإدارة الاختبارات","أوائل الطلاب","تقرير الطالب الشامل","الأرشيف","التوجيه الطلابي","الملفات والتوثيق","الدورات والاجتماعات","","الطلاب","المعلمون","المواد","الاختبارات","جداول الاختبارات","سجل الرسائل","تغيير كلمة المرور"]};
 function renderRolePortal(role,flags={}){
  const box=document.getElementById(role+"PortalToggles");
  box.innerHTML=rolePortalNames[role].map((name,i)=>name?'<label style="display:flex;gap:10px;align-items:center;padding:12px;border:1px solid #d7e5dc;border-radius:12px;background:#f7faf8"><input type="checkbox" data-role="'+role+'" data-card="card'+i+'" '+(flags["card"+i]!==false?"checked":"")+' style="width:20px;height:20px"><span>'+name+'</span></label>':"").join("");
