@@ -106,6 +106,7 @@ async function sendViaWhatsDirect(phoneNumber,content){const response=await fetc
 async function init(){
  try{
   role=norm(getSession("currentUserRole"));account=norm(getSession("currentUserEmail")||getSession("currentUser"));
+  if(role==="teacher")throw Error("تم إيقاف الإرسال الجماعي لحسابات المعلمين.");
   if(!account||!["teacher","supervisor","admin","superadmin"].includes(role))throw Error("الحساب غير مصرح له بالدخول إلى الرسائل الجماعية.");
   if(role==="teacher")$("back").href="teacher.html";else if(role==="supervisor")$("back").href="supervisor-dashboard.html";else $("back").href="admin.html";
   if(role==="teacher"){
@@ -133,6 +134,7 @@ $("students").addEventListener("change",e=>{const cb=e.target.closest('input[typ
 $("selectAll").addEventListener("click",()=>{visible.filter(st=>phone(st)).forEach(st=>selected.add(String(st.code)));updateStudents()});$("clearAll").addEventListener("click",()=>{selected.clear();updateStudents()});$("message").addEventListener("input",preview);document.querySelectorAll('input[name="mode"]').forEach(x=>x.addEventListener("change",preview));$("previewBtn").addEventListener("click",preview);
 $("insertTemplate").addEventListener("click",()=>{$("message").value="المكرم ولي أمر الطالب {{اسم_الطالب}}،\nنحيطكم علمًا بأن لدينا تنبيهًا بخصوص {{المادة}} للصف {{الصف}} / الفصل {{الفصل}}.\n{{الاختبار}}: الدرجة {{الدرجة}} من {{الدرجة_النهائية}}.\nشاكرين لكم تعاونكم.\n"+senderName;document.querySelector('input[name="mode"][value="personalized"]').checked=true;preview();});
 $("send").addEventListener("click",async()=>{
+ if(role==="teacher"){status("الإرسال الجماعي غير متاح لحسابات المعلمين.","error");return;}
  if(busy)return;const message=$("message").value.trim(),recipients=visible.filter(st=>selected.has(String(st.code))&&phone(st));
  if(!recipients.length)return setStatus("حدد طالبًا واحدًا على الأقل لديه رقم جوال صالح.","error");if(!message)return setStatus("اكتب نص الرسالة أولًا.","error");
  if(currentMode()==="personalized"&&message.includes("{{")&&recipients.some(st=>replaceTokens(message,st).match(/\{\{[^{}]+\}\}/)))return setStatus("يوجد رمز تخصيص غير معروف. راجع الرموز المكتوبة بين الأقواس المزدوجة.","error");
