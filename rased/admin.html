@@ -2645,18 +2645,6 @@ onclick="clearCurrentTeacherAssignments()">
 يمكن البحث والتصفية ثم طباعة النتائج الظاهرة فقط.
 </div>
 
-<div style="border:1px solid #cbdff0;background:#f5faff;border-radius:12px;padding:16px;margin:14px 0">
- <h3 style="margin:0 0 8px;color:#174f7c">🔗 ربط الواتس مباشر (API)</h3>
- <p style="margin:0 0 12px;color:#526477">احفظ مفتاح API مرة واحدة، ثم تستخدمه صفحات المعلم والمشرف والمخالفات وإعادة الاختبار لإرسال الرسائل مباشرة وتسجيل حالة الطلب.</p>
- <label for="whatsDirectApiKey">مفتاح API</label>
- <input id="whatsDirectApiKey" type="password" autocomplete="new-password" placeholder="الصق مفتاح API الذي يبدأ بـ wsk_ هنا" style="width:100%;margin:6px 0 10px;padding:11px;border:1px solid #cbd5e1;border-radius:8px">
- <div class="actions">
-  <button class="btn-primary" type="button" onclick="saveWhatsDirectConfig()">💾 حفظ مفتاح API</button>
-  <button class="btn-light" type="button" onclick="testWhatsDirectConfig()">🧪 اختبار الاتصال</button>
- </div>
- <div id="whatsDirectConfigStatus" role="status" style="margin-top:10px;font-weight:bold">لم يتم التحقق من إعداد الواتس مباشر بعد.</div>
-</div>
-
 <div class="message-filters">
 
 <div>
@@ -2688,7 +2676,6 @@ onclick="clearCurrentTeacherAssignments()">
 <div class="actions">
 <button class="btn-light" onclick="clearMessageFilters()">مسح البحث والتصفية</button>
 <button class="btn-primary" onclick="loadMessageLogs()">↻ تحديث السجل</button>
-<button class="btn-primary" id="refreshMessageStatuses" onclick="refreshWhatsDirectStatuses()">↻ تحديث حالات الواتساب</button>
 <button class="btn-gold" onclick="printMessageLog()">🖨️ طباعة سجل الرسائل</button>
 <button class="btn-danger" onclick="deleteAllMessageLogs()">🗑️ حذف جميع الرسائل</button>
 </div>
@@ -9032,96 +9019,6 @@ unique.size;
    سجل الرسائل
 ========================================= */
 
-async function loadWhatsDirectConfig(){
- const status=document.getElementById("whatsDirectConfigStatus");
- if(!status)return;
- try{
-  const d=await db.collection("systemSettings").doc("whatsDirect").get();
-  status.textContent=d.exists&&d.data().apiKey?"✅ مفتاح API محفوظ. يمكنك اختبار الاتصال.":"لم يتم حفظ مفتاح API بعد.";
- }catch(e){status.textContent="تعذر قراءة إعداد الواتس مباشر: "+e.message;}
-}
-async function saveWhatsDirectConfig(){
- const input=document.getElementById("whatsDirectApiKey"),status=document.getElementById("whatsDirectConfigStatus");
- const apiKey=String(input?.value||"").trim();
- if(!apiKey){status.textContent="الصق مفتاح API أولًا.";return;}
- status.textContent="جارٍ حفظ الإعداد...";
- try{
-  await db.collection("systemSettings").doc("whatsDirect").set({apiKey,enabled:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-  input.value="";
-  status.textContent="✅ تم حفظ مفتاح API. اختبر الاتصال للتأكد من عمله.";
- }catch(e){status.textContent="تعذر حفظ الإعداد: "+e.message;}
-}
-async function testWhatsDirectConfig(){
- const status=document.getElementById("whatsDirectConfigStatus");
- status.textContent="جارٍ اختبار الاتصال...";
- try{
-  const d=await db.collection("systemSettings").doc("whatsDirect").get();
-  const apiKey=String(d.exists?d.data().apiKey||"":"").trim();
-  if(!apiKey)throw new Error("احفظ مفتاح API أولًا.");
-  const response=await fetch("https://wa.smart-whats.com/api/stats",{headers:{"X-API-Key":apiKey}});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(data.message||data.error||("HTTP "+response.status));
-  status.textContent="✅ الاتصال ناجح. إجمالي الطلبات: "+(data.total??"—")+"، في الانتظار: "+(data.pending??"—")+"، المرسلة: "+(data.sent??"—")+"، الفاشلة: "+(data.failed??"—")+".";
- }catch(e){status.textContent="❌ فشل اختبار الاتصال: "+e.message+" (قد تكون المشكلة في المفتاح أو سماح API بطلبات المتصفح).";}
-}
-
-
-async function refreshWhatsDirectStatuses(showResult=true){
- const btn=document.getElementById("refreshMessageStatuses");
- if(btn)btn.disabled=true;
- try{
-  const settings=await db.collection("systemSettings").doc("whatsDirect").get();
-  const key=String(settings.exists?settings.data().apiKey||"":"").trim();
-  if(!key)throw new Error("مفتاح API غير محفوظ في إعدادات راصد.");
-  const targets=(messageLogs||[]).filter(x=>x.provider==="whats-direct"&&x.providerMessageId&&["pending","sending","queued","processing",""].includes(String(x.providerStatus||"").toLowerCase()));
-  if(!targets.length){if(showResult)alert("لا توجد رسائل معلقة لها معرّف من أداة الواتساب لتحديث حالتها.");return;}
-  const wanted=new Set(targets.map(x=>String(x.providerMessageId)));
-  const found=new Map();
-  let page=1;
-  for(;page<=10;page++){
-   const response=await fetch("https://wa.smart-whats.com/api/messages?page="+page,{headers:{"X-API-Key":key}});
-   const payload=await response.json().catch(()=>({}));
-   if(!response.ok)throw new Error(payload.message||payload.error||("HTTP "+response.status));
-   function findItems(value,depth=0){
-    if(Array.isArray(value))return value;
-    if(!value||typeof value!=="object"||depth>4)return [];
-    for(const k of ["messages","items","results","rows","data"]){
-     if(Array.isArray(value[k]))return value[k];
-     if(value[k]&&typeof value[k]==="object"){const nested=findItems(value[k],depth+1);if(nested.length)return nested;}
-    }
-    return [];
-   }
-   const items=findItems(payload);
-   for(const item of items){
-    const id=String(item.id||item._id||item.messageId||item.message_id||item.uuid||"");
-    const raw=String(item.status||item.state||item.deliveryStatus||item.delivery_status||"").toLowerCase();
-    if(!id||!wanted.has(id)||!raw)continue;
-    let status="";
-    if(["sent","delivered","success","successful","completed","complete","done"].includes(raw))status="sent";
-    else if(["failed","failure","error","rejected","undelivered"].includes(raw))status="failed";
-    else if(["sending","processing","in_progress","in-progress"].includes(raw))status="sending";
-    else if(["pending","queued","queue","waiting"].includes(raw))status="pending";
-    if(status)found.set(id,{status,raw});
-   }
-   if([...wanted].every(id=>found.has(id)))break;
-   const pagination=payload.pagination||payload.meta?.pagination||payload.meta||{};
-   const totalPages=Number(pagination.totalPages||pagination.total_pages||pagination.pages||pagination.lastPage||pagination.last_page||0);
-   if(totalPages&&page>=totalPages)break;
-   if(!items.length||items.length<10)break;
-  }
-  let updated=0;
-  for(const log of targets){
-   const match=found.get(String(log.providerMessageId));
-   if(!match||match.status===String(log.providerStatus||"").toLowerCase())continue;
-   await db.collection("messageLogs").doc(log.id).update({providerStatus:match.status,providerStatusRaw:match.raw,providerStatusSyncedAt:firebase.firestore.FieldValue.serverTimestamp()});
-   log.providerStatus=match.status;log.providerStatusRaw=match.raw;updated++;
-  }
-  renderMessageLogs();
-  if(showResult)alert(updated?"تم تحديث حالة "+updated+" رسالة من أداة الواتساب.":"لم ترجع أداة الواتساب حالة أحدث للرسائل المحددة؛ لم نغيّر أي حالة بالتخمين.");
- }catch(error){console.error("WHATS DIRECT STATUS SYNC ERROR",error);if(showResult)alert("تعذر تحديث حالات الرسائل من أداة الواتساب:\\n"+error.message);}
- finally{if(btn)btn.disabled=false;}
-}
-
 async function loadMessageLogs(){
 
 const body=document.getElementById("messagesBody");
@@ -9174,7 +9071,6 @@ document.getElementById("messageCountBadge").textContent=
 messageLogs.length;
 
 renderMessageLogs();
-refreshWhatsDirectStatuses(false);
 
 }catch(error){
 
@@ -9317,7 +9213,7 @@ ${escapeHtml(log.guardianPhone||"-")}
 ${escapeHtml(log.message||"-")}${log.fileUrl?`<br><a class="file-link" href="${escapeHtml(log.fileUrl)}" target="_blank">📎 فتح ${escapeHtml(log.fileName||"الملف")}</a>`:""}
 </td>
 
-<td>${escapeHtml(log.providerStatus?({pending:"في الانتظار",sending:"جارٍ الإرسال",sent:"تم الإرسال",failed:"فشل الإرسال"}[log.providerStatus]||log.providerStatus):(log.provider==="whats-direct"?"غير محدد":"واتساب ويب / سجل قديم"))}</td>
+<td>${escapeHtml(log.providerStatus?({pending:"في الانتظار",sending:"جارٍ الإرسال",sent:"تم الإرسال",failed:"فشل الإرسال"}[log.providerStatus]||log.providerStatus):"واتساب / سجل قديم")}</td>
 <td>
 <button class="small-btn btn-danger" onclick='deleteMessageLog(${JSON.stringify(log.id)})'>🗑️ حذف</button>
 </td>
@@ -11853,7 +11749,6 @@ async function saveAdminGradeMatrix(){
 async function savePortfolioParentEnabled(){const msg=document.getElementById("portfolioPublishMessage");try{const enabled=document.getElementById("portfolioParentEnabled").checked;await db.collection("systemSettings").doc("studentPortfolio").set({parentVisible:enabled},{merge:true});msg.textContent="تم حفظ الإعداد";}catch(e){msg.textContent="تعذر الحفظ: "+e.message;}}
 async function loadPortfolioParentEnabled(){try{const d=await db.collection("systemSettings").doc("studentPortfolio").get();document.getElementById("portfolioParentEnabled").checked=d.exists&&d.data().parentVisible===true;}catch(e){document.getElementById("portfolioPublishMessage").textContent="تعذر قراءة الإعداد";}}
 window.addEventListener("load",loadPortfolioParentEnabled);
-window.addEventListener("load",loadWhatsDirectConfig);
 </script>
 <section id="studentPortalControls" style="max-width:1100px;margin:28px auto;padding:24px;border:1px solid #d5e3dc;border-radius:18px;background:#fff;direction:rtl;scroll-margin-top:30px">
 <h2 style="color:#064e3b;margin:0 0 8px">🎛️ التحكم في بوابة الطالب</h2>
