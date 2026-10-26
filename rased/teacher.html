@@ -8,6 +8,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -1360,6 +1361,10 @@ body{
 
 </div>
 
+<div class="export-rased-box" style="margin:14px 0;padding:12px;border:1px solid #c9d9e6;border-radius:10px;background:#f7fbff;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+  <div><strong>تصدير درجات راصد لكل المواد</strong><div style="font-size:11px;color:#64748b;margin-top:4px">يُصدّر الدرجات المحفوظة في موادك وفصولك، مع أسماء الطلاب كما هي في راصد.</div></div>
+  <button type="button" id="exportAllGradesBtn" class="action-btn" style="background:#0e7463;color:#fff" onclick="exportAllTeacherGrades()">📥 تصدير Excel</button>
+</div>
 
 <div class="test-info">
 
@@ -3949,6 +3954,57 @@ entered
 
 }
 
+
+/* Export all saved grades by this teacher, across every assigned subject/class. */
+async function exportAllTeacherGrades(){
+ const button=el("exportAllGradesBtn");
+ const originalText=button?.textContent||"📥 تصدير Excel";
+ if(!currentUsername){alert("تعذر تحديد حساب المعلم.");return}
+ if(!window.XLSX){alert("تعذر تحميل أداة إنشاء ملف Excel. حدّث الصفحة وحاول مرة أخرى.");return}
+ if(button){button.disabled=true;button.textContent="⏳ جارٍ تجهيز الملف..."}
+ try{
+  const snap=await db.collection("grades").where("teacherEmail","==",currentUsername).get();
+  const rows=snap.docs.map(doc=>({id:doc.id,...(doc.data()||{})}))
+   .filter(row=>String(row.teacherEmail||"").trim().toLowerCase()===String(currentUsername).trim().toLowerCase());
+  if(!rows.length){alert("لا توجد درجات محفوظة لحسابك للتصدير.");return}
+  rows.sort((a,b)=>String(a.grade||"").localeCompare(String(b.grade||""),"ar")||String(a.section||"").localeCompare(String(b.section||""),"ar")||String(a.subjectName||"").localeCompare(String(b.subjectName||""),"ar")||String(a.studentName||"").localeCompare(String(b.studentName||""),"ar")||String(a.testName||"").localeCompare(String(b.testName||""),"ar"));
+  const gradeRows=rows.map(row=>({
+   "رقم الطالب في راصد":String(row.studentCode||""),
+   "اسم الطالب في راصد":String(row.studentName||""),
+   "الصف":String(row.grade||""),
+   "الشعبة":String(row.section||""),
+   "المادة":String(row.subjectName||""),
+   "معرف المادة":String(row.subjectId||""),
+   "الاختبار":String(row.testName||""),
+   "الدرجة":row.mark==null?"":Number(row.mark),
+   "الدرجة النهائية":row.fullMark==null?"":Number(row.fullMark),
+   "الحالة":row.attendance==="absent"?"غائب":row.attendance==="present"?"حاضر":String(row.attendance||"غير محدد"),
+   "تاريخ الاختبار":String(row.testDate||"")
+  }));
+  const roster=new Map();
+  rows.forEach(row=>{
+   const code=String(row.studentCode||"").trim(),grade=String(row.grade||"").trim(),section=String(row.section||"").trim();
+   if(!code)return;
+   roster.set(code+"|"+grade+"|"+section,{"رقم الطالب في راصد":code,"اسم الطالب في راصد":String(row.studentName||""),"الصف":grade,"الشعبة":section});
+  });
+  const wb=XLSX.utils.book_new();
+  const gradesSheet=XLSX.utils.json_to_sheet(gradeRows);
+  gradesSheet["!cols"]=[{wch:20},{wch:32},{wch:16},{wch:12},{wch:24},{wch:22},{wch:28},{wch:12},{wch:16},{wch:16},{wch:18}];
+  gradesSheet["!rtl"]=true;
+  XLSX.utils.book_append_sheet(wb,gradesSheet,"درجات راصد");
+  const rosterSheet=XLSX.utils.json_to_sheet([...roster.values()]);
+  rosterSheet["!cols"]=[{wch:20},{wch:32},{wch:16},{wch:12}];
+  rosterSheet["!rtl"]=true;
+  XLSX.utils.book_append_sheet(wb,rosterSheet,"أسماء راصد");
+  const stamp=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,"راصد-درجات-للمطابقة-"+stamp+".xlsx",{compression:true});
+ }catch(error){
+  console.error(error);
+  alert("تعذر تصدير الدرجات: "+(error.message||error));
+ }finally{
+  if(button){button.disabled=false;button.textContent=originalText}
+ }
+}
 
 /* ======================================================
    SAVE
