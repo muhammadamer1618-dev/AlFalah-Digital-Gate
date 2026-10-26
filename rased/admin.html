@@ -4680,6 +4680,7 @@ return String(value);
 }
 
 
+const noorMatchEl=id=>document.getElementById(id);
 function noorMatchDigits(value){
  const map={"٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9"};
  let text=String(value??"").trim().replace(/[٠-٩]/g,ch=>map[ch]);
@@ -4734,13 +4735,13 @@ async function parseNoorStudentFile(file,stage){
 }
 function renderNoorRasedMatch(){
  const state=window.noorRasedMatchState;if(!state)return;
- const stage=el("noorMatchStageFilter").value,status=el("noorMatchStatusFilter").value;
+ const stage=noorMatchEl("noorMatchStageFilter").value,status=noorMatchEl("noorMatchStatusFilter").value;
  const filtered=state.students.filter(row=>(!stage||row.stage===stage)&&(!status||(status==="matched"?row.matchStatus.startsWith("مطابق"):status==="different"?row.matchStatus.includes("الاسم مختلف"):!row.matchStatus.startsWith("مطابق"))));
- el("noorMatchCount").textContent=filtered.length;
- el("noorMatchBody").innerHTML=filtered.map((row,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHtml(row.stage)+'</td><td>'+escapeHtml(row.code)+'</td><td>'+escapeHtml(row.rasedName||"—")+'</td><td>'+escapeHtml(row.noorName||"—")+'</td><td>'+escapeHtml(row.rasedGrade||"—")+'</td><td>'+escapeHtml(row.noorGrade||"—")+'</td><td>'+escapeHtml(row.matchStatus)+'</td></tr>').join("")||'<tr><td colspan="8">لا توجد نتائج مطابقة للفلاتر.</td></tr>';
+ noorMatchEl("noorMatchCount").textContent=filtered.length;
+ noorMatchEl("noorMatchBody").innerHTML=filtered.map((row,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHtml(row.stage)+'</td><td>'+escapeHtml(row.code)+'</td><td>'+escapeHtml(row.rasedName||"—")+'</td><td>'+escapeHtml(row.noorName||"—")+'</td><td>'+escapeHtml(row.rasedGrade||"—")+'</td><td>'+escapeHtml(row.noorGrade||"—")+'</td><td>'+escapeHtml(row.matchStatus)+'</td></tr>').join("")||'<tr><td colspan="8">لا توجد نتائج مطابقة للفلاتر.</td></tr>';
 }
 async function runNoorRasedMatch(){
- const button=el("runNoorMatchBtn"),files=[["ابتدائي",el("noorPrimaryFile").files[0]],["متوسط",el("noorMiddleFile").files[0]],["ثانوي",el("noorSecondaryFile").files[0]]];
+ const button=noorMatchEl("runNoorMatchBtn"),files=[["ابتدائي",noorMatchEl("noorPrimaryFile").files[0]],["متوسط",noorMatchEl("noorMiddleFile").files[0]],["ثانوي",noorMatchEl("noorSecondaryFile").files[0]]];
  if(files.some(x=>!x[1])){alert("اختر ملفات نور الثلاثة: الابتدائي والمتوسط والثانوي.");return}
  if(!students.length){alert("قائمة طلاب راصد لم تُحمّل بعد. حدّث الصفحة وحاول مرة أخرى.");return}
  button.disabled=true;button.textContent="⏳ جارٍ قراءة الملفات والمطابقة...";
@@ -4786,9 +4787,9 @@ async function runNoorRasedMatch(){
    return {stage,noor:noorRows.length,rased:rasedRows.length,matched:matched.length,rasedOnly:rasedRows.filter(x=>!x.matchStatus.startsWith("مطابق")).length,noorOnly:rows.filter(x=>x.stage===stage&&!x.rasedName).length,nameDifferent:matched.filter(x=>x.matchStatus.includes("الاسم مختلف")).length,grades:gradeRows.filter(x=>x.stage===stage).length};
   });
   window.noorRasedMatchState={students:rows,grades:gradeRows,summaries,files:files.map(x=>x[1].name)};
-  el("noorMatchResults").style.display="block";
-  el("noorMatchSummary").innerHTML='<div class="table-wrap"><table><thead><tr><th>المرحلة</th><th>طلاب نور</th><th>طلاب راصد</th><th>مطابقون بالكود</th><th>الأسماء المختلفة</th><th>غير المتطابقين</th><th>سجلات الدرجات</th></tr></thead><tbody>'+summaries.map(x=>'<tr><td>'+escapeHtml(x.stage)+'</td><td>'+x.noor+'</td><td>'+x.rased+'</td><td>'+x.matched+'</td><td>'+x.nameDifferent+'</td><td>'+x.rasedOnly+' راصد فقط / '+x.noorOnly+' نور فقط</td><td>'+x.grades+'</td></tr>').join("")+'</tbody></table></div>';
-  el("exportNoorMatchBtn").disabled=false;el("printNoorMatchBtn").disabled=false;el("noorMatchStageFilter").value="";el("noorMatchStatusFilter").value="";renderNoorRasedMatch();
+  noorMatchEl("noorMatchResults").style.display="block";
+  noorMatchEl("noorMatchSummary").innerHTML='<div class="table-wrap"><table><thead><tr><th>المرحلة</th><th>طلاب نور</th><th>طلاب راصد</th><th>مطابقون بالكود</th><th>الأسماء المختلفة</th><th>غير المتطابقين</th><th>سجلات الدرجات</th></tr></thead><tbody>'+summaries.map(x=>'<tr><td>'+escapeHtml(x.stage)+'</td><td>'+x.noor+'</td><td>'+x.rased+'</td><td>'+x.matched+'</td><td>'+x.nameDifferent+'</td><td>'+x.rasedOnly+' راصد فقط / '+x.noorOnly+' نور فقط</td><td>'+x.grades+'</td></tr>').join("")+'</tbody></table></div>';
+  noorMatchEl("exportNoorMatchBtn").disabled=false;noorMatchEl("printNoorMatchBtn").disabled=false;noorMatchEl("noorMatchStageFilter").value="";noorMatchEl("noorMatchStatusFilter").value="";renderNoorRasedMatch();
  }catch(error){console.error(error);alert("تعذر إجراء المطابقة: "+(error.message||error))}
  finally{button.disabled=false;button.textContent="🔎 مطابقة الملفات"}
 }
