@@ -1628,6 +1628,11 @@ onchange="renderStudents()">
 
 <div class="admin-list-count">عدد الطلاب المعروضين: <b id="studentsCount">0</b></div>
 
+<div class="actions">
+<button class="btn-success" type="button" onclick="exportRasedGradesByStage()">📥 تصدير أسماء ودرجات راصد لكل المراحل Excel</button>
+</div>
+<div class="note">يحتوي الملف على ورقتين لكل مرحلة: أسماء الطلاب المسجلين في راصد، والدرجات المحفوظة في جميع المواد.</div>
+
 <div class="table-wrap">
 
 <table>
@@ -4653,6 +4658,85 @@ return String(value);
 
 }
 
+
+async function exportRasedGradesByStage(){
+ const button=[...document.querySelectorAll("#studentsSection button")].find(x=>x.getAttribute("onclick")==="exportRasedGradesByStage()");
+ const original=button?.textContent||"📥 تصدير أسماء ودرجات راصد لكل المراحل Excel";
+ if(typeof XLSX==="undefined"){alert("تعذر تحميل أداة Excel. حدّث الصفحة وحاول مرة أخرى.");return}
+ if(button){button.disabled=true;button.textContent="⏳ جارٍ تجهيز الملف..."}
+ try{
+  const gradeSnap=await db.collection("grades").get();
+  const byCode=new Map(students.map(student=>[String(student.code||"").trim().replace(/\.0$/,""),student]));
+  const stageNames=["ابتدائي","متوسط","ثانوي"];
+  const stageSheets=new Map(stageNames.map(name=>[name,{students:[],grades:[]}]));
+  const stageOf=value=>{
+   const text=String(value||"").trim();
+   if(text.includes("ابتدائي"))return"ابتدائي";
+   if(text.includes("متوسط"))return"متوسط";
+   if(text.includes("ثانوي"))return"ثانوي";
+   return"";
+  };
+  students.forEach(student=>{
+   const stage=stageOf(student.grade),bucket=stageSheets.get(stage);
+   if(!bucket)return;
+   bucket.students.push({
+    "كود الطالب في راصد":String(student.code||""),
+    "اسم الطالب في راصد":String(student.name||""),
+    "المرحلة":stage,
+    "الصف":String(student.grade||""),
+    "الشعبة":String(student.section||"")
+   });
+  });
+  gradeSnap.forEach(doc=>{
+   const row=doc.data()||{};
+   const code=String(row.studentCode||"").trim().replace(/\.0$/,"");
+   const student=byCode.get(code);
+   const grade=String(student?.grade||row.grade||"");
+   const section=String(student?.section||row.section||"");
+   const stage=stageOf(grade),bucket=stageSheets.get(stage);
+   if(!bucket)return;
+   bucket.grades.push({
+    "كود الطالب في راصد":code,
+    "اسم الطالب في راصد":String(student?.name||row.studentName||""),
+    "المرحلة":stage,
+    "الصف":grade,
+    "الشعبة":section,
+    "المادة":String(row.subjectName||""),
+    "معرف المادة":String(row.subjectId||""),
+    "الاختبار":String(row.testName||""),
+    "الدرجة":row.mark==null?"":Number(row.mark),
+    "الدرجة النهائية":row.fullMark==null?"":Number(row.fullMark),
+    "الحالة":row.attendance==="absent"?"غائب":row.attendance==="present"?"حاضر":String(row.attendance||"غير محدد"),
+    "تاريخ الاختبار":String(row.testDate||"")
+   });
+  });
+  const wb=XLSX.utils.book_new();
+  const rosterHeaders=["كود الطالب في راصد","اسم الطالب في راصد","المرحلة","الصف","الشعبة"];
+  const gradeHeaders=["كود الطالب في راصد","اسم الطالب في راصد","المرحلة","الصف","الشعبة","المادة","معرف المادة","الاختبار","الدرجة","الدرجة النهائية","الحالة","تاريخ الاختبار"];
+  const rosterWidths=[{wch:20},{wch:34},{wch:16},{wch:20},{wch:12}];
+  const gradeWidths=[{wch:20},{wch:34},{wch:16},{wch:20},{wch:12},{wch:24},{wch:22},{wch:28},{wch:12},{wch:16},{wch:16},{wch:18}];
+  stageNames.forEach(stage=>{
+   const bucket=stageSheets.get(stage);
+   bucket.students.sort((a,b)=>String(a["الصف"]).localeCompare(String(b["الصف"]),"ar")||String(a["الشعبة"]).localeCompare(String(b["الشعبة"]),"ar")||String(a["اسم الطالب في راصد"]).localeCompare(String(b["اسم الطالب في راصد"]),"ar"));
+   bucket.grades.sort((a,b)=>String(a["الصف"]).localeCompare(String(b["الصف"]),"ar")||String(a["الشعبة"]).localeCompare(String(b["الشعبة"]),"ar")||String(a["اسم الطالب في راصد"]).localeCompare(String(b["اسم الطالب في راصد"]),"ar")||String(a["المادة"]).localeCompare(String(b["المادة"]),"ar")||String(a["الاختبار"]).localeCompare(String(b["الاختبار"]),"ar"));
+   const studentSheet=XLSX.utils.aoa_to_sheet([rosterHeaders,...bucket.students.map(row=>rosterHeaders.map(key=>row[key]??""))]);
+   studentSheet["!cols"]=rosterWidths;studentSheet["!rtl"]=true;
+   const gradeSheet=XLSX.utils.aoa_to_sheet([gradeHeaders,...bucket.grades.map(row=>gradeHeaders.map(key=>row[key]??""))]);
+   gradeSheet["!cols"]=gradeWidths;gradeSheet["!rtl"]=true;
+   XLSX.utils.book_append_sheet(wb,studentSheet,stage+" - أسماء");
+   XLSX.utils.book_append_sheet(wb,gradeSheet,stage+" - درجات");
+  });
+  const stamp=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,"راصد-مطابقة-نور-حسب-المرحلة-"+stamp+".xlsx",{compression:true});
+  const counts=stageNames.map(stage=>stage+": "+stageSheets.get(stage).students.length+" طالب").join("\n");
+  alert("تم تصدير الملف بنجاح، ويحتوي على الأسماء والدرجات المحفوظة لكل مرحلة.\n"+counts);
+ }catch(error){
+  console.error(error);
+  alert("تعذر تصدير بيانات راصد: "+(error.message||error));
+ }finally{
+  if(button){button.disabled=false;button.textContent=original}
+ }
+}
 
 function exportStudentsBackup(){
 
