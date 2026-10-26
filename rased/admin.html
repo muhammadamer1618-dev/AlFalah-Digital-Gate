@@ -4763,10 +4763,14 @@ function noorRasedRefreshFilterOptions(){
  noorRasedSelectOptions("noorMatchSubjectFilter",sectionRows.map(x=>x.subject),"كل المواد");
  noorMatchEl("noorMatchSubjectFilter").value=f.subject;
 }
+function noorRasedGradeKey(value){
+ let text=String(value||"").replace(/[٠-٩]/g,ch=>"٠١٢٣٤٥٦٧٨٩".indexOf(ch)).replace(/الأول|الاول/g,"1").replace(/الثاني|الثانى/g,"2").replace(/الثالث/g,"3").replace(/الرابع/g,"4").replace(/الخامس/g,"5").replace(/السادس/g,"6");
+ const m=text.match(/[1-6]/);return m?m[0]+"|"+noorMatchStage(text):text.trim();
+}
 function noorRasedFilteredData(){
  const state=window.noorRasedMatchState,f=noorRasedFilterValues();
- const roster=state.students.filter(row=>row.noorName&&(!f.stage||row.stage===f.stage)&&(!f.grade||row.noorGrade===f.grade||row.rasedGrade===f.grade)&&(!f.section||row.section===f.section));
- const records=state.grades.filter(row=>(!f.stage||row.stage===f.stage)&&(!f.grade||row.rasedGrade===f.grade)&&(!f.section||row.section===f.section)&&(!f.subject||row.subject===f.subject));
+ const roster=state.students.filter(row=>row.noorName&&(!f.stage||row.stage===f.stage)&&(!f.grade||row.rasedGrade===f.grade||noorRasedGradeKey(row.noorGrade)===noorRasedGradeKey(f.grade))&&(!f.section||row.section===f.section));
+ const records=state.grades.filter(row=>(!f.stage||row.stage===f.stage)&&(!f.grade||row.rasedGrade===f.grade||noorRasedGradeKey(row.rasedGrade)===noorRasedGradeKey(f.grade))&&(!f.section||row.section===f.section)&&(!f.subject||row.subject===f.subject));
  const byStudent=new Map();
  records.forEach(row=>{
   const key=row.stage+"|"+noorMatchDigits(row.code);
