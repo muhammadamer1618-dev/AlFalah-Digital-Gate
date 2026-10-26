@@ -1654,12 +1654,10 @@ onchange="renderStudents()">
    <div class="col"><label for="noorMatchGradeFilter">الصف</label><select id="noorMatchGradeFilter" onchange="renderNoorRasedMatch()"><option value="">كل الصفوف</option></select></div>
    <div class="col"><label for="noorMatchSectionFilter">الشعبة</label><select id="noorMatchSectionFilter" onchange="renderNoorRasedMatch()"><option value="">كل الشعب</option></select></div>
    <div class="col"><label for="noorMatchSubjectFilter">المادة</label><select id="noorMatchSubjectFilter" onchange="renderNoorRasedMatch()"><option value="">كل المواد</option></select></div>
-   <div class="col"><label for="noorMatchStatusFilter">حالة المطابقة</label><select id="noorMatchStatusFilter" onchange="renderNoorRasedMatch()"><option value="">كل الحالات</option><option value="matched">المتطابقون</option><option value="different">الأسماء المختلفة</option><option value="unmatched">غير المتطابقين</option></select></div>
   </div>
   <div class="actions"><button class="btn-light" type="button" id="noorFilterClear" onclick="clearNoorRasedFilters()">↺ مسح الفلاتر</button></div>
-  <div class="admin-list-count">الطلاب الظاهرون: <b id="noorMatchCount">0</b> — سجلات الدرجات: <b id="noorGradeCount">0</b></div>
-  <div class="table-wrap" style="max-height:420px"><table><thead><tr><th>#</th><th>المرحلة</th><th>كود الطالب</th><th>اسم الطالب في راصد</th><th>اسم الطالب في نور</th><th>صف راصد</th><th>صف نور</th><th>الشعبة</th><th>الحالة</th></tr></thead><tbody id="noorMatchBody"></tbody></table></div>
-  <div class="table-wrap" style="max-height:420px;margin-top:16px"><table><thead><tr><th>#</th><th>المرحلة</th><th>كود الطالب</th><th>اسم الطالب في راصد</th><th>المادة</th><th>الاختبار</th><th>الدرجة</th><th>الحضور</th><th>الصف</th><th>الشعبة</th></tr></thead><tbody id="noorGradeBody"></tbody></table></div>
+  <div class="admin-list-count">عدد النتائج: <b id="noorGradeCount">0</b></div>
+  <div class="table-wrap" style="max-height:520px;margin-top:12px"><table style="min-width:480px"><thead><tr><th>اسم الطالب في نور</th><th>المادة</th><th>الدرجة في راصد</th></tr></thead><tbody id="noorGradeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -4737,7 +4735,7 @@ async function parseNoorStudentFile(file,stage){
   if(!className)className=stage;
   for(let r=headerRow+2;r<matrix.length;r++){
    const row=matrix[r]||[],code=noorMatchDigits(row[idCol]),name=String(row[nameCol]||"").trim();
-   if(code&&name&&name!=="- - - -")rowsOut.push({stage,code,noorName:name,noorGrade:className,sheet:sheetName});
+   if(code&&name&&name!=="- - - -")rowsOut.push({stage,code,noorName:name,noorGrade:className,sheet:sheetName,order:rowsOut.length});
   }
  });
  return rowsOut;
@@ -4749,11 +4747,7 @@ function noorRasedSelectOptions(id,values,allLabel){
  if(values.includes(current))el.value=current;
 }
 function noorRasedFilterValues(){
- return {stage:noorMatchEl("noorMatchStageFilter").value,grade:noorMatchEl("noorMatchGradeFilter").value,section:noorMatchEl("noorMatchSectionFilter").value,subject:noorMatchEl("noorMatchSubjectFilter").value,status:noorMatchEl("noorMatchStatusFilter").value};
-}
-function noorRasedStatusMatches(row,status){
- if(!status)return true;
- return status==="matched"?row.matchStatus.startsWith("مطابق"):status==="different"?row.matchStatus.includes("الاسم مختلف"):!row.matchStatus.startsWith("مطابق");
+ return {stage:noorMatchEl("noorMatchStageFilter").value,grade:noorMatchEl("noorMatchGradeFilter").value,section:noorMatchEl("noorMatchSectionFilter").value,subject:noorMatchEl("noorMatchSubjectFilter").value};
 }
 function noorRasedRefreshFilterOptions(){
  const state=window.noorRasedMatchState;if(!state)return;
@@ -4772,22 +4766,19 @@ function noorRasedRefreshFilterOptions(){
 }
 function noorRasedFilteredData(){
  const state=window.noorRasedMatchState,f=noorRasedFilterValues();
- const grades=state.grades.filter(row=>(!f.stage||row.stage===f.stage)&&(!f.grade||row.rasedGrade===f.grade)&&(!f.section||row.section===f.section)&&(!f.subject||row.subject===f.subject)&&noorRasedStatusMatches(row,f.status));
- const keys=new Set(grades.map(x=>x.stage+"|"+x.code));
- const studentsFiltered=state.students.filter(row=>(!f.stage||row.stage===f.stage)&&(!f.grade||row.rasedGrade===f.grade)&&(!f.section||row.section===f.section)&&(!f.subject||keys.has(row.stage+"|"+row.code))&&noorRasedStatusMatches(row,f.status));
- return {students:studentsFiltered,grades};
+ const grades=state.grades.filter(row=>row.noorName&&(!f.stage||row.stage===f.stage)&&(!f.grade||row.rasedGrade===f.grade)&&(!f.section||row.section===f.section)&&(!f.subject||row.subject===f.subject));
+ grades.sort((a,b)=>(a.noorOrder??Number.MAX_SAFE_INTEGER)-(b.noorOrder??Number.MAX_SAFE_INTEGER)||String(a.subject).localeCompare(String(b.subject),"ar"));
+ return {grades};
 }
 function renderNoorRasedMatch(){
  const state=window.noorRasedMatchState;if(!state)return;
  noorRasedRefreshFilterOptions();
  const filtered=noorRasedFilteredData();
- noorMatchEl("noorMatchCount").textContent=filtered.students.length;
  noorMatchEl("noorGradeCount").textContent=filtered.grades.length;
- noorMatchEl("noorMatchBody").innerHTML=filtered.students.map((row,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHtml(row.stage)+'</td><td>'+escapeHtml(row.code)+'</td><td>'+escapeHtml(row.rasedName||"—")+'</td><td>'+escapeHtml(row.noorName||"—")+'</td><td>'+escapeHtml(row.rasedGrade||"—")+'</td><td>'+escapeHtml(row.noorGrade||"—")+'</td><td>'+escapeHtml(row.section||"—")+'</td><td>'+escapeHtml(row.matchStatus)+'</td></tr>').join("")||'<tr><td colspan="9">لا توجد نتائج مطابقة للفلاتر.</td></tr>';
- noorMatchEl("noorGradeBody").innerHTML=filtered.grades.map((row,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHtml(row.stage)+'</td><td>'+escapeHtml(row.code)+'</td><td>'+escapeHtml(row.rasedName||"—")+'</td><td>'+escapeHtml(row.subject||"—")+'</td><td>'+escapeHtml(row.test||"—")+'</td><td>'+escapeHtml((row.mark===""?"غير مرصود":row.mark)+" / "+(row.fullMark||"—"))+'</td><td>'+escapeHtml(row.attendance||"غير محدد")+'</td><td>'+escapeHtml(row.rasedGrade||"—")+'</td><td>'+escapeHtml(row.section||"—")+'</td></tr>').join("")||'<tr><td colspan="10">لا توجد درجات مطابقة للفلاتر.</td></tr>';
+ noorMatchEl("noorGradeBody").innerHTML=filtered.grades.map(row=>'<tr><td>'+escapeHtml(row.noorName)+'</td><td>'+escapeHtml(row.subject||"—")+'</td><td>'+escapeHtml(row.mark===""?"غير مرصود":row.mark)+'</td></tr>').join("")||'<tr><td colspan="3">لا توجد درجات مطابقة للفلاتر.</td></tr>';
 }
 function clearNoorRasedFilters(){
- ["noorMatchStageFilter","noorMatchGradeFilter","noorMatchSectionFilter","noorMatchSubjectFilter","noorMatchStatusFilter"].forEach(id=>{const el=noorMatchEl(id);if(el)el.value="";});
+ ["noorMatchStageFilter","noorMatchGradeFilter","noorMatchSectionFilter","noorMatchSubjectFilter"].forEach(id=>{const el=noorMatchEl(id);if(el)el.value="";});
  renderNoorRasedMatch();
 }
 async function runNoorRasedMatch(){
@@ -4819,7 +4810,7 @@ async function runNoorRasedMatch(){
    else if(candidates.length===1){noor=candidates[0];matchedNoorKeys.add(noor.stage+"|"+noor.code);matchStatus=noorMatchName(student.name)===noorMatchName(noor.noorName)?"مطابق بالكود والاسم":"مطابق بالكود، الاسم مختلف"}
    else if(other.length)matchStatus="موجود في ملف نور لمرحلة أخرى";
    else matchStatus="غير موجود في ملف نور";
-   const row={stage,code:rawCode,rasedName:String(student.name||""),noorName:noor?.noorName||"",rasedGrade:String(student.grade||""),noorGrade:noor?.noorGrade||"",section:String(student.section||""),matchStatus,sourceSheet:noor?.sheet||""};
+   const row={stage,code:rawCode,rasedName:String(student.name||""),noorName:noor?.noorName||"",noorOrder:noor?.order??Number.MAX_SAFE_INTEGER,rasedGrade:String(student.grade||""),noorGrade:noor?.noorGrade||"",section:String(student.section||""),matchStatus,sourceSheet:noor?.sheet||""};
    rows.push(row);if(code)statusByStageCode.set(stage+"|"+code,row);
   });
   allNoor.forEach(noor=>{
@@ -4830,7 +4821,7 @@ async function runNoorRasedMatch(){
    const grade=doc.data()||{},code=noorMatchDigits(grade.studentCode),student=byRasedCode.get(code)?.[0],stage=noorMatchStage(student?.grade||grade.grade);
    if(!stage)return;
    const match=statusByStageCode.get(stage+"|"+code),candidates=byStage.get(stage)?.get(code)||[],noor=candidates.length===1?candidates[0]:null;
-   gradeRows.push({stage,code:String(grade.studentCode||""),rasedName:String(student?.name||grade.studentName||""),noorName:noor?.noorName||"",rasedGrade:String(student?.grade||grade.grade||""),section:String(student?.section||grade.section||""),subject:String(grade.subjectName||""),test:String(grade.testName||""),mark:grade.mark==null?"":Number(grade.mark),fullMark:grade.fullMark==null?"":Number(grade.fullMark),attendance:grade.attendance==="absent"?"غائب":grade.attendance==="present"?"حاضر":String(grade.attendance||""),testDate:String(grade.testDate||""),matchStatus:match?.matchStatus||"غير موجود في قائمة راصد"});
+   gradeRows.push({stage,code:String(grade.studentCode||""),rasedName:String(student?.name||grade.studentName||""),noorName:noor?.noorName||"",noorOrder:noor?.order??Number.MAX_SAFE_INTEGER,rasedGrade:String(student?.grade||grade.grade||""),section:String(student?.section||grade.section||""),subject:String(grade.subjectName||""),test:String(grade.testName||""),mark:grade.mark==null?"":Number(grade.mark),fullMark:grade.fullMark==null?"":Number(grade.fullMark),attendance:grade.attendance==="absent"?"غائب":grade.attendance==="present"?"حاضر":String(grade.attendance||""),testDate:String(grade.testDate||""),matchStatus:match?.matchStatus||"غير موجود في قائمة راصد"});
   });
   const summaries=["ابتدائي","متوسط","ثانوي"].map(stage=>{
    const noorRows=allNoor.filter(x=>x.stage===stage),rasedRows=rows.filter(x=>x.stage===stage&&x.rasedName),matched=rasedRows.filter(x=>x.matchStatus.startsWith("مطابق"));
@@ -4845,27 +4836,22 @@ async function runNoorRasedMatch(){
 }
 function noorRasedFilterLabel(){
  const f=noorRasedFilterValues();
- return [f.stage||"كل المراحل",f.grade||"كل الصفوف",f.section||"كل الشعب",f.subject||"كل المواد",f.status==="matched"?"المتطابقون":f.status==="different"?"الأسماء المختلفة":f.status==="unmatched"?"غير المتطابقين":"كل الحالات"].join(" | ");
+ return [f.stage||"كل المراحل",f.grade||"كل الصفوف",f.section||"كل الشعب",f.subject||"كل المواد"].join(" | ");
 }
 function exportNoorRasedMatch(){
- const state=window.noorRasedMatchState;if(!state)return;
- const filtered=noorRasedFilteredData(),wb=XLSX.utils.book_new();
- const studentHeaders=["المرحلة","كود الطالب في راصد","اسم الطالب في راصد","اسم الطالب في نور","صف راصد","صف نور","الشعبة","حالة المطابقة","ورقة نور"];
- const gradeHeaders=["المرحلة","كود الطالب في راصد","اسم الطالب في راصد","اسم الطالب في نور","الصف","الشعبة","المادة","الاختبار","الدرجة من راصد","الدرجة النهائية","الحضور","تاريخ الاختبار","حالة المطابقة"];
- const addSheet=(name,headers,records,keys)=>{const ordered=records.map(row=>keys.map(key=>row[key]??""));const sheet=XLSX.utils.aoa_to_sheet([headers,...ordered]);sheet["!rtl"]=true;sheet["!cols"]=headers.map((h,i)=>({wch:i===2||i===3?32:Math.min(26,Math.max(12,String(h).length+5))}));XLSX.utils.book_append_sheet(wb,sheet,name);};
- const summary=[ ["تقرير مطابقة نور وراصد — الفلاتر الحالية",noorRasedFilterLabel()], ["الطلاب الظاهرون",filtered.students.length,"سجلات الدرجات",filtered.grades.length], [], studentHeaders, ...filtered.students.map(x=>studentHeaders.map((_,i)=>[x.stage,x.code,x.rasedName,x.noorName,x.rasedGrade,x.noorGrade,x.section,x.matchStatus,x.sourceSheet][i])) ];
- const summarySheet=XLSX.utils.aoa_to_sheet(summary);summarySheet["!rtl"]=true;summarySheet["!cols"]=[{wch:22},{wch:34},{wch:18},{wch:20},{wch:18},{wch:18},{wch:18},{wch:30},{wch:18}];XLSX.utils.book_append_sheet(wb,summarySheet,"نتيجة الفلتر");
- const gradeRows=filtered.grades.map(x=>gradeHeaders.map((_,i)=>[x.stage,x.code,x.rasedName,x.noorName,x.rasedGrade,x.section,x.subject,x.test,x.mark,x.fullMark,x.attendance,x.testDate,x.matchStatus][i]));
- const gradeSheet=XLSX.utils.aoa_to_sheet([["درجات راصد — "+noorRasedFilterLabel()],[],gradeHeaders,...gradeRows]);gradeSheet["!rtl"]=true;gradeSheet["!cols"]=gradeHeaders.map((h,i)=>({wch:i===2||i===3?32:Math.min(26,Math.max(12,String(h).length+5))}));XLSX.utils.book_append_sheet(wb,gradeSheet,"الدرجات المفلترة");
- XLSX.writeFile(wb,"مطابقة-نور-راصد-نتيجة-الفلتر-"+new Date().toISOString().slice(0,10)+".xlsx",{compression:true});
+ const filtered=noorRasedFilteredData();if(!filtered)return;
+ const headers=["اسم الطالب في نور","المادة","الدرجة في راصد"];
+ const rows=filtered.grades.map(x=>[x.noorName,x.subject||"—",x.mark===""?"غير مرصود":x.mark]);
+ const sheet=XLSX.utils.aoa_to_sheet([["النتائج حسب الفلاتر: "+noorRasedFilterLabel()],[],headers,...rows]);
+ sheet["!rtl"]=true;sheet["!cols"]=[{wch:36},{wch:28},{wch:18}];
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,sheet,"النتائج");
+ XLSX.writeFile(wb,"نتائج-نور-وراصد-"+new Date().toISOString().slice(0,10)+".xlsx",{compression:true});
 }
 function printNoorRasedMatch(){
- const state=window.noorRasedMatchState;if(!state)return;
- const filtered=noorRasedFilteredData(),e=escapeHtml;
- const studentTable=filtered.students.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+e(x.stage)+"</td><td>"+e(x.code)+"</td><td>"+e(x.rasedName||"—")+"</td><td>"+e(x.noorName||"—")+"</td><td>"+e(x.rasedGrade||"—")+"</td><td>"+e(x.section||"—")+"</td><td>"+e(x.matchStatus)+"</td></tr>").join("");
- const gradeTable=filtered.grades.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>"+e(x.stage)+"</td><td>"+e(x.rasedName)+"</td><td>"+e(x.subject||"—")+"</td><td>"+e(x.test||"—")+"</td><td>"+e(x.mark===""?"غير مرصود":x.mark)+" / "+e(x.fullMark||"—")+"</td><td>"+e(x.attendance||"غير محدد")+"</td></tr>").join("");
+ const filtered=noorRasedFilteredData();if(!filtered)return;
+ const rows=filtered.grades.map(x=>"<tr><td>"+escapeHtml(x.noorName)+"</td><td>"+escapeHtml(x.subject||"—")+"</td><td>"+escapeHtml(x.mark===""?"غير مرصود":x.mark)+"</td></tr>").join("");
  const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة للطباعة.");return}
- w.document.write('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>مطابقة نور وراصد</title><style>@page{size:A4 landscape;margin:12mm}body{font-family:Tahoma,Arial;color:#182b3c;font-size:10px}h1{text-align:center;color:#174f7c}h2{color:#174f7c;border-bottom:2px solid #174f7c;padding-bottom:5px}table{width:100%;border-collapse:collapse;margin:6px 0 16px}thead{display:table-header-group}tr{page-break-inside:avoid}th,td{border:1px solid #ccd5df;padding:4px;text-align:center}th{background:#e9f0f7}</style><h1>مطابقة كشوف الطلاب بين نور وراصد</h1><p>الفلاتر الحالية: '+e(noorRasedFilterLabel())+'</p><h2>مطابقة الطلاب ('+filtered.students.length+')</h2><table><thead><tr><th>#</th><th>المرحلة</th><th>الكود</th><th>اسم راصد</th><th>اسم نور</th><th>الصف</th><th>الشعبة</th><th>الحالة</th></tr></thead><tbody>'+studentTable+'</tbody></table><h2>درجات راصد ('+filtered.grades.length+')</h2><table><thead><tr><th>#</th><th>المرحلة</th><th>اسم راصد</th><th>المادة</th><th>الاختبار</th><th>الدرجة</th><th>الحضور</th></tr></thead><tbody>'+gradeTable+'</tbody></table></html>');
+ w.document.write('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>نتائج نور وراصد</title><style>@page{size:A4 portrait;margin:14mm}body{font-family:Tahoma,Arial;color:#182b3c;font-size:12px}h1{text-align:center;color:#174f7c}p{text-align:center;color:#526477}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border:1px solid #ccd5df;padding:8px;text-align:center}th{background:#e9f0f7}</style><h1>نتائج الطلاب</h1><p>الفلاتر: '+escapeHtml(noorRasedFilterLabel())+'</p><table><thead><tr><th>اسم الطالب في نور</th><th>المادة</th><th>الدرجة في راصد</th></tr></thead><tbody>'+rows+'</tbody></table></html>');
  w.document.close();w.focus();setTimeout(()=>w.print(),500);
 }
 
