@@ -4754,23 +4754,23 @@ async function runNoorRasedMatch(){
   }
   const byRasedCode=new Map(),byRasedStageCode=new Map();
   students.forEach(student=>{
-   const code=noorMatchDigits(student.code),stage=noorMatchStage(student.grade);
-   if(!code)return;
-   if(!byRasedCode.has(code))byRasedCode.set(code,[]);byRasedCode.get(code).push(student);
-   byRasedStageCode.set(stage+"|"+code,student);
+   const rawCode=String(student.code||"").trim(),code=noorMatchDigits(student.code),stage=noorMatchStage(student.grade);
+   if(!stage)return;
+   if(code){if(!byRasedCode.has(code))byRasedCode.set(code,[]);byRasedCode.get(code).push(student);byRasedStageCode.set(stage+"|"+code,student)}
   });
   const rows=[],statusByStageCode=new Map(),matchedNoorKeys=new Set();
   students.forEach(student=>{
-   const code=noorMatchDigits(student.code),stage=noorMatchStage(student.grade);
+   const rawCode=String(student.code||"").trim(),code=noorMatchDigits(student.code),stage=noorMatchStage(student.grade);
    if(!stage)return;
-   const candidates=byStage.get(stage)?.get(code)||[],other=allNoor.filter(x=>x.code===code&&x.stage!==stage);
+   const candidates=code?(byStage.get(stage)?.get(code)||[]):[],other=code?allNoor.filter(x=>x.code===code&&x.stage!==stage):[];
    let noor=null,matchStatus="";
-   if(candidates.length>1)matchStatus="كود مكرر في ملف نور";
+   if(!code)matchStatus="كود راصد لا يطابق رقم هوية";
+   else if(candidates.length>1)matchStatus="كود مكرر في ملف نور";
    else if(candidates.length===1){noor=candidates[0];matchedNoorKeys.add(noor.stage+"|"+noor.code);matchStatus=noorMatchName(student.name)===noorMatchName(noor.noorName)?"مطابق بالكود والاسم":"مطابق بالكود، الاسم مختلف"}
    else if(other.length)matchStatus="موجود في ملف نور لمرحلة أخرى";
    else matchStatus="غير موجود في ملف نور";
-   const row={stage,code:String(student.code||""),rasedName:String(student.name||""),noorName:noor?.noorName||"",rasedGrade:String(student.grade||""),noorGrade:noor?.noorGrade||"",section:String(student.section||""),matchStatus,sourceSheet:noor?.sheet||""};
-   rows.push(row);statusByStageCode.set(stage+"|"+code,row);
+   const row={stage,code:rawCode,rasedName:String(student.name||""),noorName:noor?.noorName||"",rasedGrade:String(student.grade||""),noorGrade:noor?.noorGrade||"",section:String(student.section||""),matchStatus,sourceSheet:noor?.sheet||""};
+   rows.push(row);if(code)statusByStageCode.set(stage+"|"+code,row);
   });
   allNoor.forEach(noor=>{
    if(!byRasedStageCode.has(noor.stage+"|"+noor.code)&&!byRasedCode.has(noor.code))rows.push({stage:noor.stage,code:noor.code,rasedName:"",noorName:noor.noorName,rasedGrade:"",noorGrade:noor.noorGrade,section:"",matchStatus:"موجود في نور فقط",sourceSheet:noor.sheet});
@@ -4804,7 +4804,7 @@ function exportNoorRasedMatch(){
   sheet["!cols"]=headers.map((h,i)=>({wch:i===2||i===3?32:Math.min(26,Math.max(12,String(h).length+5))}));
   XLSX.utils.book_append_sheet(wb,sheet,name);
  };
- const summary=[["المرحلة","طلاب نور","طلاب راصد","مطابقون بالكود","الأسماء المختلفة","طلاب راصد فقط","طلاب نور فقط","سجلات درجات راصد"],...state.summaries.map(x=>[x.stage,x.noor,x.rased,x.matched,x.nameDifferent,x.rasedOnly,x.noorOnly,x.grades])];
+ const summary=[["المرحلة","طلاب نور","طلاب راصد","مطابقون بالكود","الأسماء المختلفة","غير المتطابقين في راصد","طلاب نور فقط","سجلات درجات راصد"],...state.summaries.map(x=>[x.stage,x.noor,x.rased,x.matched,x.nameDifferent,x.rasedOnly,x.noorOnly,x.grades])];
  const summarySheet=XLSX.utils.aoa_to_sheet(summary);summarySheet["!rtl"]=true;summarySheet["!cols"]=[{wch:16},{wch:14},{wch:14},{wch:18},{wch:18},{wch:16},{wch:16},{wch:20}];XLSX.utils.book_append_sheet(wb,summarySheet,"ملخص");
  for(const stage of stages){
   const stageStudents=state.students.filter(x=>x.stage===stage);
