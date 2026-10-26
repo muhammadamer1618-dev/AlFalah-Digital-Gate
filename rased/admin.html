@@ -4765,7 +4765,14 @@ function noorRasedRefreshFilterOptions(){
 }
 function noorRasedFilteredData(){
  const state=window.noorRasedMatchState,f=noorRasedFilterValues();
- const grades=state.grades.filter(row=>row.noorName&&(!f.stage||row.stage===f.stage)&&(!f.grade||row.rasedGrade===f.grade)&&(!f.section||row.section===f.section)&&(!f.subject||row.subject===f.subject));
+ const filtered=state.grades.filter(row=>row.noorName&&(!f.stage||row.stage===f.stage)&&(!f.grade||row.rasedGrade===f.grade)&&(!f.section||row.section===f.section)&&(!f.subject||row.subject===f.subject));
+ const bestByStudent=new Map();
+ filtered.forEach(row=>{
+  const key=row.stage+"|"+noorMatchDigits(row.code)+"|"+String(row.subject||"");
+  const current=bestByStudent.get(key),score=Number(row.mark),currentScore=current==null?NaN:Number(current.mark);
+  if(!current||(!Number.isNaN(score)&&(Number.isNaN(currentScore)||score>currentScore)))bestByStudent.set(key,row);
+ });
+ const grades=[...bestByStudent.values()];
  grades.sort((a,b)=>(a.noorOrder??Number.MAX_SAFE_INTEGER)-(b.noorOrder??Number.MAX_SAFE_INTEGER)||String(a.subject).localeCompare(String(b.subject),"ar"));
  return {grades};
 }
