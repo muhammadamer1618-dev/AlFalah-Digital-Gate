@@ -1643,11 +1643,10 @@ onchange="renderStudents()">
  </div>
  <div class="actions">
   <button class="btn-primary" type="button" id="runNoorMatchBtn" onclick="runNoorRasedMatch()">🔎 مطابقة الملفات</button>
-  <button class="btn-success" type="button" id="exportNoorMatchBtn" onclick="exportNoorRasedMatch()" disabled>📥 تصدير المطابقة وكل الدرجات Excel</button>
-  <button class="btn-gold" type="button" id="printNoorMatchBtn" onclick="printNoorRasedMatch()" disabled>🖨️ طباعة التقرير</button>
+  <button class="btn-success" type="button" id="exportNoorMatchBtn" onclick="exportNoorRasedMatch()" disabled>📥 تصدير النتائج المفلترة Excel</button>
+  <button class="btn-gold" type="button" id="printNoorMatchBtn" onclick="printNoorRasedMatch()" disabled>🖨️ طباعة النتائج</button>
  </div>
  <div id="noorMatchResults" style="display:none;margin-top:14px">
-  <div id="noorMatchSummary"></div>
   <div class="note" style="margin-top:12px">استخدم الفلاتر بالترتيب: المرحلة، ثم الصف، ثم الشعبة، ثم المادة. ستظهر لك النتائج الخاصة بالاختيارات فقط، ويمكنك تصديرها أو طباعتها.</div>
   <div class="row" style="margin-top:12px">
    <div class="col"><label for="noorMatchStageFilter">المرحلة</label><select id="noorMatchStageFilter" onchange="renderNoorRasedMatch()"><option value="">كل المراحل</option></select></div>
@@ -4829,7 +4828,6 @@ async function runNoorRasedMatch(){
   });
   window.noorRasedMatchState={students:rows,grades:gradeRows,summaries,files:files.map(x=>x[1].name)};
   noorMatchEl("noorMatchResults").style.display="block";
-  noorMatchEl("noorMatchSummary").innerHTML='<div class="table-wrap"><table><thead><tr><th>المرحلة</th><th>طلاب نور</th><th>طلاب راصد</th><th>مطابقون بالكود</th><th>الأسماء المختلفة</th><th>غير المتطابقين</th><th>سجلات الدرجات</th></tr></thead><tbody>'+summaries.map(x=>'<tr><td>'+escapeHtml(x.stage)+'</td><td>'+x.noor+'</td><td>'+x.rased+'</td><td>'+x.matched+'</td><td>'+x.nameDifferent+'</td><td>'+x.rasedOnly+' راصد فقط / '+x.noorOnly+' نور فقط</td><td>'+x.grades+'</td></tr>').join("")+'</tbody></table></div>';
   noorMatchEl("exportNoorMatchBtn").disabled=false;noorMatchEl("printNoorMatchBtn").disabled=false;clearNoorRasedFilters();
  }catch(error){console.error(error);alert("تعذر إجراء المطابقة: "+(error.message||error))}
  finally{button.disabled=false;button.textContent="🔎 مطابقة الملفات"}
