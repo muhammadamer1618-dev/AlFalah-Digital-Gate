@@ -482,8 +482,13 @@
             <td class="number">15</td>
             <td class="number">
               <input class="manual-input" id="manual2" type="number" min="0" max="15" step="0.01" value="0">
+              <div class="mapping" style="margin-top:6px">
+                <select id="achievementTestSelect">
+                  <option value="">اختبار اختياري للحساب الآلي</option>
+                </select>
+              </div>
             </td>
-            <td class="hint">تقييم مستقل من المشرف.</td>
+            <td class="hint" id="achievementHint">يمكن إدخال الدرجة يدويًا أو اختيار اختبار لحسابها من متوسط نسب الفصول.</td>
           </tr>
 
           <tr class="manual-row">
@@ -689,6 +694,9 @@
   let monthlyEvaluations = [];
   let filteredVisits = [];
   let activeEvaluationKey = "";
+  let achievementTests = [];
+  let selectedAchievementTest = null;
+  let achievementDetails = null;
 
   const criterionConfig = {
     7: {
@@ -709,6 +717,94 @@
     const box = el("errorBox");
     box.textContent = message;
     box.classList.remove("hidden");
+  }
+
+  function teacherMatchesTest(test, teacher){
+    const teacherId = normalize(teacher?.code || teacher?.id || "");
+    const candidates = [
+      test.teacherCode,test.teacherId,test.teacherEmail,test.teacherUsername,
+      test.createdBy,test.createdByEmail,test.teacher
+    ].map(normalize).filter(Boolean);
+    return !candidates.length || candidates.includes(teacherId) ||
+      normalize(test.teacherName) === normalize(teacher?.name);
+  }
+
+  function testDateInPeriod(test, from, to){
+    const d = dateValue(test.date || test.testDate || test.createdAt);
+    return (!from || (d && d >= from)) && (!to || (d && d <= to));
+  }
+
+  async function loadAchievementTests(teacher, from, to){
+    const select = el("achievementTestSelect");
+    select.innerHTML = '<option value="">اختبار اختياري للحساب الآلي</option>';
+    achievementTests = [];
+    selectedAchievementTest = null;
+    achievementDetails = null;
+    if(!teacher) return;
+    try{
+      const snap = await getDocs(collection(db,"tests"));
+      achievementTests = snap.docs
+        .map(s => ({id:s.id,...s.data()}))
+        .filter(t => teacherMatchesTest(t,teacher) && testDateInPeriod(t,from,to))
+        .sort((a,b)=>String(b.date||b.testDate||"").localeCompare(String(a.date||a.testDate||"")));
+      select.innerHTML += achievementTests.map(t =>
+        '<option value="'+String(t.id).replace(/"/g,"&quot;")+'">'+
+        escapeHtml(t.name || t.title || "اختبار بدون اسم")+
+        (t.date ? " — "+escapeHtml(dateValue(t.date)) : "")+
+        '</option>'
+      ).join("");
+    }catch(error){
+      console.warn("تعذر تحميل اختبارات التحصيل",error);
+      el("achievementHint").textContent = "تعذر تحميل الاختبارات؛ يمكنك استخدام الإدخال اليدوي.";
+    }
+  }
+
+  async function calculateAchievementScore(test){
+    if(!test) return null;
+    const classes = Array.isArray(test.classes) ? test.classes : [];
+    const percentages = [], missing = [];
+    for(const cls of classes){
+      const grade = String(cls.grade||"").trim(), section = String(cls.section||"").trim();
+      if(!grade || !section) continue;
+      try{
+        const studentsSnap = await getDocs(query(collection(db,"students"),where("grade","==",grade)));
+        const students = studentsSnap.docs.map(d=>({id:d.id,...d.data()}))
+          .filter(s=>String(s.section||"").trim()===section);
+        const gradesSnap = await getDocs(query(collection(db,"grades"),where("testId","==",test.id)));
+        const records = new Map(gradesSnap.docs.map(d=>{const x=d.data()||{};return [String(x.studentCode||x.studentId||d.id),x]}));
+        const values = students.map(s=>{
+          const r=records.get(String(s.code||s.id)); if(!r || r.attendance==="absent") return null;
+          const mark=toNumber(r.mark), full=toNumber(r.fullMark||test.fullMark);
+          return mark!==null && full>0 ? (mark/full)*100 : null;
+        }).filter(v=>v!==null && Number.isFinite(v));
+        if(values.length) percentages.push({grade,section,percentage:values.reduce((a,b)=>a+b,0)/values.length,count:values.length});
+        else missing.push(grade+" / "+section);
+      }catch(error){ missing.push(grade+" / "+section); }
+    }
+    if(!percentages.length) return {average:null,score:null,included:[],missing};
+    const average=percentages.reduce((a,b)=>a+b.percentage,0)/percentages.length;
+    return {average,score:clamp((average/100)*15,0,15),included:percentages,missing};
+  }
+
+  async function applyAchievementSelection(){
+    const id = el("achievementTestSelect").value;
+    selectedAchievementTest = achievementTests.find(t=>t.id===id)||null;
+    if(!selectedAchievementTest){
+      achievementDetails=null;
+      el("achievementHint").textContent="يمكن إدخال الدرجة يدويًا أو اختيار اختبار لحسابها من متوسط نسب الفصول.";
+      calculateGrandTotal(); saveCurrentEvaluation(); return;
+    }
+    el("achievementHint").textContent="جارٍ حساب متوسط نسب الفصول...";
+    achievementDetails=await calculateAchievementScore(selectedAchievementTest);
+    if(achievementDetails.score===null){
+      el("achievementHint").textContent="لا توجد نسب صالحة لفصول هذا الاختبار؛ تم الإبقاء على الإدخال اليدوي.";
+      return;
+    }
+    el("manual2").value=achievementDetails.score.toFixed(2);
+    const used=achievementDetails.included.map(x=>x.grade+" / "+x.section+" = "+x.percentage.toFixed(1)+"%").join("، ");
+    const missing=achievementDetails.missing.length?" | بلا نتيجة: "+achievementDetails.missing.join("، "):"";
+    el("achievementHint").textContent="المتوسط: "+achievementDetails.average.toFixed(1)+"% → "+achievementDetails.score.toFixed(2)+" / 15 | "+used+missing;
+    calculateGrandTotal(); saveCurrentEvaluation();
   }
 
   function clearError(){
@@ -1076,6 +1172,9 @@
     const record = {
       manual: Object.fromEntries([1,2,3,4,5,6].map(n => [n, el(`manual${n}`).value])),
       mappings: Object.fromEntries([7,8,9].map(n => [n, el(`map${n}`).value])),
+      achievementTestId: selectedAchievementTest?.id || "",
+      achievementTestName: selectedAchievementTest?.name || selectedAchievementTest?.title || "",
+      achievementDetails,
       savedAt: new Date().toISOString()
     };
     try{ localStorage.setItem(activeEvaluationKey, JSON.stringify(record)); }
@@ -1103,6 +1202,7 @@
     [7,8,9].forEach(n => {
       el(`map${n}`).dataset.savedMapping = record?.mappings?.[n] || "";
     });
+    el("achievementTestSelect").dataset.savedTestId = record?.achievementTestId || "";
   }
 
   async function calculate(){
@@ -1191,6 +1291,12 @@
         : visitCriterion.toFixed(2);
 
     fillMappingOptions();
+    await loadAchievementTests(teacher,from,to);
+    const savedAchievementId = el("achievementTestSelect").dataset.savedTestId || "";
+    if(savedAchievementId && achievementTests.some(t=>t.id===savedAchievementId)){
+      el("achievementTestSelect").value=savedAchievementId;
+      await applyAchievementSelection();
+    }
 
     for(const number of [7,8,9]){
       const result = calculateCriterion(number);
@@ -1278,6 +1384,9 @@
       manualScores: Object.fromEntries([1,2,3,4,5,6].map(n => [n, Number(el(`manual${n}`).value || 0)])),
       automaticScores: Object.fromEntries([7,8,9,10].map(n => { const match = el(`auto${n}`).textContent.match(/([0-9]+(?:\.[0-9]+)?)/); return [n, match ? Number(match[1]) : 0]; })),
       mappings: Object.fromEntries([7,8,9].map(n => [n, el(`map${n}`).value || ""])),
+      achievementTestId: selectedAchievementTest?.id || "",
+      achievementTestName: selectedAchievementTest?.name || selectedAchievementTest?.title || "",
+      achievementDetails,
       total: Number(el("grandTotal").textContent.split("/")[0].trim()),
       visitCount: filteredVisits.length,
       updatedAt: serverTimestamp()
@@ -1329,6 +1438,7 @@
   el("savedEvaluationsBody").addEventListener("click",handleSavedEvaluationAction);
 
   el("teacherSelect").addEventListener("change",calculate);
+  el("achievementTestSelect").addEventListener("change",applyAchievementSelection);
 
   el("monthSelect").addEventListener("change",()=>{ setMonthPeriod(el("monthSelect").value); calculate(); });
   el("fromDate").addEventListener("change",()=>{ syncMonthFromDates(); calculate(); });
