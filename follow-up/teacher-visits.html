@@ -2210,6 +2210,19 @@ async function loadData(){
 
       );
 
+    const normalizeTeacherName = value => String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[أإآ]/g, "ا")
+      .replace(/ة/g, "ه")
+      .replace(/\s+/g, " ");
+
+    const teacherNames = new Set(
+      visibleTeachers
+        .map(teacher => normalizeTeacherName(teacher.name))
+        .filter(Boolean)
+    );
+
 
     if(isAdmin){
 
@@ -2231,15 +2244,22 @@ async function loadData(){
 
             return (
 
-              String(visit.supervisorId || "") === String(currentUser.id || "")
+              (
+                String(visit.supervisorId || "") === String(currentUser.id || "") &&
+                (
+                  teacherCodes.has(teacherCode) ||
+                  teacherNames.has(normalizeTeacherName(visit.teacherName))
+                )
+              )
 
               ||
 
               (
                 !isGlobalSupervisor &&
                 !visit.supervisorId &&
-                teacherCodes.has(
-                  teacherCode
+                (
+                  teacherCodes.has(teacherCode) ||
+                  teacherNames.has(normalizeTeacherName(visit.teacherName))
                 )
               )
 
@@ -2382,14 +2402,11 @@ function getTeacherVisits(teacher){
     );
 
 
-  return visibleVisits.filter(
-    visit=>
-      String(
-        visit.teacherCode ||
-        ""
-      )
-      ===
-      code
+  const teacherName = normalizeTeacherName(teacher.name);
+
+  return visibleVisits.filter(visit =>
+    String(visit.teacherCode || "") === code ||
+    normalizeTeacherName(visit.teacherName) === teacherName
   );
 
 }
