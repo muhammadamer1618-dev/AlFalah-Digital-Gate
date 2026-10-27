@@ -745,7 +745,7 @@
       const snap = await getDocs(collection(db,"tests"));
       achievementTests = snap.docs
         .map(s => ({id:s.id,...s.data()}))
-        .filter(t => teacherMatchesTest(t,teacher) && testDateInPeriod(t,from,to))
+        .filter(t => teacherMatchesTest(t,teacher))
         .sort((a,b)=>String(b.date||b.testDate||"").localeCompare(String(a.date||a.testDate||"")));
       select.innerHTML += achievementTests.map(t =>
         '<option value="'+String(t.id).replace(/"/g,"&quot;")+'">'+
