@@ -2181,6 +2181,33 @@ async function loadData(){
     }
 
 
+    const teacherIdentityKey = value => String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[أإآ]/g, "ا")
+      .replace(/ة/g, "ه")
+      .replace(/\s+/g, " ");
+
+    const teacherRecordScore = teacher => {
+      const code = String(teacher.code || teacher.id || "").trim();
+      let score = 0;
+      if(String(teacher.phone || "").trim()) score += 5;
+      if(/\d{6,}/.test(code)) score += 4;
+      if(code.length > 3) score += 1;
+      if(teacher.updatedAt) score += 1;
+      return score;
+    };
+
+    const uniqueTeachers = new Map();
+    visibleTeachers.forEach(teacher => {
+      const key = teacherIdentityKey(teacher.name || teacher.code || teacher.id);
+      const existing = uniqueTeachers.get(key);
+      if(!existing || teacherRecordScore(teacher) > teacherRecordScore(existing)){
+        uniqueTeachers.set(key, teacher);
+      }
+    });
+    visibleTeachers = [...uniqueTeachers.values()];
+
     visibleTeachers.sort(
       (a,b)=>
         String(
