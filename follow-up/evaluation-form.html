@@ -970,7 +970,8 @@ let selectedTeacher = null;
 
 let lastSavedVisitId = null;
 let lastSavedVisitPayload = null;
-const editVisitId = new URLSearchParams(location.search).get("id") || "";\nlet activeVisitId = editVisitId;
+const editVisitId = new URLSearchParams(location.search).get("id") || "";
+let activeVisitId = editVisitId;
 let editVisitData = null;
 
 
