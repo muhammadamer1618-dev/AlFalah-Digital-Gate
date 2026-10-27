@@ -743,15 +743,14 @@
     if(!teacher) return;
     try{
       const assignments = Array.isArray(teacher.assignments) ? teacher.assignments : [];
-      const subjectIds = [...new Set(assignments.map(a=>String(a.subjectId||"").trim()).filter(Boolean))];
+      let subjectIds = [...new Set(assignments.map(a=>String(a.subjectId||"").trim()).filter(Boolean))];
+      if(!subjectIds.length){
+        const subjectsSnap = await getDocs(collection(db,"subjects"));
+        subjectIds = subjectsSnap.docs.map(s=>s.id);
+      }
       const docs = [];
-      if(subjectIds.length){
-        for(const subjectId of subjectIds){
-          const snap = await getDocs(query(collection(db,"tests"),where("subjectId","==",subjectId)));
-          snap.docs.forEach(s => docs.push({id:s.id,...s.data()}));
-        }
-      }else{
-        const snap = await getDocs(collection(db,"tests"));
+      for(const subjectId of subjectIds){
+        const snap = await getDocs(query(collection(db,"tests"),where("subjectId","==",subjectId)));
         snap.docs.forEach(s => docs.push({id:s.id,...s.data()}));
       }
       const seen = new Set();
