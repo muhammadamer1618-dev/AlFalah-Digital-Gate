@@ -733,7 +733,7 @@
 
   function classesForTeacher(test, teacher){
     const classes = Array.isArray(test.classes) ? test.classes : [];
-    const assignments = Array.isArray(teacher?.assignments) ? teacher.assignments : [];
+    const assignments = Array.isArray(teacher?._achievementAssignments) ? teacher._achievementAssignments : (Array.isArray(teacher?.assignments) ? teacher.assignments : []);
     if(!assignments.length) return classes;
     const subjectId = String(test.subjectId || "").trim();
     return classes.filter(cls => assignments.some(a =>
@@ -762,13 +762,34 @@
 
   async function loadAchievementTests(teacher, from, to){
     const select = el("achievementTestSelect");
+    teacher._achievementAssignments = [];
+    const teacherIds = [...new Set([
+      teacher?.email, teacher?.id, teacher?.code, teacher?.teacherCode
+    ].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean))];
+    for(const id of teacherIds){
+      try{
+        const teacherSnap = await getDoc(doc(resultsDb,"teachers",id));
+        if(teacherSnap.exists()){
+          const data = teacherSnap.data() || {};
+          if(Array.isArray(data.assignments)) teacher._achievementAssignments = data.assignments;
+          if(teacher._achievementAssignments.length) break;
+        }
+      }catch(error){ console.warn("تعذر قراءة تكليفات المعلم",error); }
+    }
+    if(!teacher._achievementAssignments.length && teacher?.name){
+      try{
+        const teacherSnap = await getDocs(query(collection(resultsDb,"teachers"),where("name","==",teacher.name)));
+        const data = teacherSnap.docs[0]?.data() || {};
+        if(Array.isArray(data.assignments)) teacher._achievementAssignments = data.assignments;
+      }catch(error){ console.warn("تعذر البحث عن تكليفات المعلم بالاسم",error); }
+    }
     select.innerHTML = '<option value="">اختبار اختياري للحساب الآلي</option>';
     achievementTests = [];
     selectedAchievementTest = null;
     achievementDetails = null;
     if(!teacher) return;
     try{
-      const assignments = Array.isArray(teacher.assignments) ? teacher.assignments : [];
+      const assignments = Array.isArray(teacher._achievementAssignments) ? teacher._achievementAssignments : (Array.isArray(teacher.assignments) ? teacher.assignments : []);
       let subjectIds = [...new Set(assignments.map(a=>String(a.subjectId||"").trim()).filter(Boolean))];
       if(!subjectIds.length){
         const subjectsSnap = await getDocs(collection(resultsDb,"subjects"));
