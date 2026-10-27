@@ -742,10 +742,21 @@
     achievementDetails = null;
     if(!teacher) return;
     try{
-      const snap = await getDocs(collection(db,"tests"));
-      achievementTests = snap.docs
-        .map(s => ({id:s.id,...s.data()}))
-        .filter(() => true)
+      const assignments = Array.isArray(teacher.assignments) ? teacher.assignments : [];
+      const subjectIds = [...new Set(assignments.map(a=>String(a.subjectId||"").trim()).filter(Boolean))];
+      const docs = [];
+      if(subjectIds.length){
+        for(const subjectId of subjectIds){
+          const snap = await getDocs(query(collection(db,"tests"),where("subjectId","==",subjectId)));
+          snap.docs.forEach(s => docs.push({id:s.id,...s.data()}));
+        }
+      }else{
+        const snap = await getDocs(collection(db,"tests"));
+        snap.docs.forEach(s => docs.push({id:s.id,...s.data()}));
+      }
+      const seen = new Set();
+      achievementTests = docs
+        .filter(t => !seen.has(t.id) && (seen.add(t.id), true))
         .sort((a,b)=>String(b.date||b.testDate||"").localeCompare(String(a.date||a.testDate||"")));
       select.innerHTML += achievementTests.map(t =>
         '<option value="'+String(t.id).replace(/"/g,"&quot;")+'">'+
@@ -755,7 +766,7 @@
       ).join("");
     }catch(error){
       console.warn("تعذر تحميل اختبارات التحصيل",error);
-      el("achievementHint").textContent = "تعذر تحميل الاختبارات؛ يمكنك استخدام الإدخال اليدوي.";
+      el("achievementHint").textContent = "تعذر تحميل الاختبارات من قاعدة البيانات: "+(error.message||"تحقق من الصلاحيات")+" — يمكنك استخدام الإدخال اليدوي.";
     }
   }
 
