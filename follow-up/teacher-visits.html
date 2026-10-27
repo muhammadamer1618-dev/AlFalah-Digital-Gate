@@ -2156,6 +2156,16 @@ async function loadData(){
       );
 
 
+    const currentSupervisorVisits = allVisits.filter(visit =>
+      String(visit.supervisorId || "") === String(currentUser.id || "")
+    );
+
+    const supervisorVisitTeacherCodes = new Set(
+      currentSupervisorVisits
+        .map(visit => String(visit.teacherCode || "").trim())
+        .filter(Boolean)
+    );
+
     if(isAdmin || isGlobalSupervisor){
 
       visibleTeachers =
@@ -2164,18 +2174,28 @@ async function loadData(){
     }else{
 
       visibleTeachers =
-        allTeachers.filter(
-          teacher=>
-            String(
-              teacher.supervisorId ||
-              ""
-            )
-            ===
-            String(
-              currentUser.id ||
-              ""
-            )
+        allTeachers.filter(teacher =>
+          String(teacher.supervisorId || "") === String(currentUser.id || "") ||
+          supervisorVisitTeacherCodes.has(String(teacher.code || teacher.id || "").trim())
         );
+
+      // إذا حُفظت الزيارة قبل اكتمال ربط المعلم بالمشرف، نعرض المعلم من بيانات الزيارة.
+      const knownTeacherCodes = new Set(
+        visibleTeachers.map(teacher => String(teacher.code || teacher.id || "").trim()).filter(Boolean)
+      );
+      currentSupervisorVisits.forEach(visit => {
+        const code = String(visit.teacherCode || "").trim();
+        if(code && !knownTeacherCodes.has(code)){
+          visibleTeachers.push({
+            id: code,
+            code,
+            name: String(visit.teacherName || code),
+            phone: String(visit.teacherPhone || ""),
+            supervisorId: String(currentUser.id || "")
+          });
+          knownTeacherCodes.add(code);
+        }
+      });
 
     }
 
