@@ -776,12 +776,23 @@
         }
       }catch(error){ console.warn("تعذر قراءة تكليفات المعلم",error); }
     }
-    if(!teacher._achievementAssignments.length && teacher?.name){
-      try{
-        const teacherSnap = await getDocs(query(collection(resultsDb,"teachers"),where("name","==",teacher.name)));
-        const data = teacherSnap.docs[0]?.data() || {};
-        if(Array.isArray(data.assignments)) teacher._achievementAssignments = data.assignments;
-      }catch(error){ console.warn("تعذر البحث عن تكليفات المعلم بالاسم",error); }
+    if(!teacher._achievementAssignments.length){
+      const lookups = [
+        ["code", teacher?.code || teacher?.id],
+        ["teacherCode", teacher?.code || teacher?.id],
+        ["email", teacher?.email],
+        ["name", teacher?.name]
+      ].filter(([,value])=>String(value||"").trim());
+      for(const [field,value] of lookups){
+        try{
+          const teacherSnap = await getDocs(query(collection(resultsDb,"teachers"),where(field,"==",value)));
+          const data = teacherSnap.docs[0]?.data() || {};
+          if(Array.isArray(data.assignments) && data.assignments.length){
+            teacher._achievementAssignments = data.assignments;
+            break;
+          }
+        }catch(error){ console.warn("تعذر البحث عن تكليفات المعلم في "+field,error); }
+      }
     }
     select.innerHTML = '<option value="">اختبار اختياري للحساب الآلي</option>';
     achievementTests = [];
