@@ -667,6 +667,10 @@
         حفظ الزيارة
       </button>
 
+      <button class="btn btn-new-visit" id="btnSaveNew">
+        حفظ كزيارة جديدة
+      </button>
+
       <button class="btn btn-whats" id="btnSendWhats" disabled>
         واتساب
       </button>
@@ -1775,6 +1779,12 @@ function calculateScore(){
    SAVE VISIT
 ====================================================== */
 
+async function saveAsNewVisit(){
+  // يستخدم النموذج الحالي كقالب، ويحفظ مستند زيارة جديدًا بدل تعديل السجل المفتوح.
+  activeVisitId = "";
+  await saveVisit();
+}
+
 async function saveVisit(){
 
   if(!selectedTeacher){
@@ -2407,6 +2417,12 @@ el("btnSave")
   .addEventListener(
     "click",
     saveVisit
+  );
+
+el("btnSaveNew")
+  .addEventListener(
+    "click",
+    saveAsNewVisit
   );
 
 
