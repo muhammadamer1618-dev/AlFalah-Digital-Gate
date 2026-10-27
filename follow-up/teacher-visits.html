@@ -2156,8 +2156,16 @@ async function loadData(){
       );
 
 
+    const normalizeSupervisorName = value => String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[أإآ]/g, "ا")
+      .replace(/ة/g, "ه")
+      .replace(/\s+/g, " ");
+
     const currentSupervisorVisits = allVisits.filter(visit =>
-      String(visit.supervisorId || "") === String(currentUser.id || "")
+      String(visit.supervisorId || "") === String(currentUser.id || "") ||
+      normalizeSupervisorName(visit.supervisorName) === normalizeSupervisorName(currentUser.name)
     );
 
     const supervisorVisitTeacherCodes = new Set(
@@ -2250,14 +2258,9 @@ async function loadData(){
 
             return (
 
-              String(
-                visit.supervisorId ||
-                ""
-              )
-              ===
-              String(
-                currentUser.id ||
-                ""
+              (
+                String(visit.supervisorId || "") === String(currentUser.id || "") ||
+                normalizeSupervisorName(visit.supervisorName) === normalizeSupervisorName(currentUser.name)
               )
 
               ||
