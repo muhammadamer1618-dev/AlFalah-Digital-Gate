@@ -2181,33 +2181,6 @@ async function loadData(){
     }
 
 
-    const teacherIdentityKey = value => String(value || "")
-      .trim()
-      .toLowerCase()
-      .replace(/[أإآ]/g, "ا")
-      .replace(/ة/g, "ه")
-      .replace(/\s+/g, " ");
-
-    const teacherRecordScore = teacher => {
-      const code = String(teacher.code || teacher.id || "").trim();
-      let score = 0;
-      if(String(teacher.phone || "").trim()) score += 5;
-      if(/\d{6,}/.test(code)) score += 4;
-      if(code.length > 3) score += 1;
-      if(teacher.updatedAt) score += 1;
-      return score;
-    };
-
-    const uniqueTeachers = new Map();
-    visibleTeachers.forEach(teacher => {
-      const key = teacherIdentityKey(teacher.name || teacher.code || teacher.id);
-      const existing = uniqueTeachers.get(key);
-      if(!existing || teacherRecordScore(teacher) > teacherRecordScore(existing)){
-        uniqueTeachers.set(key, teacher);
-      }
-    });
-    visibleTeachers = [...uniqueTeachers.values()];
-
     visibleTeachers.sort(
       (a,b)=>
         String(
@@ -2237,19 +2210,6 @@ async function loadData(){
 
       );
 
-    const normalizeTeacherName = value => String(value || "")
-      .trim()
-      .toLowerCase()
-      .replace(/[أإآ]/g, "ا")
-      .replace(/ة/g, "ه")
-      .replace(/\s+/g, " ");
-
-    const teacherNames = new Set(
-      visibleTeachers
-        .map(teacher => normalizeTeacherName(teacher.name))
-        .filter(Boolean)
-    );
-
 
     if(isAdmin){
 
@@ -2271,22 +2231,15 @@ async function loadData(){
 
             return (
 
-              (
-                String(visit.supervisorId || "") === String(currentUser.id || "") &&
-                (
-                  teacherCodes.has(teacherCode) ||
-                  teacherNames.has(normalizeTeacherName(visit.teacherName))
-                )
-              )
+              String(visit.supervisorId || "") === String(currentUser.id || "")
 
               ||
 
               (
                 !isGlobalSupervisor &&
                 !visit.supervisorId &&
-                (
-                  teacherCodes.has(teacherCode) ||
-                  teacherNames.has(normalizeTeacherName(visit.teacherName))
+                teacherCodes.has(
+                  teacherCode
                 )
               )
 
@@ -2429,11 +2382,14 @@ function getTeacherVisits(teacher){
     );
 
 
-  const teacherName = normalizeTeacherName(teacher.name);
-
-  return visibleVisits.filter(visit =>
-    String(visit.teacherCode || "") === code ||
-    normalizeTeacherName(visit.teacherName) === teacherName
+  return visibleVisits.filter(
+    visit=>
+      String(
+        visit.teacherCode ||
+        ""
+      )
+      ===
+      code
   );
 
 }
