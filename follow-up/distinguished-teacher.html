@@ -621,6 +621,7 @@
 
 <script type="module">
   import { db } from "./firebase.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 
   import {
     collection,
@@ -633,6 +634,16 @@
     query,
     where
   } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+  const resultsApp = initializeApp({
+    apiKey: "AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",
+    authDomain: "results2026-7c0dd.firebaseapp.com",
+    projectId: "results2026-7c0dd",
+    storageBucket: "results2026-7c0dd.firebasestorage.app",
+    messagingSenderId: "241421115694",
+    appId: "1:241421115694:web:96f55fd9fd1d5b18b31abf"
+  }, "rased-results");
+  const resultsDb = getFirestore(resultsApp);
 
   const el = id => document.getElementById(id);
 
@@ -745,12 +756,12 @@
       const assignments = Array.isArray(teacher.assignments) ? teacher.assignments : [];
       let subjectIds = [...new Set(assignments.map(a=>String(a.subjectId||"").trim()).filter(Boolean))];
       if(!subjectIds.length){
-        const subjectsSnap = await getDocs(collection(db,"subjects"));
+        const subjectsSnap = await getDocs(collection(resultsDb,"subjects"));
         subjectIds = subjectsSnap.docs.map(s=>s.id);
       }
       const docs = [];
       for(const subjectId of subjectIds){
-        const snap = await getDocs(query(collection(db,"tests"),where("subjectId","==",subjectId)));
+        const snap = await getDocs(query(collection(resultsDb,"tests"),where("subjectId","==",subjectId)));
         snap.docs.forEach(s => docs.push({id:s.id,...s.data()}));
       }
       const seen = new Set();
@@ -777,10 +788,10 @@
       const grade = String(cls.grade||"").trim(), section = String(cls.section||"").trim();
       if(!grade || !section) continue;
       try{
-        const studentsSnap = await getDocs(query(collection(db,"students"),where("grade","==",grade)));
+        const studentsSnap = await getDocs(query(collection(resultsDb,"students"),where("grade","==",grade)));
         const students = studentsSnap.docs.map(d=>({id:d.id,...d.data()}))
           .filter(s=>String(s.section||"").trim()===section);
-        const gradesSnap = await getDocs(query(collection(db,"grades"),where("testId","==",test.id)));
+        const gradesSnap = await getDocs(query(collection(resultsDb,"grades"),where("testId","==",test.id)));
         const records = new Map(gradesSnap.docs.map(d=>{const x=d.data()||{};return [String(x.studentCode||x.studentId||d.id),x]}));
         const values = students.map(s=>{
           const r=records.get(String(s.code||s.id)); if(!r || r.attendance==="absent") return null;
