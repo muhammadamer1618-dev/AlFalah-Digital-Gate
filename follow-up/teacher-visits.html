@@ -2156,16 +2156,8 @@ async function loadData(){
       );
 
 
-    const normalizeSupervisorName = value => String(value || "")
-      .trim()
-      .toLowerCase()
-      .replace(/[أإآ]/g, "ا")
-      .replace(/ة/g, "ه")
-      .replace(/\s+/g, " ");
-
     const currentSupervisorVisits = allVisits.filter(visit =>
-      String(visit.supervisorId || "") === String(currentUser.id || "") ||
-      normalizeSupervisorName(visit.supervisorName) === normalizeSupervisorName(currentUser.name)
+      String(visit.supervisorId || "") === String(currentUser.id || "")
     );
 
     const supervisorVisitTeacherCodes = new Set(
@@ -2183,27 +2175,8 @@ async function loadData(){
 
       visibleTeachers =
         allTeachers.filter(teacher =>
-          String(teacher.supervisorId || "") === String(currentUser.id || "") ||
-          supervisorVisitTeacherCodes.has(String(teacher.code || teacher.id || "").trim())
+          String(teacher.supervisorId || "") === String(currentUser.id || "")
         );
-
-      // إذا حُفظت الزيارة قبل اكتمال ربط المعلم بالمشرف، نعرض المعلم من بيانات الزيارة.
-      const knownTeacherCodes = new Set(
-        visibleTeachers.map(teacher => String(teacher.code || teacher.id || "").trim()).filter(Boolean)
-      );
-      currentSupervisorVisits.forEach(visit => {
-        const code = String(visit.teacherCode || "").trim();
-        if(code && !knownTeacherCodes.has(code)){
-          visibleTeachers.push({
-            id: code,
-            code,
-            name: String(visit.teacherName || code),
-            phone: String(visit.teacherPhone || ""),
-            supervisorId: String(currentUser.id || "")
-          });
-          knownTeacherCodes.add(code);
-        }
-      });
 
     }
 
@@ -2258,10 +2231,7 @@ async function loadData(){
 
             return (
 
-              (
-                String(visit.supervisorId || "") === String(currentUser.id || "") ||
-                normalizeSupervisorName(visit.supervisorName) === normalizeSupervisorName(currentUser.name)
-              )
+              String(visit.supervisorId || "") === String(currentUser.id || "")
 
               ||
 
