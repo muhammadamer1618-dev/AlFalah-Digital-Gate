@@ -655,7 +655,7 @@
 
     <div class="top-actions">
 
-      <a href="supervisor-dashboard.html" class="btn btn-back" id="backBtn">
+      <a href="teacher-visits.html" class="btn btn-back" id="backBtn">
         لوحة التحكم
       </a>
 
@@ -1886,8 +1886,13 @@ async function saveVisit(){
 
     visitNumber:
       Number(
-        el("visitNumber").value || 0
-      ),
+        String(el("visitNumber").value || "").trim()
+      ) || 0,
+
+    visitNo:
+      Number(
+        String(el("visitNumber").value || "").trim()
+      ) || 0,
 
     supervisorId:
       String(
@@ -2067,7 +2072,7 @@ async function loadVisitForEditing(){
     el("grade").value = editVisitData.grade || "";
     el("subject").value = editVisitData.subject || "";
     el("lessonTitle").value = editVisitData.lessonTitle || "";
-    el("visitNumber").value = editVisitData.visitNumber || "";
+    el("visitNumber").value = editVisitData.visitNumber ?? editVisitData.visitNo ?? "";
     el("visitDate").value = editVisitData.visitDate || "";
     el("positives").value = editVisitData.positives || "";
     el("recommendations").value = editVisitData.recommendations || "";
