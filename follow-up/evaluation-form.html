@@ -667,10 +667,6 @@
         حفظ الزيارة
       </button>
 
-      <button class="btn btn-new-visit" id="btnSaveNew">
-        حفظ كزيارة جديدة
-      </button>
-
       <button class="btn btn-whats" id="btnSendWhats" disabled>
         واتساب
       </button>
@@ -970,8 +966,7 @@ let selectedTeacher = null;
 
 let lastSavedVisitId = null;
 let lastSavedVisitPayload = null;
-const editVisitId = new URLSearchParams(location.search).get("id") || "";
-let activeVisitId = editVisitId;
+const editVisitId = new URLSearchParams(location.search).get("id") || "";\nlet activeVisitId = editVisitId;
 let editVisitData = null;
 
 
@@ -1780,12 +1775,6 @@ function calculateScore(){
    SAVE VISIT
 ====================================================== */
 
-async function saveAsNewVisit(){
-  // يستخدم النموذج الحالي كقالب، ويحفظ مستند زيارة جديدًا بدل تعديل السجل المفتوح.
-  activeVisitId = "";
-  await saveVisit();
-}
-
 async function saveVisit(){
 
   if(!selectedTeacher){
@@ -2418,12 +2407,6 @@ el("btnSave")
   .addEventListener(
     "click",
     saveVisit
-  );
-
-el("btnSaveNew")
-  .addEventListener(
-    "click",
-    saveAsNewVisit
   );
 
 
