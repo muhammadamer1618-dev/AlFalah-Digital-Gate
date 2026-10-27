@@ -1898,8 +1898,12 @@ async function saveVisit(){
       String(
         editVisitData?.supervisorId ||
         currentUser.id ||
+        currentUser.username ||
         ""
       ),
+
+    supervisorUsername:
+      String(currentUser.username || ""),
 
     supervisorName:
       String(
