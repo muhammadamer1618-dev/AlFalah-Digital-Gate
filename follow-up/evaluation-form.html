@@ -656,7 +656,7 @@
     <div class="top-actions">
 
       <a href="teacher-visits.html" class="btn btn-back" id="backBtn">
-        سجل الزيارات
+        لوحة التحكم
       </a>
 
       <button class="btn btn-clear" id="btnClear">
@@ -966,7 +966,7 @@ let selectedTeacher = null;
 
 let lastSavedVisitId = null;
 let lastSavedVisitPayload = null;
-const editVisitId = new URLSearchParams(location.search).get("id") || "";\nlet activeVisitId = editVisitId;
+const editVisitId = new URLSearchParams(location.search).get("id") || "";
 let editVisitData = null;
 
 
@@ -1898,12 +1898,8 @@ async function saveVisit(){
       String(
         editVisitData?.supervisorId ||
         currentUser.id ||
-        currentUser.username ||
         ""
       ),
-
-    supervisorUsername:
-      String(currentUser.username || ""),
 
     supervisorName:
       String(
@@ -1956,9 +1952,9 @@ async function saveVisit(){
 
   try{
 
-    let savedId = activeVisitId;
+    let savedId = editVisitId;
 
-    if(activeVisitId){
+    if(editVisitId){
 
       const updatePayload = {
         ...payload,
@@ -1970,7 +1966,7 @@ async function saveVisit(){
       delete updatePayload.teacherViewedAt;
 
       await updateDoc(
-        doc(db,"visits",activeVisitId),
+        doc(db,"visits",editVisitId),
         updatePayload
       );
 
@@ -2002,7 +1998,7 @@ async function saveVisit(){
 
     el("formStatus")
       .textContent =
-      activeVisitId
+      editVisitId
       ? "تم تحديث الزيارة"
       : "تم الحفظ";
 
@@ -2291,9 +2287,6 @@ function clearForm(){
 
   }
 
-
-  // بعد التفريغ يبدأ الحفظ كسجل زيارة جديد حتى لا نستبدل الزيارة السابقة.
-  activeVisitId = "";
 
   selectedTeacher = null;
 
