@@ -731,7 +731,21 @@
     box.classList.remove("hidden");
   }
 
+  function classesForTeacher(test, teacher){
+    const classes = Array.isArray(test.classes) ? test.classes : [];
+    const assignments = Array.isArray(teacher?.assignments) ? teacher.assignments : [];
+    if(!assignments.length) return classes;
+    const subjectId = String(test.subjectId || "").trim();
+    return classes.filter(cls => assignments.some(a =>
+      String(a.subjectId || "").trim() === subjectId &&
+      String(a.grade || "").trim() === String(cls.grade || "").trim() &&
+      String(a.section || "").trim() === String(cls.section || "").trim()
+    ));
+  }
+
   function teacherMatchesTest(test, teacher){
+    const assignments = Array.isArray(teacher?.assignments) ? teacher.assignments : [];
+    if(assignments.length) return classesForTeacher(test,teacher).length > 0;
     const teacherId = normalize(teacher?.code || teacher?.id || "");
     const candidates = [
       test.teacherCode,test.teacherId,test.teacherEmail,test.teacherUsername,
@@ -768,6 +782,7 @@
       const seen = new Set();
       achievementTests = docs
         .filter(t => !seen.has(t.id) && (seen.add(t.id), true))
+        .filter(t => teacherMatchesTest(t,teacher))
         .sort((a,b)=>String(b.date||b.testDate||"").localeCompare(String(a.date||a.testDate||"")));
       select.innerHTML += achievementTests.map(t =>
         '<option value="'+String(t.id).replace(/"/g,"&quot;")+'">'+
@@ -781,9 +796,9 @@
     }
   }
 
-  async function calculateAchievementScore(test){
+  async function calculateAchievementScore(test, teacher){
     if(!test) return null;
-    const classes = Array.isArray(test.classes) ? test.classes : [];
+    const classes = classesForTeacher(test, teacher);
     const percentages = [], missing = [];
     for(const cls of classes){
       const grade = String(cls.grade||"").trim(), section = String(cls.section||"").trim();
@@ -817,7 +832,7 @@
       calculateGrandTotal(); saveCurrentEvaluation(); return;
     }
     el("achievementHint").textContent="جارٍ حساب متوسط نسب الفصول...";
-    achievementDetails=await calculateAchievementScore(selectedAchievementTest);
+    achievementDetails=await calculateAchievementScore(selectedAchievementTest, getSelectedTeacher());
     if(achievementDetails.score===null){
       el("achievementHint").textContent="لا توجد نسب صالحة لفصول هذا الاختبار؛ تم الإبقاء على الإدخال اليدوي.";
       return;
