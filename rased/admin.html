@@ -3994,15 +3994,29 @@ async function repairStudentGrades(){
   }catch(e){console.error(e);alert("لم يتم الاسترجاع: "+e.message);}
 }
 
-async function updateStudentGradeLocations(code,grade,section,name){
-  const snap=await db.collection("grades").where("studentCode","==",String(code)).get();
-  for(let start=0;start<snap.docs.length;start+=400){
+async function updateStudentGradeLocations(codes,grade,section,name){
+  const wanted=new Set((Array.isArray(codes)?codes:[codes]).map(value=>
+    String(value??"").trim().replace(/\.0$/,"")
+  ).filter(Boolean));
+  if(!wanted.size)return 0;
+  const snap=await db.collection("grades").get();
+  const matched=snap.docs.filter(docSnap=>{
+    const value=String((docSnap.data()||{}).studentCode??"").trim().replace(/\.0$/,"");
+    return wanted.has(value);
+  });
+  for(let start=0;start<matched.length;start+=400){
     const batch=db.batch();
-    snap.docs.slice(start,start+400).forEach(docSnap=>{
-      batch.update(docSnap.ref,{grade:String(grade||""),section:String(section||""),studentName:String(name||"")});
+    matched.slice(start,start+400).forEach(docSnap=>{
+      batch.update(docSnap.ref,{
+        studentCode:String(codes[0]??codes).trim(),
+        grade:String(grade||""),
+        section:String(section||""),
+        studentName:String(name||"")
+      });
     });
-    if(snap.docs.length)await batch.commit();
+    if(matched.length)await batch.commit();
   }
+  return matched.length;
 }
 
 async function saveStudent(){
@@ -4024,7 +4038,7 @@ async function saveStudent(){
       const previous=await ref.get();
       if(!original&&previous.exists)throw Error("كود الطالب مستخدم بالفعل؛ افتح الطالب للتعديل بدل إنشاء طالب مكرر");
       await ref.set({...(previous.exists?previous.data():{}),code,...fields},{merge:true});
-      await updateStudentGradeLocations(code,grade,section,name);
+      await updateStudentGradeLocations([code,...(previous.exists&&Array.isArray(previous.data()?.previousCodes)?previous.data().previousCodes:[])],grade,section,name);
       alert("تم حفظ الطالب ✅");
     }
     try{await writeAuditLog(original?"student_update":"student_create","student",code,name,{},fields);}catch(e){console.warn(e);}
