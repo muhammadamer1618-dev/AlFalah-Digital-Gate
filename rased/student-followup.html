@@ -15,7 +15,7 @@ async function sendBehaviorNotice(id){
  if(!number)return msg("رقم ولي أمر الطالب غير موجود أو غير صالح.");
  const subject=note.subjectName||allSubjectNames[note.subjectId]||"غير محددة";
  const prefix=role==="supervisor"?"المشرف التربوي: ":"معلم المادة: ";
- const message="المكرم ولي أمر الطالب "+note.studentName+"،\nنحيطكم علمًا بأنه تم تسجيل ملاحظة "+note.kind+" على ابنكم: «"+note.category+"» في مادة «"+subject+"» بتاريخ "+(note.date||"—")+"."+(note.details?"\nالتفاصيل: "+note.details:"")+"\nنأمل منكم التعاون والمتابعة لتجنب تكرار الملاحظة.\nمع خالص التقدير.\n"+prefix+teacherName;
+ const message="المكرم ولي أمر الطالب "+note.studentName+"،\nنحيطكم علمًا بأنه تم تسجيل ملاحظة على ابنكم: «"+note.category+"» في مادة «"+subject+"» بتاريخ "+(note.date||"—")+"."+(note.details?"\nالتفاصيل: "+note.details:"")+"\nنأمل منكم التعاون والمتابعة لتجنب تكرار الملاحظة.\nمع خالص التقدير.\n"+prefix+teacherName;
  if(!confirm("سيتم فتح محادثة واتساب عادية لولي أمر "+note.studentName+"؛ اضغط إرسال من حسابك. هل تريد المتابعة؟"))return;
  const url="https://wa.me/"+number+"?text="+encodeURIComponent(message),chat=window.open(url,"_blank");
  if(!chat)return msg("منع المتصفح فتح واتساب. اسمح بالنوافذ المنبثقة ثم حاول مرة أخرى.");
