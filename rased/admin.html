@@ -1657,7 +1657,7 @@ onchange="renderStudents()">
   </div>
   <div class="actions"><button class="btn-light" type="button" id="noorFilterClear" onclick="clearNoorRasedFilters()">↺ مسح الفلاتر</button></div>
   <div class="admin-list-count">عدد النتائج: <b id="noorGradeCount">0</b></div>
-  <div class="table-wrap" style="max-height:520px;margin-top:12px"><table style="min-width:480px"><thead><tr><th>اسم الطالب في نور</th><th>المادة</th><th>الدرجة في راصد</th></tr></thead><tbody id="noorGradeBody"></tbody></table></div>
+  <div class="table-wrap" style="max-height:520px;margin-top:12px"><table style="min-width:480px"><thead><tr><th>اسم الطالب في نور</th><th>المادة</th><th>الدرجة في راصد</th><th>المشكلة / الحالة</th></tr></thead><tbody id="noorGradeBody"></tbody></table></div>
  </div>
 </section>
 
@@ -4723,11 +4723,15 @@ async function parseNoorStudentFile(file,stage){
    if(headerRow>=0)break;
   }
   if(headerRow<0)return;
-  let idCol=-1;
-  for(let r=headerRow+1;r<=Math.min(headerRow+3,matrix.length-1);r++){
+  let idCol=-1,gradeCol=-1,sectionCol=-1;
+  for(let r=Math.max(0,headerRow-2);r<=Math.min(headerRow+3,matrix.length-1);r++){
    const row=matrix[r]||[];
-   for(let c=0;c<row.length;c++)if(String(row[c]||"").trim()==="رقمها"){idCol=c;break}
-   if(idCol>=0)break;
+   for(let c=0;c<row.length;c++){
+    const h=String(row[c]||"").trim();
+    if(idCol<0 && /^(رقمها|رقم الهوية|رقم الهويه|الهوية|الهويه)$/.test(h))idCol=c;
+    if(gradeCol<0 && /^(الصف|الصف الدراسي|الصف الدراسى|المرحلة والصف)$/.test(h))gradeCol=c;
+    if(sectionCol<0 && /^(الشعبة|الشعبه|الفصل)$/.test(h))sectionCol=c;
+   }
   }
   if(idCol<0)return;
   let className="";
@@ -4735,7 +4739,9 @@ async function parseNoorStudentFile(file,stage){
   if(!className)className=stage;
   for(let r=headerRow+2;r<matrix.length;r++){
    const row=matrix[r]||[],code=noorMatchDigits(row[idCol]),name=String(row[nameCol]||"").trim();
-   if(code&&name&&name!=="- - - -")rowsOut.push({stage,code,noorName:name,noorGrade:className,sheet:sheetName,order:rowsOut.length});
+   const rowGrade=gradeCol>=0?String(row[gradeCol]||"").trim():"";
+   const rowSection=sectionCol>=0?String(row[sectionCol]||"").trim():"";
+   if(code&&name&&name!=="- - - -")rowsOut.push({stage,code,noorName:name,noorGrade:rowGrade||className,section:rowSection,sheet:sheetName,order:rowsOut.length});
   }
  });
  return rowsOut;
@@ -4752,16 +4758,17 @@ function noorRasedFilterValues(){
 function noorRasedRefreshFilterOptions(){
  const state=window.noorRasedMatchState;if(!state)return;
  const f=noorRasedFilterValues();
- const stageRows=state.grades.filter(x=>!f.stage||x.stage===f.stage);
- noorRasedSelectOptions("noorMatchStageFilter",state.grades.map(x=>x.stage),"كل المراحل");
+ const roster=state.students.filter(x=>x.noorName);
+ const stageRows=roster.filter(x=>!f.stage||x.stage===f.stage);
+ noorRasedSelectOptions("noorMatchStageFilter",roster.map(x=>x.stage),"كل المراحل");
  noorMatchEl("noorMatchStageFilter").value=f.stage;
- const gradeRows=stageRows.filter(x=>!f.grade||x.rasedGrade===f.grade);
- noorRasedSelectOptions("noorMatchGradeFilter",stageRows.map(x=>x.rasedGrade),"كل الصفوف");
+ const gradeRows=stageRows.filter(x=>!f.grade||x.rasedGrade===f.grade||noorRasedGradeKey(x.noorGrade)===noorRasedGradeKey(f.grade));
+ noorRasedSelectOptions("noorMatchGradeFilter",stageRows.map(x=>x.noorGrade||x.rasedGrade),"كل الصفوف");
  noorMatchEl("noorMatchGradeFilter").value=f.grade;
  const sectionRows=gradeRows.filter(x=>!f.section||x.section===f.section);
  noorRasedSelectOptions("noorMatchSectionFilter",gradeRows.map(x=>x.section),"كل الشعب");
  noorMatchEl("noorMatchSectionFilter").value=f.section;
- noorRasedSelectOptions("noorMatchSubjectFilter",sectionRows.map(x=>x.subject),"كل المواد");
+ noorRasedSelectOptions("noorMatchSubjectFilter",state.grades.filter(x=>!f.stage||x.stage===f.stage).map(x=>x.subject),"كل المواد");
  noorMatchEl("noorMatchSubjectFilter").value=f.subject;
 }
 function noorRasedGradeKey(value){
@@ -4787,10 +4794,10 @@ function noorRasedFilteredData(){
     const score=Number(row.mark),chosenScore=Number(chosen.mark);
     return !Number.isNaN(score)&&(Number.isNaN(chosenScore)||score>chosenScore)?row:chosen;
    },null);
-   grades.push(best||{stage:student.stage,code:student.code,noorName:student.noorName,noorOrder:student.noorOrder,subject:f.subject,mark:""});
+   grades.push(best||{stage:student.stage,code:student.code,noorName:student.noorName,noorOrder:student.noorOrder,subject:f.subject,mark:"",matchStatus:student.matchStatus||"未 توجد درجة في راصد"});
   }else{
    const subjects=[...new Set(candidates.map(x=>x.subject).filter(Boolean))];
-   if(!subjects.length)grades.push({stage:student.stage,code:student.code,noorName:student.noorName,noorOrder:student.noorOrder,subject:"اختر المادة",mark:""});
+   if(!subjects.length)grades.push({stage:student.stage,code:student.code,noorName:student.noorName,noorOrder:student.noorOrder,subject:"—",mark:"",matchStatus:student.matchStatus||"لم تُسجل درجة"});
    else subjects.forEach(subject=>{
     const best=candidates.filter(x=>x.subject===subject).reduce((chosen,row)=>{
      if(!chosen)return row;
@@ -4809,7 +4816,7 @@ function renderNoorRasedMatch(){
  noorRasedRefreshFilterOptions();
  const filtered=noorRasedFilteredData();
  noorMatchEl("noorGradeCount").textContent=filtered.grades.length;
- noorMatchEl("noorGradeBody").innerHTML=filtered.grades.map(row=>'<tr><td>'+escapeHtml(row.noorName)+'</td><td>'+escapeHtml(row.subject||"—")+'</td><td>'+escapeHtml(row.mark===""?"غير مرصود":row.mark)+'</td></tr>').join("")||'<tr><td colspan="3">لا توجد درجات مطابقة للفلاتر.</td></tr>';
+ noorMatchEl("noorGradeBody").innerHTML=filtered.grades.map(row=>'<tr><td>'+escapeHtml(row.noorName)+'</td><td>'+escapeHtml(row.subject||"—")+'</td><td>'+escapeHtml(row.mark===""?"غير مرصود":row.mark)+'</td><td>'+escapeHtml(row.matchStatus||"مطابق")+'</td></tr>').join("")||'<tr><td colspan="4">لا توجد درجات مطابقة للفلاتر.</td></tr>';
 }
 function clearNoorRasedFilters(){
  ["noorMatchStageFilter","noorMatchGradeFilter","noorMatchSectionFilter","noorMatchSubjectFilter"].forEach(id=>{const el=noorMatchEl(id);if(el)el.value="";});
@@ -4873,8 +4880,8 @@ function noorRasedFilterLabel(){
 }
 function exportNoorRasedMatch(){
  const filtered=noorRasedFilteredData();if(!filtered)return;
- const headers=["اسم الطالب في نور","المادة","الدرجة في راصد"];
- const rows=filtered.grades.map(x=>[x.noorName,x.subject||"—",x.mark===""?"غير مرصود":x.mark]);
+ const headers=["اسم الطالب في نور","المادة","الدرجة في راصد","المشكلة / الحالة"];
+ const rows=filtered.grades.map(x=>[x.noorName,x.subject||"—",x.mark===""?"غير مرصود":x.mark,x.matchStatus||"مطابق"]);
  const sheet=XLSX.utils.aoa_to_sheet([["النتائج حسب الفلاتر: "+noorRasedFilterLabel()],[],headers,...rows]);
  sheet["!rtl"]=true;sheet["!cols"]=[{wch:36},{wch:28},{wch:18}];
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,sheet,"النتائج");
@@ -4882,9 +4889,9 @@ function exportNoorRasedMatch(){
 }
 function printNoorRasedMatch(){
  const filtered=noorRasedFilteredData();if(!filtered)return;
- const rows=filtered.grades.map(x=>"<tr><td>"+escapeHtml(x.noorName)+"</td><td>"+escapeHtml(x.subject||"—")+"</td><td>"+escapeHtml(x.mark===""?"غير مرصود":x.mark)+"</td></tr>").join("");
+ const rows=filtered.grades.map(x=>"<tr><td>"+escapeHtml(x.noorName)+"</td><td>"+escapeHtml(x.subject||"—")+"</td><td>"+escapeHtml(x.mark===""?"غير مرصود":x.mark)+"</td><td>"+escapeHtml(x.matchStatus||"مطابق")+"</td></tr>").join("");
  const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة للطباعة.");return}
- w.document.write('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>نتائج نور وراصد</title><style>@page{size:A4 portrait;margin:14mm}body{font-family:Tahoma,Arial;color:#182b3c;font-size:12px}h1{text-align:center;color:#174f7c}p{text-align:center;color:#526477}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border:1px solid #ccd5df;padding:8px;text-align:center}th{background:#e9f0f7}</style><h1>نتائج الطلاب</h1><p>الفلاتر: '+escapeHtml(noorRasedFilterLabel())+'</p><table><thead><tr><th>اسم الطالب في نور</th><th>المادة</th><th>الدرجة في راصد</th></tr></thead><tbody>'+rows+'</tbody></table></html>');
+ w.document.write('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>نتائج نور وراصد</title><style>@page{size:A4 portrait;margin:14mm}body{font-family:Tahoma,Arial;color:#182b3c;font-size:12px}h1{text-align:center;color:#174f7c}p{text-align:center;color:#526477}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border:1px solid #ccd5df;padding:8px;text-align:center}th{background:#e9f0f7}</style><h1>نتائج الطلاب</h1><p>الفلاتر: '+escapeHtml(noorRasedFilterLabel())+'</p><table><thead><tr><th>اسم الطالب في نور</th><th>المادة</th><th>الدرجة في راصد</th><th>المشكلة / الحالة</th></tr></thead><tbody>'+rows+'</tbody></table></html>');
  w.document.close();w.focus();setTimeout(()=>w.print(),500);
 }
 
@@ -11628,4 +11635,4 @@ async function saveRolePortal(role){
 window.addEventListener("load",()=>{loadRolePortal("teacher");loadRolePortal("supervisor")});
 </script>
 </body>
-</html>
+</html 
