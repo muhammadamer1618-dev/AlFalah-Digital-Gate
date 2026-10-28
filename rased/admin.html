@@ -3994,6 +3994,17 @@ async function repairStudentGrades(){
   }catch(e){console.error(e);alert("لم يتم الاسترجاع: "+e.message);}
 }
 
+async function updateStudentGradeLocations(code,grade,section,name){
+  const snap=await db.collection("grades").where("studentCode","==",String(code)).get();
+  for(let start=0;start<snap.docs.length;start+=400){
+    const batch=db.batch();
+    snap.docs.slice(start,start+400).forEach(docSnap=>{
+      batch.update(docSnap.ref,{grade:String(grade||""),section:String(section||""),studentName:String(name||"")});
+    });
+    if(snap.docs.length)await batch.commit();
+  }
+}
+
 async function saveStudent(){
   const original=document.getElementById("studentOriginalCode").value.trim();
   const code=document.getElementById("studentCode").value.trim();
@@ -4013,6 +4024,7 @@ async function saveStudent(){
       const previous=await ref.get();
       if(!original&&previous.exists)throw Error("كود الطالب مستخدم بالفعل؛ افتح الطالب للتعديل بدل إنشاء طالب مكرر");
       await ref.set({...(previous.exists?previous.data():{}),code,...fields},{merge:true});
+      await updateStudentGradeLocations(code,grade,section,name);
       alert("تم حفظ الطالب ✅");
     }
     try{await writeAuditLog(original?"student_update":"student_create","student",code,name,{},fields);}catch(e){console.warn(e);}
