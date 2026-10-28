@@ -2553,6 +2553,8 @@ function normalizePhoneToWhatsApp(raw){
 
   let digits =
     String(raw || "")
+    .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d))
+    .replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d))
     .replace(/[^\d]/g,"");
 
   if(!digits) return "";
@@ -2642,11 +2644,17 @@ function sendVisitWhatsApp(visitId){
     return;
   }
 
+  const normalizeName = value => String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[أإآ]/g,"ا")
+    .replace(/ة/g,"ه")
+    .replace(/\s+/g," ");
+
   const teacher =
-    visibleTeachers.find(
-      item=>
-        String(item.code || item.id || "") ===
-        String(visit.teacherCode || "")
+    visibleTeachers.find(item =>
+      String(item.code || item.id || "") === String(visit.teacherCode || "") ||
+      normalizeName(item.name) === normalizeName(visit.teacherName)
     )
     || selectedTeacher;
 
