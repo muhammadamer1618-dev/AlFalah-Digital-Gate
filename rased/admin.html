@@ -3969,7 +3969,7 @@ async function migrateStudentRecords(oldCode,newCode,moveStudent,studentFields){
     if(dest.path===item.doc.ref.path){
       batch.update(item.doc.ref,{studentCode:newCode});
     }else{
-      batch.set(dest,{...item.data,studentCode:newCode});
+      batch.set(dest,{...item.data,studentCode:newCode,...(moveStudent?{grade:String(studentFields.grade||""),section:String(studentFields.section||""),studentName:String(studentFields.name||"")}:{})});
       batch.delete(item.doc.ref);
     }
   }
