@@ -318,7 +318,7 @@
     .late-minutes-control .hint{font-size:10px}
     .hidden{display:none!important}
 
-    .print-only{display:none}
+.print-teacher-name{font-size:18px;font-weight:900;color:#0b4a3f;margin:8px 0}.print-grand-total{display:flex;justify-content:center;align-items:center;gap:14px;border:2px solid #c89a3b;border-radius:10px;padding:8px;margin:6px auto;font-size:14px}.print-grand-total strong{font-size:20px;color:#0b4a3f}.print-only{display:none}
 
     @media(max-width:900px){
       .filters{grid-template-columns:1fr 1fr}
@@ -337,30 +337,15 @@
     }
 
     @media print{
-      @page{size:A4 portrait;margin:4mm}
-      html,body{width:100%;min-height:0;background:#fff;overflow:visible}
-      body{zoom:.78}
+      body{background:#fff}
       .header,.no-print{display:none!important}
-      .page{max-width:none;padding:0;margin:0}
-      .hero{padding:6px 9px;margin:0 0 4px;background:#fff;color:#000;border:1px solid #aaa;box-shadow:none}
-      .hero small,.hero h2,.hero p{color:#000;margin:1px 0;font-size:10px}
-      .hero h2{font-size:15px}
-      .panel{padding:4px;margin:0 0 4px;border:1px solid #aaa;box-shadow:none;break-inside:avoid}
-      .section-title{margin:0 0 3px}
-      .section-title h3{font-size:12px;margin:2px 0}
-      .section-title p,.notice,.hint{font-size:8px;line-height:1.15;margin:1px 0}
-      .summary{gap:3px;margin:0}
-      .summary .stat{padding:3px;font-size:8px}
-      .summary .stat strong{font-size:11px}
-      .table-wrap{overflow:visible}
-      table{min-width:0!important;width:100%;table-layout:fixed}
-      th,td{padding:2px 3px!important;font-size:8px!important;line-height:1.05!important}
-      .manual-input,.mapping select{border:0;padding:0;background:transparent;font-size:8px}
-      .late-minutes-control{margin:1px 0;gap:2px}
-      .late-minutes-control input{width:45px;padding:1px;font-size:8px}
-      #visitsPrintPanel{display:none!important}
-      .print-only{display:block;font-size:8px;margin-top:2px}
-      .print-only p{margin:1px 0}
+      .page{max-width:none;padding:0}
+      .panel,.hero{box-shadow:none;border:1px solid #ccc}
+      .hero{background:#fff;color:#000}
+      .hero small,.hero h2,.hero p{color:#000}
+      .print-only{display:block;text-align:center}
+      .manual-input,.mapping select{border:0;padding:0;background:transparent}
+      .panel{break-inside:avoid}
     }
   </style>
   <link rel="stylesheet" href="mobile.css?v=20261012-4">
@@ -618,7 +603,7 @@
     </div>
   </section>
 
-  <section class="panel" id="visitsPrintPanel">
+  <section class="panel">
     <div class="section-title">
       <h3>الزيارات الداخلة في الحساب</h3>
       <p>هذه هي الزيارات التي تم استخدامها في المتوسط حسب المعلم والفترة.</p>
@@ -638,6 +623,8 @@
   </section>
   <div class="print-only">
     <p><strong>مدارس الفلاح الأهلية — تقييم المعلم المتميز</strong></p>
+    <div class="print-teacher-name" id="printTeacherName">—</div>
+    <div class="print-grand-total"><span>المجموع الكلي</span><strong id="printGrandTotal">0 / 100</strong></div>
     <p id="printInfo"></p>
   </div>
 
@@ -1256,7 +1243,9 @@
       [7,8,9,10].forEach(n=>el(`auto${n}`).textContent=`${Number(item.automaticScores?.[n]||0).toFixed(2)} / 10`);
       el("summaryTeacher").textContent=item.teacherName||"—";
       el("grandTotal").textContent=`${Number(item.total||0).toFixed(2)} / 100`;
-      el("printInfo").textContent=`المعلم: ${item.teacherName||"—"} | الفترة: ${item.periodFrom||"—"} إلى ${item.periodTo||"—"} | دقائق التأخر: ${item.lateMinutes??0} | عدد الزيارات: ${item.visitCount||0}`;
+      el("printInfo").textContent=`الفترة: ${item.periodFrom||"—"} إلى ${item.periodTo||"—"} | دقائق التأخر: ${item.lateMinutes??0} | عدد الزيارات: ${item.visitCount||0}`;
+      el("printTeacherName").textContent = item.teacherName || "—";
+      el("printGrandTotal").textContent = `${Number(item.total||0).toFixed(2)} / 100`;
       window.print();
     }
   }
@@ -1430,7 +1419,9 @@
     renderVisits();
 
     el("printInfo").textContent =
-      `المعلم: ${teacher.name || "—"} | الفترة: ${from || "—"} إلى ${to || "—"} | عدد الزيارات: ${filteredVisits.length}`;
+      `الفترة: ${from || "—"} إلى ${to || "—"} | عدد الزيارات: ${filteredVisits.length}`;
+    el("printTeacherName").textContent = teacher.name || "—";
+    el("printGrandTotal").textContent = el("grandTotal").textContent;
   }
 
   function calculateGrandTotal(){
