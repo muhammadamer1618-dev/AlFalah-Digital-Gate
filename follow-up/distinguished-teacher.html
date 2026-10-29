@@ -312,6 +312,10 @@
       margin-bottom:12px;
     }
 
+    .late-minutes-control{margin-top:6px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;justify-content:center}
+    .late-minutes-control label{font-size:10px;color:#687786}
+    .late-minutes-control input{width:82px;padding:4px;border:1px solid #ccd6df;border-radius:6px;text-align:center}
+    .late-minutes-control .hint{font-size:10px}
     .hidden{display:none!important}
 
     .print-only{display:none}
@@ -417,6 +421,7 @@
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="btn primary" id="calculateBtn" type="button">حساب التقييم</button>
         <button class="btn gold" id="saveEvaluationBtn" type="button">حفظ التقييم الشهري</button>
+        <button class="btn gold hidden" id="printCurrentEvaluationBtn" type="button">طباعة التقييم المحفوظ</button>
         <span class="hint" id="saveStatus"></span>
       </div>
     </div>
@@ -471,9 +476,14 @@
             <td>الالتزام والانضباط في الحضور والانصراف</td>
             <td class="number">10</td>
             <td class="number">
-              <input class="manual-input" id="manual1" type="number" min="0" max="10" step="0.01" value="0">
+              <input class="manual-input" id="manual1" type="number" min="0" max="10" step="0.01" value="0" readonly>
+              <div class="late-minutes-control">
+                <label for="lateMinutes">دقائق التأخر</label>
+                <input id="lateMinutes" type="number" min="0" step="1" value="0">
+                <span class="hint" id="lateMinutesHint">الدرجة: 10 / 10</span>
+              </div>
             </td>
-            <td class="hint">تقييم مستقل من المشرف.</td>
+            <td class="hint">تُخصم نصف درجة عن كل 5 دقائق تأخر، وتُحسب الدرجة آليًا.</td>
           </tr>
 
           <tr class="manual-row">
@@ -665,6 +675,7 @@
   function syncMonthFromDates(){
     const from = el("fromDate").value;
     const to = el("toDate").value;
+    calculateLateAttendanceScore();
     if(from && to && from.slice(0,7) === to.slice(0,7)){
       const month = Number(from.slice(5,7));
       el("monthSelect").value = String(month);
@@ -1225,10 +1236,12 @@
       el("fromDate").value=item.periodFrom||""; el("toDate").value=item.periodTo||"";
       syncMonthFromDates(); await calculate();
       [1,2,3,4,5,6].forEach(n=>el(`manual${n}`).value=item.manualScores?.[n]??0);
+      if(el("lateMinutes")) el("lateMinutes").value=item.lateMinutes??0;
+      calculateLateAttendanceScore();
       [7,8,9,10].forEach(n=>el(`auto${n}`).textContent=`${Number(item.automaticScores?.[n]||0).toFixed(2)} / 10`);
       el("summaryTeacher").textContent=item.teacherName||"—";
       el("grandTotal").textContent=`${Number(item.total||0).toFixed(2)} / 100`;
-      el("printInfo").textContent=`المعلم: ${item.teacherName||"—"} | الفترة: ${item.periodFrom||"—"} إلى ${item.periodTo||"—"} | عدد الزيارات: ${item.visitCount||0}`;
+      el("printInfo").textContent=`المعلم: ${item.teacherName||"—"} | الفترة: ${item.periodFrom||"—"} إلى ${item.periodTo||"—"} | دقائق التأخر: ${item.lateMinutes??0} | عدد الزيارات: ${item.visitCount||0}`;
       window.print();
     }
   }
@@ -1236,10 +1249,21 @@
     return "al-falah-evaluation:" + encodeURIComponent(`${teacherId}|${from}|${to}`);
   }
 
+  function calculateLateAttendanceScore(){
+    const minutes = Math.max(0, Math.floor(toNumber(el("lateMinutes")?.value) || 0));
+    const deduction = Math.floor(minutes / 5) * 0.5;
+    const score = clamp(10 - deduction, 0, 10);
+    if(el("lateMinutes")) el("lateMinutes").value = minutes;
+    if(el("manual1")) el("manual1").value = score.toFixed(2);
+    if(el("lateMinutesHint")) el("lateMinutesHint").textContent = `الدرجة: ${score.toFixed(2)} / 10 — الخصم: ${Math.min(10, deduction).toFixed(2)}`;
+    return {minutes, deduction, score};
+  }
+
   function saveCurrentEvaluation(){
     if(!activeEvaluationKey) return;
     const record = {
       manual: Object.fromEntries([1,2,3,4,5,6].map(n => [n, el(`manual${n}`).value])),
+      lateMinutes: el("lateMinutes")?.value || "0",
       mappings: Object.fromEntries([7,8,9].map(n => [n, el(`map${n}`).value])),
       achievementTestId: selectedAchievementTest?.id || "",
       achievementTestName: selectedAchievementTest?.name || selectedAchievementTest?.title || "",
@@ -1271,6 +1295,8 @@
     [7,8,9].forEach(n => {
       el(`map${n}`).dataset.savedMapping = record?.mappings?.[n] || "";
     });
+    if(el("lateMinutes")) el("lateMinutes").value = record?.lateMinutes ?? "0";
+    calculateLateAttendanceScore();
     el("achievementTestSelect").dataset.savedTestId = record?.achievementTestId || "";
   }
 
@@ -1451,6 +1477,7 @@
       periodFrom: el("fromDate").value,
       periodTo: el("toDate").value,
       manualScores: Object.fromEntries([1,2,3,4,5,6].map(n => [n, Number(el(`manual${n}`).value || 0)])),
+      lateMinutes: Number(el("lateMinutes")?.value || 0),
       automaticScores: Object.fromEntries([7,8,9,10].map(n => { const match = el(`auto${n}`).textContent.match(/([0-9]+(?:\.[0-9]+)?)/); return [n, match ? Number(match[1]) : 0]; })),
       mappings: Object.fromEntries([7,8,9].map(n => [n, el(`map${n}`).value || ""])),
       achievementTestId: selectedAchievementTest?.id || "",
@@ -1468,6 +1495,7 @@
       monthlyEvaluations.push({id:savedId,...payload});
       renderSavedEvaluations();
       status.textContent = "تم حفظ التقييم الشهري وظهر في القائمة.";
+      el("printCurrentEvaluationBtn")?.classList.remove("hidden");
       saveCurrentEvaluation();
     }catch(error){
       console.error(error);
@@ -1503,6 +1531,8 @@
   }
 
   el("calculateBtn").addEventListener("click",calculate);
+  el("lateMinutes")?.addEventListener("input",()=>{calculateLateAttendanceScore();calculateGrandTotal();saveCurrentEvaluation();});
+  el("printCurrentEvaluationBtn")?.addEventListener("click",()=>{calculateGrandTotal();window.print();});
   el("saveEvaluationBtn").addEventListener("click",saveMonthlyEvaluation);
   el("savedEvaluationsBody").addEventListener("click",handleSavedEvaluationAction);
 
