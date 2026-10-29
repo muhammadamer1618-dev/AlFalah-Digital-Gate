@@ -63,7 +63,7 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
 <div class="studio-heading"><div><span class="eyebrow">ENGLISH LEARNING STUDIO</span><h2>Create Speaking Activities</h2><p class="muted">Build your word and sentence list, select a class, and publish directly to students.</p></div><div class="studio-icon">🎙️</div></div>
 <div class="studio-step"><span>01</span><strong>Activity Details</strong></div>
 <div class="studio-fields"><div><label for="title">Activity Title</label><input id="title" placeholder="e.g. Unit 3 | Speaking Practice"></div><div><label for="subject">Subject</label><select id="subject"></select></div><div><label for="classroom">Grade & Section</label><select id="classroom"></select></div></div>
-<div class="studio-attempt-setting"><label for="maxAttempts">Speaking Attempts per Word / Sentence</label><select id="maxAttempts"><option value="1">1 attempt</option><option value="2">2 attempts</option><option value="3" selected>3 attempts (recommended)</option><option value="4">4 attempts</option><option value="5">5 attempts</option><option value="10">10 attempts</option></select><p class="muted">Each student can record their pronunciation up to this number of times for each item.</p></div><div class="studio-step"><span>02</span><strong>Add Words & Sentences</strong></div>
+<div class="studio-attempt-setting"><label for="maxAttempts">Speaking Attempts per Word / Sentence</label><select id="maxAttempts"><option value="0" selected>Unlimited attempts</option><option value="1">1 attempt</option><option value="2">2 attempts</option><option value="3">3 attempts</option><option value="4">4 attempts</option><option value="5">5 attempts</option><option value="10">10 attempts</option></select><p class="muted">Each student can record their pronunciation up to this number of times for each item.</p></div><div class="studio-step"><span>02</span><strong>Add Words & Sentences</strong></div>
 <p class="muted">Add one word or sentence at a time, or paste a full list to import instantly.</p>
 <div class="studio-entry"><input id="newEnglishItem" dir="ltr" placeholder="Type a word or sentence..." aria-label="New word or sentence"><button type="button" onclick="addEnglishItem()">＋ Add</button></div>
 <div class="studio-bulk"><details><summary>📋 Bulk Add Words & Sentences</summary><textarea id="bulkEnglishItems" dir="ltr" placeholder="apple&#10;This is my book.&#10;Good morning."></textarea><button type="button" class="secondary" onclick="importEnglishItems()">Import List</button></details></div>
@@ -140,13 +140,13 @@ function importEnglishItems(){
 $("newEnglishItem").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addEnglishItem()}});
 $("englishItemsList").addEventListener("click",e=>{const btn=e.target.closest("[data-remove-index]");if(!btn)return;const lines=$("items").value.split(/\r?\n/).filter(Boolean);lines.splice(Number(btn.dataset.removeIndex),1);$("items").value=lines.join("\n");renderEnglishItems()});
 $("englishItemsList").addEventListener("change",e=>{const input=e.target.closest("[data-item-index]");if(!input)return;const lines=$("items").value.split(/\r?\n/).filter(Boolean);lines[Number(input.dataset.itemIndex)]=input.value.trim();$("items").value=lines.filter(Boolean).join("\n");renderEnglishItems()});
-function clearForm(){editing=null;$("maxAttempts").value="3";$("title").value="";$("items").value="";$("bulkEnglishItems").value="";$("newEnglishItem").value="";renderEnglishItems()}
+function clearForm(){editing=null;$("maxAttempts").value="0";$("title").value="";$("items").value="";$("bulkEnglishItems").value="";$("newEnglishItem").value="";renderEnglishItems()}
 async function loadActivities(){const snap=await db.collection("englishActivities").where("teacherId","==",username()).get();activities=snap.docs.map(d=>({id:d.id,...d.data()}));$("myActivities").innerHTML=activities.length?activities.map(a=>'<div class="activity"><strong>'+esc(a.title)+'</strong><div class="muted">'+esc(a.grade+' / '+a.section)+' · '+(a.items||[]).length+' item</div><button onclick="editActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Edit</button><button class="secondary" onclick="copyLink('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Copy Link</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Results</button><button style="background:#fde8e8;color:#9f2020" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></div>').join(""):'<p>No published activities yet.</p>'}
 async function deleteActivity(id){if(role()!=="teacher"||!confirm("هل تريد Delete النشاط؟ لن يظهر للطلاب بعد الDelete."))return;const a=activities.find(x=>x.id===id);if(!a||a.teacherId!==username())return status("Access denied بDelete هذا النشاط",true);try{await db.collection("englishActivities").doc(id).delete();if(editing===id)clearForm();status("تم Delete النشاط");await loadActivities()}catch(e){status("تعذر Delete النشاط: "+e.message,true)}}
-function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts||3);$("title").value=a.title;$("items").value=(a.items||[]).join("\n");$("subject").value=a.subjectId;updateClasses();$("classroom").value=a.grade+'||'+a.section;renderEnglishItems();scrollTo({top:0,behavior:"smooth"})}
+function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts===0?0:(a.maxAttempts||3));$("title").value=a.title;$("items").value=(a.items||[]).join("\n");$("subject").value=a.subjectId;updateClasses();$("classroom").value=a.grade+'||'+a.section;renderEnglishItems();scrollTo({top:0,behavior:"smooth"})}
 function copyLink(id){status("Published activities appear automatically in the Student Portal.")}
 async function saveActivity(){if(role()!=="teacher"||!currentTeacher)return status("Access denied",true);const [grade,section]=($("classroom").value||"").split("||"),subjectId=$("subject").value;const a=teacherAssignments().find(x=>String(x.subjectId)===subjectId&&x.grade===grade&&x.section===section);if(!a)return status("Select a valid class assignment",true);const items=$("items").value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);if(!$("title").value.trim()||!items.length||items.length>80||items.some(s=>s.length>250))return status("Enter a title and 1–80 words or sentences (up to 250 characters each)",true);
-const data={title:$("title").value.trim(),items,maxAttempts:Number($("maxAttempts").value)||3,teacherId:username(),teacherName:currentTeacher.name||username(),subjectId,subjectName:a.subjectName||a.subject||a.name||"English",grade,section,published:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};try{if(editing){const old=activities.find(x=>x.id===editing);if(!old||old.teacherId!==username())throw Error("Access denied");await db.collection("englishActivities").doc(editing).set(data,{merge:true})}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection("englishActivities").add(data)}status("Activity published successfully");clearForm();await loadActivities()}catch(e){status("Unable to save: "+e.message,true)}}
+const rawMaxAttempts=Number($("maxAttempts").value);const maxAttempts=Number.isInteger(rawMaxAttempts)&&rawMaxAttempts>=0&&rawMaxAttempts<=10?rawMaxAttempts:0;const data={title:$("title").value.trim(),items,maxAttempts,teacherId:username(),teacherName:currentTeacher.name||username(),subjectId,subjectName:a.subjectName||a.subject||a.name||"English",grade,section,published:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};try{if(editing){const old=activities.find(x=>x.id===editing);if(!old||old.teacherId!==username())throw Error("Access denied");await db.collection("englishActivities").doc(editing).set(data,{merge:true})}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection("englishActivities").add(data)}status("Activity published successfully");clearForm();await loadActivities()}catch(e){status("Unable to save: "+e.message,true)}}
 async function openActivity(){const id=$("activityCode").value.trim();if(!/^[\w-]{8,100}$/.test(id))return status("Enter a valid activity code",true);try{const snap=await db.collection("englishActivities").doc(id).get();if(!snap.exists||snap.data().published!==true)throw Error("Activity is unavailable");selectedActivity={id,...snap.data()};attempts={};$("practice").classList.remove("hidden");$("activityTitle").textContent=selectedActivity.title;$("cards").innerHTML=selectedActivity.items.map((word,i)=>'<div class="activity" style="margin:12px 0"><div class="muted">Item '+(i+1)+' of '+selectedActivity.items.length+'</div><strong>'+esc(word)+'</strong><button onclick="speak('+i+')">🔊 Listen</button><button id="speak-button-'+i+'" onclick="listen('+i+')">🎙️ Speak ('+getMaxSpeakingAttempts()+' left)</button><div id="feedback-'+i+'" role="status" class="muted">Listen, then speak</div></div>').join("");$("overall").textContent="";$("practice").scrollIntoView({behavior:"smooth"});status("")}catch(e){status("تعذر Open Activity: "+e.message,true)}}
 let englishVoice=null;
 function chooseEnglishVoice(){
@@ -165,25 +165,25 @@ function speak(i){
  const utter=new SpeechSynthesisUtterance(selectedActivity.items[i]);
  utter.lang=englishVoice?.lang||"en-US";
  if(englishVoice)utter.voice=englishVoice;
- utter.rate=.95;
+ utter.rate=.88;
  utter.pitch=1;
  utter.volume=1;
  speechSynthesis.cancel();
  speechSynthesis.speak(utter);
 }
 let activeSpeakingRecognition=false;
-function getMaxSpeakingAttempts(){const n=Number(selectedActivity?.maxAttempts);return Number.isInteger(n)&&n>=1&&n<=10?n:3}
+function getMaxSpeakingAttempts(){const n=Number(selectedActivity?.maxAttempts);return n===0?Infinity:(Number.isInteger(n)&&n>=1&&n<=10?n:3)}
 function updateSpeakingButton(i){
  const button=document.getElementById("speak-button-"+i);
  if(!button)return;
- const used=attempts[i]?.tries||0,limit=getMaxSpeakingAttempts();
- button.disabled=used>=limit;
- button.textContent=used>=limit?"✓ Attempts Completed":"🎙️ Speak ("+(limit-used)+" left)";
+ const used=attempts[i]?.tries||0,limit=getMaxSpeakingAttempts(),unlimited=limit===Infinity;
+ button.disabled=!unlimited&&used>=limit;
+ button.textContent=unlimited?"🎙️ Speak (unlimited)":(used>=limit?"✓ Attempts Completed":"🎙️ Speak ("+(limit-used)+" left)");
 }
 function listen(i){
  if(!selectedActivity||activeSpeakingRecognition)return;
  const used=attempts[i]?.tries||0,limit=getMaxSpeakingAttempts();
- if(used>=limit){$("feedback-"+i).textContent="You have used all "+limit+" speaking attempts for this item.";updateSpeakingButton(i);return}
+ if(limit!==Infinity&&used>=limit){$("feedback-"+i).textContent="You have used all "+limit+" speaking attempts for this item.";updateSpeakingButton(i);return}
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!Recognition){$("feedback-"+i).textContent="Speech recognition is not supported. Please use Chrome or a compatible browser.";return}
  if(!isSecureContext){$("feedback-"+i).textContent="Microphone access requires HTTPS.";return}
@@ -195,10 +195,10 @@ function listen(i){
   const expected=normalize(selectedActivity.items[i]);
   const correct=variants.some(x=>normalize(x)===expected);
   const previous=attempts[i]||{tries:0,correct:false};
-  if(previous.tries>=limit)return;
+  if(limit!==Infinity&&previous.tries>=limit)return;
   attempts[i]={tries:previous.tries+1,correct:previous.correct||correct,heard:variants[0]};
-  const remaining=limit-attempts[i].tries;
-  $("feedback-"+i).innerHTML=(correct?'<span class="good">✅ Excellent! Correct pronunciation</span>':'<span class="bad">🔁 Try again</span>')+' — Heard: '+esc(variants[0])+' — Attempts: '+attempts[i].tries+' / '+limit+(remaining===0?' — No attempts remaining':'');
+  const remaining=limit===Infinity?Infinity:limit-attempts[i].tries;
+  $("feedback-"+i).innerHTML=(correct?'<span class="good">✅ Excellent! Correct pronunciation</span>':'<span class="bad">🔁 Try again</span>')+' — Heard: '+esc(variants[0])+' — Attempts: '+attempts[i].tries+' / '+(limit===Infinity?'∞':limit)+(remaining===0?' — No attempts remaining':'');
   updateSpeakingButton(i);updateOverall();
  };
  recognition.onerror=e=>{$("feedback-"+i).textContent="Speech recognition error ("+e.error+"). Check microphone permissions and try again."};
@@ -221,7 +221,8 @@ function renderResultRecords(){
  const x=record.data,detail=x.attempts||{};
  const itemRows=(a.items||[]).map((item,i)=>{
  const attempt=detail[i]||{},tries=Number(attempt.tries)||0,correct=attempt.correct===true;
- return '<tr><td>'+(i+1)+'</td><td class="word-cell">'+esc(item)+'</td><td>'+tries+' / '+(Number(a.maxAttempts)||3)+'</td><td><span class="result-pill '+(correct?'result-pass':'result-fail')+'">'+(correct?'✓ Correct':'✕ Incorrect')+'</span></td><td>'+(correct?'1':'0')+' / 1</td></tr>';
+ const attemptLimit=Number(a.maxAttempts)===0?"∞":(Number(a.maxAttempts)||3);
+ return '<tr><td>'+(i+1)+'</td><td class="word-cell">'+esc(item)+'</td><td>'+tries+' / '+attemptLimit+'</td><td><span class="result-pill '+(correct?'result-pass':'result-fail')+'">'+(correct?'✓ Correct':'✕ Incorrect')+'</span></td><td>'+(correct?'1':'0')+' / 1</td></tr>';
  }).join("");
  return '<article class="result-sheet" data-result-id="'+esc(record.id)+'"><div class="result-print-brand"><img src="logo.jpeg" alt="Al-Falah Schools Logo"><span>AL-FALAH SCHOOLS<br>ENGLISH DEPARTMENT</span></div><div class="result-top"><div><span class="eyebrow">STUDENT PERFORMANCE REPORT</span><h3>'+esc(record.name)+'</h3></div><span class="score-badge">'+esc(reportValue(x.correct,0))+' / '+esc(reportValue(x.total,(a.items||[]).length))+' · '+esc(reportValue(x.percent,0))+'%</span></div>'+
  '<div class="result-info"><div><small>Student ID</small><strong>'+esc(x.studentCode)+'</strong></div><div><small>National ID</small><strong>'+esc(record.nationalId)+'</strong></div><div><small>Grade / Section</small><strong>'+esc(x.grade||a.grade)+' / '+esc(x.section||a.section)+'</strong></div><div><small>Submitted</small><strong>'+esc(reportDate(x.createdAt))+'</strong></div></div>'+
@@ -245,7 +246,7 @@ async function viewReports(id){
 }
 async function editEnglishResult(index){
  const record=reportRecords[index];if(!record||!reportActivity||reportActivity.teacherId!==username())return;
- const items=reportActivity.items||[],old=record.data.attempts||{},max=Number(reportActivity.maxAttempts)||3;
+ const items=reportActivity.items||[],old=record.data.attempts||{},max=Number(reportActivity.maxAttempts)===0?Infinity:(Number(reportActivity.maxAttempts)||3);
  const name=prompt("Student name",record.name);if(name===null)return;
  const id=prompt("National ID",record.nationalId==="Not recorded"?"":record.nationalId);if(id===null)return;
  const updated={};let correct=0;
@@ -254,7 +255,7 @@ async function editEnglishResult(index){
   const entry=prompt("Item "+(i+1)+": "+items[i]+"\\nEnter attempts (0–"+max+") and correctness (Y/N), separated by a comma.",String(previous.tries||0)+","+(previous.correct?"Y":"N"));
   if(entry===null)return;
   const match=entry.trim().match(/^(\\d+)\\s*,\\s*([yn])$/i);
-  if(!match||Number(match[1])>max)return status("Invalid entry for item "+(i+1)+". Use e.g. 2,Y",true);
+  if(!match||(max!==Infinity&&Number(match[1])>max))return status("Invalid entry for item "+(i+1)+". Use e.g. 2,Y",true);
   updated[i]={tries:Number(match[1]),correct:match[2].toUpperCase()==="Y"};
   if(updated[i].correct)correct++;
  }
