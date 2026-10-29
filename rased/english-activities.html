@@ -168,9 +168,12 @@ function speak(i){
  utter.rate=.88;
  utter.pitch=1;
  utter.volume=1;
+ utter.onstart=()=>{ $("feedback-"+i).textContent="🔊 Playing the model pronunciation..." };
+ utter.onerror=()=>{ $("feedback-"+i).textContent="Unable to play audio. Check device volume and browser audio permissions." };
  speechSynthesis.cancel();
- speechSynthesis.speak(utter);
-}
+ speechSynthesis.resume();
+ const play=()=>speechSynthesis.speak(utter);
+ if((window.speechSynthesis.getVoices()||[]).length)play();else setTimeout(play,150);
 let activeSpeakingRecognition=false;
 function getMaxSpeakingAttempts(){const n=Number(selectedActivity?.maxAttempts);return n===0?Infinity:(Number.isInteger(n)&&n>=1&&n<=10?n:3)}
 function updateSpeakingButton(i){
