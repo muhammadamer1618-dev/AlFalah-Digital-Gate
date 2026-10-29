@@ -337,15 +337,30 @@
     }
 
     @media print{
-      body{background:#fff}
+      @page{size:A4 portrait;margin:4mm}
+      html,body{width:100%;min-height:0;background:#fff;overflow:visible}
+      body{zoom:.78}
       .header,.no-print{display:none!important}
-      .page{max-width:none;padding:0}
-      .panel,.hero{box-shadow:none;border:1px solid #ccc}
-      .hero{background:#fff;color:#000}
-      .hero small,.hero h2,.hero p{color:#000}
-      .print-only{display:block}
-      .manual-input,.mapping select{border:0;padding:0;background:transparent}
-      .panel{break-inside:avoid}
+      .page{max-width:none;padding:0;margin:0}
+      .hero{padding:6px 9px;margin:0 0 4px;background:#fff;color:#000;border:1px solid #aaa;box-shadow:none}
+      .hero small,.hero h2,.hero p{color:#000;margin:1px 0;font-size:10px}
+      .hero h2{font-size:15px}
+      .panel{padding:4px;margin:0 0 4px;border:1px solid #aaa;box-shadow:none;break-inside:avoid}
+      .section-title{margin:0 0 3px}
+      .section-title h3{font-size:12px;margin:2px 0}
+      .section-title p,.notice,.hint{font-size:8px;line-height:1.15;margin:1px 0}
+      .summary{gap:3px;margin:0}
+      .summary .stat{padding:3px;font-size:8px}
+      .summary .stat strong{font-size:11px}
+      .table-wrap{overflow:visible}
+      table{min-width:0!important;width:100%;table-layout:fixed}
+      th,td{padding:2px 3px!important;font-size:8px!important;line-height:1.05!important}
+      .manual-input,.mapping select{border:0;padding:0;background:transparent;font-size:8px}
+      .late-minutes-control{margin:1px 0;gap:2px}
+      .late-minutes-control input{width:45px;padding:1px;font-size:8px}
+      #visitsPrintPanel{display:none!important}
+      .print-only{display:block;font-size:8px;margin-top:2px}
+      .print-only p{margin:1px 0}
     }
   </style>
   <link rel="stylesheet" href="mobile.css?v=20261012-4">
@@ -603,7 +618,7 @@
     </div>
   </section>
 
-  <section class="panel">
+  <section class="panel" id="visitsPrintPanel">
     <div class="section-title">
       <h3>الزيارات الداخلة في الحساب</h3>
       <p>هذه هي الزيارات التي تم استخدامها في المتوسط حسب المعلم والفترة.</p>
