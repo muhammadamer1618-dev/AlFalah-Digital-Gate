@@ -5257,17 +5257,28 @@ window.addEventListener("load",async()=>{try{const role=sessionStorage.getItem("
   "رفع ملف وتوليد رابط":"card19",
   "تغيير كلمة المرور":"card20"
  };
- async function applyVisibility(){
-  try{
-   const cards=Array.from(document.querySelectorAll(".dashboard-tool"));
-   if(!cards.length)return;
-   const settings=await db.collection("systemSettings").doc(role+"PortalCards").get();
-   const flags=settings.exists?(settings.data().visibility||{}):{};
+ function applyVisibility(){
+  const cards=Array.from(document.querySelectorAll(".dashboard-tool"));
+  if(!cards.length)return;
+  function render(flags){
    cards.forEach(card=>{
     const title=card.querySelector(".dashboard-tool-text strong")?.textContent.trim();
     const key=cardKeysByTitle[title];
-    if(key&&flags[key]===false)card.style.setProperty("display","none","important");
+    if(!key)return;
+    if(flags[key]===false){
+     card.style.setProperty("display","none","important");
+     card.setAttribute("aria-hidden","true");
+    }else{
+     card.removeAttribute("aria-hidden");
+     if(card.style.getPropertyValue("display")==="none"&&card.style.getPropertyPriority("display")==="important")card.style.removeProperty("display");
+    }
    });
+  }
+  try{
+   db.collection("systemSettings").doc(role+"PortalCards").onSnapshot(
+    settings=>render(settings.exists?(settings.data().visibility||{}):{}),
+    error=>console.warn("Dashboard visibility could not be loaded",error)
+   );
   }catch(e){console.warn("Dashboard visibility could not be loaded",e)}
  }
  window.addEventListener("load",applyVisibility);
