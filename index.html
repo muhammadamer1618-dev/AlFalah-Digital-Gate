@@ -2106,6 +2106,13 @@ closePortal();
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="rased/rased-maintenance.js?v=20261030-3"></script>
+<script type="module">
+import{initializeApp,getApps}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import{getFirestore,doc,onSnapshot}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+const rasedMaintenanceConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};
+const rasedMaintenanceApp=getApps().find(a=>a.name==="rasedMaintenanceRoot")||initializeApp(rasedMaintenanceConfig,"rasedMaintenanceRoot");
+onSnapshot(doc(getFirestore(rasedMaintenanceApp),"systemSettings","maintenance"),snap=>{if(window.rasedMaintenanceRender)window.rasedMaintenanceRender(snap.exists()?snap.data():null)});
+</script>
 </body>
 
 </html>
