@@ -70,5 +70,5 @@ async function uploadSheet(){
 }
 async function removeSheet(id){if(!confirm("حذف ورقة العمل؟"))return;try{const ref=db.collection("questionBankSheets").doc(id),doc=await ref.get();if(!doc.exists||doc.data().teacherId!==user())return;await ref.delete();if(doc.data().storagePath)await supabaseClient.storage.from(SUPABASE_BUCKET).remove([doc.data().storagePath]).catch(()=>{});await load()}catch(e){msg("تعذر الحذف: "+e.message)}}
 init();</script>
-<script src="rased-maintenance.js"></script>
+
 </body></html>

@@ -111,5 +111,5 @@ async function loadAllImprovements(){
 function printAllImprovements(){if(!allImprovementRows.length){say("اعرض التحسينات أولًا قبل الطباعة.");return}document.body.classList.add("print-all");window.print();setTimeout(()=>document.body.classList.remove("print-all"),1000)}
 ["subject","grade","section"].forEach(k=>el(k).addEventListener("change",filters));el("load").addEventListener("click",load);el("saveAll").addEventListener("click",saveAllImprovements);init();
 </script>
-<script src="rased-maintenance.js"></script>
+
 </body></html>
