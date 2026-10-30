@@ -11489,15 +11489,18 @@ window.addEventListener("load",()=>{loadRolePortal("teacher");loadRolePortal("su
 <section hidden id="maintenanceSection" style="max-width:1100px;margin:28px auto;padding:24px;border:2px solid #d8b85a;border-radius:18px;background:linear-gradient(135deg,#fffdf5,#f7faf8);direction:rtl;scroll-margin-top:30px">
 <h2 style="color:#064e3b;margin:0 0 8px">🛠️ وضع الصيانة المركزي</h2>
 <p style="margin:0 0 16px;color:#52635e">أغلق صفحات المشرف والمعلم والطالب مؤقتًا مع إبقاء لوحة الإدارة متاحة.</p>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px">
 <label style="display:flex;flex-direction:column;gap:7px;font-weight:bold">رسالة الإغلاق
 <textarea id="maintenanceMessage" rows="3" style="width:100%;padding:10px;border:1px solid #cbd8d1;border-radius:10px;font:inherit">الموقع مغلق للتحسين أو الصيانة.</textarea></label>
+<label style="display:flex;flex-direction:column;gap:7px;font-weight:bold">موعد الإغلاق التلقائي
+<input id="maintenanceStartAt" type="datetime-local" style="width:100%;padding:10px;border:1px solid #cbd8d1;border-radius:10px;font:inherit">
+<small style="font-weight:normal;color:#68786f">اتركه فارغًا للإغلاق الفوري عند الضغط على الزر.</small></label>
 <label style="display:flex;flex-direction:column;gap:7px;font-weight:bold">موعد عودة العمل تلقائيًا
 <input id="maintenanceReturnAt" type="datetime-local" style="width:100%;padding:10px;border:1px solid #cbd8d1;border-radius:10px;font:inherit">
 <small style="font-weight:normal;color:#68786f">اتركه فارغًا إذا كانت العودة يدوية فقط.</small></label>
 </div>
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px">
-<button type="button" class="btn-warning" onclick="rasedEnableMaintenance()">🔒 إغلاق راصد للصيانة</button>
+<button type="button" class="btn-warning" onclick="rasedEnableMaintenance()">🔒 حفظ موعد الصيانة / إغلاق الآن</button>
 <button type="button" class="btn-success" onclick="rasedDisableMaintenance()">✅ إعادة فتح راصد الآن</button>
 <span id="maintenanceAdminStatus" role="status" style="font-weight:bold"></span>
 </div>
@@ -11515,12 +11518,13 @@ function rasedMaintenanceAdminStatus(text,ok=false){
 }
 function rasedMaintenanceAdminFormat(data){
  const box=document.getElementById("maintenanceCurrentStatus");if(!box)return;
- if(!data||data.enabled!==true){box.textContent="الحالة الحالية: راصد يعمل بشكل طبيعي.";return;}
- const d=data.returnAt?new Date(data.returnAt):null;
- const expired=d&&Number.isFinite(d.getTime())&&d.getTime()<=Date.now();
- if(expired){box.textContent="الحالة الحالية: انتهى وقت الصيانة والصفحات ستعمل تلقائيًا.";return;}
- box.textContent="الحالة الحالية: وضع الصيانة مفعّل — "+String(data.message||"الموقع مغلق للتحسين أو الصيانة.")+(d&&!Number.isNaN(d.getTime())?" — العودة: "+d.toLocaleString("ar-SA"):" — العودة اليدوية مطلوبة.");
+ if(!data||data.enabled!==true){box.textContent="الحالة الحالية: راصد يعمل بشكل طبيعي، ولا يوجد إغلاق مجدول.";return;}
+ const now=Date.now(),start=data.startAt?Date.parse(data.startAt):NaN,end=data.returnAt?Date.parse(data.returnAt):NaN;
+ if(Number.isFinite(end)&&now>=end){box.textContent="الحالة الحالية: انتهى وقت الصيانة وعاد الموقع للعمل تلقائيًا.";return;}
+ if(Number.isFinite(start)&&now<start){box.textContent="الحالة الحالية: راصد يعمل حاليًا، وسيُغلق تلقائيًا: "+new Date(start).toLocaleString("ar-SA")+(Number.isFinite(end)?" — العودة: "+new Date(end).toLocaleString("ar-SA"):"");return;}
+ box.textContent="الحالة الحالية: وضع الصيانة مفعّل — "+String(data.message||"الموقع مغلق للتحسين أو الصيانة.")+(Number.isFinite(end)?" — العودة: "+new Date(end).toLocaleString("ar-SA"):" — العودة اليدوية مطلوبة.");
 }
+
 async function rasedLoadMaintenanceAdmin(){
  try{
   rasedMaintenanceAdminDoc().onSnapshot(s=>{rasedMaintenanceAdminFormat(s.exists?s.data():null)},()=>{document.getElementById("maintenanceCurrentStatus").textContent="تعذر قراءة حالة الصيانة."});
@@ -11529,21 +11533,27 @@ async function rasedLoadMaintenanceAdmin(){
 async function rasedEnableMaintenance(){
  if(!["admin","superadmin"].includes(rasedMaintenanceAdminRole()))return rasedMaintenanceAdminStatus("هذه العملية للإدارة فقط.");
  const message=String(document.getElementById("maintenanceMessage")?.value||"").trim()||"الموقع مغلق للتحسين أو الصيانة.";
- const raw=document.getElementById("maintenanceReturnAt")?.value||"";
- const returnAt=raw?new Date(raw):null;
- if(raw&&(!returnAt||Number.isNaN(returnAt.getTime())))return rasedMaintenanceAdminStatus("اختر موعد عودة صحيحًا.");
- rasedMaintenanceAdminStatus("جارٍ تفعيل وضع الصيانة...",true);
+ const startRaw=document.getElementById("maintenanceStartAt")?.value||"";
+ const endRaw=document.getElementById("maintenanceReturnAt")?.value||"";
+ const start=startRaw?new Date(startRaw):null,end=endRaw?new Date(endRaw):null;
+ if(startRaw&&(!start||Number.isNaN(start.getTime())))return rasedMaintenanceAdminStatus("اختر موعد إغلاق صحيحًا.");
+ if(endRaw&&(!end||Number.isNaN(end.getTime())))return rasedMaintenanceAdminStatus("اختر موعد عودة صحيحًا.");
+ if(start&&start.getTime()<=Date.now())return rasedMaintenanceAdminStatus("موعد الإغلاق التلقائي يجب أن يكون في المستقبل، أو اتركه فارغًا للإغلاق الآن.");
+ if(end&&end.getTime()<=(start?start.getTime():Date.now()))return rasedMaintenanceAdminStatus("موعد العودة يجب أن يكون بعد موعد بدء الصيانة.");
+ rasedMaintenanceAdminStatus("جارٍ حفظ إعدادات الصيانة...",true);
+ const payload={enabled:true,message,startAt:start?start.toISOString():"",returnAt:end?end.toISOString():""};
  try{
-  await rasedMaintenanceAdminDoc().set({enabled:true,message,returnAt:raw?returnAt.toISOString():"",updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:String(sessionStorage.getItem("currentUserEmail")||localStorage.getItem("currentUserEmail")||"admin")},{merge:true});
-  try{localStorage.setItem("rased.maintenance.v1",JSON.stringify({enabled:true,message,returnAt:raw?returnAt.toISOString():""}))}catch(e){}
-  rasedMaintenanceAdminStatus("✅ تم إغلاق صفحات راصد للصيانة.",true);
- }catch(e){rasedMaintenanceAdminStatus("❌ تعذر التفعيل: "+(e.message||e));}
+  await rasedMaintenanceAdminDoc().set({...payload,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:String(sessionStorage.getItem("currentUserEmail")||localStorage.getItem("currentUserEmail")||"admin")},{merge:true});
+  try{localStorage.setItem("rased.maintenance.v1",JSON.stringify(payload))}catch(e){}
+  rasedMaintenanceAdminStatus(start?"✅ تم جدولة إغلاق الموقع تلقائيًا.":"✅ تم إغلاق صفحات راصد للصيانة.",true);
+ }catch(e){rasedMaintenanceAdminStatus("❌ تعذر حفظ الإعداد: "+(e.message||e));}
 }
+
 async function rasedDisableMaintenance(){
  if(!["admin","superadmin"].includes(rasedMaintenanceAdminRole()))return rasedMaintenanceAdminStatus("هذه العملية للإدارة فقط.");
  rasedMaintenanceAdminStatus("جارٍ إعادة فتح راصد...",true);
  try{
-  await rasedMaintenanceAdminDoc().set({enabled:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:String(sessionStorage.getItem("currentUserEmail")||localStorage.getItem("currentUserEmail")||"admin")},{merge:true});
+  await rasedMaintenanceAdminDoc().set({enabled:false,startAt:"",returnAt:"",updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:String(sessionStorage.getItem("currentUserEmail")||localStorage.getItem("currentUserEmail")||"admin")},{merge:true});
   try{localStorage.setItem("rased.maintenance.v1",JSON.stringify({enabled:false}))}catch(e){}
   rasedMaintenanceAdminStatus("✅ عاد راصد للعمل.",true);
  }catch(e){rasedMaintenanceAdminStatus("❌ تعذر إعادة الفتح: "+(e.message||e));}
