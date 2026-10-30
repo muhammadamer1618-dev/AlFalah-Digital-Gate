@@ -232,7 +232,42 @@ function listen(i){
 }
 function updateOverall(){const total=selectedActivity.items.length,correct=Object.values(attempts).filter(a=>a.correct).length,done=Object.keys(attempts).length;$("overall").innerHTML='<div class="score">Score: '+correct+' / '+total+' ('+Math.round(100*correct/total)+'%)</div><p>Attempted '+done+' of '+total+' items</p><button id="submitResultButton" onclick="saveResult()">Submit</button>'}
 function getStudentSessionCode(){try{const x=JSON.parse(localStorage.getItem("rased.student.session.v1")||"null");return x&&(!x.expiresAt||Number(x.expiresAt)>Date.now())?String(x.code||""):""}catch{return ""}}
-async function saveResult(){if(!selectedActivity)return;const params=new URLSearchParams(location.search);const code=params.get("studentCode")||getStudentSessionCode();if(!code||!/^[\w-]{3,60}$/.test(code.trim()))return status("Please sign in as a student",true);const total=selectedActivity.items.length,correct=Object.values(attempts).filter(x=>x.correct).length;try{const studentSnap=await db.collection("students").doc(code.trim()).get();if(!studentSnap.exists)throw Error("Unable to identify student");const studentData=studentSnap.data()||{};await db.collection("englishActivityResults").add({studentName:studentData.name||studentData.fullName||"",studentNationalId:studentData.nationalId||studentData.identityNumber||studentData.idNumber||studentData.nationalID||"",activityId:selectedActivity.id,studentCode:code.trim(),grade:selectedActivity.grade,section:selectedActivity.section,teacherId:selectedActivity.teacherId,total,correct,percent:Math.round(100*correct/total),attempts:Object.fromEntries(Object.entries(attempts).map(([k,v])=>[k,{tries:v.tries,correct:v.correct}])),createdAt:firebase.firestore.FieldValue.serverTimestamp()});status("Result submitted successfully");$("submitResultButton").disabled=true;$("submitResultButton").textContent="Submitted"}catch(e){status("Unable to submit result: "+e.message,true)}}
+async function findEnglishStudent(code){
+ const normalized=String(code||"").trim();
+ let snap=await db.collection("students").doc(normalized).get();
+ if(snap.exists)return snap;
+ const match=await db.collection("students").where("code","==",normalized).limit(1).get();
+ return match.empty?null:match.docs[0];
+}
+async function saveResult(){
+ if(!selectedActivity)return;
+ const params=new URLSearchParams(location.search);
+ const code=String(params.get("studentCode")||getStudentSessionCode()||"").trim();
+ if(!code||!/^[\\w-]{3,60}$/.test(code))return status("Please sign in as a student before submitting.",true);
+ const submit=$("submitResultButton");
+ if(submit?.disabled)return;
+ if(submit){submit.disabled=true;submit.textContent="Saving...";}
+ const total=selectedActivity.items.length,correct=Object.values(attempts).filter(x=>x.correct).length;
+ try{
+  let studentSnap=await findEnglishStudent(code);
+  if(!studentSnap)throw Error("Unable to identify student record");
+  const studentData=studentSnap.data()||{};
+  const studentCode=String(studentData.code||studentSnap.id).trim();
+  await db.collection("englishActivityResults").add({
+   studentName:studentData.name||studentData.fullName||studentData.studentName||"",
+   studentNationalId:studentData.nationalId||studentData.identityNumber||studentData.idNumber||studentData.nationalID||"",
+   activityId:selectedActivity.id,studentCode,grade:selectedActivity.grade,section:selectedActivity.section,
+   teacherId:selectedActivity.teacherId,total,correct,percent:total?Math.round(100*correct/total):0,
+   attempts:Object.fromEntries(Object.entries(attempts).map(([k,v])=>[k,{tries:v.tries,correct:v.correct}])),
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  status("✅ Result saved successfully. Your teacher can view it in the activity Results.");
+  if(submit)submit.textContent="✓ Submitted";
+ }catch(e){
+  status("Unable to submit result: "+e.message,true);
+  if(submit){submit.disabled=false;submit.textContent="Retry Submit";}
+ }
+}
 
 let reportActivity=null,reportRecords=[];
 const reportValue=(x,fallback="—")=>x===undefined||x===null||x===""?fallback:String(x);
@@ -260,11 +295,10 @@ async function viewReports(id){
  reportActivity=a;
  try{
  const snap=await db.collection("englishActivityResults").where("activityId","==",id).get();
- reportRecords=await Promise.all(snap.docs.map(async doc=>{
- const x=doc.data(),code=String(x.studentCode||"").trim();let student={};
- if(code){try{let st=await db.collection("students").doc(code).get();if(!st.exists){const match=await db.collection("students").where("code","==",code).limit(1).get();if(!match.empty)st=match.docs[0]}if(st.exists)student=st.data()||{}}catch(e){}}
- return {id:doc.id,data:x,name:reportStudentName(x,student),nationalId:reportNationalId(x,student)};
- }));
+ reportRecords=snap.docs.map(doc=>{
+ const x=doc.data();
+ return {id:doc.id,data:x,name:reportStudentName(x,{}),nationalId:reportNationalId(x,{})};
+ });
  reportRecords.sort((a,b)=>(b.data.createdAt?.seconds||0)-(a.data.createdAt?.seconds||0));
  $("reports").classList.remove("hidden");renderResultRecords();$("reports").scrollIntoView({behavior:"smooth"});
  }catch(e){status("Unable to load student results: "+e.message,true)}
