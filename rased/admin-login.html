@@ -843,6 +843,59 @@ body{color:var(--portal-text)}
 @media(max-width:780px){.page{background-position:center!important}.main{width:100%!important;padding-inline:12px!important}.login-card{max-width:100%!important}.login-side{padding:24px 18px!important}.form-input{max-width:100%!important}}
 
 </style>
+<style id="alfalahAdminCompactCenteredV3">
+
+/* Compact, centered, single-card admin sign-in. Preserve existing login JS. */
+html,body{width:100%!important;height:100%!important;min-height:100%!important;overflow:hidden!important}
+body{margin:0!important;background:#f9fbf7!important}
+.page{width:100%!important;height:100vh!important;height:100dvh!important;min-height:0!important;
+ display:flex!important;flex-direction:column!important;overflow:hidden!important;
+ background:linear-gradient(180deg,rgba(255,255,255,.52),rgba(255,255,255,.40) 50%,rgba(255,255,255,.58)),
+ url("../alfalah-campus-background.webp") center center/cover no-repeat!important}
+.page::before{height:clamp(54px,11vh,95px)!important}
+.page::after{height:clamp(30px,6vh,55px)!important}
+.top-accent{display:none!important}
+.main{flex:1 1 auto!important;min-height:0!important;width:100%!important;
+ display:flex!important;justify-content:center!important;align-items:center!important;
+ padding:12px!important;margin:0!important}
+.login-card{display:block!important;grid-template-columns:none!important;
+ width:min(440px,100%)!important;min-width:0!important;min-height:0!important;
+ max-width:100%!important;max-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;
+ border:1.5px solid #d4ac55!important;border-radius:23px!important;
+ background:rgba(255,255,255,.97)!important;box-shadow:0 18px 60px #053d333c!important}
+.brand-side{display:none!important}
+.login-side{display:flex!important;flex-direction:column!important;
+ padding:clamp(18px,3.2vh,29px) clamp(18px,4vw,32px)!important;
+ background:rgba(255,255,255,.97)!important;width:100%!important;min-width:0!important}
+.small-brand{display:block!important;text-align:center!important;margin:0 auto 10px!important}
+.small-logo-shell{width:clamp(67px,10vh,90px)!important;height:clamp(67px,10vh,90px)!important;
+ border-radius:50%!important;margin:0 auto 5px!important;display:grid!important;place-items:center!important;
+ border:2px solid #d1a34b!important;background:#fff!important;box-shadow:0 6px 16px #003f3521!important}
+.small-logo{width:92%!important;height:92%!important;object-fit:contain!important}
+.small-school{font-size:12px!important;color:#00604c!important;font-weight:800!important}
+.small-rased{font-size:clamp(21px,3.3vh,28px)!important;color:#004538!important;font-weight:900!important}
+.small-rased span{color:#c49430!important}
+.login-heading{text-align:center!important;margin-bottom:clamp(10px,2vh,17px)!important}
+.login-heading .welcome{display:none!important}
+.login-heading h2{font-size:clamp(19px,2.7vh,24px)!important;color:#00483c!important;margin:0!important}
+.login-heading p{display:none!important}
+.form-group{margin-bottom:clamp(9px,1.6vh,15px)!important}
+.form-label{font-size:13px!important;color:#004639!important}
+.input-wrap{background:#fff!important;border:1.5px solid #d9e5dc!important;border-radius:12px!important}
+.form-input{height:clamp(43px,6vh,52px)!important;width:100%!important;min-width:0!important;font-size:16px!important}
+.login-btn{width:100%!important;height:clamp(45px,6vh,53px)!important;border-radius:12px!important;
+ background:linear-gradient(135deg,#00715b,#004437)!important;color:white!important;font-size:16px!important}
+.security-note{display:none!important}
+.footer{position:relative!important;z-index:2!important;flex:0 0 auto!important;
+ padding:6px 10px 10px!important;line-height:1.4!important;text-align:center!important;
+ color:#fff!important;text-shadow:0 1px 5px #00352a!important;font-size:clamp(10px,1.2vw,12px)!important}
+.footer strong{color:#f6d381!important}
+@media(max-width:500px){.main{padding:8px 12px!important}.login-card{width:min(410px,100%)!important;border-radius:19px!important}.login-side{padding:16px 18px!important}}
+@media(max-height:600px){.login-side{padding:12px 19px!important}.small-logo-shell{width:55px!important;height:55px!important}
+ .small-brand{margin-bottom:4px!important}.login-heading{margin-bottom:7px!important}.form-group{margin-bottom:7px!important}
+ .form-input{height:41px!important}.login-btn{height:43px!important}.footer{padding:3px 9px 5px!important}}
+
+</style>
 </head>
 
 <body>
