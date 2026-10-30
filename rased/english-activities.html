@@ -243,7 +243,7 @@ async function saveResult(){
  if(!selectedActivity)return;
  const params=new URLSearchParams(location.search);
  const code=String(params.get("studentCode")||getStudentSessionCode()||"").trim();
- if(!code||!/^[\\w-]{3,60}$/.test(code))return status("Please sign in as a student before submitting.",true);
+ if(!code||!/^[\w-]{3,60}$/.test(code))return status("Please sign in as a student before submitting.",true);
  const submit=$("submitResultButton");
  if(submit?.disabled)return;
  if(submit){submit.disabled=true;submit.textContent="Saving...";}
