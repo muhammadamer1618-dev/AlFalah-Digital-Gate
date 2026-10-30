@@ -1356,7 +1356,7 @@ id="statClasses">
 </div>
 
 <div id="adminCardDashboard" class="admin-card-dashboard">
-  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">لوحة التحكم</div><div class="admin-dashboard-grid"><button class="admin-dashboard-tool" type="button" onclick="document.getElementById('teacherPortalControls').scrollIntoView({behavior:'smooth',block:'start'})"><span>🎛️</span><strong>التحكم في بوابة المعلم</strong><small>إظهار وإخفاء بطاقات البوابة</small></button><button class="admin-dashboard-tool" type="button" onclick="document.getElementById('supervisorPortalControls').scrollIntoView({behavior:'smooth',block:'start'})"><span>🎛️</span><strong>التحكم في بوابة المشرف</strong><small>إظهار وإخفاء بطاقات البوابة</small></button><button class="admin-dashboard-tool" type="button" onclick="document.getElementById('studentPortalControls').scrollIntoView({behavior:'smooth',block:'start'})"><span>🎛️</span><strong>التحكم في بوابة الطالب</strong><small>إظهار وإخفاء أيقونات البوابة</small></button>
+  <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">لوحة التحكم</div><div class="admin-dashboard-grid"><button class="admin-dashboard-tool" type="button" onclick="openAdminPortalControls('teacherPortalControls')"><span>🎛️</span><strong>التحكم في بوابة المعلم</strong><small>إظهار وإخفاء بطاقات البوابة</small></button><button class="admin-dashboard-tool" type="button" onclick="openAdminPortalControls('supervisorPortalControls')"><span>🎛️</span><strong>التحكم في بوابة المشرف</strong><small>إظهار وإخفاء بطاقات البوابة</small></button><button class="admin-dashboard-tool" type="button" onclick="openAdminPortalControls('studentPortalControls')"><span>🎛️</span><strong>التحكم في بوابة الطالب</strong><small>إظهار وإخفاء أيقونات البوابة</small></button>
     <button class="admin-dashboard-tool" type="button" onclick="location.href='academic-development.html?from=admin'"><span>📊</span><strong>منظومة التطوير الأكاديمي</strong><small>٤ وحدات للتطوير والمتابعة</small></button>
     <button class="admin-dashboard-tool" onclick="location.href='control-center.html'"><span>🎛️</span><strong>مركز التحكم</strong><small>إدارة ومتابعة النظام</small></button>
     <button class="admin-dashboard-tool" onclick="location.href='audit-log.html'"><span>🛡️</span><strong>سجل التدقيق</strong><small>متابعة العمليات والتغييرات</small></button>
@@ -11431,7 +11431,7 @@ async function savePortfolioParentEnabled(){const msg=document.getElementById("p
 async function loadPortfolioParentEnabled(){try{const d=await db.collection("systemSettings").doc("studentPortfolio").get();document.getElementById("portfolioParentEnabled").checked=d.exists&&d.data().parentVisible===true;}catch(e){document.getElementById("portfolioPublishMessage").textContent="تعذر قراءة الإعداد";}}
 window.addEventListener("load",loadPortfolioParentEnabled);
 </script>
-<section id="studentPortalControls" style="max-width:1100px;margin:28px auto;padding:24px;border:1px solid #d5e3dc;border-radius:18px;background:#fff;direction:rtl;scroll-margin-top:30px">
+<section hidden id="studentPortalControls" style="max-width:1100px;margin:28px auto;padding:24px;border:1px solid #d5e3dc;border-radius:18px;background:#fff;direction:rtl;scroll-margin-top:30px">
 <h2 style="color:#064e3b;margin:0 0 8px">🎛️ التحكم في بوابة الطالب</h2>
 <p>حدد الأيقونات التي تظهر في الصفحة الرئيسية لبوابة الطالب. التغييرات تسري على جميع الطلاب بعد الحفظ.</p>
 <div id="studentPortalToggles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"></div>
@@ -11457,12 +11457,12 @@ async function saveStudentPortalControls(){
 window.addEventListener("load",loadStudentPortalControls);
 </script>
 
-<section id="teacherPortalControls" style="max-width:1100px;margin:28px auto;padding:24px;border:1px solid #d5e3dc;border-radius:18px;background:#fff;direction:rtl;scroll-margin-top:30px">
+<section hidden id="teacherPortalControls" style="max-width:1100px;margin:28px auto;padding:24px;border:1px solid #d5e3dc;border-radius:18px;background:#fff;direction:rtl;scroll-margin-top:30px">
 <h2>🎛️ التحكم في بوابة المعلم</h2><p>اختر البطاقات الظاهرة لجميع حسابات المعلمين. الإخفاء لا يلغي الصلاحيات ولا يمنع الدخول المباشر.</p>
 <div id="teacherPortalToggles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"></div>
 <button type="button" class="btn-primary" onclick="saveRolePortal('teacher')">💾 حفظ إعدادات بوابة المعلم</button>
 <span id="teacherPortalStatus" role="status"></span></section>
-<section id="supervisorPortalControls" style="max-width:1100px;margin:28px auto;padding:24px;border:1px solid #d5e3dc;border-radius:18px;background:#fff;direction:rtl;scroll-margin-top:30px">
+<section hidden id="supervisorPortalControls" style="max-width:1100px;margin:28px auto;padding:24px;border:1px solid #d5e3dc;border-radius:18px;background:#fff;direction:rtl;scroll-margin-top:30px">
 <h2>🎛️ التحكم في بوابة المشرف</h2><p>اختر البطاقات الظاهرة لجميع حسابات المشرفين. الإخفاء لا يلغي الصلاحيات ولا يمنع الدخول المباشر.</p>
 <div id="supervisorPortalToggles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"></div>
 <button type="button" class="btn-primary" onclick="saveRolePortal('supervisor')">💾 حفظ إعدادات بوابة المشرف</button>
@@ -11551,5 +11551,13 @@ async function rasedDisableMaintenance(){
 window.addEventListener("load",rasedLoadMaintenanceAdmin);
 </script>
 <script src="rased-maintenance.js"></script>
+<script>
+function openAdminPortalControls(id){
+ const ids=["studentPortalControls","teacherPortalControls","supervisorPortalControls"];
+ ids.forEach(x=>{const el=document.getElementById(x);if(el)el.hidden=x!==id});
+ const target=document.getElementById(id);
+ if(target){target.scrollIntoView({behavior:"smooth",block:"start"});}
+}
+</script>
 </body>
 </html 
