@@ -3321,7 +3321,7 @@ function protectAdmin(){
  const role=String(rasedAuthGet("currentUserRole")||"").trim().toLowerCase();
  if(role!=="superadmin"&&role!=="admin"){
   alert("هذه الصفحة للإدارة فقط");
-  location.href="index.html";
+  location.href="admin-login.html";
   return false;
  }
  return true;
@@ -11158,7 +11158,7 @@ alert(
 
 function logout(){
 rasedLogoutThisTab();
-location.href="index.html";
+location.href="admin-login.html";
 }
 
 /* =========================================
