@@ -796,7 +796,7 @@ body{background:radial-gradient(ellipse at 5% 62%,#e5f2e9,transparent 35%),radia
 
 
 /* AlFalah campus background photograph — illustrative licensed architecture image */
-.page{background:linear-gradient(180deg,rgba(255,255,255,.83),rgba(255,255,255,.72) 52%,rgba(255,255,255,.88)),url("https://images.unsplash.com/photo-1552824634-52989d987369?auto=format&fit=crop&w=1800&q=82") center / cover no-repeat!important}
+.page{background:linear-gradient(180deg,rgba(255,255,255,.83),rgba(255,255,255,.72) 52%,rgba(255,255,255,.88)),url("../alfalah-campus-background.webp") center / cover no-repeat!important}
 .login-card{backdrop-filter:blur(4px)}
 
 </style>
@@ -833,6 +833,15 @@ body{color:var(--portal-text)}
 .login-message{color:#b42318}
 .footer{color:var(--portal-green)!important;font-weight:800}
 @media(max-width:760px){.login-card{grid-template-columns:1fr}.brand-side{display:none}.login-side{padding:30px 22px}.main{width:min(560px,94vw)}}
+</style>
+
+<style id="alfalahUserCampusBackgroundV2">
+/* User-provided photo. Responsive, accessible overlays preserve all existing controls. */
+.page{background:linear-gradient(180deg,rgba(255,255,255,.39),rgba(255,255,255,.22) 52%,rgba(255,255,255,.48)),url("../alfalah-campus-background.webp") center center / cover no-repeat!important;background-color:#fafcf9!important;min-height:100svh!important}
+.login-card{max-width:100%!important;background:rgba(255,255,255,.97)!important}
+.footer{overflow-wrap:anywhere!important}
+@media(max-width:780px){.page{background-position:center!important}.main{width:100%!important;padding-inline:12px!important}.login-card{max-width:100%!important}.login-side{padding:24px 18px!important}.form-input{max-width:100%!important}}
+
 </style>
 </head>
 
