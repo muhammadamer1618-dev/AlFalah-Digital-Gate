@@ -187,27 +187,48 @@ function updateSpeakingButton(i){
 function listen(i){
  if(!selectedActivity||activeSpeakingRecognition)return;
  const used=attempts[i]?.tries||0,limit=getMaxSpeakingAttempts();
- if(limit!==Infinity&&used>=limit){$("feedback-"+i).textContent="You have used all "+limit+" speaking attempts for this item.";updateSpeakingButton(i);return}
+ const feedback=$("feedback-"+i);
+ if(limit!==Infinity&&used>=limit){feedback.textContent="You have used all "+limit+" speaking attempts for this item.";updateSpeakingButton(i);return}
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!Recognition){$("feedback-"+i).textContent="Speech recognition is not supported. Please use Chrome or a compatible browser.";return}
- if(!isSecureContext){$("feedback-"+i).textContent="Microphone access requires HTTPS.";return}
- const recognition=new Recognition();recognition.lang="en-US";recognition.interimResults=false;recognition.maxAlternatives=3;
+ if(!Recognition){feedback.textContent="Speech recognition is not supported. Please use Chrome or a compatible browser.";return}
+ if(!isSecureContext){feedback.textContent="Microphone access requires HTTPS.";return}
+ if("speechSynthesis" in window)speechSynthesis.cancel();
+ const recognition=new Recognition();
+ recognition.lang="en-US";
+ recognition.continuous=false;
+ recognition.interimResults=true;
+ recognition.maxAlternatives=3;
  activeSpeakingRecognition=true;
- $("feedback-"+i).textContent="🎙️ Listening... Speak now.";
+ let finalized=false,speechDetected=false,endingTimer=null;
+ const clearEndingTimer=()=>{if(endingTimer!==null){clearTimeout(endingTimer);endingTimer=null}};
+ const finish=()=>{clearEndingTimer();activeSpeakingRecognition=false};
+ feedback.textContent="🎙️ Preparing microphone...";
+ recognition.onstart=()=>{feedback.textContent="🎙️ Listening now — say the word or sentence."};
+ recognition.onspeechstart=()=>{speechDetected=true;clearEndingTimer();feedback.textContent="🎙️ Hearing your voice..."};
+ recognition.onspeechend=()=>{clearEndingTimer();endingTimer=setTimeout(()=>{if(!finalized){try{recognition.stop()}catch(e){}}},900)};
  recognition.onresult=e=>{
-  const variants=Array.from(e.results[0]).map(x=>x.transcript);
+  if(finalized)return;
+  const result=Array.from(e.results).find(r=>r.isFinal);
+  if(!result){
+   const interim=Array.from(e.results).map(r=>r[0]?.transcript||"").join(" ").trim();
+   if(interim)feedback.textContent="🎙️ Heard: "+interim+" — checking pronunciation...";
+   return;
+  }
+  finalized=true;clearEndingTimer();
+  const variants=Array.from(result).map(x=>x.transcript);
   const expected=normalize(selectedActivity.items[i]);
   const correct=variants.some(x=>normalize(x)===expected);
   const previous=attempts[i]||{tries:0,correct:false};
   if(limit!==Infinity&&previous.tries>=limit)return;
   attempts[i]={tries:previous.tries+1,correct:previous.correct||correct,heard:variants[0]};
   const remaining=limit===Infinity?Infinity:limit-attempts[i].tries;
-  $("feedback-"+i).innerHTML=(correct?'<span class="good">✅ Excellent! Correct pronunciation</span>':'<span class="bad">🔁 Try again</span>')+' — Heard: '+esc(variants[0])+' — Attempts: '+attempts[i].tries+' / '+(limit===Infinity?'∞':limit)+(remaining===0?' — No attempts remaining':'');
+  feedback.innerHTML=(correct?'<span class="good">✅ Excellent! Correct pronunciation</span>':'<span class="bad">🔁 Try again</span>')+' — Heard: '+esc(variants[0])+' — Attempts: '+attempts[i].tries+' / '+(limit===Infinity?'∞':limit)+(remaining===0?' — No attempts remaining':'');
   updateSpeakingButton(i);updateOverall();
+  try{recognition.stop()}catch(e){}
  };
- recognition.onerror=e=>{$("feedback-"+i).textContent="Speech recognition error ("+e.error+"). Check microphone permissions and try again."};
- recognition.onend=()=>{activeSpeakingRecognition=false};
- try{recognition.start()}catch(e){activeSpeakingRecognition=false;$("feedback-"+i).textContent="Unable to start microphone: "+e.message}
+ recognition.onerror=e=>{clearEndingTimer();if(!finalized)feedback.textContent=e.error==="no-speech"?"No speech heard. Tap Speak and try again.":"Speech recognition error ("+e.error+"). Check microphone permissions and try again."};
+ recognition.onend=()=>{finish();if(!finalized&&speechDetected&&feedback.textContent.includes("checking pronunciation"))feedback.textContent="No final speech result. Please try again."};
+ try{recognition.start()}catch(e){finish();feedback.textContent="Unable to start microphone: "+e.message}
 }
 function updateOverall(){const total=selectedActivity.items.length,correct=Object.values(attempts).filter(a=>a.correct).length,done=Object.keys(attempts).length;$("overall").innerHTML='<div class="score">Score: '+correct+' / '+total+' ('+Math.round(100*correct/total)+'%)</div><p>Attempted '+done+' of '+total+' items</p><button id="submitResultButton" onclick="saveResult()">Submit</button>'}
 function getStudentSessionCode(){try{const x=JSON.parse(localStorage.getItem("rased.student.session.v1")||"null");return x&&(!x.expiresAt||Number(x.expiresAt)>Date.now())?String(x.code||""):""}catch{return ""}}
