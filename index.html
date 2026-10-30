@@ -2108,10 +2108,21 @@ closePortal();
 <script src="rased/rased-maintenance.js?v=20261030-4"></script>
 <script type="module">
 import{initializeApp,getApps}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import{getFirestore,doc,onSnapshot}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-const rasedMaintenanceConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};
-const rasedMaintenanceApp=getApps().find(a=>a.name==="rasedMaintenanceRoot")||initializeApp(rasedMaintenanceConfig,"rasedMaintenanceRoot");
-onSnapshot(doc(getFirestore(rasedMaintenanceApp),"systemSettings","maintenance"),snap=>{if(window.rasedMaintenanceRender)window.rasedMaintenanceRender(snap.exists()?snap.data():null)});
+import{getFirestore,doc,onSnapshot,getDoc}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+const cfg={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};
+const app=getApps().find(a=>a.name==="rasedMaintenanceRoot")||initializeApp(cfg,"rasedMaintenanceRoot");
+const store=getFirestore(app);
+function drawMaintenance(data){
+ const active=data?.enabled===true&&(!data.returnAt||Date.parse(String(data.returnAt))>Date.now());
+ let box=document.getElementById("rootMaintenanceOverlay");
+ if(!active){box?.remove();return;}
+ if(!box){box=document.createElement("div");box.id="rootMaintenanceOverlay";box.dir="rtl";box.innerHTML='<div><div style="font-size:54px">🛠️</div><h1>الموقع مغلق مؤقتًا</h1><p class="root-maint-msg"></p><small>سيعود الموقع للعمل بعد انتهاء الصيانة.</small><hr><b>محمد عامر أحمد</b></div>';document.body.appendChild(box);}
+ if(!document.getElementById("rootMaintenanceStyle")){const s=document.createElement("style");s.id="rootMaintenanceStyle";s.textContent="#rootMaintenanceOverlay{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:linear-gradient(135deg,#063b31,#0b6756);color:#fff;text-align:center;font-family:Tajawal,Tahoma,Arial;padding:24px}#rootMaintenanceOverlay>div{width:min(680px,94vw);padding:42px 28px;border:1px solid #ffffff55;border-radius:24px;background:#0003;box-shadow:0 20px 70px #0005}#rootMaintenanceOverlay h1{color:#f7d77a;font-size:clamp(26px,4vw,42px);margin:16px 0}#rootMaintenanceOverlay p{font-size:22px;line-height:1.8}#rootMaintenanceOverlay hr{border:0;border-top:1px solid #ffffff44;margin:22px 0}";document.head.appendChild(s);}
+ box.querySelector(".root-maint-msg").textContent=String(data?.message||"الموقع مغلق للتحسين أو الصيانة.");
+}
+const ref=doc(store,"systemSettings","maintenance");
+getDoc(ref).then(s=>drawMaintenance(s.exists()?s.data():null)).catch(()=>{});
+onSnapshot(ref,s=>drawMaintenance(s.exists()?s.data():null),()=>{});
 </script>
 </body>
 
