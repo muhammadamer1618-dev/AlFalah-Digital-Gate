@@ -6,20 +6,20 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
 async function loadEnglishActivitiesSupervisorPermission(){
  try{
-  const email=String(localStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUserEmail")||"").trim().toLowerCase();
-  if(!email)return;
-  const snap=await db.collection("users").doc(email).get();
-  if(snap.exists&&snap.data()?.permissions?.englishActivitiesManage===true){
-   document.getElementById("englishActivitiesSupervisorBox").style.display="block";
-  }
+  const email=String(sessionStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUser")||localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"").trim().toLowerCase();
+  if(!email||!window.firebase||!firebase.apps.length)return;
+  const snap=await firebase.firestore().collection("users").doc(email).get();
+  const panel=document.getElementById("englishActivitiesSupervisorBox");
+  if(panel&&snap.exists&&snap.data()?.permissions?.englishActivitiesManage===true){panel.style.display="block";}
  }catch(e){console.warn("English activities supervisor permission",e)}
 }
 window.addEventListener("DOMContentLoaded",loadEnglishActivitiesSupervisorPermission);
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
 body{font-family:Calibri;background:#eef2f7;margin:0}
