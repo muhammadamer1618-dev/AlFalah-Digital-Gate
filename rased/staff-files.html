@@ -116,4 +116,5 @@ $("addTeachers").addEventListener("click",()=>{selectedTeacherIds=[...new Set(se
 $("sendFile").addEventListener("click",sendFile);$("saveRequest").addEventListener("click",saveRequest);
 $("refresh").addEventListener("click",async()=>{try{await loadAll();message("تم تحديث الملفات والطلبات.")}catch(e){message("تعذر التحديث: "+e.message,true)}});
 init();
-</script></body></html>
+</script><script src="rased-maintenance.js"></script>
+</body></html>
