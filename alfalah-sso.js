@@ -101,7 +101,8 @@ async function rasedLogin(username,password,type){
   if(!data||String(data.password??"")!==String(password))throw new Error("اسم المستخدم أو كلمة المرور غير صحيحة.");
   const role=String(data.role||"").trim().toLowerCase();
   if(type==="teacher"&&role!=="teacher")throw new Error("هذا الحساب ليس حساب معلم.");
-  if(type==="supervision"&&!["supervisor","admin","superadmin","student_counselor","activity_leader","manager"].includes(role))throw new Error("هذا الحساب غير مفعّل ضمن بوابة الإشراف والإدارة.");
+  if(type==="supervision"&&["admin","superadmin"].includes(role))throw new Error("دخول الإدارة من الرابط المنفصل: /admin-login.html");
+  if(type==="supervision"&&!["supervisor","student_counselor","activity_leader","manager"].includes(role))throw new Error("هذا الحساب غير مفعّل ضمن بوابة الإشراف.");
   let rasedRole=role;
   if(role==="admin")rasedRole="superadmin";
   return {
