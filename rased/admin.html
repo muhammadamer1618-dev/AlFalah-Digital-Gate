@@ -1359,7 +1359,7 @@ id="statClasses">
   <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">لوحة التحكم</div><div class="admin-dashboard-grid"><button class="admin-dashboard-tool" type="button" onclick="openAdminPortalControls('teacherPortalControls')"><span>🎛️</span><strong>التحكم في بوابة المعلم</strong><small>إظهار وإخفاء بطاقات البوابة</small></button><button class="admin-dashboard-tool" type="button" onclick="openAdminPortalControls('supervisorPortalControls')"><span>🎛️</span><strong>التحكم في بوابة المشرف</strong><small>إظهار وإخفاء بطاقات البوابة</small></button><button class="admin-dashboard-tool" type="button" onclick="openAdminPortalControls('studentPortalControls')"><span>🎛️</span><strong>التحكم في بوابة الطالب</strong><small>إظهار وإخفاء أيقونات البوابة</small></button>
     <button class="admin-dashboard-tool" type="button" onclick="location.href='academic-development.html?from=admin'"><span>📊</span><strong>منظومة التطوير الأكاديمي</strong><small>٤ وحدات للتطوير والمتابعة</small></button>
     <button class="admin-dashboard-tool" onclick="location.href='control-center.html'"><span>🎛️</span><strong>مركز التحكم</strong><small>إدارة ومتابعة النظام</small></button>
-    <button class="admin-dashboard-tool" onclick="location.href='audit-log.html'"><span>🛡️</span><strong>سجل التدقيق</strong><small>متابعة العمليات والتغييرات</small></button>
+    <button class="admin-dashboard-tool" onclick="location.href='audit-log.html'"><span>🛡️</span><strong>سجل التدقيق</strong><small>متابعة العمليات والتغييرات</small></button><button class="admin-dashboard-tool" type="button" onclick="openAdminPortalControls('maintenanceSection')"><span>🛠️</span><strong>وضع الصيانة المركزي</strong><small>إغلاق وفتح صفحات راصد</small></button>
 </div></div>
 
   <div class="admin-dashboard-group"><div class="admin-dashboard-group-title">إدارة البيانات</div><div class="admin-dashboard-grid">
@@ -11486,7 +11486,7 @@ async function saveRolePortal(role){
 }
 window.addEventListener("load",()=>{loadRolePortal("teacher");loadRolePortal("supervisor")});
 </script>
-<section id="maintenanceSection" style="max-width:1100px;margin:28px auto;padding:24px;border:2px solid #d8b85a;border-radius:18px;background:linear-gradient(135deg,#fffdf5,#f7faf8);direction:rtl;scroll-margin-top:30px">
+<section hidden id="maintenanceSection" style="max-width:1100px;margin:28px auto;padding:24px;border:2px solid #d8b85a;border-radius:18px;background:linear-gradient(135deg,#fffdf5,#f7faf8);direction:rtl;scroll-margin-top:30px">
 <h2 style="color:#064e3b;margin:0 0 8px">🛠️ وضع الصيانة المركزي</h2>
 <p style="margin:0 0 16px;color:#52635e">أغلق صفحات المشرف والمعلم والطالب مؤقتًا مع إبقاء لوحة الإدارة متاحة.</p>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -11553,7 +11553,7 @@ window.addEventListener("load",rasedLoadMaintenanceAdmin);
 <script src="rased-maintenance.js"></script>
 <script>
 function openAdminPortalControls(id){
- const ids=["studentPortalControls","teacherPortalControls","supervisorPortalControls"];
+ const ids=["studentPortalControls","teacherPortalControls","supervisorPortalControls","maintenanceSection"];
  ids.forEach(x=>{const el=document.getElementById(x);if(el)el.hidden=x!==id});
  const target=document.getElementById(id);
  if(target){target.scrollIntoView({behavior:"smooth",block:"start"});}
