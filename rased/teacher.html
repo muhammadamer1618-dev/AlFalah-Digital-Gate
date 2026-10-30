@@ -4780,7 +4780,7 @@ const html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"
 </style>
 
 </head><body><div class="head"><img src="logo.jpeg"><h1>مدارس الفلاح الأهلية</h1><h2>سجل رسائل أولياء الأمور - المعلم</h2></div><div class="meta"><span><strong>المعلم:</strong> ${escapeHtml(currentTeacher?.name||"")}</span><span><strong>عدد الرسائل:</strong> ${rows.length}</span></div><table><thead><tr><th>م</th><th>التاريخ والوقت</th><th>الطالب</th><th>الفصل</th><th>المادة</th><th>الاختبار / النوع</th><th>الجوال</th><th>نص الرسالة</th></tr></thead><tbody>${body}</tbody></table><div class="foot"><span>نظام راصد - مدارس الفلاح الأهلية</span><span>تصميم محمد عامر أحمد - 2026</span></div><script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script>
-<script src="rased-maintenance.js"></script>
+
 </body></html>`;
 const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة للطباعة.");return;}w.document.open();w.document.write(html);w.document.close();
 }
@@ -5272,5 +5272,6 @@ window.addEventListener("load",async()=>{try{const role=sessionStorage.getItem("
  window.addEventListener("load",applyVisibility);
 })();
 </script>
+<script src="rased-maintenance.js"></script>
 </body>
 </html>
