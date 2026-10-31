@@ -15,4 +15,5 @@ async function make(){const subjectId=el("subject").value,g=el("grade").value,c=
 el("subject").addEventListener("change",updateFilters);el("grade").addEventListener("change",updateFilters);el("make").addEventListener("click",make);el("updateHeadings").addEventListener("click",()=>{saveColumnTemplate();buildHead()});el("columns").addEventListener("change",()=>{ensureColumnInputs();saveColumnTemplate()});el("columnNames").addEventListener("input",()=>{saveColumnTemplate();if(!el("sheet").classList.contains("hidden"))buildHead()});["sheetTitle","orientation"].forEach(id=>el(id).addEventListener("change",()=>{saveColumnTemplate();if(id==="sheetTitle")el("headerTitle").textContent=el("sheetTitle").value||"كشف متابعة الدرجات"}));el("print").addEventListener("click",()=>{const tag=document.getElementById("sheetPageRules")||document.createElement("style");tag.id="sheetPageRules";tag.textContent='@media print{@page{size:A4 '+(el("orientation").value==="portrait"?"portrait":"landscape")+';margin:7mm}}';document.head.appendChild(tag);window.print()});init();
 </script>
 
+<script src="rased-portal-back.js?v=20261031-universal1"></script>
 </body></html>
