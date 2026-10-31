@@ -46,4 +46,5 @@ async function save(){const code=el("student").value,st=students.find(x=>x.code=
 el("grade").addEventListener("change",refresh);el("section").addEventListener("change",refresh);el("student").addEventListener("change",()=>{render();showAttendanceSummary()});["attSubject","attDate","attPeriod"].forEach(id=>el(id).addEventListener("change",()=>{currentAttendance=null;el("attSave").disabled=true;showAttendanceSummary()}));el("kind").addEventListener("change",categories);el("save").addEventListener("click",save);init();
 </script>
 
+<script src="rased-portal-back.js?v=20261031-universal1"></script>
 </body></html>
