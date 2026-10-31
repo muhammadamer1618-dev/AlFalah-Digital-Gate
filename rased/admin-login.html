@@ -895,6 +895,22 @@ body{margin:0!important;background:#f9fbf7!important}
  .small-brand{margin-bottom:4px!important}.login-heading{margin-bottom:7px!important}.form-group{margin-bottom:7px!important}
  .form-input{height:41px!important}.login-btn{height:43px!important}.footer{padding:3px 9px 5px!important}}
 
+<style id="alfalahAdminFinalCenterLogo">
+/* Keep the real login form centered on both mobile and desktop, overriding earlier theme layers. */
+.page{position:relative!important}
+.page>.main{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ max-width:none!important;margin:0!important;padding:16px!important;box-sizing:border-box!important;
+ display:grid!important;place-items:center!important;z-index:5!important;transform:none!important}
+.page>.main>.login-card{position:relative!important;margin:0 auto!important;transform:none!important;
+ width:min(440px,calc(100vw - 32px))!important;max-height:calc(100dvh - 65px)!important}
+.page>.main .small-logo-shell{width:105px!important;height:105px!important;
+ border-radius:50%!important;overflow:hidden!important;display:grid!important;place-items:center!important}
+.page>.main .small-logo{width:98px!important;height:98px!important;border-radius:50%!important;object-fit:contain!important}
+.page>.footer{position:relative!important;z-index:6!important;margin-top:auto!important;pointer-events:none!important}
+@media(max-height:620px){.page>.main>.login-card{max-height:calc(100dvh - 50px)!important;overflow:auto!important}
+.page>.main .small-logo-shell{width:65px!important;height:65px!important}
+.page>.main .small-logo{width:61px!important;height:61px!important}}
+</style>
 </style>
 </head>
 
@@ -921,7 +937,7 @@ body{margin:0!important;background:#f9fbf7!important}
                     <div class="logo-shell">
 
                         <img
-                            src="logo.jpeg"
+                            src="alfalah-round-logo.png"
                             class="logo"
                             alt="مدارس الفلاح الأهلية">
 
@@ -996,7 +1012,7 @@ body{margin:0!important;background:#f9fbf7!important}
                     <div class="small-logo-shell">
 
                         <img
-                            src="logo.jpeg"
+                            src="alfalah-round-logo.png"
                             class="small-logo"
                             alt="مدارس الفلاح الأهلية">
 
