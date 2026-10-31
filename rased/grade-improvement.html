@@ -17,7 +17,7 @@ function render(){
   const hist=x?.improvementHistory||[];
   const noOriginal=!x||(x.attendance!=="absent"&&(x.mark===null||x.mark===undefined||x.mark===""));
   const original=x?.originalMark!==undefined?x.originalMark:(x?.attendance==="absent"?null:x?.mark);
-  const shownOriginal=noOriginal?"لم يُرصد":(original??"غائب");
+  const shownOriginal=noOriginal?"لم يُرصد":(original===null&&x?.originalAttendance==="not_recorded"?"لم يُرصد":original??"غائب");
   const approved=noOriginal?"—":(x.attendance==="absent"?"غائب":x.mark);
   return '<tr><td>'+esc(s.name)+'</td><td>'+esc(shownOriginal)+'</td><td>'+esc(approved)+'</td><td>'+esc(hist.length?hist[hist.length-1].attemptMark:"—")+'</td><td class="no-print"><input type="number" id="mark_'+esc(s.code)+'" step="0.01" min="0" max="'+esc(t?.fullMark||0)+'" placeholder="'+(noOriginal?"رصد درجة لأول مرة":"درجة التحسين")+'"></td><td class="no-print">'+(x?'<button type="button" onclick="sendImprovementNotice(\''+esc(s.code)+'\')">📱 إرسال لولي الأمر</button>':"—")+'</td></tr>'
  }).join("")||'<tr><td colspan="6">لا يوجد طلاب</td></tr>';
@@ -47,7 +47,7 @@ async function saveAllImprovements(){
   }
   say("جارٍ التحقق من إغلاق الرصد وقراءة السجلات الحالية...");
   if(!(await closed(test)))throw Error("الرصد العادي لا يزال مفتوحًا. لا يمكن الحفظ من شاشة التحسين.");
-  const firstCount=changes.filter(x=>!x.grade||x.grade.mark===null||x.grade.mark===undefined||x.grade.mark==="").length;
+  const firstCount=changes.filter(x=>!x.grade||(x.grade.attendance!=="absent"&&(x.grade.mark===null||x.grade.mark===undefined||x.grade.mark===""))).length;
   const improving=changes.length-firstCount;
   if(!confirm("تأكيد حفظ "+changes.length+" درجة؟\nرصد أول مرة: "+firstCount+"\nتحسين درجات موجودة: "+improving+"\nلن تُخفض أي درجة مرصودة."))return;
   const date=new Date().toISOString(),auditRows=[],gradeBatch=db.batch();
@@ -145,7 +145,7 @@ async function loadAllImprovements(){
    }
   });
   allImprovementRows=rows.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  el("allRows").innerHTML=allImprovementRows.map(x=>'<tr><td>'+esc(x.teacher)+'</td><td>'+esc(x.student)+'</td><td>'+esc(x.subject)+' / '+esc(x.test)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.original??"غائب")+'</td><td>'+esc(x.previous??"غائب")+'</td><td>'+esc(x.attempt)+'</td><td><strong>'+esc(x.approved)+'</strong></td><td>'+esc(x.date)+'</td><td>'+esc(x.actor)+' ('+esc(x.role)+')</td></tr>').join("")||'<tr><td colspan="10">لا توجد درجات تحسين لهذا المعلم</td></tr>';
+  el("allRows").innerHTML=allImprovementRows.map(x=>'<tr><td>'+esc(x.teacher)+'</td><td>'+esc(x.student)+'</td><td>'+esc(x.subject)+' / '+esc(x.test)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.original??"غائب")+'</td><td>'+esc(x.previous??"لم يُرصد")+'</td><td>'+esc(x.attempt)+'</td><td><strong>'+esc(x.approved)+'</strong></td><td>'+esc(x.date)+'</td><td>'+esc(x.actor)+' ('+esc(x.role)+')</td></tr>').join("")||'<tr><td colspan="10">لا توجد درجات تحسين لهذا المعلم</td></tr>';
   el("allCount").textContent="المعلم: "+teacherName+" — عدد محاولات التحسين: "+allImprovementRows.length+" — عدد الطلاب: "+new Set(allImprovementRows.map(x=>x.student+"|"+x.test+"|"+x.grade+"|"+x.section)).size
  }catch(e){
   allImprovementRows=[];
