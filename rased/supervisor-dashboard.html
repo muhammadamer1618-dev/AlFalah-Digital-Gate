@@ -781,4 +781,11 @@ async function ensureVisitSupervisorSession(){
  document.body.appendChild(script);
 })();
 </script>
+<style id="rasedAdminShortcutStyle">
+.rased-admin-shortcut{position:fixed;left:14px;bottom:max(14px,env(safe-area-inset-bottom));z-index:9500;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 12px;border:1px solid #d2af60;border-radius:12px;background:#f8f4e9;color:#145044!important;text-decoration:none!important;font:700 12px Tahoma,Arial,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.13);max-width:calc(100vw - 28px)}
+.rased-admin-shortcut:hover,.rased-admin-shortcut:focus-visible{background:#ebdfc7;outline:2px solid #145044;outline-offset:2px}
+@media(max-width:600px){.rased-admin-shortcut{left:9px;bottom:max(9px,env(safe-area-inset-bottom));font-size:11px;padding:7px 10px}}
+@media print{.rased-admin-shortcut{display:none!important}}
+</style>
+<a class="rased-admin-shortcut" href="https://rasededu.online/rased/admin-login.html" aria-label="الانتقال إلى صفحة دخول الإدارة">🔐 لوحة الإدارة</a>
 </body></html>
