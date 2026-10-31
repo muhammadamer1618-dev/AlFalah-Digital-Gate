@@ -5284,6 +5284,49 @@ window.addEventListener("load",async()=>{try{const role=sessionStorage.getItem("
  window.addEventListener("load",applyVisibility);
 })();
 </script>
-<script src="rased-maintenance.js?v=20261031-mobile-refresh2"></script>
+<style id="rasedMaintenanceMobileVisualFix">
+/* Inline visual fallback: also corrects previously cached maintenance scripts. */
+#rasedMaintenanceOverlay .rased-maintenance-message{
+ color:#ff7474!important;font-size:clamp(24px,5vw,34px)!important;
+ line-height:1.6!important;font-weight:900!important;
+ text-shadow:0 2px 10px rgba(0,0,0,.35)!important;
+}
+#rasedMaintenanceOverlay .rased-maintenance-return{display:none!important}
+#rasedMaintenanceOverlay .rased-maintenance-school-logo{
+ display:block!important;width:clamp(76px,16vw,108px)!important;height:clamp(76px,16vw,108px)!important;
+ object-fit:contain!important;background:white!important;border:3px solid #d7b466!important;
+ border-radius:50%!important;padding:6px!important;margin:0 auto 16px!important;
+ box-shadow:0 9px 24px rgba(0,0,0,.22)!important
+}
+</style>
+<script>
+(function(){
+ const logoUrl=new URL("logo.jpeg",location.href).href;
+ function fixMaintenance(){
+  const overlay=document.getElementById("rasedMaintenanceOverlay");
+  if(!overlay)return;
+  const box=overlay.querySelector(".rased-maintenance-box");
+  if(!box)return;
+  if(!box.querySelector(".rased-maintenance-school-logo")){
+   const logo=document.createElement("img");
+   logo.className="rased-maintenance-school-logo";
+   logo.src=logoUrl;
+   logo.alt="شعار مدارس الفلاح الأهلية";
+   box.insertBefore(logo,box.firstChild);
+  }
+  box.querySelector(".rased-maintenance-return")?.remove();
+ }
+ const observer=new MutationObserver(fixMaintenance);
+ function start(){observer.observe(document.body,{childList:true,subtree:true});fixMaintenance()}
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
+})();
+</script>
+<script>
+(function(){
+ const script=document.createElement("script");
+ script.src="rased-maintenance.js?v=20261031-mobile-overlay-fix-"+Date.now();
+ document.body.appendChild(script);
+})();
+</script>
 </body>
 </html>
