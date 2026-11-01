@@ -348,7 +348,7 @@ async function viewReports(id){
  }catch(e){status("Unable to load student results: "+e.message,true)}
 }
 async function editEnglishResult(index){
- const record=reportRecords[index];if(!record||!reportActivity||reportActivity.teacherId!==username())return;
+ const record=reportRecords[index];const rr=role();if(!record||!reportActivity||(!["admin","superadmin"].includes(rr)&&!(rr==="supervisor"&&staffTeacherIds.has(String(reportActivity.teacherId||"").toLowerCase()))&&!(rr==="teacher"&&reportActivity.teacherId===username())))return;
  const items=reportActivity.items||[],old=record.data.attempts||{},max=Number(reportActivity.maxAttempts)===0?Infinity:(Number(reportActivity.maxAttempts)||3);
  const name=prompt("Student name",record.name);if(name===null)return;
  const id=prompt("National ID",record.nationalId==="Not recorded"?"":record.nationalId);if(id===null)return;
@@ -369,7 +369,7 @@ async function editEnglishResult(index){
  }catch(e){status("Unable to update result: "+e.message,true)}
 }
 async function deleteEnglishResult(index){
- const record=reportRecords[index];if(!record||!reportActivity||reportActivity.teacherId!==username())return;
+ const record=reportRecords[index];const rr=role();if(!record||!reportActivity||(!["admin","superadmin"].includes(rr)&&!(rr==="supervisor"&&staffTeacherIds.has(String(reportActivity.teacherId||"").toLowerCase()))&&!(rr==="teacher"&&reportActivity.teacherId===username())))return;
  if(!confirm("Permanently delete the result for "+record.name+"? This cannot be undone."))return;
  try{await db.collection("englishActivityResults").doc(record.id).delete();await viewReports(reportActivity.id);status("Result deleted successfully")}
  catch(e){status("Unable to delete result: "+e.message,true)}
