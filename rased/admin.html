@@ -8901,10 +8901,9 @@ document.getElementById("messageDateFilter").value;
 
 return messageLogs.filter(log=>{
 
-if(
-teacher &&
-String(log.teacherEmail||"")!==teacher
-){
+if(teacher==="__admin__"){
+if(log.senderRole!=="admin"&&log.senderRole!=="superadmin"&&String(log.teacherName||"")!=="الإدارة")return false;
+}else if(teacher&&String(log.teacherEmail||"")!==teacher){
 return false;
 }
 
