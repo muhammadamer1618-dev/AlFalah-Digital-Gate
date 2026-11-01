@@ -2658,7 +2658,7 @@ onclick="clearCurrentTeacherAssignments()">
 <table style="min-width:1100px">
 <thead>
 <tr>
-<th>#</th>
+<th><input type="checkbox" id="selectAllMessageLogs" onchange="toggleAllMessageLogs(this.checked)"></th>\n<th>#</th>
 <th>التاريخ والوقت</th>
 <th>المعلم</th>
 <th>الطالب</th>
@@ -8976,7 +8976,7 @@ const tr=document.createElement("tr");
 
 tr.innerHTML=`
 
-<td><input type="checkbox" '+(selectedMessageLogIds.has(log.id)?"checked":"")+' onchange="toggleMessageLog('+JSON.stringify(log.id)+',this.checked)"></td><td>${index+1}</td>
+<td><input type="checkbox" ${selectedMessageLogIds.has(log.id)?"checked":""} onchange="toggleMessageLog(${JSON.stringify(log.id)},this.checked)"></td><td>${index+1}</td><td>${index+1}</td>
 
 <td class="message-date">
 ${escapeHtml(formatTimestamp(log.sentAt))}
