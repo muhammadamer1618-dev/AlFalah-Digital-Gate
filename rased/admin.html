@@ -2650,7 +2650,7 @@ onclick="clearCurrentTeacherAssignments()">
 <div class="actions">
 <button class="btn-light" onclick="clearMessageFilters()">مسح البحث والتصفية</button>
 <button class="btn-primary" onclick="loadMessageLogs()">↻ تحديث السجل</button>
-<button class="btn-gold" onclick="printMessageLog()">🖨️ طباعة سجل الرسائل</button>
+<button class="btn-gold" onclick="printMessageLog()">🖨️ طباعة سجل الرسائل</button><button class="btn-primary" onclick="printSelectedMessageLogs()">🖨️ طباعة المحدد</button>
 <button class="btn-danger" onclick="deleteAllMessageLogs()">🗑️ حذف جميع الرسائل</button>
 </div>
 
@@ -5432,7 +5432,7 @@ if(!select) return;
 
 const current=select.value;
 
-select.innerHTML='<option value="">كل المعلمين</option>';
+select.innerHTML='<option value="">كل المعلمين</option><option value="__admin__">الإدارة</option>';
 
 teachers.forEach(teacher=>{
 
@@ -8879,6 +8879,10 @@ escapeHtml(error.message)+
 }
 
 
+let selectedMessageLogIds=new Set();
+function toggleMessageLog(id,checked){if(checked)selectedMessageLogIds.add(id);else selectedMessageLogIds.delete(id)}
+function toggleAllMessageLogs(checked){getFilteredMessageLogs().forEach(log=>checked?selectedMessageLogIds.add(log.id):selectedMessageLogIds.delete(log.id));renderMessageLogs()}
+function printSelectedMessageLogs(){const rows=getFilteredMessageLogs().filter(log=>selectedMessageLogIds.has(log.id));if(!rows.length)return alert("حدد رسالة واحدة على الأقل للطباعة.");const bodyRows=rows.map((log,index)=>"<tr><td>"+(index+1)+"</td><td>"+escapeHtml(log.studentName||"-")+"</td><td>"+escapeHtml((log.grade||"-")+" / "+(log.section||"-"))+"</td><td>"+escapeHtml(log.message||"-")+"</td></tr>").join("");const w=window.open("","_blank");if(!w)return alert("اسمح بالنوافذ المنبثقة للطباعة.");w.document.write("<html dir='rtl'><head><title>الرسائل المحددة</title><style>@page{size:A4 landscape;margin:8mm}body{font-family:Tahoma}table{width:100%;border-collapse:collapse}th,td{border:1px solid #555;padding:7px}th{background:#eaf1f7}</style></head><body><h2>الرسائل المحددة</h2><table><tr><th>#</th><th>الطالب</th><th>الصف / الفصل</th><th>الرسالة</th></tr>"+bodyRows+"</table><script>window.onload=function(){window.print()}<\/script></body></html>");w.document.close()}
 function getFilteredMessageLogs(){
 
 const search=
@@ -8972,7 +8976,7 @@ const tr=document.createElement("tr");
 
 tr.innerHTML=`
 
-<td>${index+1}</td>
+<td><input type="checkbox" '+(selectedMessageLogIds.has(log.id)?"checked":"")+' onchange="toggleMessageLog('+JSON.stringify(log.id)+',this.checked)"></td><td>${index+1}</td>
 
 <td class="message-date">
 ${escapeHtml(formatTimestamp(log.sentAt))}
@@ -9020,7 +9024,7 @@ body.appendChild(tr);
 }
 
 
-function clearMessageFilters(){
+function clearMessageFilters(){selectedMessageLogIds=new Set();
 
 document.getElementById("messageSearch").value="";
 document.getElementById("messageTeacherFilter").value="";
