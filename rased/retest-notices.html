@@ -81,7 +81,8 @@ async function load(){
   msg("عدد الطلاب المستحقين عند حد "+threshold+" أو أقل، شاملًا الغياب وعدم الرصد: "+candidates.length);
  }catch(e){msg("تعذر قراءة الدرجات: "+e.message)}finally{el("load").disabled=false}
 }
-el("printEligible").addEventListener("click",()=>{if(!candidates.length)return;document.body.classList.add("print-eligible");const done=()=>{document.body.classList.remove("print-eligible");window.removeEventListener("afterprint",done)};window.addEventListener("afterprint",done,{once:true});window.print();setTimeout(done,1800)});\nlet editingLogId=null;
+el("printEligible").addEventListener("click",()=>{if(!candidates.length)return;document.body.classList.add("print-eligible");const done=()=>{document.body.classList.remove("print-eligible");window.removeEventListener("afterprint",done)};window.addEventListener("afterprint",done,{once:true});window.print();setTimeout(done,1800)});
+let editingLogId=null;
 function ownLog(x){return x&&x.messageType==="retest_notice"&&(role==="teacher"?norm(x.teacherEmail)===account:role==="supervisor"&&teachers.some(t=>norm(t.id)===norm(x.teacherEmail)))}
 function editLog(id){const x=logs.find(a=>a.id===id);if(!ownLog(x))return msg("لا تملك صلاحية تعديل هذه الرسالة.");editingLogId=id;el("editText").value=x.message||"";el("editBox").style.display="block";el("editBox").scrollIntoView({behavior:"smooth",block:"center"})}
 function cancelLogEdit(){editingLogId=null;el("editBox").style.display="none";el("editText").value=""}
