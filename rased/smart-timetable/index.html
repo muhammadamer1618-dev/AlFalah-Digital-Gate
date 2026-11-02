@@ -128,4 +128,139 @@ render();
 </style>
 <div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
 <!-- alfalah-designer-credit:end -->
-</body></html>
+<script>
+(function(){
+const BACKUP_KEY='alfalah-smart-timetable-backups-v1';
+const REQUIRED=['المعلم','القسم','اليوم','الحصة','الصف','المادة'];
+function getBackups(){
+ try{let v=JSON.parse(localStorage.getItem(BACKUP_KEY)||'[]');return Array.isArray(v)?v:[]}
+ catch{return []}
+}
+function storeBackups(v){localStorage.setItem(BACKUP_KEY,JSON.stringify(v))}
+function snapshot(){
+ let b={id:id(),at:new Date().toISOString(),data:JSON.parse(JSON.stringify(state))};
+ storeBackups([b,...getBackups()]);return b;
+}
+function protectCurrent(){
+ const b=snapshot();
+ dl('smart-timetable-backup-'+b.at.slice(0,10)+'.json',JSON.stringify(b.data,null,2),'application/json');
+}
+function parseBadeelCSV(text){
+ let input=String(text||'').replace(/^\ufeff/,''),rows=[],row=[],cell='',quoted=false;
+ for(let i=0;i<input.length;i++){
+  const ch=input[i];
+  if(quoted){
+   if(ch==='"'&&input[i+1]==='"'){cell+='"';i++}
+   else if(ch==='"')quoted=false;
+   else cell+=ch;
+  }else{
+   if(ch==='"'&&cell==='')quoted=true;
+   else if(ch===','){row.push(cell);cell=''}
+   else if(ch==='\n'||ch==='\r'){
+    if(ch==='\r'&&input[i+1]==='\n')i++;
+    row.push(cell);if(row.some(x=>x.trim()))rows.push(row);row=[];cell='';
+   }else cell+=ch;
+  }
+ }
+ if(quoted)throw Error('علامات اقتباس غير مكتملة');
+ row.push(cell);if(row.some(x=>x.trim()))rows.push(row);
+ if(!rows.length)throw Error('الملف فارغ');
+ let header=rows.shift().map(x=>x.trim());
+ if(!REQUIRED.every(x=>header.includes(x)))throw Error('الأعمدة المطلوبة: '+REQUIRED.join('، '));
+ return rows.map(c=>Object.fromEntries(header.map((h,i)=>[h,(c[i]||'').trim()])));
+}
+function inferStage(row){
+ const group=row['القسم']||'',room=(row['الصف']||'').replace(/\s+/g,' ').trim();
+ const marked=room.match(/^(ابتدائي|متوسط|ثانوي)\s*[—–-]\s*(.+)$/);
+ if(marked)return {stage:marked[1],room:marked[2]};
+ if(room.includes('+')||group.includes('+'))return null;
+ if(group==='متوسط وثانوي'){
+  if(/^[123]م\s*[أبج]$/.test(room))return {stage:'متوسط',room};
+  if(/^[123][أبج]$/.test(room))return {stage:'ثانوي',room};
+  return null;
+ }
+ if(/^[1-6][أبج]$/.test(room))return {stage:'ابتدائي',room};
+ return null;
+}
+function buildImport(rows){
+ const base=initial(),issues=[],teacherMap=new Map(),classMap=new Map(),loadMap=new Map(),seen=new Set(),pending=[];
+ for(let i=0;i<rows.length;i++){
+  const row=rows[i],name=(row['المعلم']||'').trim(),day=row['اليوم'],p=Number(row['الحصة']);
+  if(!name){issues.push('صف '+(i+2)+': اسم المعلم فارغ');continue}
+  if(!teacherMap.has(name)){const t={id:id(),name,dept:row['القسم']||''};base.teachers.push(t);teacherMap.set(name,t)}
+  const info=inferStage(row);
+  if(!info||!DAYS.includes(day)||!Number.isInteger(p)||p<1||p>8){
+   issues.push('صف '+(i+2)+': فصل/مرحلة/حصة تحتاج مراجعة للمعلم '+name);continue;
+  }
+  const k=info.stage+'|'+info.room;
+  if(!classMap.has(k)){const c={id:id(),stage:info.stage,name:info.room};base.classes.push(c);classMap.set(k,c)}
+  const teacher=teacherMap.get(name),cls=classMap.get(k),subject=row['المادة']||'غير محدد';
+  const key=teacher.id+'|'+cls.id+'|'+subject,dupe=key+'|'+day+'|'+p;
+  if(seen.has(dupe)){issues.push('صف '+(i+2)+': حصة مكررة');continue}
+  seen.add(dupe);
+  let load=loadMap.get(key);if(!load){load={id:id(),teacherId:teacher.id,classId:cls.id,subject,hours:0};base.loads.push(load);loadMap.set(key,load)}
+  load.hours++;pending.push({load,day,period:p,line:i+2});
+ }
+ // Reservations are validated against *real period times*, including shared teachers.
+ // Rows that conflict remain in the subject quota, but not as an invalid placement.
+ for(let item of pending){
+  let load=item.load,c=base.classes.find(x=>x.id===load.classId),tm=base.times[c.stage]?.[item.period-1];
+  if(!tm||item.period>(base.limits[c.stage]?.[DAYS.indexOf(item.day)]||0)){
+   issues.push('صف '+item.line+': الحصة خارج عدد حصص اليوم');continue;
+  }
+  const conflict=base.placements.some(p=>{
+   if(p.day!==item.day)return false;
+   const other=base.loads.find(l=>l.id===p.loadId),oc=base.classes.find(x=>x.id===other.classId);
+   const ot=base.times[oc.stage][p.period-1];
+   return (oc.id===c.id&&p.period===item.period)||(other.teacherId===load.teacherId&&overlaps(tm,ot));
+  });
+  if(conflict){issues.push('صف '+item.line+': تعارض توقيت/فصل للمعلم '+base.teachers.find(t=>t.id===load.teacherId).name);continue}
+  base.placements.push({id:id(),loadId:load.id,day:item.day,period:item.period});
+ }
+ base.lastImport={total:rows.length,accepted:base.placements.length,unplaced:rows.length-base.placements.length,issues:issues.slice(0,80),more:Math.max(0,issues.length-80)};
+ return base;
+}
+async function importBadeelCSV(file){
+ if(!file)return;
+ try{
+  const rows=parseBadeelCSV(await file.text()),data=buildImport(rows);
+  const detail='تم قراءة '+rows.length+' صف، منها '+data.placements.length+' حصة قابلة للتوزيع، و'+data.lastImport.unplaced+' حصة تحتاج مراجعة. المعلمون: '+data.teachers.length+'.';
+  if(!confirm(detail+'\nسيتم استبدال بيانات الجدول الذكي الحالية بعد إنشاء نسخة احتياطية. هل تستورد الملف للتجربة؟'))return;
+  protectCurrent();state=data;tab='setup';save();toast('تم الاستيراد. راجع تقرير المراجعة قبل التوليد');
+ }catch(e){toast('تعذر الاستيراد: '+(e?.message||'ملف غير صالح'))}
+}
+function reviewPanel(){
+ const a=state.lastImport;
+ if(!a)return '';
+ return panel('نتائج آخر استيراد من بديل','<p><b>الصفوف:</b> '+a.total+' | <b>الموزعة:</b> '+a.accepted+' | <b>المتعارضة/المعلّقة:</b> '+a.unplaced+'</p>'+(a.issues?.length?'<details><summary>عرض الملاحظات ('+(a.issues.length+a.more)+')</summary><ul>'+a.issues.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>':'<div class="note">لم تُرصد ملاحظات.</div>')+'<div class="note warn">بعض رموز الجداول القديمة لا تحدد المرحلة أو الفصل بدقة، ولم تُعتمد تلقائيًا. راجع الحصص المعلّقة قبل إنشاء جدول جديد.</div>');
+}
+function deleteStoredBackup(bid){
+ let all=getBackups();if(!all.some(x=>x.id===bid))return;
+ if(prompt('لحذف هذه النسخة نهائيًا اكتب: حذف نهائي')!=='حذف نهائي')return;
+ storeBackups(all.filter(x=>x.id!==bid));render();toast('تم حذف النسخة الاحتياطية نهائيًا');
+}
+function restoreStoredBackup(bid){
+ const b=getBackups().find(x=>x.id===bid);
+ if(!b||!Array.isArray(b.data?.teachers)||!Array.isArray(b.data?.loads))return toast('النسخة غير صالحة');
+ if(!confirm('استعادة هذه النسخة ستستبدل بيانات الجدول الحالية. متابعة؟'))return;
+ state=JSON.parse(JSON.stringify(b.data));save();toast('تمت استعادة النسخة');
+}
+const setup=viewSetup;
+viewSetup=function(){
+ return panel('استيراد تجريبي من نظام بديل','<p class="small">ارفع نفس ملف CSV الذي استخدمته في بديل، بالأعمدة: المعلم، القسم، اليوم، الحصة، الصف، المادة. سيتم إنشاء المعلمين والفصول والتكليفات تلقائيًا.</p><label class="pill" style="cursor:pointer">📥 استيراد CSV من بديل <input type="file" accept=".csv,text/csv" style="display:none" onchange="importBadeelCSV(this.files[0]);this.value=\'\'"></label><div class="note warn">الاستيراد لا يغيّر بيانات بديل، ويحتفظ بنسخة احتياطية من بيانات الجدول الذكي قبل الاستبدال.</div>')+reviewPanel()+setup();
+};
+const oldSettings=viewSettings;
+viewSettings=function(){
+ const records=getBackups().map(b=>'<div class="note"><b>نسخة بتاريخ '+esc(new Date(b.at).toLocaleString('ar-SA'))+'</b><div class="actions"><button class="alt" onclick="restoreStoredBackup(\''+b.id+'\')">استعادة</button><button class="danger" onclick="deleteStoredBackup(\''+b.id+'\')">حذف نهائي</button></div></div>').join('');
+ return oldSettings()+panel('النسخ المحفوظة والحذف النهائي',records||'<p class="small">لا توجد نسخ محفوظة.</p>');
+};
+resetAll=function(){
+ if(!confirm('سيتم مسح جميع المعلمين والفصول والحصص من الجدول الذكي، بعد إنشاء نسخة احتياطية. متابعة؟'))return;
+ if(prompt('اكتب مسح الجدول للتأكيد')!=='مسح الجدول')return toast('تم إلغاء المسح');
+ try{protectCurrent();state=initial();save();toast('تم المسح مع حفظ نسخة احتياطية')}catch{toast('فشل النسخ الاحتياطي، لم تُمسح البيانات')}
+};
+window.importBadeelCSV=importBadeelCSV;
+window.deleteStoredBackup=deleteStoredBackup;
+window.restoreStoredBackup=restoreStoredBackup;
+})();
+</script></body></html>
