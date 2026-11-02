@@ -23,7 +23,15 @@ const fld=(label,input)=>'<div><label>'+label+'</label>'+input+'</div>';
 const panel=(title,body)=>'<section class="panel"><h3>'+title+'</h3>'+body+'</section>';
 const table=(head,rows)=>'<div class="scroll"><table><thead><tr>'+head.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(x=>'<td>'+x+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
 function toast(msg){const n=document.getElementById('message');n.textContent=msg;n.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>n.style.display='none',3500)}
-function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function save(){
+ state.constraints ||= {teacher:{},subject:{}};
+ state.constraints.teacher ||= {};
+ state.constraints.subject ||= {};
+ for(const teacher of state.teachers||[]){
+  if(/^جعفر(?:\s|$)/u.test(String(teacher.name||"").trim()) && !Number.isInteger(teacher.weeklyTarget))teacher.weeklyTarget=24;
+ }
+ localStorage.setItem(KEY,JSON.stringify(state));render();
+}
 function stageTime(stage,p){return state.times[stage]?.[p-1]}
 function minutes(t){const a=String(t||'').split(':').map(Number);return a[0]*60+a[1]}
 function overlaps(a,b){return minutes(a[0])<minutes(b[1])&&minutes(b[0])<minutes(a[1])}
@@ -104,7 +112,7 @@ function viewGenerate(){
  let required=state.loads.reduce((n,x)=>n+x.hours,0),unfilled=state.loads.filter(l=>assignedCount(l.id)<l.hours);
  let rows=unfilled.map(l=>{let c=byId(state.classes,l.classId),t=byId(state.teachers,l.teacherId);return [esc(displayClass(c)),esc(l.subject),esc(displayTeacher(t)),l.hours-assignedCount(l.id)]});
  let loadOptions=state.loads.filter(x=>assignedCount(x.id)<x.hours);
- let controls='<div class="actions"><button onclick="generate()">✨ إنشاء الجدول تلقائيًا</button><button class="alt" onclick="showTab(\'timetable\')">عرض الجدول وتعديله</button><button class="alt" onclick="downloadJson()">نسخة احتياطية JSON</button></div>';
+ let controls='<div class="actions"><button class="alt" onclick="showTab(\'constraints\')">🔒 إدارة القيود (اختيار يدوي)</button><button onclick="generate()">✨ إنشاء الجدول تلقائيًا</button><button class="alt" onclick="showTab(\'timetable\')">عرض الجدول وتعديله</button><button class="alt" onclick="downloadJson()">نسخة احتياطية JSON</button></div>';
  let manual='<div class="formrow four">'+fld('تكليف لم يُستكمل','<select id="mload">'+loadOptions.map(l=>{let c=byId(state.classes,l.classId);return opt(l.id,displayClass(c)+' — '+l.subject+' — '+displayTeacher(byId(state.teachers,l.teacherId)))}).join('')+'</select>')+fld('اليوم','<select id="mday">'+DAYS.map(x=>opt(x,x)).join('')+'</select>')+fld('الحصة','<input id="mperiod" type="number" value="1" min="1" max="8">')+'<button onclick="manualAdd()">إسناد يدوي</button></div>';
  let targetMissing=state.teachers.map(t=>({name:t.name,missing:Math.max(0,teacherWeeklyLoad(t.id)-teacherDefinedLoad(t.id))})).filter(t=>t.missing>0);
  let missingNote=targetMissing.length?'<div class="note warn"><b>حصص لا توجد لها تكليفات بالفصول:</b> '+targetMissing.map(t=>esc(t.name)+' ('+t.missing+' حصة)').join('، ')+'. حدّد الفصل والمادة لكل حصة قبل استكمال التوزيع.</div>':'';
@@ -193,6 +201,9 @@ function constraintViolations(){
  }).length;
 }
 function viewConstraints(){
+ state.constraints ||= {teacher:{},subject:{}};
+ state.constraints.teacher ||= {};
+ state.constraints.subject ||= {};
  const periods=[1,2,3,4,5,6,7,8];
  const head=['المعلم','النصاب المستهدف','التكليفات المعرّفة',...periods.map(p=>'الحصة '+p)];
  const rows=state.teachers.map((t,i)=>{
@@ -211,7 +222,7 @@ function viewConstraints(){
 function viewSettings(){return panel('نسخ احتياطي واسترجاع','<div class="actions"><button onclick="downloadJson()">تنزيل نسخة JSON</button><label class="pill" style="cursor:pointer">استعادة نسخة <input type="file" accept=".json" style="display:none" onchange="restoreJson(this.files[0])"></label></div><div class="note">هذه النسخة تحفظ على نفس المتصفح فقط. نزّل نسخة احتياطية قبل أي تغيير كبير.</div>')+panel('إعادة ضبط بيانات الجدول','<p class="small">مسح بيانات هذا النظام فقط؛ لن يمس بيانات نظام بديل أو راصد.</p><button class="danger" onclick="resetAll()">مسح بيانات الجدول الذكي</button>')}
 function resetAll(){if(!confirm('سيتم مسح جميع بيانات الجدول الذكي من هذا المتصفح. هل أخذت نسخة احتياطية؟'))return;if(prompt('اكتب مسح الجدول للتأكيد')!=='مسح الجدول')return;state=initial();save()}
 function showTab(v){tab=v;render()}
-function render(){document.getElementById('nav').innerHTML=[['setup','🧑‍🏫 المعلمون والفصول'],['times','⏰ مواعيد الحصص'],['constraints','🔒 قيود الجدول'],['generate','✨ التوليد الذكي'],['timetable','📅 الجدول والطباعة'],['settings','⚙️ النسخ الاحتياطي']].map(x=>'<button class="'+(tab===x[0]?'active':'')+'" onclick="showTab(\''+x[0]+'\')">'+x[1]+'</button>').join('');document.getElementById('stats').innerHTML=[['المعلمون',state.teachers.length],['الفصول',state.classes.length],['التكليفات',state.loads.length],['الحصص الموزعة',state.placements.length]].map(x=>'<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({setup:viewSetup,times:viewTimes,generate:viewGenerate,timetable:viewTimetable,constraints:viewConstraints,settings:viewSettings})[tab]()}
+function render(){document.getElementById('nav').innerHTML=[['setup','🧑‍🏫 المعلمون والفصول'],['times','⏰ مواعيد الحصص'],['constraints','🔒 إدارة القيود'],['generate','✨ التوليد الذكي'],['timetable','📅 الجدول والطباعة'],['settings','⚙️ النسخ الاحتياطي']].map(x=>'<button class="'+(tab===x[0]?'active':'')+'" onclick="showTab(\''+x[0]+'\')">'+x[1]+'</button>').join('');document.getElementById('stats').innerHTML=[['المعلمون',state.teachers.length],['الفصول',state.classes.length],['التكليفات',state.loads.length],['الحصص الموزعة',state.placements.length]].map(x=>'<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({setup:viewSetup,times:viewTimes,generate:viewGenerate,timetable:viewTimetable,constraints:viewConstraints,settings:viewSettings})[tab]()}
 render();
 </script><script>
 (function(){
