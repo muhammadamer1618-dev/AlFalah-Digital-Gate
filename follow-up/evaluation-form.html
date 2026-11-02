@@ -756,7 +756,8 @@
 
       <div class="field">
         <label>رقم الزيارة</label>
-        <input type="number" id="visitNumber" min="1">
+        <input type="number" id="visitNumber" min="1" placeholder="يُحدد تلقائيًا بعد اختيار المعلم">
+        <small id="visitNumberHint" style="display:block;margin-top:6px;color:#53736e">اختر المعلم لتحديد رقم الزيارة التالية تلقائيًا.</small>
       </div>
 
 
@@ -1101,6 +1102,44 @@ function renderTeacherResults(list){
 }
 
 
+let visitNumberLookupSerial = 0;
+
+async function suggestNextVisitNumber(teacher){
+  const requestId = ++visitNumberLookupSerial;
+  const input = el("visitNumber");
+  const hint = el("visitNumberHint");
+  if(!teacher || editVisitId) return;
+
+  input.value = "";
+  hint.textContent = "جاري تحديد رقم الزيارة التالية...";
+  try{
+    const teacherCode = String(teacher.code || teacher.id || "").trim();
+    const teacherName = String(teacher.name || "").trim();
+    const snapshot = await getDocs(collection(db,"visits"));
+    if(requestId !== visitNumberLookupSerial || selectedTeacher !== teacher) return;
+
+    let highest = 0;
+    for(const record of snapshot.docs){
+      const visit = record.data();
+      const recordedCode = String(visit.teacherCode || "").trim();
+      const sameTeacher = teacherCode && recordedCode
+        ? recordedCode === teacherCode
+        : !recordedCode && teacherName && String(visit.teacherName || "").trim() === teacherName;
+      if(!sameTeacher) continue;
+      const number = Number(visit.visitNumber ?? visit.visitNo);
+      if(Number.isInteger(number) && number > highest) highest = number;
+    }
+    input.value = String(highest + 1);
+    hint.textContent = highest
+      ? "آخر زيارة مسجلة رقم " + highest + " — الزيارة الحالية رقم " + (highest + 1)
+      : "لا توجد زيارات سابقة لهذا المعلم — الزيارة الأولى.";
+  }catch(error){
+    if(requestId !== visitNumberLookupSerial) return;
+    console.error("تعذر تحديد رقم الزيارة تلقائيًا:", error);
+    hint.textContent = "تعذر جلب رقم الزيارة؛ يُرجى إدخاله يدويًا بعد مراجعة سجل المعلم.";
+  }
+}
+
 function selectTeacher(teacher){
 
   if(
@@ -1115,6 +1154,7 @@ function selectTeacher(teacher){
 
 
   selectedTeacher = teacher;
+  if(!editVisitId) void suggestNextVisitNumber(teacher);
 
 
   el("teacherSearch").value =
@@ -1175,6 +1215,9 @@ el("teacherSearch")
     ()=>{
 
       selectedTeacher = null;
+      visitNumberLookupSerial++;
+      if(!editVisitId) el("visitNumber").value = "";
+      el("visitNumberHint").textContent = "اختر المعلم لتحديد رقم الزيارة التالية تلقائيًا.";
 
       el("selectedTeacherBox")
         .classList
@@ -1823,6 +1866,13 @@ async function saveVisit(){
   }
 
 
+  const visitNumber = Number(el("visitNumber").value);
+  if(!Number.isInteger(visitNumber) || visitNumber < 1){
+    alert("انتظر تحديد رقم الزيارة تلقائيًا، أو أدخل رقمًا صحيحًا قبل الحفظ.");
+    el("visitNumber").focus();
+    return;
+  }
+
   const answers =
     qMeta.map(q=>{
 
@@ -2291,6 +2341,8 @@ function clearForm(){
 
 
   selectedTeacher = null;
+  visitNumberLookupSerial++;
+  el("visitNumberHint").textContent = "اختر المعلم لتحديد رقم الزيارة التالية تلقائيًا.";
 
 
   el("teacherSearch").value = "";
