@@ -5,6 +5,7 @@ Run this after the Rased synchronization and for each portal push.
 It is idempotent and changes no application data or scripts.
 """
 from pathlib import Path
+from html.parser import HTMLParser
 import re
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -31,7 +32,24 @@ def stamp(html: str) -> str:
 <div id="alfalah-designer-credit" aria-label="{NAME}">{NAME}</div>
 {END}
 """
-    return re.sub(r"</body>", lambda m: snippet + m.group(), original, count=1, flags=re.I)
+    class BodyClosingTag(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=False)
+            self.last = None
+        def handle_endtag(self, tag):
+            if tag.lower() == "body":
+                self.last = self.getpos()
+
+    parser = BodyClosingTag()
+    parser.feed(original)
+    if parser.last is None:
+        return original
+    line, column = parser.last
+    prefix = original.splitlines(keepends=True)
+    offset = sum(len(part) for part in prefix[:line - 1]) + column
+    if not re.match(r"</body\s*>", original[offset:], re.I):
+        return original
+    return original[:offset] + snippet + original[offset:]
 
 def main():
     scanned = changed = 0
