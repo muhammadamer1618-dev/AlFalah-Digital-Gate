@@ -1,0 +1,39 @@
+name: Ensure designer credit on all portal pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - 'scripts/apply-designer-credit.py'
+      - '.github/workflows/ensure-designer-credit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rased-sync
+  cancel-in-progress: false
+
+jobs:
+  branding:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout portal
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Stamp existing and newly added HTML pages
+        run: python3 scripts/apply-designer-credit.py
+      - name: Commit credit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if git diff --cached --quiet; then
+            echo "Every HTML page already has the designer credit"
+          else
+            git commit -m "Ensure designer credit in portal pages"
+            git push
+          fi
