@@ -118,17 +118,7 @@ function resetAll(){if(!confirm('سيتم مسح جميع بيانات الجد�
 function showTab(v){tab=v;render()}
 function render(){document.getElementById('nav').innerHTML=[['setup','🧑‍🏫 المعلمون والفصول'],['times','⏰ مواعيد الحصص'],['generate','✨ التوليد الذكي'],['timetable','📅 الجدول والطباعة'],['settings','⚙️ النسخ الاحتياطي']].map(x=>'<button class="'+(tab===x[0]?'active':'')+'" onclick="showTab(\''+x[0]+'\')">'+x[1]+'</button>').join('');document.getElementById('stats').innerHTML=[['المعلمون',state.teachers.length],['الفصول',state.classes.length],['التكليفات',state.loads.length],['الحصص الموزعة',state.placements.length]].map(x=>'<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({setup:viewSetup,times:viewTimes,generate:viewGenerate,timetable:viewTimetable,settings:viewSettings})[tab]()}
 render();
-</script>
-<!-- alfalah-designer-credit:start -->
-<style id="alfalah-designer-credit-style">
-#alfalah-designer-credit{display:none!important;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
-@media print {
- #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
-}
-</style>
-<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
-<!-- alfalah-designer-credit:end -->
-<script>
+</script><script>
 (function(){
 const BACKUP_KEY='alfalah-smart-timetable-backups-v1';
 const REQUIRED=['المعلم','القسم','اليوم','الحصة','الصف','المادة'];
@@ -263,4 +253,14 @@ window.importBadeelCSV=importBadeelCSV;
 window.deleteStoredBackup=deleteStoredBackup;
 window.restoreStoredBackup=restoreStoredBackup;
 })();
-</script></body></html>
+</script>
+<!-- alfalah-designer-credit:start -->
+<style id="alfalah-designer-credit-style">
+#alfalah-designer-credit{display:none!important;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
+@media print {
+ #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
+}
+</style>
+<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
+<!-- alfalah-designer-credit:end -->
+</body></html>
