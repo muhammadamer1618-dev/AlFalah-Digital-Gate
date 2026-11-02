@@ -4781,6 +4781,16 @@ const html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"
 
 </head><body><div class="head"><img src="logo.jpeg"><h1>مدارس الفلاح الأهلية</h1><h2>سجل رسائل أولياء الأمور - المعلم</h2></div><div class="meta"><span><strong>المعلم:</strong> ${escapeHtml(currentTeacher?.name||"")}</span><span><strong>عدد الرسائل:</strong> ${rows.length}</span></div><table><thead><tr><th>م</th><th>التاريخ والوقت</th><th>الطالب</th><th>الفصل</th><th>المادة</th><th>الاختبار / النوع</th><th>الجوال</th><th>نص الرسالة</th></tr></thead><tbody>${body}</tbody></table><div class="foot"><span>نظام راصد - مدارس الفلاح الأهلية</span><span>تصميم محمد عامر أحمد - 2026</span></div><script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script>
 
+
+<!-- alfalah-designer-credit:start -->
+<style id="alfalah-designer-credit-style">
+#alfalah-designer-credit{display:none!important;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
+@media print {
+ #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
+}
+</style>
+<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
+<!-- alfalah-designer-credit:end -->
 </body></html>`;
 const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة للطباعة.");return;}w.document.open();w.document.write(html);w.document.close();
 }
