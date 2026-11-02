@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الجدول المدرسي الذكي | راصد</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f7f7;color:#173b39;font:14px Tahoma,Arial}button,input,select{font:inherit}button{border:0;cursor:pointer;border-radius:9px;padding:10px 15px;background:#087b71;color:#fff}button.alt{background:#e9f4f1;color:#126b62}button.danger{background:#fff0ee;color:#a64036}input,select{padding:10px;border:1px solid #d5e2e0;border-radius:9px;background:white;min-width:0;width:100%}label{display:block;font-size:12px;color:#59736e;margin-bottom:5px}h1,h2,h3{margin-top:0}.shell{max-width:1450px;margin:auto;padding:23px}.top{background:linear-gradient(110deg,#064a45,#128579);color:white;padding:22px;border-radius:18px;display:flex;align-items:center;gap:16px}.logo{width:63px;height:63px;border-radius:50%;object-fit:contain;background:white;padding:4px}.top h1{font-size:25px;margin:0 0 7px}.top p{margin:0;color:#d0eee8}.back{margin-right:auto;background:#ffffff23;color:white;text-decoration:none;padding:10px;border-radius:8px}.nav{display:flex;gap:8px;flex-wrap:wrap;margin:19px 0}.nav button{background:#e3eeec;color:#26635d}.nav button.active{background:#087b71;color:white}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.panel{background:#fff;padding:21px;border:1px solid #e1ebea;border-radius:16px;box-shadow:0 5px 24px #093c3608;margin-bottom:15px}.panel h3{font-size:17px}.formrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}.formrow.four{grid-template-columns:repeat(4,minmax(0,1fr))}.actions{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.note{padding:12px;background:#e9f6f1;color:#235c52;border-radius:10px;line-height:1.9;margin:12px 0}.warn{background:#fff3e1;color:#895b16}.stats{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0}.stat{background:white;padding:14px 20px;border-radius:12px;border:1px solid #deebe8}.stat b{display:block;font-size:24px;color:#08776f}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;min-width:620px}th,td{border:1px solid #e3ebe9;padding:10px;text-align:right;vertical-align:top}th{background:#eaf4f1;white-space:nowrap}td button{padding:5px 8px;font-size:11px}.small{color:#78908b;font-size:12px}.pill{display:inline-block;background:#e6f5f0;border-radius:8px;padding:5px 9px}.error{background:#fff0ed;color:#ad4735}.footer{text-align:center;color:#718d86;padding:20px}.empty{padding:22px;text-align:center;color:#849b96;border:1px dashed #cbdcd6;border-radius:12px}.slot{background:#f1faf7;padding:5px;border-radius:6px}.slot b{display:block;font-size:11px}.slot small{display:block;font-size:10px}.subhead{margin:14px 0 8px}#message{position:fixed;bottom:20px;left:20px;background:#064a45;color:white;border-radius:8px;padding:13px;display:none;z-index:10}@media(max-width:850px){.grid{grid-template-columns:1fr}.formrow,.formrow.four{grid-template-columns:1fr 1fr}.top{flex-wrap:wrap}.back{margin-right:0}}@media(max-width:500px){.formrow,.formrow.four{grid-template-columns:1fr}.shell{padding:10px}.top h1{font-size:20px}}@media print{body{background:white}.top,.nav,.actions,button,input,select,.note,.back,.no-print{display:none!important}.shell{padding:0}.panel{border:0;box-shadow:none;padding:5px}.stats{display:none}table{min-width:0}th,td{font-size:10px;padding:5px}.footer{display:block}#view:before{content:'مدارس الفلاح الأهلية — الجدول المدرسي الذكي';display:block;font-size:19px;font-weight:bold;margin-bottom:12px}}
+</style></head><body><div class="shell"><div class="top"><img class="logo" src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح"><div><h1>الجدول المدرسي الذكي</h1><p>راصد · الابتدائي والمتوسط والثانوي · إنشاء وتعديل وطباعة</p></div><a class="back" href="../admin.html">↩ لوحة الإدارة</a></div><div class="nav" id="nav"></div><div class="stats" id="stats"></div><div id="view"></div><div class="footer">مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</div></div><div id="message"></div>
+<script>
+const KEY='alfalah-smart-timetable-v1',DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],STAGES=['ابتدائي','متوسط','ثانوي'];
+const timeRows={ابتدائي:[['07:15','07:55'],['07:55','08:35'],['08:35','09:15'],['09:15','09:55'],['10:05','10:45'],['10:45','11:25'],['11:25','12:05'],['12:05','12:45']],متوسط:[['07:15','08:00'],['08:00','08:45'],['08:45','09:30'],['09:45','10:30'],['10:30','11:15'],['11:15','12:00'],['12:20','13:00']],ثانوي:[['07:15','08:00'],['08:00','08:45'],['08:45','09:30'],['09:45','10:30'],['10:30','11:15'],['11:15','12:00'],['12:20','13:00']]};
+function initial(){return {teachers:[],classes:[],loads:[],placements:[],times:JSON.parse(JSON.stringify(timeRows)),limits:{ابتدائي:[8,8,8,7,7],متوسط:[7,7,7,7,7],ثانوي:[7,7,7,7,7]}}}
+let state;try{state=JSON.parse(localStorage.getItem(KEY))||initial()}catch{state=initial()}let tab='setup',filterMode='class',filterId='';
+const id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const byId=(arr,i)=>arr.find(x=>x.id===i);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const opt=(value,label)=>'<option value="'+esc(value)+'">'+esc(label)+'</option>';
+const fld=(label,input)=>'<div><label>'+label+'</label>'+input+'</div>';
+const panel=(title,body)=>'<section class="panel"><h3>'+title+'</h3>'+body+'</section>';
+const table=(head,rows)=>'<div class="scroll"><table><thead><tr>'+head.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(x=>'<td>'+x+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+function toast(msg){const n=document.getElementById('message');n.textContent=msg;n.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>n.style.display='none',3500)}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function stageTime(stage,p){return state.times[stage]?.[p-1]}
+function minutes(t){const a=String(t||'').split(':').map(Number);return a[0]*60+a[1]}
+function overlaps(a,b){return minutes(a[0])<minutes(b[1])&&minutes(b[0])<minutes(a[1])}
+function maxPeriods(c,day){return state.limits[c.stage]?.[DAYS.indexOf(day)]||0}
+function canPlace(load,day,period,placements=state.placements,ignoreId){
+ const c=byId(state.classes,load.classId),tm=stageTime(c?.stage,period);
+ if(!c||!tm||period>maxPeriods(c,day)||!overlaps(tm,tm))return false;
+ return !placements.some(p=>{
+  if(p.id===ignoreId||p.day!==day)return false;
+  const other=byId(state.loads,p.loadId),oc=byId(state.classes,other?.classId);
+  if(!other||!oc)return false;
+  if(oc.id===c.id&&p.period===period)return true;
+  return other.teacherId===load.teacherId&&overlaps(tm,stageTime(oc.stage,p.period));
+ });
+}
+function assignedCount(loadId,placements=state.placements){return placements.filter(x=>x.loadId===loadId).length}
+function displayClass(c){return c.stage+' — '+c.name}
+function displayTeacher(t){return t?.name||'—'}
+function viewSetup(){
+ let tform='<div class="formrow">'+fld('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+fld('التخصص','<input id="tdept" placeholder="رياضيات">')+'<button onclick="addTeacher()">إضافة معلم</button></div>';
+ let cform='<div class="formrow">'+fld('المرحلة','<select id="cstage">'+STAGES.map(x=>opt(x,x)).join('')+'</select>')+fld('الصف والفصل','<input id="cname" placeholder="مثل: 3أ أو 1م أ">')+'<button onclick="addClass()">إضافة فصل</button></div>';
+ let lform='<div class="formrow four">'+fld('الفصل','<select id="lclass">'+state.classes.map(x=>opt(x.id,displayClass(x))).join('')+'</select>')+fld('المادة','<input id="lsubject" placeholder="الرياضيات">')+fld('المعلم','<select id="lteacher">'+state.teachers.map(x=>opt(x.id,x.name)).join('')+'</select>')+fld('الحصص أسبوعيًا','<input id="lhours" type="number" min="1" max="40" value="4">')+'</div><div class="actions"><button onclick="addLoad()">إضافة تكليف للمادة</button></div>';
+ let tlist=state.teachers.map(t=>[esc(t.name),esc(t.dept),'<button class="danger" onclick="removeTeacher(\''+t.id+'\')">حذف</button>']);
+ let clist=state.classes.map(c=>[esc(c.stage),esc(c.name),'<button class="danger" onclick="removeClass(\''+c.id+'\')">حذف</button>']);
+ let llist=state.loads.map(l=>{let c=byId(state.classes,l.classId),t=byId(state.teachers,l.teacherId);return [esc(displayClass(c)),esc(l.subject),esc(displayTeacher(t)),l.hours,assignedCount(l.id),'<button class="danger" onclick="removeLoad(\''+l.id+'\')">حذف</button>']});
+ return '<div class="note">ابدأ بإضافة المعلمين والفصول، ثم حدّد عدد حصص كل مادة والمعلم المسؤول عنها لكل فصل. المعلم المشترك يُسجّل مرة واحدة فقط وتُربط به تكليفات كل المراحل.</div><div class="grid">'+panel('١. المعلمون',tform+(tlist.length?table(['الاسم','التخصص',''],tlist):'<div class="empty">لا يوجد معلمون</div>'))+panel('٢. الفصول',cform+(clist.length?table(['المرحلة','الفصل',''],clist):'<div class="empty">لا توجد فصول</div>'))+panel('٣. أنصبة المواد',lform+(llist.length?table(['الفصل','المادة','المعلم','المطلوب','الموزع',''],llist):'<div class="empty">أضف تكليفات المواد أولًا</div>'))+'</div>';
+}
+function addTeacher(){let name=document.getElementById('tname').value.trim(),dept=document.getElementById('tdept').value.trim();if(!name)return toast('اكتب اسم المعلم');if(state.teachers.some(x=>x.name===name))return toast('المعلم موجود بالفعل، اربطه بتكليفات المراحل الأخرى');state.teachers.push({id:id(),name,dept});save()}
+function addClass(){let stage=document.getElementById('cstage').value,name=document.getElementById('cname').value.trim();if(!name)return toast('اكتب اسم الفصل');if(state.classes.some(x=>x.stage===stage&&x.name===name))return toast('هذا الفصل موجود');state.classes.push({id:id(),stage,name});save()}
+function addLoad(){let classId=document.getElementById('lclass').value,teacherId=document.getElementById('lteacher').value,subject=document.getElementById('lsubject').value.trim(),hours=Number(document.getElementById('lhours').value);if(!classId||!teacherId||!subject||!Number.isInteger(hours)||hours<1||hours>40)return toast('أكمل بيانات التكليف');state.loads.push({id:id(),classId,teacherId,subject,hours});save()}
+function removeTeacher(i){if(state.loads.some(x=>x.teacherId===i))return toast('احذف تكليفات هذا المعلم أولًا');if(confirm('حذف المعلم؟')){state.teachers=state.teachers.filter(x=>x.id!==i);save()}}
+function removeClass(i){if(state.loads.some(x=>x.classId===i))return toast('احذف تكليفات هذا الفصل أولًا');if(confirm('حذف الفصل؟')){state.classes=state.classes.filter(x=>x.id!==i);save()}}
+function removeLoad(i){if(!confirm('حذف التكليف وحصصه الموزعة؟'))return;state.loads=state.loads.filter(x=>x.id!==i);state.placements=state.placements.filter(x=>x.loadId!==i);save()}
+function viewTimes(){
+ let rows=[];for(let stage of STAGES){for(let p=1;p<=state.times[stage].length;p++){let a=state.times[stage][p-1];rows.push([stage,p,'<input type="time" value="'+a[0]+'" onchange="changeTime(\''+stage+'\','+p+',0,this.value)">','<input type="time" value="'+a[1]+'" onchange="changeTime(\''+stage+'\','+p+',1,this.value)">'])}}
+ let max=STAGES.map(stage=>'<div class="panel"><h3>'+stage+'</h3><div class="formrow">'+DAYS.map((d,i)=>fld(d,'<input type="number" min="1" max="8" value="'+state.limits[stage][i]+'" onchange="changeLimit(\''+stage+'\','+i+',this.value)">')).join('')+'</div></div>').join('');
+ return '<div class="note warn">الوقت هنا مهم جدًا: التعارض بين معلم مشترك يُحسب على تداخل الدقائق الفعلية، حتى لو اختلف رقم الحصة. راجع مواعيد الفسح والحصص قبل التوليد.</div>'+panel('مواعيد الحصص لكل مرحلة',table(['المرحلة','الحصة','من','إلى'],rows)) +max;
+}
+function changeTime(stage,p,i,value){let copy=state.times[stage][p-1].slice();copy[i]=value;if(minutes(copy[0])>=minutes(copy[1]))return toast('وقت النهاية يجب أن يكون بعد البداية');state.times[stage][p-1]=copy;save()}
+function changeLimit(stage,i,value){let n=Number(value);if(!Number.isInteger(n)||n<1||n>state.times[stage].length)return toast('عدد الحصص غير صالح');state.limits[stage][i]=n;save()}
+function generate(){
+ if(!state.loads.length)return toast('أضف تكليفات المواد أولًا');
+ if(!confirm('إنشاء جدول جديد سيستبدل التوزيع الحالي. هل تريد المتابعة؟'))return;
+ const tasks=[];state.loads.forEach(l=>{for(let i=0;i<l.hours;i++)tasks.push(l)});
+ const demand={};tasks.forEach(l=>demand[l.teacherId]=(demand[l.teacherId]||0)+1);
+ let best=[],bestScore=-Infinity;
+ for(let attempt=0;attempt<130;attempt++){
+  let placed=[],sorted=tasks.slice().sort((a,b)=>(demand[b.teacherId]-demand[a.teacherId])||(Math.random()-.5));
+  for(let l of sorted){
+   let c=byId(state.classes,l.classId),options=[];
+   for(let d of DAYS)for(let p=1;p<=maxPeriods(c,d);p++)if(canPlace(l,d,p,placed)){
+    let dayLoad=placed.filter(x=>x.day===d&&byId(state.loads,x.loadId)?.classId===c.id).length;
+    let subjectToday=placed.filter(x=>x.day===d&&x.loadId===l.id).length;
+    let teacherDay=placed.filter(x=>x.day===d&&byId(state.loads,x.loadId)?.teacherId===l.teacherId).length;
+    let score=subjectToday*25+dayLoad*3+teacherDay*2+Math.random()*6;
+    options.push({day:d,period:p,score});
+   }
+   options.sort((a,b)=>a.score-b.score);
+   if(options.length){let pick=options[Math.min(Math.floor(Math.random()*Math.min(3,options.length)),options.length-1)];placed.push({id:id(),loadId:l.id,day:pick.day,period:pick.period})}
+  }
+  let score=placed.length*1000-placed.reduce((acc,p)=>acc+p.period*.01,0);
+  if(score>bestScore){bestScore=score;best=placed}
+  if(best.length===tasks.length&&attempt>15)break;
+ }
+ state.placements=best;save();toast('تم توزيع '+best.length+' من '+tasks.length+' حصة. راجع المتبقي قبل الاعتماد');
+}
+function viewGenerate(){
+ let required=state.loads.reduce((n,x)=>n+x.hours,0),unfilled=state.loads.filter(l=>assignedCount(l.id)<l.hours);
+ let rows=unfilled.map(l=>{let c=byId(state.classes,l.classId),t=byId(state.teachers,l.teacherId);return [esc(displayClass(c)),esc(l.subject),esc(displayTeacher(t)),l.hours-assignedCount(l.id)]});
+ let loadOptions=state.loads.filter(x=>assignedCount(x.id)<x.hours);
+ let controls='<div class="actions"><button onclick="generate()">✨ إنشاء الجدول تلقائيًا</button><button class="alt" onclick="showTab(\'timetable\')">عرض الجدول وتعديله</button><button class="alt" onclick="downloadJson()">نسخة احتياطية JSON</button></div>';
+ let manual='<div class="formrow four">'+fld('تكليف لم يُستكمل','<select id="mload">'+loadOptions.map(l=>{let c=byId(state.classes,l.classId);return opt(l.id,displayClass(c)+' — '+l.subject+' — '+displayTeacher(byId(state.teachers,l.teacherId)))}).join('')+'</select>')+fld('اليوم','<select id="mday">'+DAYS.map(x=>opt(x,x)).join('')+'</select>')+fld('الحصة','<input id="mperiod" type="number" value="1" min="1" max="8">')+'<button onclick="manualAdd()">إسناد يدوي</button></div>';
+ return panel('توليد الجدول',controls+'<div class="note">يبحث النظام عن توزيع يمنع ازدواج حصة الفصل، ويمنع تداخل وقت المعلم بين المراحل. الحصص التي لا يجد لها مكانًا تظهر بالأسفل.</div><p>الحصص المطلوبة: <b>'+required+'</b> — الموزعة: <b>'+state.placements.length+'</b> — المتبقية: <b>'+Math.max(0,required-state.placements.length)+'</b></p>')+panel('الإسناد اليدوي',manual)+panel('الحصص التي لم تُوزّع',rows.length?table(['الفصل','المادة','المعلم','حصص متبقية'],rows):'<div class="empty">لا توجد حصص متبقية</div>');
+}
+function manualAdd(){let l=byId(state.loads,document.getElementById('mload').value),d=document.getElementById('mday').value,p=+document.getElementById('mperiod').value;if(!l)return toast('لا توجد تكليفات غير مكتملة');if(assignedCount(l.id)>=l.hours)return toast('اكتمل نصاب التكليف');if(!canPlace(l,d,p))return toast('تعارض: الفصل أو المعلم مشغول، أو الحصة خارج توقيت المرحلة');state.placements.push({id:id(),loadId:l.id,day:d,period:p});save()}
+function viewTimetable(){
+ let list=filterMode==='teacher'?state.teachers:state.classes;
+ if(!list.some(x=>x.id===filterId))filterId=list[0]?.id||'';
+ let chooser='<div class="actions no-print"><button class="'+(filterMode==='class'?'':'alt')+'" onclick="setFilter(\'class\')">حسب الفصل</button><button class="'+(filterMode==='teacher'?'':'alt')+'" onclick="setFilter(\'teacher\')">حسب المعلم</button><select style="max-width:310px" onchange="filterId=this.value;render()">'+list.map(x=>'<option value="'+x.id+'" '+(x.id===filterId?'selected':'')+'>'+esc(filterMode==='teacher'?x.name:displayClass(x))+'</option>').join('')+'</select><button class="alt" onclick="window.print()">🖨️ طباعة</button><button class="alt" onclick="exportCSV()">تصدير CSV لبديل</button></div>';
+ let entries=state.placements.map(p=>({p,l:byId(state.loads,p.loadId)})).filter(x=>x.l&&(filterMode==='teacher'?x.l.teacherId===filterId:x.l.classId===filterId));
+ let max=filterMode==='class'&&byId(state.classes,filterId)?Math.max(...state.limits[byId(state.classes,filterId).stage]):8;
+ let rows=[];for(let period=1;period<=max;period++){let row=[period];for(let day of DAYS){let found=entries.filter(x=>x.p.day===day&&x.p.period===period);row.push(found.map(x=>{let c=byId(state.classes,x.l.classId),t=byId(state.teachers,x.l.teacherId),tm=stageTime(c.stage,period);return '<div class="slot"><b>'+esc(x.l.subject)+'</b><small>'+esc(filterMode==='teacher'?displayClass(c):displayTeacher(t))+'</small><small>'+esc(tm?.join('–')||'')+'</small><button class="danger no-print" onclick="removePlacement(\''+x.p.id+'\')">إزالة</button></div>'}).join('')||'—')}rows.push(row)}
+ return panel('عرض الجدول',chooser+(filterId?'<h3 class="subhead">'+esc(filterMode==='teacher'?displayTeacher(byId(state.teachers,filterId)):displayClass(byId(state.classes,filterId)))+'</h3>'+table(['الحصة',...DAYS],rows):'<div class="empty">أضف الفصول والمعلمين ووزّع الحصص أولًا.</div>'))+panel('ملاحظة التصدير','<p class="small">ملف CSV يستخدم الأعمدة التي يفهمها بديل، لكن توقيت الحصص يختلف بين المراحل. راجع تكليفات المعلمين المشتركين قبل اعتماد الاستيراد في بديل.</p>');
+}
+function removePlacement(i){if(confirm('إزالة هذه الحصة من الجدول؟')){state.placements=state.placements.filter(x=>x.id!==i);save()}}
+function setFilter(k){filterMode=k;filterId='';render()}
+function exportCSV(){
+ let rows=['المعلم,القسم,اليوم,الحصة,الصف,المادة'];
+ const quote=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
+ for(let p of state.placements){let l=byId(state.loads,p.loadId),t=byId(state.teachers,l?.teacherId),c=byId(state.classes,l?.classId);if(!l||!t||!c)continue;rows.push([t.name,t.dept,p.day,p.period,displayClass(c),l.subject].map(quote).join(','))}
+ dl('alfalah-smart-timetable-badeel.csv',rows.join('\n'),'text/csv');
+}
+function dl(name,data,type){let a=document.createElement('a'),url=URL.createObjectURL(new Blob(['\ufeff',data],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function downloadJson(){dl('alfalah-smart-timetable-backup.json',JSON.stringify(state,null,2),'application/json')}
+async function restoreJson(file){if(!file)return;try{let data=JSON.parse(await file.text());if(!Array.isArray(data.teachers)||!Array.isArray(data.classes)||!Array.isArray(data.loads)||!Array.isArray(data.placements)||!data.times||!data.limits)throw Error('invalid');if(confirm('استبدال جميع بيانات الجدول الحالي بالنسخة؟')){state=data;save()}}catch{toast('ملف نسخة احتياطية غير صالح')}}
+function viewSettings(){return panel('نسخ احتياطي واسترجاع','<div class="actions"><button onclick="downloadJson()">تنزيل نسخة JSON</button><label class="pill" style="cursor:pointer">استعادة نسخة <input type="file" accept=".json" style="display:none" onchange="restoreJson(this.files[0])"></label></div><div class="note">هذه النسخة تحفظ على نفس المتصفح فقط. نزّل نسخة احتياطية قبل أي تغيير كبير.</div>')+panel('إعادة ضبط بيانات الجدول','<p class="small">مسح بيانات هذا النظام فقط؛ لن يمس بيانات نظام بديل أو راصد.</p><button class="danger" onclick="resetAll()">مسح بيانات الجدول الذكي</button>')}
+function resetAll(){if(!confirm('سيتم مسح جميع بيانات الجدول الذكي من هذا المتصفح. هل أخذت نسخة احتياطية؟'))return;if(prompt('اكتب مسح الجدول للتأكيد')!=='مسح الجدول')return;state=initial();save()}
+function showTab(v){tab=v;render()}
+function render(){document.getElementById('nav').innerHTML=[['setup','🧑‍🏫 المعلمون والفصول'],['times','⏰ مواعيد الحصص'],['generate','✨ التوليد الذكي'],['timetable','📅 الجدول والطباعة'],['settings','⚙️ النسخ الاحتياطي']].map(x=>'<button class="'+(tab===x[0]?'active':'')+'" onclick="showTab(\''+x[0]+'\')">'+x[1]+'</button>').join('');document.getElementById('stats').innerHTML=[['المعلمون',state.teachers.length],['الفصول',state.classes.length],['التكليفات',state.loads.length],['الحصص الموزعة',state.placements.length]].map(x=>'<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({setup:viewSetup,times:viewTimes,generate:viewGenerate,timetable:viewTimetable,settings:viewSettings})[tab]()}
+render();
+</script></body></html>
