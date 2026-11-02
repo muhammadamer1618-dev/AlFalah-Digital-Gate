@@ -93,14 +93,36 @@ function viewGenerate(){
  return panel('توليد الجدول',controls+'<div class="note">يبحث النظام عن توزيع يمنع ازدواج حصة الفصل، ويمنع تداخل وقت المعلم بين المراحل. الحصص التي لا يجد لها مكانًا تظهر بالأسفل.</div><p>الحصص المطلوبة: <b>'+required+'</b> — الموزعة: <b>'+state.placements.length+'</b> — المتبقية: <b>'+Math.max(0,required-state.placements.length)+'</b></p>')+panel('الإسناد اليدوي',manual)+panel('الحصص التي لم تُوزّع',rows.length?table(['الفصل','المادة','المعلم','حصص متبقية'],rows):'<div class="empty">لا توجد حصص متبقية</div>');
 }
 function manualAdd(){let l=byId(state.loads,document.getElementById('mload').value),d=document.getElementById('mday').value,p=+document.getElementById('mperiod').value;if(!l)return toast('لا توجد تكليفات غير مكتملة');if(assignedCount(l.id)>=l.hours)return toast('اكتمل نصاب التكليف');if(!canPlace(l,d,p))return toast('تعارض: الفصل أو المعلم مشغول، أو الحصة خارج توقيت المرحلة');state.placements.push({id:id(),loadId:l.id,day:d,period:p});save()}
+function teacherWeeklyLoad(teacherId){
+ return state.loads.filter(l=>l.teacherId===teacherId).reduce((sum,l)=>sum+(Number(l.hours)||0),0);
+}
+function teacherScheduledLoad(teacherId){
+ return state.placements.filter(p=>byId(state.loads,p.loadId)?.teacherId===teacherId).length;
+}
+function teacherLabel(t){
+ if(!t)return '—';
+ return t.name+' — النصاب: '+teacherWeeklyLoad(t.id)+' حصة';
+}
 function viewTimetable(){
  let list=filterMode==='teacher'?state.teachers:state.classes;
  if(!list.some(x=>x.id===filterId))filterId=list[0]?.id||'';
- let chooser='<div class="actions no-print"><button class="'+(filterMode==='class'?'':'alt')+'" onclick="setFilter(\'class\')">حسب الفصل</button><button class="'+(filterMode==='teacher'?'':'alt')+'" onclick="setFilter(\'teacher\')">حسب المعلم</button><select style="max-width:310px" onchange="filterId=this.value;render()">'+list.map(x=>'<option value="'+x.id+'" '+(x.id===filterId?'selected':'')+'>'+esc(filterMode==='teacher'?x.name:displayClass(x))+'</option>').join('')+'</select><button class="alt" onclick="window.print()">🖨️ طباعة</button><button class="alt" onclick="exportCSV()">تصدير CSV لبديل</button></div>';
+ let chooser='<div class="actions no-print"><button class="'+(filterMode==='class'?'':'alt')+'" onclick="setFilter(\'class\')">حسب الفصل</button><button class="'+(filterMode==='teacher'?'':'alt')+'" onclick="setFilter(\'teacher\')">حسب المعلم</button><select style="max-width:360px" onchange="filterId=this.value;render()">'+list.map(x=>'<option value="'+x.id+'" '+(x.id===filterId?'selected':'')+'>'+esc(filterMode==='teacher'?teacherLabel(x):displayClass(x))+'</option>').join('')+'</select><button class="alt" onclick="window.print()">🖨️ طباعة</button><button class="alt" onclick="exportCSV()">تصدير CSV لبديل</button></div>';
  let entries=state.placements.map(p=>({p,l:byId(state.loads,p.loadId)})).filter(x=>x.l&&(filterMode==='teacher'?x.l.teacherId===filterId:x.l.classId===filterId));
- let max=filterMode==='class'&&byId(state.classes,filterId)?Math.max(...state.limits[byId(state.classes,filterId).stage]):8;
- let rows=[];for(let period=1;period<=max;period++){let row=[period];for(let day of DAYS){let found=entries.filter(x=>x.p.day===day&&x.p.period===period);row.push(found.map(x=>{let c=byId(state.classes,x.l.classId),t=byId(state.teachers,x.l.teacherId),tm=stageTime(c.stage,period);return '<div class="slot"><b>'+esc(x.l.subject)+'</b><small>'+esc(filterMode==='teacher'?displayClass(c):displayTeacher(t))+'</small><small>'+esc(tm?.join('–')||'')+'</small><button class="danger no-print" onclick="removePlacement(\''+x.p.id+'\')">إزالة</button></div>'}).join('')||'—')}rows.push(row)}
- return panel('عرض الجدول',chooser+(filterId?'<h3 class="subhead">'+esc(filterMode==='teacher'?displayTeacher(byId(state.teachers,filterId)):displayClass(byId(state.classes,filterId)))+'</h3>'+table(['الحصة',...DAYS],rows):'<div class="empty">أضف الفصول والمعلمين ووزّع الحصص أولًا.</div>'))+panel('ملاحظة التصدير','<p class="small">ملف CSV يستخدم الأعمدة التي يفهمها بديل، لكن توقيت الحصص يختلف بين المراحل. راجع تكليفات المعلمين المشتركين قبل اعتماد الاستيراد في بديل.</p>');
+ let selectedTeacher=filterMode==='teacher'?byId(state.teachers,filterId):null;
+ let title=filterMode==='teacher'?teacherLabel(selectedTeacher):displayClass(byId(state.classes,filterId));
+ let summary=selectedTeacher?'<p class="small">الحصص الموزعة: '+teacherScheduledLoad(selectedTeacher.id)+' من '+teacherWeeklyLoad(selectedTeacher.id)+' حصة أسبوعيًا، مع احتساب جميع المراحل والفصول المشتركة.</p>':'';
+ let rows=DAYS.map(day=>{
+  let row=[day];
+  for(let period=1;period<=8;period++){
+   let found=entries.filter(x=>x.p.day===day&&x.p.period===period);
+   row.push(found.map(x=>{
+    let c=byId(state.classes,x.l.classId),t=byId(state.teachers,x.l.teacherId),tm=stageTime(c.stage,period);
+    return '<div class="slot"><b>'+esc(x.l.subject)+'</b><small>'+esc(filterMode==='teacher'?displayClass(c):teacherLabel(t))+'</small><small>'+esc(tm?.join('–')||'')+'</small><button class="danger no-print" onclick="removePlacement(\''+x.p.id+'\')">إزالة</button></div>';
+   }).join('')||'—');
+  }
+  return row;
+ });
+ return panel('عرض الجدول',chooser+(filterId?'<h3 class="subhead">'+esc(title)+'</h3>'+summary+table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows):'<div class="empty">أضف الفصول والمعلمين ووزّع الحصص أولًا.</div>'))+panel('ملاحظة التصدير','<p class="small">ملف CSV يستخدم الأعمدة التي يفهمها بديل، لكن توقيت الحصص يختلف بين المراحل. راجع تكليفات المعلمين المشتركين قبل اعتماد الاستيراد في بديل.</p>');
 }
 function removePlacement(i){if(confirm('إزالة هذه الحصة من الجدول؟')){state.placements=state.placements.filter(x=>x.id!==i);save()}}
 function setFilter(k){filterMode=k;filterId='';render()}
