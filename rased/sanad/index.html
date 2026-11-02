@@ -97,4 +97,40 @@ function csv(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}function dl(name
   render=function(){oldRender();attachActions()};
   render();
 })();
+</script><script>
+(function(){
+ const BK='sanad-falah-backups-v1';
+ const blank=()=>({teachers:[],lessons:[],absences:[],covers:[],swaps:[],cap:4});
+ const list=()=>{try{let a=JSON.parse(localStorage.getItem(BK)||'[]');return Array.isArray(a)?a:[]}catch{return []}};
+ const write=a=>localStorage.setItem(BK,JSON.stringify(a));
+ const valid=d=>d&&['teachers','lessons','absences','covers','swaps'].every(k=>Array.isArray(d[k]));
+ function resetAllData(){
+  if(!confirm('سيتم مسح جميع المعلمين والحصص والغياب والتغطيات والتبديلات، بعد إنشاء نسخة احتياطية. متابعة؟'))return;
+  if(prompt('للتأكيد اكتب: مسح الكل')!=='مسح الكل')return toast('تم إلغاء المسح');
+  try{
+   let b={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),at:new Date().toISOString(),data:JSON.parse(JSON.stringify(s))};
+   write([b,...list()]);
+   dl('badeel-backup-'+b.at.slice(0,10)+'.json',JSON.stringify(b.data,null,2),'application/json');
+   s=blank();save();toast('تم المسح وحُفظت نسخة احتياطية في الإعدادات');
+  }catch(e){toast('فشل حفظ النسخة؛ لم يتم مسح البيانات')}
+ }
+ function restoreSavedBackup(id){
+  let b=list().find(x=>x.id===id);
+  if(!b||!valid(b.data))return toast('النسخة غير صالحة');
+  if(!confirm('هل تريد استبدال جميع البيانات الحالية بمحتوى هذه النسخة؟'))return;
+  s=JSON.parse(JSON.stringify(b.data));save();toast('تمت الاستعادة');
+ }
+ function deleteSavedBackup(id){
+  let a=list();if(!a.some(b=>b.id===id))return;
+  if(prompt('اكتب حذف نهائي لتأكيد إزالة هذه النسخة بلا رجعة')!=='حذف نهائي')return toast('تم إلغاء الحذف');
+  try{write(a.filter(b=>b.id!==id));render();toast('حُذفت النسخة نهائيًا من هذا المتصفح')}catch{toast('تعذر حذف النسخة')}
+ }
+ const priorSettings=settings;
+ settings=function(){
+  const backups=list().map(b=>'<div class="notice" style="margin-bottom:10px"><b>نسخة '+esc(new Date(b.at).toLocaleString('ar-SA'))+'</b><p class="muted">المعلمون: '+(b.data?.teachers?.length||0)+' | الحصص: '+(b.data?.lessons?.length||0)+'</p><div class="actions"><button class="alt" onclick="restoreSavedBackup(\''+b.id+'\')">استعادة النسخة</button><button class="danger" onclick="deleteSavedBackup(\''+b.id+'\')">حذف نهائي</button></div></div>').join('');
+  return priorSettings()+box('إعادة ضبط جميع البيانات','<p class="muted">يمسح جميع البيانات داخل هذا المتصفح فقط. تُحفظ نسخة هنا ويبدأ تنزيل ملف احتياطي JSON قبل المسح.</p><div class="actions"><button class="danger" onclick="resetAllData()">🗑️ مسح جميع المعلمين والحصص وكل البيانات</button></div>')+box('النسخ الاحتياطية المحفوظة',backups||'<p class="muted">لا توجد نسخ محفوظة.</p>');
+ };
+ window.resetAllData=resetAllData;window.restoreSavedBackup=restoreSavedBackup;window.deleteSavedBackup=deleteSavedBackup;
+ if(page==='settings')render();
+})();
 </script></body></html>
