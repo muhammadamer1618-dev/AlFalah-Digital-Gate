@@ -2,7 +2,14 @@
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>الجدول المدرسي الذكي | راصد</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f3f7f7;color:#173b39;font:14px Tahoma,Arial}button,input,select{font:inherit}button{border:0;cursor:pointer;border-radius:9px;padding:10px 15px;background:#087b71;color:#fff}button.alt{background:#e9f4f1;color:#126b62}button.danger{background:#fff0ee;color:#a64036}input,select{padding:10px;border:1px solid #d5e2e0;border-radius:9px;background:white;min-width:0;width:100%}input[type=checkbox]{width:18px;height:18px;min-width:18px;cursor:pointer;accent-color:#087b71}label{display:block;font-size:12px;color:#59736e;margin-bottom:5px}h1,h2,h3{margin-top:0}.shell{max-width:1450px;margin:auto;padding:23px}.top{background:linear-gradient(110deg,#064a45,#128579);color:white;padding:22px;border-radius:18px;display:flex;align-items:center;gap:16px}.logo{width:63px;height:63px;border-radius:50%;object-fit:contain;background:white;padding:4px}.top h1{font-size:25px;margin:0 0 7px}.top p{margin:0;color:#d0eee8}.back{margin-right:auto;background:#ffffff23;color:white;text-decoration:none;padding:10px;border-radius:8px}.nav{display:flex;gap:8px;flex-wrap:wrap;margin:19px 0}.nav button{background:#e3eeec;color:#26635d}.nav button.active{background:#087b71;color:white}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.panel{background:#fff;padding:21px;border:1px solid #e1ebea;border-radius:16px;box-shadow:0 5px 24px #093c3608;margin-bottom:15px}.panel h3{font-size:17px}.formrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}.formrow.four{grid-template-columns:repeat(4,minmax(0,1fr))}.actions{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.note{padding:12px;background:#e9f6f1;color:#235c52;border-radius:10px;line-height:1.9;margin:12px 0}.warn{background:#fff3e1;color:#895b16}.stats{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0}.stat{background:white;padding:14px 20px;border-radius:12px;border:1px solid #deebe8}.stat b{display:block;font-size:24px;color:#08776f}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;min-width:620px}th,td{border:1px solid #e3ebe9;padding:10px;text-align:right;vertical-align:top}th{background:#eaf4f1;white-space:nowrap}td button{padding:5px 8px;font-size:11px}.small{color:#78908b;font-size:12px}.pill{display:inline-block;background:#e6f5f0;border-radius:8px;padding:5px 9px}.error{background:#fff0ed;color:#ad4735}.footer{text-align:center;color:#718d86;padding:20px}.empty{padding:22px;text-align:center;color:#849b96;border:1px dashed #cbdcd6;border-radius:12px}.slot{background:#f1faf7;padding:5px;border-radius:6px}.slot b{display:block;font-size:11px}.slot small{display:block;font-size:10px}.subhead{margin:14px 0 8px}#message{position:fixed;bottom:20px;left:20px;background:#064a45;color:white;border-radius:8px;padding:13px;display:none;z-index:10}@media(max-width:850px){.grid{grid-template-columns:1fr}.formrow,.formrow.four{grid-template-columns:1fr 1fr}.top{flex-wrap:wrap}.back{margin-right:0}}@media(max-width:500px){.formrow,.formrow.four{grid-template-columns:1fr}.shell{padding:10px}.top h1{font-size:20px}}@media print{body{background:white}.top,.nav,.actions,button,input,select,.note,.back,.no-print{display:none!important}.shell{padding:0}.panel{border:0;box-shadow:none;padding:5px}.stats{display:none}table{min-width:0}th,td{font-size:10px;padding:5px}.footer{display:block}#view:before{content:'مدارس الفلاح الأهلية — الجدول المدرسي الذكي';display:block;font-size:19px;font-weight:bold;margin-bottom:12px}}
+*{box-sizing:border-box}body{margin:0;background:#f3f7f7;color:#173b39;font:14px Tahoma,Arial}button,input,select{font:inherit}button{border:0;cursor:pointer;border-radius:9px;padding:10px 15px;background:#087b71;color:#fff}button.alt{background:#e9f4f1;color:#126b62}button.danger{background:#fff0ee;color:#a64036}input,select{padding:10px;border:1px solid #d5e2e0;border-radius:9px;background:white;min-width:0;width:100%}input[type=checkbox]{width:18px;height:18px;min-width:18px;cursor:pointer;accent-color:#087b71}label{display:block;font-size:12px;color:#59736e;margin-bottom:5px}h1,h2,h3{margin-top:0}.shell{max-width:1450px;margin:auto;padding:23px}.top{background:linear-gradient(110deg,#064a45,#128579);color:white;padding:22px;border-radius:18px;display:flex;align-items:center;gap:16px}.logo{width:63px;height:63px;border-radius:50%;object-fit:contain;background:white;padding:4px}.top h1{font-size:25px;margin:0 0 7px}.top p{margin:0;color:#d0eee8}.back{margin-right:auto;background:#ffffff23;color:white;text-decoration:none;padding:10px;border-radius:8px}.nav{display:flex;gap:8px;flex-wrap:wrap;margin:19px 0}.nav button{background:#e3eeec;color:#26635d}.nav button.active{background:#087b71;color:white}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.panel{background:#fff;padding:21px;border:1px solid #e1ebea;border-radius:16px;box-shadow:0 5px 24px #093c3608;margin-bottom:15px}.panel h3{font-size:17px}.formrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}.formrow.four{grid-template-columns:repeat(4,minmax(0,1fr))}.actions{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.note{padding:12px;background:#e9f6f1;color:#235c52;border-radius:10px;line-height:1.9;margin:12px 0}.warn{background:#fff3e1;color:#895b16}.stats{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0}.stat{background:white;padding:14px 20px;border-radius:12px;border:1px solid #deebe8}.stat b{display:block;font-size:24px;color:#08776f}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;min-width:620px}th,td{border:1px solid #e3ebe9;padding:10px;text-align:right;vertical-align:top}th{background:#eaf4f1;white-space:nowrap}td button{padding:5px 8px;font-size:11px}.small{color:#78908b;font-size:12px}.pill{display:inline-block;background:#e6f5f0;border-radius:8px;padding:5px 9px}.error{background:#fff0ed;color:#ad4735}.footer{text-align:center;color:#718d86;padding:20px}.empty{padding:22px;text-align:center;color:#849b96;border:1px dashed #cbdcd6;border-radius:12px}.slot{background:#f1faf7;padding:5px;border-radius:6px}.slot b{display:block;font-size:11px}.slot small{display:block;font-size:10px}.subhead{margin:14px 0 8px}#message{position:fixed;bottom:20px;left:20px;background:#064a45;color:white;border-radius:8px;padding:13px;display:none;z-index:10}@media(max-width:850px){.grid{grid-template-columns:1fr}.formrow,.formrow.four{grid-template-columns:1fr 1fr}.top{flex-wrap:wrap}.back{margin-right:0}}@media(max-width:500px){.formrow,.formrow.four{grid-template-columns:1fr}.shell{padding:10px}.top h1{font-size:20px}}
+.print-sheet{background:white;margin:15px 0;padding:18px;border:1px solid #d5e2e0;border-radius:12px;direction:rtl}
+.print-head{display:flex;align-items:center;justify-content:center;gap:16px;text-align:center;border-bottom:3px solid #0b6158;padding:10px 0 14px;margin-bottom:12px}
+.print-head img{width:68px;height:68px;object-fit:contain;border-radius:50%}.print-head h2{color:#075b50;margin:7px 0;font-size:22px}.print-head p{margin:0;color:#506961}
+.print-sheet td,.print-sheet th{text-align:center}.print-sheet td small{display:block;color:#4c6964;margin-top:3px}.print-credit{text-align:center;color:#12665a;margin-top:14px;font-size:11px}
+@page{size:A3 landscape;margin:9mm}
+@media print{.print-sheet{break-after:page;page-break-after:always;border:0;border-radius:0;padding:0;margin:0}.print-sheet:last-child{break-after:auto;page-break-after:auto}.print-sheet table{width:100%;min-width:0;table-layout:fixed}.print-sheet td,.print-sheet th{font-size:10px;padding:6px 3px;overflow-wrap:anywhere}.print-sheet .print-head{display:flex!important}.print-sheet .print-head img{display:block!important}body{print-color-adjust:exact;-webkit-print-color-adjust:exact}#view:before{display:none!important}}
+@media print{body{background:white}.top,.nav,.actions,button,input,select,.note,.back,.no-print{display:none!important}.shell{padding:0}.panel{border:0;box-shadow:none;padding:5px}.stats{display:none}table{min-width:0}th,td{font-size:10px;padding:5px}.footer{display:block}#view:before{content:'مدارس الفلاح الأهلية — الجدول المدرسي الذكي';display:block;font-size:19px;font-weight:bold;margin-bottom:12px}}
 </style></head><body><div class="shell"><div class="top"><img class="logo" src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح"><div><h1>الجدول المدرسي الذكي</h1><p>راصد · الابتدائي والمتوسط والثانوي · إنشاء وتعديل وطباعة</p></div><a class="back" href="../admin.html">↩ لوحة الإدارة</a></div><div class="nav" id="nav"></div><div class="stats" id="stats"></div><div id="view"></div><div class="footer">مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</div></div><div id="message"></div>
 <script>
 const KEY='alfalah-smart-timetable-v1',DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],STAGES=['ابتدائي','متوسط','ثانوي'];
@@ -15,7 +22,7 @@ state.constraints.subject ||= {};
 for(const teacher of state.teachers){
  if(/^جعفر(?:\s|$)/u.test(String(teacher.name||"").trim()) && !Number.isInteger(teacher.weeklyTarget)) teacher.weeklyTarget=24;
 }
-let tab='setup',filterMode='class',filterId='',stageGroup='primary';
+let tab='setup',filterMode='class',filterId='',stageGroup='primary',printMode='teacher',printTarget='',printAll=false;
 function selectedGroup(stage){return stageGroup==='primary'?stage==='ابتدائي':stage==='متوسط'||stage==='ثانوي'}
 function setStageGroup(group){if(!['primary','upper'].includes(group))return;stageGroup=group;filterId='';render()}
 function stageGroupBar(){return '<section class="panel no-print"><h3>المجموعة الدراسية</h3><div class="actions"><button class="'+(stageGroup==='primary'?'':'alt')+'" onclick="setStageGroup(\'primary\')">الابتدائي</button><button class="'+(stageGroup==='upper'?'':'alt')+'" onclick="setStageGroup(\'upper\')">المتوسط والثانوي</button></div><p class="small">الجداول منفصلة في العرض والتوليد والطباعة؛ المعلم المشترك واحد، وتُحسب تعارضاته مع المجموعة الأخرى.</p></section>'}
@@ -144,6 +151,77 @@ function teacherLabel(t){
  if(!t)return '—';
  return t.name+' — النصاب: '+teacherWeeklyLoad(t.id)+' حصة';
 }
+
+function smartPrintLessons(){
+ return state.placements.map(p=>({p,l:byId(state.loads,p.loadId)})).filter(x=>x.l).map(x=>({...x,c:byId(state.classes,x.l.classId)})).filter(x=>x.c);
+}
+function badeelPrintData(){
+ try{const data=JSON.parse(localStorage.getItem('sanad-falah-demo-1')||'null');return data&&Array.isArray(data.teachers)?data:null}catch{return null}
+}
+function smartPrintSheet(title,detail,body){
+ return '<section class="print-sheet"><header class="print-head"><img src="../alfalah-round-logo.png" alt="الشعار"><div><div>المملكة العربية السعودية · وزارة التعليم · مدارس الفلاح الأهلية</div><h2>'+esc(title)+'</h2><p>'+esc(detail)+'</p></div></header>'+body+'<footer class="print-credit">تصميم محمد عامر أحمد</footer></section>';
+}
+function printDutyNotes(teacher,day,period,data){
+ const t=data?.teachers.find(x=>String(x.name||'').trim()===String(teacher.name||'').trim());
+ if(!t)return [];
+ const today=new Date(),sunday=new Date(today);sunday.setDate(today.getDate()-today.getDay());
+ const date=new Date(sunday);date.setDate(date.getDate()+DAYS.indexOf(day));
+ const iso=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+ return (data.duties||[]).filter(d=>d.teacher===t.id&&(!d.track||d.track===stageGroup)&&Number(d.period)===period&&(d.mode==='weekly'?d.day===day:d.date===iso)).map(d=>(d.kind==='bus'?'🚌 حافلة':d.kind==='assignment'?'📚 تكليف':'🛡 مراقبة')+(d.notes?' · '+d.notes:''));
+}
+function teacherPrintSheet(t,stageLabel,data){
+ const lessons=smartPrintLessons().filter(x=>x.l.teacherId===t.id&&selectedGroup(x.c.stage));
+ const rows=DAYS.map(day=>[esc(day),...Array.from({length:8},(_,i)=>{
+  const period=i+1,cells=lessons.filter(x=>x.p.day===day&&x.p.period===period).map(x=>esc(x.l.subject)+'<small>'+esc(displayClass(x.c))+'</small>');
+  if((state.reservations||[]).some(r=>r.kind==='bus'&&r.teacherId===t.id&&r.day===day&&r.period===period))cells.push('🚌 حافلة');
+  cells.push(...printDutyNotes(t,day,period,data).map(esc));
+  return cells.join('<hr>')||'—';
+ })]);
+ const quota=lessons.length,allQuota=teacherScheduledLoad(t.id),bus=(state.reservations||[]).filter(r=>r.kind==='bus'&&r.teacherId===t.id).length;
+ return smartPrintSheet('جدول المعلم: '+t.name,stageLabel+' | نصاب المجموعة: '+quota+' | النصاب الكلي الموزع: '+allQuota+' | حافلات: '+bus,table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows));
+}
+function classPrintSheet(cls,stageLabel){
+ const lessons=smartPrintLessons().filter(x=>x.c.id===cls.id);
+ const rows=DAYS.map(day=>[esc(day),...Array.from({length:8},(_,i)=>{
+  const matches=lessons.filter(x=>x.p.day===day&&x.p.period===i+1);
+  return matches.map(x=>esc(x.l.subject)+'<small>'+esc(byId(state.teachers,x.l.teacherId)?.name||'—')+'</small>').join('<hr>')||'—';
+ })]);
+ return smartPrintSheet('جدول الفصل: '+displayClass(cls),stageLabel,table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows));
+}
+function generalPrintSheets(classes,stageLabel){
+ const lessons=smartPrintLessons();
+ return DAYS.map(day=>{
+  const rows=Array.from({length:8},(_,i)=>{
+   const period=i+1;
+   return ['الحصة '+period,...classes.map(cls=>{
+    const matches=lessons.filter(x=>x.c.id===cls.id&&x.p.day===day&&x.p.period===period);
+    return matches.map(x=>esc(x.l.subject)+'<small>'+esc(byId(state.teachers,x.l.teacherId)?.name||'—')+'</small>').join('<hr>')||'—';
+   })];
+  });
+  return smartPrintSheet('الجدول العام — '+day,stageLabel,table(['الحصة',...classes.map(cls=>esc(cls.name))],rows));
+ }).join('');
+}
+function viewPrintCenter(){
+ const groupClasses=state.classes.filter(c=>selectedGroup(c.stage));
+ const teacherIds=new Set(state.loads.filter(l=>groupClasses.some(c=>c.id===l.classId)).map(l=>l.teacherId));
+ const groupTeachers=state.teachers.filter(t=>teacherIds.has(t.id));
+ const options=printMode==='teacher'?groupTeachers:groupClasses;
+ if(!options.some(x=>x.id===printTarget))printTarget=options[0]?.id||'';
+ const stageLabel=stageGroup==='primary'?'المرحلة الابتدائية':'المرحلتان المتوسطة والثانوية';
+ const data=badeelPrintData();
+ const controls='<div class="panel no-print"><h3>مركز الطباعة — '+stageLabel+'</h3><div class="formrow">'+fld('نوع الجدول','<select onchange="printMode=this.value;printTarget=\'\';printAll=false;render()"><option value="teacher" '+(printMode==='teacher'?'selected':'')+'>جدول المعلم الكامل</option><option value="class" '+(printMode==='class'?'selected':'')+'>جدول الفصل</option><option value="general" '+(printMode==='general'?'selected':'')+'>الجدول العام للمجموعة</option></select>')+
+ (printMode==='general'?'<div></div>':fld(printMode==='teacher'?'المعلم':'الفصل','<select onchange="printTarget=this.value;render()">'+options.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===printTarget?'selected':'')+'>'+esc(printMode==='teacher'?x.name:displayClass(x))+'</option>').join('')+'</select>'))+
+ '<div><button onclick="window.print()">🖨️ طباعة / حفظ PDF</button></div></div>'+
+ (printMode==='general'?'':'<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" '+(printAll?'checked':'')+' onchange="printAll=this.checked;render()"> طباعة جميع '+(printMode==='teacher'?'معلمي':'فصول')+' المجموعة</label>')+
+ '<p class="small">جدول المعلم يشمل نصابه وحصصه وحافلاته؛ وتظهر المراقبات والتكليفات المسجلة في «بديل» إذا كانت محفوظة في نفس المتصفح وبنفس اسم المعلم. جدول الفصل يعرض المادة والمعلم فقط.</p>'+
+ (!data?'<p class="note warn">لا توجد بيانات بديل على هذا المتصفح؛ ستُطبع حصص الجدول الذكي والحافلات المسجلة هنا فقط.</p>':'')+'</div>';
+ let sheets='';
+ if(printMode==='general')sheets=generalPrintSheets(groupClasses,stageLabel);
+ else if(printAll)sheets=options.map(x=>printMode==='teacher'?teacherPrintSheet(x,stageLabel,data):classPrintSheet(x,stageLabel)).join('');
+ else{const selected=options.find(x=>x.id===printTarget);if(selected)sheets=printMode==='teacher'?teacherPrintSheet(selected,stageLabel,data):classPrintSheet(selected,stageLabel)}
+ return controls+(sheets||'<div class="empty">لا توجد جداول للطباعة ضمن المجموعة المختارة.</div>');
+}
+
 function viewTimetable(){
  let eligibleClasses=state.classes.filter(c=>selectedGroup(c.stage));
  let list=filterMode==='teacher'?state.teachers.filter(t=>state.loads.some(l=>l.teacherId===t.id&&eligibleClasses.some(c=>c.id===l.classId))||(state.reservations||[]).some(r=>r.teacherId===t.id)):eligibleClasses;
@@ -235,7 +313,7 @@ function viewConstraints(){
 function viewSettings(){return panel('نسخ احتياطي واسترجاع','<div class="actions"><button onclick="downloadJson()">تنزيل نسخة JSON</button><label class="pill" style="cursor:pointer">استعادة نسخة <input type="file" accept=".json" style="display:none" onchange="restoreJson(this.files[0])"></label></div><div class="note">هذه النسخة تحفظ على نفس المتصفح فقط. نزّل نسخة احتياطية قبل أي تغيير كبير.</div>')+panel('إعادة ضبط بيانات الجدول','<p class="small">مسح بيانات هذا النظام فقط؛ لن يمس بيانات نظام بديل أو راصد.</p><button class="danger" onclick="resetAll()">مسح بيانات الجدول الذكي</button>')}
 function resetAll(){if(!confirm('سيتم مسح جميع بيانات الجدول الذكي من هذا المتصفح. هل أخذت نسخة احتياطية؟'))return;if(prompt('اكتب مسح الجدول للتأكيد')!=='مسح الجدول')return;state=initial();save()}
 function showTab(v){tab=v;render()}
-function render(){document.getElementById('nav').innerHTML=[['setup','🧑‍🏫 المعلمون والفصول'],['times','⏰ مواعيد الحصص'],['constraints','🔒 إدارة القيود'],['generate','✨ التوليد الذكي'],['timetable','📅 الجدول والطباعة'],['settings','⚙️ النسخ الاحتياطي']].map(x=>'<button class="'+(tab===x[0]?'active':'')+'" onclick="showTab(\''+x[0]+'\')">'+x[1]+'</button>').join('');document.getElementById('stats').innerHTML=[['المعلمون',state.teachers.length],['الفصول',state.classes.length],['التكليفات',state.loads.length],['الحصص الموزعة',state.placements.length]].map(x=>'<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=stageGroupBar()+({setup:viewSetup,times:viewTimes,generate:viewGenerate,timetable:viewTimetable,constraints:viewConstraints,settings:viewSettings})[tab]()}
+function render(){document.getElementById('nav').innerHTML=[['setup','🧑‍🏫 المعلمون والفصول'],['times','⏰ مواعيد الحصص'],['constraints','🔒 إدارة القيود'],['generate','✨ التوليد الذكي'],['timetable','📅 عرض الجدول'],['print','🖨️ مركز الطباعة'],['settings','⚙️ النسخ الاحتياطي']].map(x=>'<button class="'+(tab===x[0]?'active':'')+'" onclick="showTab(\''+x[0]+'\')">'+x[1]+'</button>').join('');document.getElementById('stats').innerHTML=[['المعلمون',state.teachers.length],['الفصول',state.classes.length],['التكليفات',state.loads.length],['الحصص الموزعة',state.placements.length]].map(x=>'<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=stageGroupBar()+({setup:viewSetup,times:viewTimes,generate:viewGenerate,timetable:viewTimetable,print:viewPrintCenter,constraints:viewConstraints,settings:viewSettings})[tab]()}
 render();
 </script><script>
 (function(){
