@@ -7,6 +7,19 @@
 .print-head{display:flex;align-items:center;justify-content:center;gap:16px;text-align:center;border-bottom:3px solid #0b6158;padding:10px 0 14px;margin-bottom:12px}
 .print-head img{width:68px;height:68px;object-fit:contain;border-radius:50%}.print-head h2{color:#075b50;margin:7px 0;font-size:22px}.print-head p{margin:0;color:#506961}
 .print-sheet td,.print-sheet th{text-align:center}.print-sheet td small{display:block;color:#4c6964;margin-top:3px}.print-credit{text-align:center;color:#12665a;margin-top:14px;font-size:11px}
+@page general-wide{size:A2 landscape;margin:8mm}
+.general-table{table-layout:fixed;width:100%;min-width:0}
+.general-table th,.general-table td{font-size:10px;padding:5px 3px;overflow-wrap:anywhere}
+.general-table .day-label{background:#dcefe9;color:#0c544b;font-weight:bold;min-width:70px}
+.general-print .print-head{margin-bottom:8px;padding:5px 0}
+@media print{
+ .general-print{page:general-wide}
+ .general-print .general-table th,.general-print .general-table td{font-size:8px;padding:4px 2px;line-height:1.25}
+ .general-print .general-table small{font-size:7px}
+ .general-print tr{break-inside:avoid;page-break-inside:avoid}
+ .general-print .print-head img{width:48px;height:48px}
+ .general-print .print-head h2{font-size:18px}
+}
 @page{size:A3 landscape;margin:9mm}
 @media print{.print-sheet{break-after:page;page-break-after:always;border:0;border-radius:0;padding:0;margin:0}.print-sheet:last-child{break-after:auto;page-break-after:auto}.print-sheet table{width:100%;min-width:0;table-layout:fixed}.print-sheet td,.print-sheet th{font-size:10px;padding:6px 3px;overflow-wrap:anywhere}.print-sheet .print-head{display:flex!important}.print-sheet .print-head img{display:block!important}body{print-color-adjust:exact;-webkit-print-color-adjust:exact}#view:before{display:none!important}}
 @media print{body{background:white}.top,.nav,.actions,button,input,select,.note,.back,.no-print{display:none!important}.shell{padding:0}.panel{border:0;box-shadow:none;padding:5px}.stats{display:none}table{min-width:0}th,td{font-size:10px;padding:5px}.footer{display:block}#view:before{content:'مدارس الفلاح الأهلية — الجدول المدرسي الذكي';display:block;font-size:19px;font-weight:bold;margin-bottom:12px}}
@@ -190,16 +203,17 @@ function classPrintSheet(cls,stageLabel){
 }
 function generalPrintSheets(classes,stageLabel){
  const lessons=smartPrintLessons();
- return DAYS.map(day=>{
-  const rows=Array.from({length:8},(_,i)=>{
-   const period=i+1;
-   return ['الحصة '+period,...classes.map(cls=>{
+ const headers='<thead><tr><th>اليوم</th><th>الحصة</th>'+classes.map(cls=>'<th>'+esc(cls.name)+'</th>').join('')+'</tr></thead>';
+ const rows=DAYS.map(day=>Array.from({length:8},(_,i)=>{
+  const period=i+1;
+  return '<tr>'+(i===0?'<th rowspan="8" class="day-label">'+esc(day)+'</th>':'')+
+   '<th>'+period+'</th>'+classes.map(cls=>{
     const matches=lessons.filter(x=>x.c.id===cls.id&&x.p.day===day&&x.p.period===period);
-    return matches.map(x=>esc(x.l.subject)+'<small>'+esc(byId(state.teachers,x.l.teacherId)?.name||'—')+'</small>').join('<hr>')||'—';
-   })];
-  });
-  return smartPrintSheet('الجدول العام — '+day,stageLabel,table(['الحصة',...classes.map(cls=>esc(cls.name))],rows));
- }).join('');
+    return '<td>'+ (matches.map(x=>esc(x.l.subject)+'<small>'+esc(byId(state.teachers,x.l.teacherId)?.name||'—')+'</small>').join('<hr>')||'—')+'</td>';
+   }).join('')+'</tr>';
+ }).join('')).join('');
+ const complete='<table class="general-table">'+headers+'<tbody>'+rows+'</tbody></table>';
+ return smartPrintSheet('الجدول العام الأسبوعي',stageLabel+' · الأحد إلى الخميس',complete).replace('class="print-sheet"','class="print-sheet general-print"');
 }
 function viewPrintCenter(){
  const groupClasses=state.classes.filter(c=>selectedGroup(c.stage));
