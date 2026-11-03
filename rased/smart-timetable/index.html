@@ -7,8 +7,9 @@
 <script>
 const KEY='alfalah-smart-timetable-v1',DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],STAGES=['ابتدائي','متوسط','ثانوي'];
 const timeRows={ابتدائي:[['07:15','07:55'],['07:55','08:35'],['08:35','09:15'],['09:15','09:55'],['10:05','10:45'],['10:45','11:25'],['11:25','12:05'],['12:05','12:45']],متوسط:[['07:15','08:00'],['08:00','08:45'],['08:45','09:30'],['09:45','10:30'],['10:30','11:15'],['11:15','12:00'],['12:20','13:00']],ثانوي:[['07:15','08:00'],['08:00','08:45'],['08:45','09:30'],['09:45','10:30'],['10:30','11:15'],['11:15','12:00'],['12:20','13:00']]};
-function initial(){return {teachers:[],classes:[],loads:[],placements:[],constraints:{teacher:{},subject:{}},times:JSON.parse(JSON.stringify(timeRows)),limits:{ابتدائي:[8,8,8,7,7],متوسط:[7,7,7,7,7],ثانوي:[7,7,7,7,7]}}}
+function initial(){return {teachers:[],classes:[],loads:[],placements:[],reservations:[],constraints:{teacher:{},subject:{}},times:JSON.parse(JSON.stringify(timeRows)),limits:{ابتدائي:[8,8,8,7,7],متوسط:[7,7,7,7,7],ثانوي:[7,7,7,7,7]}}}
 let state;try{state=JSON.parse(localStorage.getItem(KEY))||initial()}catch{state=initial()}state.constraints ||= {teacher:{},subject:{}};
+state.reservations ||= [];
 state.constraints.teacher ||= {};
 state.constraints.subject ||= {};
 for(const teacher of state.teachers){
@@ -24,6 +25,7 @@ const panel=(title,body)=>'<section class="panel"><h3>'+title+'</h3>'+body+'</se
 const table=(head,rows)=>'<div class="scroll"><table><thead><tr>'+head.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(x=>'<td>'+x+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
 function toast(msg){const n=document.getElementById('message');n.textContent=msg;n.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>n.style.display='none',3500)}
 function save(){
+ state.reservations ||= [];
  state.constraints ||= {teacher:{},subject:{}};
  state.constraints.teacher ||= {};
  state.constraints.subject ||= {};
@@ -40,6 +42,7 @@ function canPlace(load,day,period,placements=state.placements,ignoreId){
  const c=byId(state.classes,load.classId),tm=stageTime(c?.stage,period);
  if(!c||!tm||period>maxPeriods(c,day)||!overlaps(tm,tm))return false;
  if(!constraintAllows(load,day,period))return false;
+ if((state.reservations||[]).some(r=>r.teacherId===load.teacherId&&r.day===day&&r.period===period))return false;
  return !placements.some(p=>{
   if(p.id===ignoreId||p.day!==day)return false;
   const other=byId(state.loads,p.loadId),oc=byId(state.classes,other?.classId);
@@ -146,10 +149,11 @@ function viewTimetable(){
   let row=[day];
   for(let period=1;period<=8;period++){
    let found=entries.filter(x=>x.p.day===day&&x.p.period===period);
+   const bus=filterMode==='teacher'?(state.reservations||[]).find(r=>r.kind==='bus'&&r.teacherId===filterId&&r.day===day&&r.period===period):null;
    row.push(found.map(x=>{
     let c=byId(state.classes,x.l.classId),t=byId(state.teachers,x.l.teacherId),tm=stageTime(c.stage,period);
     return '<div class="slot"><b>'+esc(x.l.subject)+'</b><small>'+esc(filterMode==='teacher'?displayClass(c):teacherLabel(t))+'</small><small>'+esc(tm?.join('–')||'')+'</small><button class="danger no-print" onclick="removePlacement(\''+x.p.id+'\')">إزالة</button></div>';
-   }).join('')||'—');
+   }).join('')||(bus?'<div class="slot"><b>🚌 حافلة</b><small>تكليف حافلة — ليس حصة دراسية</small></div>':'—'));
   }
   return row;
  });
@@ -161,6 +165,7 @@ function exportCSV(){
  let rows=['المعلم,القسم,اليوم,الحصة,الصف,المادة'];
  const quote=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
  for(let p of state.placements){let l=byId(state.loads,p.loadId),t=byId(state.teachers,l?.teacherId),c=byId(state.classes,l?.classId);if(!l||!t||!c)continue;rows.push([t.name,t.dept,p.day,p.period,displayClass(c),l.subject].map(quote).join(','))}
+ for(const r of state.reservations||[]){const t=byId(state.teachers,r.teacherId);if(t&&r.kind==='bus')rows.push([t.name,t.dept,r.day,r.period,'ح','حافلة'].map(quote).join(','))}
  dl('alfalah-smart-timetable-badeel.csv',rows.join('\n'),'text/csv');
 }
 function dl(name,data,type){let a=document.createElement('a'),url=URL.createObjectURL(new Blob(['\ufeff',data],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
@@ -289,6 +294,12 @@ function buildImport(rows){
   const row=rows[i],name=(row['المعلم']||'').trim(),day=row['اليوم'],p=Number(row['الحصة']);
   if(!name){issues.push('صف '+(i+2)+': اسم المعلم فارغ');continue}
   if(!teacherMap.has(name)){const t={id:id(),name,dept:row['القسم']||'',...(/^جعفر(?:\s|$)/u.test(name)?{weeklyTarget:24}:{})};base.teachers.push(t);teacherMap.set(name,t)}
+  const isBus=/^ح(?:\s*\(|$)/u.test(String(row['الصف']||'').trim());
+  if(isBus&&DAYS.includes(day)&&Number.isInteger(p)&&p>=1&&p<=8){
+   const teacher=teacherMap.get(name);
+   if(!base.reservations.some(r=>r.teacherId===teacher.id&&r.day===day&&r.period===p))base.reservations.push({id:id(),teacherId:teacher.id,day,period:p,kind:'bus'});
+   continue;
+  }
   const info=inferStage(row);
   if(!info||!DAYS.includes(day)||!Number.isInteger(p)||p<1||p>8){
    issues.push('صف '+(i+2)+': فصل/مرحلة/حصة تحتاج مراجعة للمعلم '+name);continue;
@@ -309,7 +320,8 @@ function buildImport(rows){
   if(!tm||item.period>(base.limits[c.stage]?.[DAYS.indexOf(item.day)]||0)){
    issues.push('صف '+item.line+': الحصة خارج عدد حصص اليوم');continue;
   }
-  const conflict=base.placements.some(p=>{
+  const busConflict=base.reservations.some(r=>r.teacherId===load.teacherId&&r.day===item.day&&r.period===item.period);
+  const conflict=busConflict||base.placements.some(p=>{
    if(p.day!==item.day)return false;
    const other=base.loads.find(l=>l.id===p.loadId),oc=base.classes.find(x=>x.id===other.classId);
    const ot=base.times[oc.stage][p.period-1];
@@ -318,14 +330,14 @@ function buildImport(rows){
   if(conflict){issues.push('صف '+item.line+': تعارض توقيت/فصل للمعلم '+base.teachers.find(t=>t.id===load.teacherId).name);continue}
   base.placements.push({id:id(),loadId:load.id,day:item.day,period:item.period});
  }
- base.lastImport={total:rows.length,accepted:base.placements.length,unplaced:rows.length-base.placements.length,issues:issues.slice(0,80),more:Math.max(0,issues.length-80)};
+ base.lastImport={total:rows.length,accepted:base.placements.length,reserved:base.reservations.length,unplaced:rows.length-base.placements.length-base.reservations.length,issues:issues.slice(0,80),more:Math.max(0,issues.length-80)};
  return base;
 }
 async function importBadeelCSV(file){
  if(!file)return;
  try{
   const rows=parseBadeelCSV(await file.text()),data=buildImport(rows);
-  const detail='تم قراءة '+rows.length+' صف، منها '+data.placements.length+' حصة قابلة للتوزيع، و'+data.lastImport.unplaced+' حصة تحتاج مراجعة. المعلمون: '+data.teachers.length+'.';
+  const detail='تم قراءة '+rows.length+' صف، منها '+data.placements.length+' حصة قابلة للتوزيع و'+data.reservations.length+' حافلة، و'+data.lastImport.unplaced+' حصة تحتاج مراجعة. المعلمون: '+data.teachers.length+'.';
   if(!confirm(detail+'\nسيتم استبدال بيانات الجدول الذكي الحالية بعد إنشاء نسخة احتياطية. هل تستورد الملف للتجربة؟'))return;
   protectCurrent();state=data;tab='setup';save();toast('تم الاستيراد. راجع تقرير المراجعة قبل التوليد');
  }catch(e){toast('تعذر الاستيراد: '+(e?.message||'ملف غير صالح'))}
@@ -333,7 +345,7 @@ async function importBadeelCSV(file){
 function reviewPanel(){
  const a=state.lastImport;
  if(!a)return '';
- return panel('نتائج آخر استيراد من بديل','<p><b>الصفوف:</b> '+a.total+' | <b>الموزعة:</b> '+a.accepted+' | <b>غير محددة/معلّقة:</b> '+a.unplaced+'</p>'+(a.issues?.length?'<details><summary>عرض الملاحظات ('+(a.issues.length+a.more)+')</summary><ul>'+a.issues.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>':'<div class="note">لم تُرصد ملاحظات.</div>')+'<div class="note warn">تم التعرف تلقائيًا على الفصول ذات الإضافات الوصفية. الصفوف التي لا تذكر فصلًا محددًا مثل «حصة محجوزة» أو «متوسط» أو «تكليف خارج المتوسط والثانوي» تُترك للمراجعة، دون اختراع فصل أو حذف بيانات بديل.</div>');
+ return panel('نتائج آخر استيراد من بديل','<p><b>الصفوف:</b> '+a.total+' | <b>الموزعة:</b> '+a.accepted+' | <b>حافلات:</b> '+(a.reserved||0)+' | <b>غير محددة/معلّقة:</b> '+a.unplaced+'</p>'+(a.issues?.length?'<details><summary>عرض الملاحظات ('+(a.issues.length+a.more)+')</summary><ul>'+a.issues.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>':'<div class="note">لم تُرصد ملاحظات.</div>')+'<div class="note warn">تم التعرف تلقائيًا على الفصول ذات الإضافات الوصفية. الصفوف التي لا تذكر فصلًا محددًا مثل «حصة محجوزة» أو «متوسط» أو «تكليف خارج المتوسط والثانوي» تُترك للمراجعة، دون اختراع فصل أو حذف بيانات بديل.</div>');
 }
 function deleteStoredBackup(bid){
  let all=getBackups();if(!all.some(x=>x.id===bid))return;
