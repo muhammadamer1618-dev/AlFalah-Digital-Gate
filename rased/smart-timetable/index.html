@@ -51,6 +51,17 @@
  .print-sheet:not(.general-print) .print-signatures{display:flex!important}
  .print-sheet:not(.general-print) tr{break-inside:avoid}
 }
+
+@media print{
+ #view:before{display:none!important}
+ .print-sheet:not(.general-print){min-height:260mm;display:flex;flex-direction:column}
+ .print-sheet:not(.general-print) > .scroll{overflow:visible!important;flex:1}
+ .print-sheet:not(.general-print) tbody tr{height:35mm}
+ .print-sheet:not(.general-print) td,.print-sheet:not(.general-print) th{font-size:12pt!important;padding:10px 5px!important;vertical-align:middle;line-height:1.55}
+ .print-sheet:not(.general-print) td small{font-size:10pt!important;line-height:1.45}
+ .print-sheet:not(.general-print) .print-head{min-height:45mm}
+ .print-sheet:not(.general-print) .print-credit{margin-top:auto!important;padding-top:12px}
+}
 </style></head><body><div class="shell"><div class="top"><img class="logo" src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح"><div><h1>الجدول المدرسي الذكي</h1><p>راصد · الابتدائي والمتوسط والثانوي · إنشاء وتعديل وطباعة</p></div><a class="back" href="../admin.html">↩ لوحة الإدارة</a></div><div class="nav" id="nav"></div><div class="stats" id="stats"></div><div id="view"></div><div class="footer">مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</div></div><div id="message"></div>
 <script>
 const KEY='alfalah-smart-timetable-v1',DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],STAGES=['ابتدائي','متوسط','ثانوي'];
@@ -269,7 +280,7 @@ function viewTimetable(){
  let eligibleClasses=state.classes.filter(c=>selectedGroup(c.stage));
  let list=filterMode==='teacher'?state.teachers.filter(t=>state.loads.some(l=>l.teacherId===t.id&&eligibleClasses.some(c=>c.id===l.classId))||(state.reservations||[]).some(r=>r.teacherId===t.id)):eligibleClasses;
  if(!list.some(x=>x.id===filterId))filterId=list[0]?.id||'';
- let chooser='<div class="actions no-print"><button class="'+(filterMode==='class'?'':'alt')+'" onclick="setFilter(\'class\')">حسب الفصل</button><button class="'+(filterMode==='teacher'?'':'alt')+'" onclick="setFilter(\'teacher\')">حسب المعلم</button><select style="max-width:360px" onchange="filterId=this.value;render()">'+list.map(x=>'<option value="'+x.id+'" '+(x.id===filterId?'selected':'')+'>'+esc(filterMode==='teacher'?teacherLabel(x):displayClass(x))+'</option>').join('')+'</select><button class="alt" onclick="window.print()">🖨️ طباعة</button><button class="alt" onclick="exportCSV()">تصدير CSV لبديل</button></div>';
+ let chooser='<div class="actions no-print"><button class="'+(filterMode==='class'?'':'alt')+'" onclick="setFilter(\'class\')">حسب الفصل</button><button class="'+(filterMode==='teacher'?'':'alt')+'" onclick="setFilter(\'teacher\')">حسب المعلم</button><select style="max-width:360px" onchange="filterId=this.value;render()">'+list.map(x=>'<option value="'+x.id+'" '+(x.id===filterId?'selected':'')+'>'+esc(filterMode==='teacher'?teacherLabel(x):displayClass(x))+'</option>').join('')+'</select><button class="alt" onclick="printCurrentTimetable()">🖨️ طباعة رسمية</button><button class="alt" onclick="exportCSV()">تصدير CSV لبديل</button></div>';
  let entries=state.placements.map(p=>({p,l:byId(state.loads,p.loadId)})).filter(x=>x.l&&selectedGroup(byId(state.classes,x.l.classId)?.stage)&&(filterMode==='teacher'?x.l.teacherId===filterId:x.l.classId===filterId));
  let selectedTeacher=filterMode==='teacher'?byId(state.teachers,filterId):null;
  let title=filterMode==='teacher'?teacherLabel(selectedTeacher):displayClass(byId(state.classes,filterId));
@@ -281,7 +292,7 @@ function viewTimetable(){
    const bus=filterMode==='teacher'?(state.reservations||[]).find(r=>r.kind==='bus'&&r.teacherId===filterId&&r.day===day&&r.period===period):null;
    row.push(found.map(x=>{
     let c=byId(state.classes,x.l.classId),t=byId(state.teachers,x.l.teacherId),tm=stageTime(c.stage,period);
-    return '<div class="slot"><b>'+esc(x.l.subject)+'</b><small>'+esc(filterMode==='teacher'?displayClass(c):teacherLabel(t))+'</small><small>'+esc(tm?.join('–')||'')+'</small><button class="danger no-print" onclick="removePlacement(\''+x.p.id+'\')">إزالة</button></div>';
+    return '<div class="slot"><b>'+esc(x.l.subject)+'</b><small>'+esc(filterMode==='teacher'?displayClass(c):displayTeacher(t))+'</small><small>'+esc(tm?.join('–')||'')+'</small><button class="danger no-print" onclick="removePlacement(\''+x.p.id+'\')">إزالة</button></div>';
    }).join('')||(bus?'<div class="slot"><b>🚌 حافلة</b><small>تكليف حافلة — ليس حصة دراسية</small></div>':'—'));
   }
   return row;
@@ -289,6 +300,7 @@ function viewTimetable(){
  return panel('عرض الجدول',chooser+(filterId?'<h3 class="subhead">'+esc(title)+'</h3>'+summary+table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows):'<div class="empty">أضف الفصول والمعلمين ووزّع الحصص أولًا.</div>'));
 }
 function removePlacement(i){if(confirm('إزالة هذه الحصة من الجدول؟')){state.placements=state.placements.filter(x=>x.id!==i);save()}}
+function printCurrentTimetable(){printMode=filterMode;printTarget=filterId;printAll=false;showTab('print')}
 function setFilter(k){filterMode=k;filterId='';render()}
 function exportCSV(){
  let rows=['المعلم,القسم,اليوم,الحصة,الصف,المادة'];
