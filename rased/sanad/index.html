@@ -19,7 +19,8 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
 const KEY='sanad-falah-demo-1',days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],pages=[['home','⌂','لوحة التحكم'],['absence','◎','تغطية الغياب'],['swap','⇄','تبديل الحصص'],['teachers','♙','المعلمون والأقسام'],['schedule','▤','الجداول'],['monitoring','🛡','إدارة المراقبات'],['assignments','📚','التكليفات الإضافية'],['printing','🖨','مركز الطباعة'],['loads','◷','احتساب الحصص'],['charts','▥','رسوم بيانية'],['report','▣','التقرير الشهري'],['settings','⚙','الإعدادات']];let s=JSON.parse(localStorage.getItem(KEY)||'null')||{teachers:[],lessons:[],absences:[],covers:[],swaps:[],duties:[],monitoringNeeds:[],cap:4},page='home',selectedDate=new Date().toISOString().slice(0,10);
 s.duties ||= [];
 s.monitoringNeeds ||= [];
-function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function save(){s.duties ||= [];s.monitoringNeeds ||= [];localStorage.setItem(KEY,JSON.stringify(s));render()}function go(p){page=p;render()}function toast(m){let e=document.getElementById('toast');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',3000)}function nm(i){return s.teachers.find(t=>t.id===i)?.name||'—'}function dt(d){return days[new Date(d+'T12:00:00').getDay()]}function count(i){return s.covers.filter(c=>c.to===i).length}function dutyAt(teacher,date,period){
+s.monitoringEligible ??= s.teachers.map(t=>t.id);
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function save(){s.duties ||= [];s.monitoringNeeds ||= [];s.monitoringEligible ??= s.teachers.map(t=>t.id);localStorage.setItem(KEY,JSON.stringify(s));render()}function go(p){page=p;render()}function toast(m){let e=document.getElementById('toast');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',3000)}function nm(i){return s.teachers.find(t=>t.id===i)?.name||'—'}function dt(d){return days[new Date(d+'T12:00:00').getDay()]}function count(i){return s.covers.filter(c=>c.to===i).length}function dutyAt(teacher,date,period){
  return (s.duties||[]).filter(x=>x.teacher===teacher&&Number(x.period)===Number(period)&&(x.mode==='weekly'?x.day===dt(date):x.date===date));
 }
 function dutyName(x){return x.kind==='bus'?'حافلة':x.kind==='assignment'?'تكليف إضافي':'مراقبة'}
@@ -58,7 +59,7 @@ function monitoring(){
  field('ملاحظة اختيارية','<input id="dnotes" placeholder="مراقبة فناء أو حافلة">')+
  '</div><div class="actions"><button onclick="saveDuty()">حفظ التكليف</button><button class="alt" onclick="editingDutyId=\'\';render()">إلغاء التعديل</button></div><p class="muted">اختر أسبوعية للمراقبات المتكررة في نفس اليوم والحصة، أو بتاريخ محدد للمراقبة الاستثنائية. لا يُرشح المعلم للتغطية أثناء أي مراقبة أو حافلة مسجلة.</p>';
  const rows=(s.duties||[]).map(d=>[esc(nm(d.teacher)),esc(dutyName(d)),d.mode==='weekly'?esc(d.day)+' (أسبوعيًا)':esc(d.date),d.period,esc(d.notes||'—'),'<button class="alt" onclick="editDuty(\''+d.id+'\')">تعديل</button> <button class="danger" onclick="deleteDuty(\''+d.id+'\')">حذف</button>']);
- return monitoringNeedsPanel()+box('إضافة وإدارة المراقبات والحافلات',form)+box('سجل المراقبات والحافلات',rows.length?table(['المعلم','التكليف','التوقيت','الحصة','ملاحظات','الإجراءات'],rows):empty('لا توجد مراقبات أو حافلات مسجلة'));
+ return monitoringTeachersPanel()+weeklyMonitoringBlockPanel()+monitoringNeedsPanel()+box('إضافة وإدارة المراقبات والحافلات',form)+box('سجل المراقبات والحافلات',rows.length?table(['المعلم','التكليف','التوقيت','الحصة','ملاحظات','الإجراءات'],rows):empty('لا توجد مراقبات أو حافلات مسجلة'));
 }
 function saveDuty(){
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
@@ -90,7 +91,7 @@ function deleteDuty(id){
 
 function assignments(){
  const form='<div class="fields">'+field('المعلم','<select id="extraTeacher">'+opts(s.teachers)+'</select>')+
- field('نوع التكليف','<input id="extraTitle" placeholder="تقوية، نشاط، مراجعة، إشراف...">')+
+ field('نوع التكليف','<select id="extraTitle"><option value="تقوية">تقوية</option><option value="نشاط">نشاط</option><option value="مراجعة">مراجعة</option><option value="إشراف">إشراف</option><option value="تكليف إضافي">تكليف إضافي</option></select>')+
  field('النظام','<select id="extraMode"><option value="weekly">أسبوعي ثابت</option><option value="dated">بتاريخ محدد</option></select>')+
  field('اليوم','<select id="extraDay">'+days.map(day=>'<option>'+day+'</option>').join('')+'</select>')+
  field('التاريخ','<input type="date" id="extraDate" value="'+selectedDate+'">')+
@@ -118,6 +119,7 @@ function addMonitoringNeed(){
 function fairCandidate(need){
  const actualDay=need.mode==='weekly'?need.day:dt(need.date);
  const candidates=s.teachers.filter(t=>{
+  if(!(s.monitoringEligible||[]).includes(t.id))return false;
   if(s.lessons.some(l=>l.teacher===t.id&&l.day===actualDay&&l.period===need.period))return false;
   if((s.duties||[]).some(d=>d.teacher===t.id&&d.period===need.period&&(d.mode==='weekly'?d.day===actualDay:need.mode==='weekly'?dt(d.date)===actualDay:d.date===need.date)))return false;
   if(s.covers.some(x=>x.to===t.id&&x.period===need.period&&(need.mode==='weekly'?dt(x.date)===actualDay:x.date===need.date)))return false;
@@ -165,6 +167,51 @@ async function importMonitoringCSV(file){
   s.monitoringNeeds.push(...items);save();toast('استيراد '+items.length+' مراقبة للتوزيع');
  }catch(e){toast('تعذر الاستيراد: '+e.message)}
 }
+
+function monitoringTeachersPanel(){
+ const selected=s.monitoringEligible||[];
+ return box('المعلمون المسموح لهم بالمراقبة',
+ '<p class="muted">حدد المعلمين المشاركين في التوزيع فقط؛ المشرف الذي لديه حصص ولا يُكلف بمراقبة اتركه غير محدد. الحصص والمراقبات والحافلات تُراجع قبل الإسناد.</p>'+
+ '<div class="actions"><button class="alt" onclick="setMonitoringCheckAll(true)">تحديد الكل</button><button class="alt" onclick="setMonitoringCheckAll(false)">إلغاء تحديد الكل</button><button onclick="saveMonitoringEligible()">حفظ المعلمين المختارين</button></div>'+
+ '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+s.teachers.map(t=>'<label style="display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #dce7e3;border-radius:10px;cursor:pointer"><input class="monitorTeacherCheck" type="checkbox" value="'+esc(t.id)+'" '+(selected.includes(t.id)?'checked':'')+'><span>'+esc(t.name)+' <small>('+teachingLoad(t.id)+' حصص)</small></span></label>').join('')+'</div>'+
+ '<p class="muted">المختارون حاليًا: '+selected.filter(i=>s.teachers.some(t=>t.id===i)).length+' من '+s.teachers.length+'</p>');
+}
+function setMonitoringCheckAll(checked){document.querySelectorAll('.monitorTeacherCheck').forEach(x=>x.checked=checked)}
+function saveMonitoringEligible(){
+ s.monitoringEligible=Array.from(document.querySelectorAll('.monitorTeacherCheck:checked')).map(x=>x.value);
+ save();toast('تم حفظ '+s.monitoringEligible.length+' معلمًا مسموحًا لهم بالمراقبة');
+}
+function addWeeklyMonitoringBlock(){
+ const name=document.getElementById('blockName')?.value.trim(),start=Number(document.getElementById('blockFrom')?.value),end=Number(document.getElementById('blockTo')?.value),qty=Number(document.getElementById('blockCount')?.value);
+ const selectedDays=Array.from(document.querySelectorAll('.blockDay:checked')).map(x=>x.value);
+ if(!name||!selectedDays.length||!Number.isInteger(start)||!Number.isInteger(end)||start<1||end>12||end<start||!Number.isInteger(qty)||qty<1||qty>30)return toast('اختر الموقع والأيام ونطاق الحصص والعدد');
+ const amount=selectedDays.length*(end-start+1)*qty;
+ if(amount>500||s.monitoringNeeds.length+amount>3000)return toast('عدد المراقبات كبير، قلل المدى أو عدد المراقبين');
+ const groupId=id();
+ for(const day of selectedDays)for(let period=start;period<=end;period++)for(let k=0;k<qty;k++)
+  s.monitoringNeeds.push({id:id(),groupId,mode:'weekly',day,date:'',period,notes:name,assignedTeacher:''});
+ save();toast('أُضيفت '+amount+' مراقبة أسبوعية لموقع '+name);
+}
+function deleteMonitoringGroup(groupId){
+ const items=s.monitoringNeeds.filter(x=>x.groupId===groupId);
+ if(!items.length||!confirm('حذف مجموعة '+items[0].notes+' ('+items.length+' مراقبة) وكل تكليفاتها؟'))return;
+ const ids=new Set(items.map(x=>x.id));
+ s.monitoringNeeds=s.monitoringNeeds.filter(x=>!ids.has(x.id));s.duties=s.duties.filter(x=>!ids.has(x.needId));save();
+}
+function weeklyMonitoringBlockPanel(){
+ const form='<div class="fields">'+
+ field('موقع المراقبة','<input id="blockName" placeholder="ثانوي شرقي أو ثانوي غربي">')+
+ field('من الحصة','<input id="blockFrom" type="number" min="1" max="12" value="1">')+
+ field('إلى الحصة','<input id="blockTo" type="number" min="1" max="12" value="7">')+
+ field('عدد المراقبين في كل حصة','<input id="blockCount" type="number" min="1" max="30" value="1">')+'</div>'+
+ '<p><b>الأيام المتكررة أسبوعيًا:</b></p><div class="actions">'+days.map(day=>'<label class="tag"><input type="checkbox" class="blockDay" value="'+day+'" checked> '+day+'</label>').join('')+'</div>'+
+ '<div class="actions"><button onclick="addWeeklyMonitoringBlock()">إضافة الموقع لكل الأيام والحصص المحددة</button></div>'+
+ '<p class="muted">مثال: «ثانوي شرقي» من الحصة ١ إلى ٧ طوال الأسبوع ينشئ احتياجات المراقبة دفعة واحدة، ثم يوزعها النظام على المعلمين المختارين فقط.</p>';
+ const groups=[...new Set(s.monitoringNeeds.filter(x=>x.groupId).map(x=>x.groupId))];
+ const rows=groups.map(g=>{const items=s.monitoringNeeds.filter(x=>x.groupId===g);return [esc(items[0].notes),[...new Set(items.map(x=>x.day))].map(esc).join('، '),Math.min(...items.map(x=>x.period))+'–'+Math.max(...items.map(x=>x.period)),items.filter(x=>x.assignedTeacher).length+' / '+items.length,'<button class="danger" onclick="deleteMonitoringGroup(\''+g+'\')">حذف المجموعة</button>']});
+ return box('إنشاء مراقبة أسبوع كامل دفعة واحدة',form)+(rows.length?box('مواقع المراقبة الأسبوعية',table(['الموقع','الأيام','الحصص','الموزعة','الإجراء'],rows)):'');
+}
+
 function monitoringNeedsPanel(){
  const form='<div class="fields">'+field('نوع المراقبة','<select id="needMode"><option value="weekly">أسبوعية ثابتة</option><option value="dated">بتاريخ محدد</option></select>')+
  field('اليوم','<select id="needDay">'+days.map(d=>'<option>'+d+'</option>').join('')+'</select>')+
@@ -173,8 +220,8 @@ function monitoringNeedsPanel(){
  field('الموقع أو المهمة','<input id="needTitle" placeholder="بوابة المدرسة أو الفناء">')+
  field('عدد المراقبين المطلوب','<input id="needCount" type="number" min="1" max="30" value="1">')+
  '</div><div class="actions"><button onclick="addMonitoringNeed()">إضافة للمراقبات المطلوبة</button><button class="alt" onclick="downloadMonitoringTemplate()">نموذج CSV للمراقبات</button><label class="tag" style="cursor:pointer">استيراد مراقبات CSV <input type="file" accept=".csv,text/csv" style="display:none" onchange="importMonitoringCSV(this.files[0]);this.value=\'\'"></label><button onclick="distributeMonitoring()">⚖ توزيع المراقبات بعدل</button></div><p class="muted">يرتب النظام المتاحين حسب أقل عدد مراقبات، ثم أقل نصاب تدريس، ثم أقل تغطيات سابقة. المراقبة بلا معلم متاح تبقى معلّقة للمراجعة ولا تُسند عشوائيًا.</p>';
- const rows=s.monitoringNeeds.map(x=>[esc(x.notes),x.mode==='weekly'?esc(x.day)+' أسبوعيًا':esc(x.date),x.period,x.assignedTeacher?esc(nm(x.assignedTeacher)):'<b>لم تُوزع</b>','<button class="danger" onclick="deleteMonitoringNeed(\''+x.id+'\')">حذف</button>']);
- return box('توزيع المراقبات الآلي العادل',form)+box('المراقبات المطلوبة ونتيجة التوزيع',rows.length?table(['المهمة','التوقيت','الحصة','المعلم','الإجراء'],rows):empty('أضف المراقبات المطلوبة أولًا'));
+ const rows=s.monitoringNeeds.filter(x=>!x.groupId).map(x=>[esc(x.notes),x.mode==='weekly'?esc(x.day)+' أسبوعيًا':esc(x.date),x.period,x.assignedTeacher?esc(nm(x.assignedTeacher)):'<b>لم تُوزع</b>','<button class="danger" onclick="deleteMonitoringNeed(\''+x.id+'\')">حذف</button>']);
+ return box('توزيع المراقبات الآلي العادل',form)+box('المراقبات الفردية ونتيجة التوزيع',rows.length?table(['المهمة','التوقيت','الحصة','المعلم','الإجراء'],rows):empty('المجموعات الأسبوعية تظهر أعلاه؛ لا توجد مراقبات فردية'));
 }
 function schedule(){let f='<div class="fields">'+field('المعلم','<select id="lteacher">'+opts(s.teachers)+'</select>')+field('المرحلة','<select id="lstage"><option>ابتدائي</option><option>متوسط</option><option>ثانوي</option></select>')+field('اليوم','<select id="lday">'+days.map(d=>'<option>'+d+'</option>').join('')+'</select>')+field('رقم الحصة','<input id="lperiod" type="number" min="1" max="12" value="1">')+field('الصف / الفصل','<input id="lclass" placeholder="ثالث أ">')+field('المادة','<input id="lsubject" placeholder="تربية بدنية">')+'</div><div class="actions"><button onclick="addLesson()">إضافة حصة</button><button class="alt" onclick="downloadTemplate()">نموذج CSV</button><label class="tag" style="cursor:pointer">استيراد CSV <input type="file" accept=".csv" style="display:none" onchange="importCSV(this.files[0])"></label><button class="alt" onclick="exportSchedule()">تصدير CSV</button></div><div class="notice">الاستيراد يدعم أعمدة: المعلم، القسم، اليوم، الحصة، الصف، المادة. ابدأ بنموذج CSV.</div>';return box('إدارة الجدول المعتمد',f)+box('حصص الجدول',s.lessons.length?table(['اليوم','الحصة','الصف','المادة','المعلم',''],s.lessons.map(l=>[esc(l.day),l.period,esc(l.className),esc(l.subject),esc(nm(l.teacher)),'<button class="danger small" onclick="delLesson(\''+l.id+'\')">حذف</button>'])):empty('لا يوجد جدول حتى الآن'))}function addLesson(){let t=document.getElementById('lteacher').value,d=document.getElementById('lday').value,p=+document.getElementById('lperiod').value,c=document.getElementById('lclass').value.trim(),sub=document.getElementById('lsubject').value.trim();if(!t||!c||p<1||p>12)return toast('أكمل بيانات الحصة');if(s.lessons.some(l=>l.teacher===t&&l.day===d&&l.period===p))return toast('المعلم لديه حصة في نفس الموعد');s.lessons.push({id:id(),teacher:t,day:d,period:p,className:c,subject:sub,stage:document.getElementById('lstage').value});save()}function delLesson(i){s.lessons=s.lessons.filter(l=>l.id!==i);s.covers=s.covers.filter(c=>c.lesson!==i);save()}
 function absence(){let form='<div class="fields">'+field('التاريخ','<input id="adate" type="date" value="'+selectedDate+'" onchange="selectedDate=this.value;render()">')+field('المعلم الغائب','<select id="ateacher">'+opts(s.teachers)+'</select>')+field('سبب الغياب','<select id="reason"><option>مرضية</option><option>مهمة رسمية</option><option>ورشة</option><option>إجازة تعويضية</option><option>أخرى</option></select>')+'</div><div class="actions"><button onclick="addAbs()">تسجيل الغياب</button></div><div class="notice">يقترح النظام المعلمين المتاحين، مرتبين حسب أقل عدد من حصص التغطية المسجلة.</div>';let a=s.absences.filter(x=>x.date===selectedDate),list=a.map(x=>{let ls=s.lessons.filter(l=>l.teacher===x.teacher&&l.day===dt(x.date));return '<div class="row"><b>'+esc(nm(x.teacher))+'</b><span class="tag">'+esc(x.reason)+'</span><button class="danger" onclick="delAbs(\''+x.id+'\')">حذف الغياب</button></div>'+(ls.length?ls.map(l=>{let c=s.covers.find(y=>y.lesson===l.id&&y.date===x.date);let avail=s.teachers.filter(t=>t.id!==x.teacher&&isFree(t.id,x.date,l.period)).sort((a,b)=>teachingLoad(a.id)-teachingLoad(b.id)||count(a.id)-count(b.id));
