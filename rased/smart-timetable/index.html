@@ -266,16 +266,21 @@ function parseBadeelCSV(text){
  return rows.map(c=>Object.fromEntries(header.map((h,i)=>[h,(c[i]||'').trim()])));
 }
 function inferStage(row){
- const group=row['القسم']||'',room=(row['الصف']||'').replace(/\s+/g,' ').trim();
- const marked=room.match(/^(ابتدائي|متوسط|ثانوي)\s*[—–-]\s*(.+)$/);
+ const group=String(row['القسم']||'').trim();
+ const rawRoom=String(row['الصف']||'').replace(/\s+/g,' ').trim();
+ const marked=rawRoom.match(/^(ابتدائي|متوسط|ثانوي)\s*[—–-]\s*(.+)$/);
  if(marked)return {stage:marked[1],room:marked[2]};
- if(room.includes('+')||group.includes('+'))return null;
- if(group==='متوسط وثانوي'){
-  if(/^[123]م\s*[أبج]$/.test(room))return {stage:'متوسط',room};
-  if(/^[123][أبج]$/.test(room))return {stage:'ثانوي',room};
-  return null;
+ // Badيل exports some shared teachers' class names with descriptive suffixes.
+ // Strip only known annotations; never guess a class for generic duties.
+ const room=rawRoom
+  .replace(/\s*\+\s*تكليف خارج المتوسط والثانوي$/,'')
+  .replace(/^متوسط\s*\+\s*/,'')
+  .trim();
+ if(/^[123]م\s*[أبج]$/.test(room))return {stage:'متوسط',room};
+ if(/^[1-6][أبج]$/.test(room)){
+  if(group==='متوسط وثانوي'&&/^[123][أبج]$/.test(room))return {stage:'ثانوي',room};
+  return {stage:'ابتدائي',room};
  }
- if(/^[1-6][أبج]$/.test(room))return {stage:'ابتدائي',room};
  return null;
 }
 function buildImport(rows){
@@ -328,7 +333,7 @@ async function importBadeelCSV(file){
 function reviewPanel(){
  const a=state.lastImport;
  if(!a)return '';
- return panel('نتائج آخر استيراد من بديل','<p><b>الصفوف:</b> '+a.total+' | <b>الموزعة:</b> '+a.accepted+' | <b>المتعارضة/المعلّقة:</b> '+a.unplaced+'</p>'+(a.issues?.length?'<details><summary>عرض الملاحظات ('+(a.issues.length+a.more)+')</summary><ul>'+a.issues.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>':'<div class="note">لم تُرصد ملاحظات.</div>')+'<div class="note warn">بعض رموز الجداول القديمة لا تحدد المرحلة أو الفصل بدقة، ولم تُعتمد تلقائيًا. راجع الحصص المعلّقة قبل إنشاء جدول جديد.</div>');
+ return panel('نتائج آخر استيراد من بديل','<p><b>الصفوف:</b> '+a.total+' | <b>الموزعة:</b> '+a.accepted+' | <b>غير محددة/معلّقة:</b> '+a.unplaced+'</p>'+(a.issues?.length?'<details><summary>عرض الملاحظات ('+(a.issues.length+a.more)+')</summary><ul>'+a.issues.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>':'<div class="note">لم تُرصد ملاحظات.</div>')+'<div class="note warn">تم التعرف تلقائيًا على الفصول ذات الإضافات الوصفية. الصفوف التي لا تذكر فصلًا محددًا مثل «حصة محجوزة» أو «متوسط» أو «تكليف خارج المتوسط والثانوي» تُترك للمراجعة، دون اختراع فصل أو حذف بيانات بديل.</div>');
 }
 function deleteStoredBackup(bid){
  let all=getBackups();if(!all.some(x=>x.id===bid))return;
