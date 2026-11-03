@@ -34,7 +34,7 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-daily-cover .daily-print-sign{display:flex;justify-content:space-between;margin-top:30px;font-size:12px;font-weight:bold}
  body.printing-daily-cover .daily-print-credit{text-align:center;margin-top:25px;font-size:10px;color:#427367}
 }
-</style></head><body><a class="rased-back" href="../admin.html" aria-label="العودة إلى لوحة إدارة راصد">↩ العودة إلى راصد</a><div class="layout"><aside><div class="school-brand"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الأهلية"><div><h1>بديل</h1><p>النظام الذكي لتأمين الحصص<br>مدارس الفلاح الأهلية</p></div></div><nav id="nav"></nav></aside><main><header><div><h2 id="title">لوحة التحكم</h2><small>مدارس الفلاح الأهلية · إدارة اليوم الدراسي</small></div><span class="tag">● حفظ محلي تلقائي</span></header><div class="container"><section class="hero"><h2>صباح الخير، أهلاً بك في بديل ✨</h2><p>نُبديل المعلم، ونضمن استمرار التعلّم — إدارة ذكية وعادلة للحصص.</p></section><div class="stats" id="stats"></div><div class="section-tools"><button class="alt" type="button" onclick="window.print()">🖨️ طباعة القسم الحالي</button><span class="muted">تُطبع البيانات الظاهرة في القسم المحدد</span></div><div id="view"></div><footer>بديل المطوّر © ٢٠٢٦ — مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</footer></div></main></div><div id="toast"></div><script>
+</style><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script></head><body><a class="rased-back" href="../admin.html" aria-label="العودة إلى لوحة إدارة راصد">↩ العودة إلى راصد</a><div class="layout"><aside><div class="school-brand"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الأهلية"><div><h1>بديل</h1><p>النظام الذكي لتأمين الحصص<br>مدارس الفلاح الأهلية</p></div></div><nav id="nav"></nav></aside><main><header><div><h2 id="title">لوحة التحكم</h2><small>مدارس الفلاح الأهلية · إدارة اليوم الدراسي</small></div><span class="tag">● حفظ محلي تلقائي</span></header><div class="container"><section class="hero"><h2>صباح الخير، أهلاً بك في بديل ✨</h2><p>نُبديل المعلم، ونضمن استمرار التعلّم — إدارة ذكية وعادلة للحصص.</p></section><div class="stats" id="stats"></div><div class="section-tools"><button class="alt" type="button" onclick="window.print()">🖨️ طباعة القسم الحالي</button><span class="muted">تُطبع البيانات الظاهرة في القسم المحدد</span></div><div id="view"></div><footer>بديل المطوّر © ٢٠٢٦ — مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</footer></div></main></div><div id="toast"></div><script>
 const KEY='sanad-falah-demo-1',days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],pages=[['home','⌂','لوحة التحكم'],['absence','◎','تغطية الغياب'],['swap','⇄','تبديل الحصص'],['teachers','♙','المعلمون والأقسام'],['schedule','▤','الجداول'],['monitoring','🛡','إدارة المراقبات'],['assignments','📚','التكليفات الإضافية'],['printing','🖨','مركز الطباعة'],['loads','◷','احتساب الحصص'],['charts','▥','رسوم بيانية'],['report','▣','التقرير الشهري'],['settings','⚙','الإعدادات']];let s=JSON.parse(localStorage.getItem(KEY)||'null')||{teachers:[],lessons:[],absences:[],covers:[],swaps:[],duties:[],monitoringNeeds:[],cap:4},page='home',selectedDate=new Date().toISOString().slice(0,10);
 s.duties ||= [];
 s.monitoringNeeds ||= [];
@@ -65,7 +65,7 @@ function teachingLoad(i){return s.lessons.filter(l=>l.teacher===i&&!isBusClass(l
 function opts(list){return list.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')}function field(label,control){return '<div class="field"><label>'+label+'</label>'+control+'</div>'}function table(head,rows){return '<div class="scroll"><table><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</table></div>'}function empty(m){return '<div class="empty">◌<p>'+m+'</p></div>'}function box(title,content){return '<section class="panel"><h3>'+title+'</h3>'+content+'</section>'}
 function render(){document.getElementById('nav').innerHTML=pages.map(x=>'<button class="'+(x[0]===page?'active':'')+'" onclick="go(\''+x[0]+'\')"><span>'+x[1]+'</span> '+x[2]+'</button>').join('');document.getElementById('title').textContent=pages.find(x=>x[0]===page)[2];document.getElementById('stats').innerHTML=[['إجمالي المعلمين',s.teachers.length],['الغائبون اليوم',s.absences.filter(a=>a.date===new Date().toISOString().slice(0,10)).length],['حصص التغطية',s.covers.length],['حصص الجدول الأسبوعي',s.lessons.length]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({home,absence,swap,teachers,schedule,monitoring,assignments,printing,loads,charts,report,settings})[page]();if(page==='report')showReport()}
 function home(){return '<div class="two">'+box('البدء السريع','<p class="muted">جهّز دليل المعلمين ثم أدخل حصص الجدول، وبعدها سجل الغياب لتظهر اقتراحات التغطية.</p><div class="actions"><button onclick="go(\'teachers\')">إدارة المعلمين</button><button class="alt" onclick="go(\'schedule\')">الجدول الدراسي</button><button class="alt" onclick="go(\'absence\')">تغطية الغياب</button></div>')+box('ملخص العمليات','<p>الغيابات المسجلة: <b>'+s.absences.length+'</b></p><p>الحصص المغطاة: <b>'+s.covers.length+'</b></p><p>تبديلات الحصص: <b>'+s.swaps.length+'</b></p><div class="notice">البيانات محفوظة على هذا المتصفح فقط. استخدم النسخ الاحتياطي من الإعدادات.</div>')+'</div>'+box('أحدث التغطيات',s.covers.length?table(['التاريخ','الصف','الحصة','المعلم البديل'],s.covers.slice(-8).reverse().map(c=>[c.date,esc(c.className),c.period,esc(nm(c.to))])):empty('لم تسجل أي تغطيات بعد'))}
-function teachers(){return box('إضافة معلم', '<div class="fields">'+field('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+field('القسم','<input id="dept" placeholder="مثل: اللغة العربية">')+'</div><div class="actions"><button onclick="addTeacher()">إضافة المعلم</button></div>')+box('دليل المعلمين',s.teachers.length?table(['المعلم','القسم','نصابه الأسبوعي','تكليفات التغطية',''],s.teachers.map(t=>[esc(t.name),esc(t.dept),teachingLoad(t.id),count(t.id),'<button class="danger small" onclick="delTeacher(\''+t.id+'\')">حذف</button>'])):empty('أضف معلمي المدرسة للبدء'))}
+function teachers(){return box('إضافة معلم', '<div class="fields">'+field('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+field('القسم','<input id="dept" placeholder="مثل: اللغة العربية">')+'</div><div class="actions"><button onclick="addTeacher()">إضافة المعلم</button></div>')+box('دليل المعلمين',s.teachers.length?table(['المعلم','القسم','نصابه الأسبوعي','تكليفات التغطية',''],s.teachers.map(t=>[esc(t.name),esc(t.dept),teachingLoad(t.id),count(t.id),'<button class="alt small" onclick="editTeacherWhatsAppPhone(\''+t.id+'\')">📱 رقم واتساب</button> <button class="danger small" onclick="delTeacher(\''+t.id+'\')">حذف</button>'])):empty('أضف معلمي المدرسة للبدء'))}
 function addTeacher(){let n=document.getElementById('tname').value.trim(),d=document.getElementById('dept').value.trim();if(!n)return toast('أدخل اسم المعلم');if(s.teachers.some(t=>t.name===n))return toast('هذا المعلم مسجل');s.teachers.push({id:id(),name:n,dept:d});save();toast('تم إضافة المعلم')}function delTeacher(i){if(s.lessons.some(l=>l.teacher===i)||s.absences.some(a=>a.teacher===i))return toast('احذف جدول وغيابات المعلم أولاً');s.teachers=s.teachers.filter(t=>t.id!==i);save()}
 
 let editingDutyId='';
@@ -290,10 +290,75 @@ function coverageWhatsAppText(cid){
  'اليوم: '+dt(c.date)+'\nالتاريخ: '+c.date+'\nالحصة: '+c.period+'\nالفصل: '+d.className+'\nالمادة: '+d.subject+'\nالمعلم الغائب: '+d.absent+
  '\n\nنأمل منكم التواجد في الفصل في موعد الحصة والقيام بما يلزم، مع خالص الشكر والتقدير لتعاونكم.\n\nإدارة مدارس الفلاح الأهلية';
 }
-function openCoverageWhatsApp(cid){
- const message=coverageWhatsAppText(cid);if(!message)return toast('تعذر العثور على التكليف');
- const opened=window.open('https://wa.me/?text='+encodeURIComponent(message),'_blank');
- if(opened)opened.opener=null;else toast('اسمح بفتح واتساب في نافذة جديدة، أو انسخ الرسالة');
+const RADED_FIREBASE_CONFIG={
+
+apiKey:
+"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",
+
+authDomain:
+"results2026-7c0dd.firebaseapp.com",
+
+projectId:
+"results2026-7c0dd",
+
+storageBucket:
+"results2026-7c0dd.firebasestorage.app",
+
+messagingSenderId:
+"241421115694",
+
+appId:
+"1:241421115694:web:96f55fd9fd1d5b18b31abf"
+
+};
+
+
+
+function normalizeSaudiMobile(value){
+ let digits=String(value||'').replace(/[٠-٩]/g,x=>String(x.charCodeAt(0)-1632)).replace(/[۰-۹]/g,x=>String(x.charCodeAt(0)-1776)).replace(/\D/g,'');
+ if(digits.startsWith('00966'))digits=digits.slice(2);
+ if(digits.startsWith('966'))return /^9665\d{8}$/.test(digits)?digits:'';
+ if(/^05\d{8}$/.test(digits))return '966'+digits.slice(1);
+ if(/^5\d{8}$/.test(digits))return '966'+digits;
+ return '';
+}
+function editTeacherWhatsAppPhone(teacherId){
+ const teacher=s.teachers.find(t=>t.id===teacherId);if(!teacher)return;
+ const input=prompt('رقم واتساب المعلم '+teacher.name+' (05xxxxxxxx). اتركه فارغاً للعودة إلى رقم راصد:',teacher.whatsappPhone||'');
+ if(input===null)return;
+ const normalized=input.trim()?normalizeSaudiMobile(input):'';
+ if(input.trim()&&!normalized)return toast('رقم الجوال غير صحيح. أدخل رقمًا سعوديًا يبدأ بـ 05');
+ teacher.whatsappPhone=normalized;save();toast(normalized?'تم حفظ رقم واتساب المعلم':'تم حذف الرقم اليدوي؛ سيُستخدم رقم راصد عند توفره');
+}
+async function rasedTeacherPhone(teacher){
+ if(teacher.whatsappPhone)return normalizeSaudiMobile(teacher.whatsappPhone);
+ if(typeof firebase==='undefined'||!firebase.firestore)throw Error('تعذر تحميل الاتصال براصد');
+ const role=sessionStorage.getItem('currentUserRole')||localStorage.getItem('currentUserRole')||'';
+ if(!['admin','superadmin','manager'].includes(role.toLowerCase()))throw Error('الربط بأرقام راصد متاح للإدارة فقط');
+ if(!firebase.apps.length)firebase.initializeApp(RADED_FIREBASE_CONFIG);
+ const snap=await firebase.firestore().collection('teachers').where('name','==',teacher.name).limit(3).get();
+ if(snap.docs.length!==1)throw Error(snap.docs.length>1?'يوجد أكثر من معلم بالاسم نفسه في راصد؛ سجّل رقمه يدويًا':'لم يُعثر على المعلم في راصد؛ سجّل رقمه يدويًا');
+ const data=snap.docs[0].data()||{};
+ const phone=normalizeSaudiMobile(data.phone||data.mobile||'');
+ if(!phone)throw Error('لا يوجد رقم جوال صحيح لهذا المعلم في راصد');
+ return phone;
+}
+async function openCoverageWhatsApp(cid){
+ const message=coverageWhatsAppText(cid),cover=s.covers.find(x=>x.id===cid);
+ if(!message||!cover)return toast('تعذر العثور على التكليف');
+ const teacher=s.teachers.find(t=>t.id===cover.to);if(!teacher)return toast('تعذر العثور على المعلم');
+ const blank=window.open('about:blank','_blank');
+ if(blank){blank.opener=null;blank.document.body.textContent='جارٍ تجهيز رسالة واتساب للمعلم...'}
+ try{
+  const phone=await rasedTeacherPhone(teacher);
+  const url='https://wa.me/'+phone+'?text='+encodeURIComponent(message);
+  if(blank&&!blank.closed)blank.location.replace(url);
+  else window.location.href=url;
+ }catch(error){
+  if(blank&&!blank.closed)blank.close();
+  toast(error.message||'تعذر العثور على رقم الجوال');
+  if(confirm((error.message||'تعذر الوصول إلى رقم المعلم')+'\n\nهل تريد تسجيل رقم واتساب لهذا المعلم يدويًا؟'))editTeacherWhatsAppPhone(teacher.id);
+ }
 }
 function copyCoverageWhatsApp(cid){
  const message=coverageWhatsAppText(cid);if(!message)return;
