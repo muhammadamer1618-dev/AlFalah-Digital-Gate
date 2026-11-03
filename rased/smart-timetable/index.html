@@ -6,7 +6,7 @@
 .print-sheet{background:white;margin:15px 0;padding:18px;border:1px solid #d5e2e0;border-radius:12px;direction:rtl}
 .print-head{display:flex;align-items:center;justify-content:center;gap:16px;text-align:center;border-bottom:3px solid #0b6158;padding:10px 0 14px;margin-bottom:12px}
 .print-head img{width:68px;height:68px;object-fit:contain;border-radius:50%}.print-head h2{color:#075b50;margin:7px 0;font-size:22px}.print-head p{margin:0;color:#506961}
-.print-sheet td,.print-sheet th{text-align:center}.print-sheet td small{display:block;color:#4c6964;margin-top:3px}.print-credit{text-align:center;color:#12665a;margin-top:14px;font-size:11px}
+.print-sheet:not(.general-print) td,.print-sheet:not(.general-print) th{text-align:center}.print-sheet:not(.general-print) td small{display:block;color:#4c6964;margin-top:3px}.print-credit{text-align:center;color:#12665a;margin-top:14px;font-size:11px}
 @page general-wide{size:A2 landscape;margin:8mm}
 .general-table{table-layout:fixed;width:100%;min-width:0}
 .general-table th,.general-table td{font-size:10px;padding:5px 3px;overflow-wrap:anywhere}
@@ -21,8 +21,36 @@
  .general-print .print-head h2{font-size:18px}
 }
 @page{size:A3 landscape;margin:9mm}
-@media print{.print-sheet{break-after:page;page-break-after:always;border:0;border-radius:0;padding:0;margin:0}.print-sheet:last-child{break-after:auto;page-break-after:auto}.print-sheet table{width:100%;min-width:0;table-layout:fixed}.print-sheet td,.print-sheet th{font-size:10px;padding:6px 3px;overflow-wrap:anywhere}.print-sheet .print-head{display:flex!important}.print-sheet .print-head img{display:block!important}body{print-color-adjust:exact;-webkit-print-color-adjust:exact}#view:before{display:none!important}}
+@media print{.print-sheet{break-after:page;page-break-after:always;border:0;border-radius:0;padding:0;margin:0}.print-sheet:last-child{break-after:auto;page-break-after:auto}.print-sheet:not(.general-print) table{width:100%;min-width:0;table-layout:fixed}.print-sheet:not(.general-print) td,.print-sheet:not(.general-print) th{font-size:10px;padding:6px 3px;overflow-wrap:anywhere}.print-sheet:not(.general-print) .print-head{display:flex!important}.print-sheet:not(.general-print) .print-head img{display:block!important}body{print-color-adjust:exact;-webkit-print-color-adjust:exact}#view:before{display:none!important}}
 @media print{body{background:white}.top,.nav,.actions,button,input,select,.note,.back,.no-print{display:none!important}.shell{padding:0}.panel{border:0;box-shadow:none;padding:5px}.stats{display:none}table{min-width:0}th,td{font-size:10px;padding:5px}.footer{display:block}#view:before{content:'مدارس الفلاح الأهلية — الجدول المدرسي الذكي';display:block;font-size:19px;font-weight:bold;margin-bottom:12px}}
+
+/* Official Saudi A4 portrait print template */
+@page{size:A4 portrait;margin:9mm}
+.print-sheet:not(.general-print){font-family:Tahoma,"Noto Naskh Arabic",Arial,sans-serif;color:#133f39}
+.print-sheet:not(.general-print) .print-head{position:relative;display:block;text-align:center;min-height:152px;padding:6px 85px 12px;margin-bottom:13px;border-bottom:2.5px solid #0a665a}
+.print-sheet:not(.general-print) .print-head img{position:absolute;left:0;top:12px;width:75px;height:75px;object-fit:contain;border-radius:50%}
+.print-sheet:not(.general-print) .print-head-text{direction:rtl;text-align:center}
+.print-sheet:not(.general-print) .official-lines{font-size:14px;font-weight:700;line-height:1.55;color:#07544b}
+.print-sheet:not(.general-print) .print-head h2{font-size:19px;font-weight:800;line-height:1.6;margin:7px 0 2px;color:#07483f}
+.print-sheet:not(.general-print) .print-head p{font-size:13px;font-weight:700;color:#314e48}
+.print-sheet:not(.general-print) td,.print-sheet:not(.general-print) th{font-size:13px;padding:10px 6px;line-height:1.45}
+.print-sheet:not(.general-print) td small{font-size:11px;line-height:1.35}
+.print-sheet:not(.general-print) .print-credit{font-size:12px;font-weight:700;color:#165b50;margin-top:18px}
+.print-signatures{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:6px 0 13px}
+@media print{
+ .print-sheet:not(.general-print){padding:0!important;margin:0!important;max-width:100%}
+ .print-sheet:not(.general-print) .print-head{display:block!important;min-height:140px;padding:3px 70px 10px}
+ .print-sheet:not(.general-print) .print-head img{display:block!important;width:64px;height:64px;left:0;top:9px}
+ .print-sheet:not(.general-print) .official-lines{font-size:12pt;line-height:1.4}
+ .print-sheet:not(.general-print) .print-head h2{font-size:15pt}
+ .print-sheet:not(.general-print) .print-head p{font-size:11pt}
+ .print-sheet:not(.general-print) table{width:100%!important;min-width:0!important;table-layout:fixed}
+ .print-sheet:not(.general-print) td,.print-sheet:not(.general-print) th{font-size:10pt!important;padding:8px 3px!important;overflow-wrap:anywhere}
+ .print-sheet:not(.general-print) td small{font-size:8.5pt!important}
+ .print-sheet:not(.general-print) .print-credit{font-size:10pt}
+ .print-sheet:not(.general-print) .print-signatures{display:flex!important}
+ .print-sheet:not(.general-print) tr{break-inside:avoid}
+}
 </style></head><body><div class="shell"><div class="top"><img class="logo" src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح"><div><h1>الجدول المدرسي الذكي</h1><p>راصد · الابتدائي والمتوسط والثانوي · إنشاء وتعديل وطباعة</p></div><a class="back" href="../admin.html">↩ لوحة الإدارة</a></div><div class="nav" id="nav"></div><div class="stats" id="stats"></div><div id="view"></div><div class="footer">مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</div></div><div id="message"></div>
 <script>
 const KEY='alfalah-smart-timetable-v1',DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],STAGES=['ابتدائي','متوسط','ثانوي'];
@@ -172,7 +200,8 @@ function badeelPrintData(){
  try{const data=JSON.parse(localStorage.getItem('sanad-falah-demo-1')||'null');return data&&Array.isArray(data.teachers)?data:null}catch{return null}
 }
 function smartPrintSheet(title,detail,body){
- return '<section class="print-sheet"><header class="print-head"><img src="../alfalah-round-logo.png" alt="الشعار"><div><div>المملكة العربية السعودية · وزارة التعليم · مدارس الفلاح الأهلية</div><h2>'+esc(title)+'</h2><p>'+esc(detail)+'</p></div></header>'+body+'<footer class="print-credit">تصميم محمد عامر أحمد</footer></section>';
+ if(title==='الجدول العام الأسبوعي')return '<section class="print-sheet"><header class="print-head"><img src="../alfalah-round-logo.png" alt="الشعار"><div><div>المملكة العربية السعودية · وزارة التعليم · مدارس الفلاح الأهلية</div><h2>'+esc(title)+'</h2><p>'+esc(detail)+'</p></div></header>'+body+'<footer class="print-credit">تصميم محمد عامر أحمد</footer></section>';
+ return '<section class="print-sheet"><header class="print-head"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الدائري"><div class="print-head-text"><div class="official-lines"><div>المملكة العربية السعودية</div><div>وزارة التعليم</div><div>الإدارة العامة للتعليم بالمنطقة الشرقية</div><div>مدارس الفلاح الأهلية</div></div><h2>'+esc(title)+'</h2><p>'+esc(detail)+'</p></div></header>'+body+'<footer class="print-credit"><div class="print-signatures"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div><div>تصميم محمد عامر أحمد</div></footer></section>';
 }
 function printDutyNotes(teacher,day,period,data){
  const t=data?.teachers.find(x=>String(x.name||'').trim()===String(teacher.name||'').trim());
@@ -191,7 +220,7 @@ function teacherPrintSheet(t,stageLabel,data){
   return cells.join('<hr>')||'—';
  })]);
  const quota=lessons.length,allQuota=teacherScheduledLoad(t.id),bus=(state.reservations||[]).filter(r=>r.kind==='bus'&&r.teacherId===t.id).length;
- return smartPrintSheet('جدول المعلم: '+t.name,stageLabel+' | نصاب المجموعة: '+quota+' | النصاب الكلي الموزع: '+allQuota+' | حافلات: '+bus,table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows));
+ return smartPrintSheet('جدول حصص المعلم: '+t.name,'المرحلة: '+stageLabel+' | نصاب المجموعة: '+quota+' | النصاب الكلي الموزع: '+allQuota+' | حافلات: '+bus,table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows));
 }
 function classPrintSheet(cls,stageLabel){
  const lessons=smartPrintLessons().filter(x=>x.c.id===cls.id);
@@ -199,7 +228,7 @@ function classPrintSheet(cls,stageLabel){
   const matches=lessons.filter(x=>x.p.day===day&&x.p.period===i+1);
   return matches.map(x=>esc(x.l.subject)+'<small>'+esc(byId(state.teachers,x.l.teacherId)?.name||'—')+'</small>').join('<hr>')||'—';
  })]);
- return smartPrintSheet('جدول الفصل: '+displayClass(cls),stageLabel,table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows));
+ return smartPrintSheet('جدول حصص الفصل: '+cls.name,'المرحلة: '+cls.stage,table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows));
 }
 function generalPrintSheets(classes,stageLabel){
  const lessons=smartPrintLessons();
@@ -257,7 +286,7 @@ function viewTimetable(){
   }
   return row;
  });
- return panel('عرض الجدول',chooser+(filterId?'<h3 class="subhead">'+esc(title)+'</h3>'+summary+table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows):'<div class="empty">أضف الفصول والمعلمين ووزّع الحصص أولًا.</div>'))+panel('ملاحظة التصدير','<p class="small">ملف CSV يستخدم الأعمدة التي يفهمها بديل، لكن توقيت الحصص يختلف بين المراحل. راجع تكليفات المعلمين المشتركين قبل اعتماد الاستيراد في بديل.</p>');
+ return panel('عرض الجدول',chooser+(filterId?'<h3 class="subhead">'+esc(title)+'</h3>'+summary+table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows):'<div class="empty">أضف الفصول والمعلمين ووزّع الحصص أولًا.</div>'));
 }
 function removePlacement(i){if(confirm('إزالة هذه الحصة من الجدول؟')){state.placements=state.placements.filter(x=>x.id!==i);save()}}
 function setFilter(k){filterMode=k;filterId='';render()}
