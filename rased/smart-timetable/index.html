@@ -15,7 +15,10 @@ state.constraints.subject ||= {};
 for(const teacher of state.teachers){
  if(/^جعفر(?:\s|$)/u.test(String(teacher.name||"").trim()) && !Number.isInteger(teacher.weeklyTarget)) teacher.weeklyTarget=24;
 }
-let tab='setup',filterMode='class',filterId='';
+let tab='setup',filterMode='class',filterId='',stageGroup='primary';
+function selectedGroup(stage){return stageGroup==='primary'?stage==='ابتدائي':stage==='متوسط'||stage==='ثانوي'}
+function setStageGroup(group){if(!['primary','upper'].includes(group))return;stageGroup=group;filterId='';render()}
+function stageGroupBar(){return '<section class="panel no-print"><h3>المجموعة الدراسية</h3><div class="actions"><button class="'+(stageGroup==='primary'?'':'alt')+'" onclick="setStageGroup(\'primary\')">الابتدائي</button><button class="'+(stageGroup==='upper'?'':'alt')+'" onclick="setStageGroup(\'upper\')">المتوسط والثانوي</button></div><p class="small">الجداول منفصلة في العرض والتوليد والطباعة؛ المعلم المشترك واحد، وتُحسب تعارضاته مع المجموعة الأخرى.</p></section>'}
 const id=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const byId=(arr,i)=>arr.find(x=>x.id===i);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -65,11 +68,11 @@ function displayClass(c){return c.stage+' — '+c.name}
 function displayTeacher(t){return t?.name||'—'}
 function viewSetup(){
  let tform='<div class="formrow">'+fld('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+fld('التخصص','<input id="tdept" placeholder="رياضيات">')+'<button onclick="addTeacher()">إضافة معلم</button></div>';
- let cform='<div class="formrow">'+fld('المرحلة','<select id="cstage">'+STAGES.map(x=>opt(x,x)).join('')+'</select>')+fld('الصف والفصل','<input id="cname" placeholder="مثل: 3أ أو 1م أ">')+'<button onclick="addClass()">إضافة فصل</button></div>';
- let lform='<div class="formrow four">'+fld('الفصل','<select id="lclass">'+state.classes.map(x=>opt(x.id,displayClass(x))).join('')+'</select>')+fld('المادة','<input id="lsubject" placeholder="الرياضيات">')+fld('المعلم','<select id="lteacher">'+state.teachers.map(x=>opt(x.id,x.name)).join('')+'</select>')+fld('الحصص أسبوعيًا','<input id="lhours" type="number" min="1" max="40" value="4">')+'</div><div class="actions"><button onclick="addLoad()">إضافة تكليف للمادة</button></div>';
+ let cform='<div class="formrow">'+fld('المرحلة','<select id="cstage">'+STAGES.filter(selectedGroup).map(x=>opt(x,x)).join('')+'</select>')+fld('الصف والفصل','<input id="cname" placeholder="مثل: 3أ أو 1م أ">')+'<button onclick="addClass()">إضافة فصل</button></div>';
+ let lform='<div class="formrow four">'+fld('الفصل','<select id="lclass">'+state.classes.filter(x=>selectedGroup(x.stage)).map(x=>opt(x.id,displayClass(x))).join('')+'</select>')+fld('المادة','<input id="lsubject" placeholder="الرياضيات">')+fld('المعلم','<select id="lteacher">'+state.teachers.map(x=>opt(x.id,x.name)).join('')+'</select>')+fld('الحصص أسبوعيًا','<input id="lhours" type="number" min="1" max="40" value="4">')+'</div><div class="actions"><button onclick="addLoad()">إضافة تكليف للمادة</button></div>';
  let tlist=state.teachers.map(t=>[esc(t.name),esc(t.dept),'<button class="danger" onclick="removeTeacher(\''+t.id+'\')">حذف</button>']);
- let clist=state.classes.map(c=>[esc(c.stage),esc(c.name),'<button class="danger" onclick="removeClass(\''+c.id+'\')">حذف</button>']);
- let llist=state.loads.map(l=>{let c=byId(state.classes,l.classId),t=byId(state.teachers,l.teacherId);return [esc(displayClass(c)),esc(l.subject),esc(displayTeacher(t)),l.hours,assignedCount(l.id),'<button class="danger" onclick="removeLoad(\''+l.id+'\')">حذف</button>']});
+ let clist=state.classes.filter(c=>selectedGroup(c.stage)).map(c=>[esc(c.stage),esc(c.name),'<button class="danger" onclick="removeClass(\''+c.id+'\')">حذف</button>']);
+ let llist=state.loads.filter(l=>selectedGroup(byId(state.classes,l.classId)?.stage)).map(l=>{let c=byId(state.classes,l.classId),t=byId(state.teachers,l.teacherId);return [esc(displayClass(c)),esc(l.subject),esc(displayTeacher(t)),l.hours,assignedCount(l.id),'<button class="danger" onclick="removeLoad(\''+l.id+'\')">حذف</button>']});
  return '<div class="note">ابدأ بإضافة المعلمين والفصول، ثم حدّد عدد حصص كل مادة والمعلم المسؤول عنها لكل فصل. المعلم المشترك يُسجّل مرة واحدة فقط وتُربط به تكليفات كل المراحل.</div><div class="grid">'+panel('١. المعلمون',tform+(tlist.length?table(['الاسم','التخصص',''],tlist):'<div class="empty">لا يوجد معلمون</div>'))+panel('٢. الفصول',cform+(clist.length?table(['المرحلة','الفصل',''],clist):'<div class="empty">لا توجد فصول</div>'))+panel('٣. أنصبة المواد',lform+(llist.length?table(['الفصل','المادة','المعلم','المطلوب','الموزع',''],llist):'<div class="empty">أضف تكليفات المواد أولًا</div>'))+'</div>';
 }
 function addTeacher(){let name=document.getElementById('tname').value.trim(),dept=document.getElementById('tdept').value.trim();if(!name)return toast('اكتب اسم المعلم');if(state.teachers.some(x=>x.name===name))return toast('المعلم موجود بالفعل، اربطه بتكليفات المراحل الأخرى');state.teachers.push({id:id(),name,dept});save()}
@@ -86,13 +89,15 @@ function viewTimes(){
 function changeTime(stage,p,i,value){let copy=state.times[stage][p-1].slice();copy[i]=value;if(minutes(copy[0])>=minutes(copy[1]))return toast('وقت النهاية يجب أن يكون بعد البداية');state.times[stage][p-1]=copy;save()}
 function changeLimit(stage,i,value){let n=Number(value);if(!Number.isInteger(n)||n<1||n>state.times[stage].length)return toast('عدد الحصص غير صالح');state.limits[stage][i]=n;save()}
 function generate(){
- if(!state.loads.length)return toast('أضف تكليفات المواد أولًا');
- if(!confirm('إنشاء جدول جديد سيستبدل التوزيع الحالي. هل تريد المتابعة؟'))return;
- const tasks=[];state.loads.forEach(l=>{for(let i=0;i<l.hours;i++)tasks.push(l)});
+ const groupLoads=state.loads.filter(l=>selectedGroup(byId(state.classes,l.classId)?.stage));
+ if(!groupLoads.length)return toast('لا توجد تكليفات مواد لهذه المرحلة');
+ if(!confirm('سيُعاد توليد حصص المجموعة المختارة فقط، مع الحفاظ على جدول المجموعة الأخرى. هل تريد المتابعة؟'))return;
+ const existingOther=state.placements.filter(p=>!groupLoads.some(l=>l.id===p.loadId));
+ const tasks=[];groupLoads.forEach(l=>{for(let i=0;i<l.hours;i++)tasks.push(l)});
  const demand={};tasks.forEach(l=>demand[l.teacherId]=(demand[l.teacherId]||0)+1);
  let best=[],bestScore=-Infinity;
  for(let attempt=0;attempt<130;attempt++){
-  let placed=[],sorted=tasks.slice().sort((a,b)=>(demand[b.teacherId]-demand[a.teacherId])||(Math.random()-.5));
+  let placed=existingOther.slice(),sorted=tasks.slice().sort((a,b)=>(demand[b.teacherId]-demand[a.teacherId])||(Math.random()-.5));
   for(let l of sorted){
    let c=byId(state.classes,l.classId),options=[];
    for(let d of DAYS)for(let p=1;p<=maxPeriods(c,d);p++)if(canPlace(l,d,p,placed)){
@@ -105,21 +110,23 @@ function generate(){
    options.sort((a,b)=>a.score-b.score);
    if(options.length){let pick=options[Math.min(Math.floor(Math.random()*Math.min(3,options.length)),options.length-1)];placed.push({id:id(),loadId:l.id,day:pick.day,period:pick.period})}
   }
-  let score=placed.length*1000-placed.reduce((acc,p)=>acc+p.period*.01,0);
-  if(score>bestScore){bestScore=score;best=placed}
+  let groupPlaced=placed.filter(p=>!existingOther.includes(p));
+  let score=groupPlaced.length*1000-groupPlaced.reduce((acc,p)=>acc+p.period*.01,0);
+  if(score>bestScore){bestScore=score;best=groupPlaced}
   if(best.length===tasks.length&&attempt>15)break;
  }
- state.placements=best;save();toast('تم توزيع '+best.length+' من '+tasks.length+' حصة. راجع المتبقي قبل الاعتماد');
+ state.placements=[...existingOther,...best];save();toast('تم توزيع '+best.length+' من '+tasks.length+' حصة للمجموعة المختارة، مع الحفاظ على باقي الجدول');
 }
 function viewGenerate(){
- let required=state.loads.reduce((n,x)=>n+x.hours,0),unfilled=state.loads.filter(l=>assignedCount(l.id)<l.hours);
+ let currentLoads=state.loads.filter(l=>selectedGroup(byId(state.classes,l.classId)?.stage));
+ let required=currentLoads.reduce((n,x)=>n+x.hours,0),unfilled=currentLoads.filter(l=>assignedCount(l.id)<l.hours);
  let rows=unfilled.map(l=>{let c=byId(state.classes,l.classId),t=byId(state.teachers,l.teacherId);return [esc(displayClass(c)),esc(l.subject),esc(displayTeacher(t)),l.hours-assignedCount(l.id)]});
- let loadOptions=state.loads.filter(x=>assignedCount(x.id)<x.hours);
+ let loadOptions=currentLoads.filter(x=>assignedCount(x.id)<x.hours);
  let controls='<div class="actions"><button class="alt" onclick="showTab(\'constraints\')">🔒 إدارة القيود (اختيار يدوي)</button><button onclick="generate()">✨ إنشاء الجدول تلقائيًا</button><button class="alt" onclick="showTab(\'timetable\')">عرض الجدول وتعديله</button><button class="alt" onclick="downloadJson()">نسخة احتياطية JSON</button></div>';
  let manual='<div class="formrow four">'+fld('تكليف لم يُستكمل','<select id="mload">'+loadOptions.map(l=>{let c=byId(state.classes,l.classId);return opt(l.id,displayClass(c)+' — '+l.subject+' — '+displayTeacher(byId(state.teachers,l.teacherId)))}).join('')+'</select>')+fld('اليوم','<select id="mday">'+DAYS.map(x=>opt(x,x)).join('')+'</select>')+fld('الحصة','<input id="mperiod" type="number" value="1" min="1" max="8">')+'<button onclick="manualAdd()">إسناد يدوي</button></div>';
  let targetMissing=state.teachers.map(t=>({name:t.name,missing:Math.max(0,teacherWeeklyLoad(t.id)-teacherDefinedLoad(t.id))})).filter(t=>t.missing>0);
  let missingNote=targetMissing.length?'<div class="note warn"><b>حصص لا توجد لها تكليفات بالفصول:</b> '+targetMissing.map(t=>esc(t.name)+' ('+t.missing+' حصة)').join('، ')+'. حدّد الفصل والمادة لكل حصة قبل استكمال التوزيع.</div>':'';
- return panel('توليد الجدول',controls+missingNote+'<div class="note">يبحث النظام عن توزيع يمنع ازدواج حصة الفصل، ويمنع تداخل وقت المعلم بين المراحل. الحصص التي لا يجد لها مكانًا تظهر بالأسفل.</div><p>الحصص المطلوبة: <b>'+required+'</b> — الموزعة: <b>'+state.placements.length+'</b> — المتبقية: <b>'+Math.max(0,required-state.placements.length)+'</b></p>')+panel('الإسناد اليدوي',manual)+panel('الحصص التي لم تُوزّع',rows.length?table(['الفصل','المادة','المعلم','حصص متبقية'],rows):'<div class="empty">لا توجد حصص متبقية</div>');
+ return panel('توليد الجدول',controls+missingNote+'<div class="note">يبحث النظام عن توزيع يمنع ازدواج حصة الفصل، ويمنع تداخل وقت المعلم بين المراحل. الحصص التي لا يجد لها مكانًا تظهر بالأسفل.</div><p>الحصص المطلوبة: <b>'+required+'</b> — الموزعة: <b>'+state.placements.filter(p=>currentLoads.some(l=>l.id===p.loadId)).length+'</b> — المتبقية: <b>'+Math.max(0,required-state.placements.filter(p=>currentLoads.some(l=>l.id===p.loadId)).length)+'</b></p>')+panel('الإسناد اليدوي',manual)+panel('الحصص التي لم تُوزّع',rows.length?table(['الفصل','المادة','المعلم','حصص متبقية'],rows):'<div class="empty">لا توجد حصص متبقية</div>');
 }
 function manualAdd(){let l=byId(state.loads,document.getElementById('mload').value),d=document.getElementById('mday').value,p=+document.getElementById('mperiod').value;if(!l)return toast('لا توجد تكليفات غير مكتملة');if(assignedCount(l.id)>=l.hours)return toast('اكتمل نصاب التكليف');if(!canPlace(l,d,p))return toast('تعارض: الفصل أو المعلم مشغول، أو الحصة خارج توقيت المرحلة');state.placements.push({id:id(),loadId:l.id,day:d,period:p});save()}
 function teacherDefinedLoad(teacherId){
@@ -138,10 +145,11 @@ function teacherLabel(t){
  return t.name+' — النصاب: '+teacherWeeklyLoad(t.id)+' حصة';
 }
 function viewTimetable(){
- let list=filterMode==='teacher'?state.teachers:state.classes;
+ let eligibleClasses=state.classes.filter(c=>selectedGroup(c.stage));
+ let list=filterMode==='teacher'?state.teachers.filter(t=>state.loads.some(l=>l.teacherId===t.id&&eligibleClasses.some(c=>c.id===l.classId))||(state.reservations||[]).some(r=>r.teacherId===t.id)):eligibleClasses;
  if(!list.some(x=>x.id===filterId))filterId=list[0]?.id||'';
  let chooser='<div class="actions no-print"><button class="'+(filterMode==='class'?'':'alt')+'" onclick="setFilter(\'class\')">حسب الفصل</button><button class="'+(filterMode==='teacher'?'':'alt')+'" onclick="setFilter(\'teacher\')">حسب المعلم</button><select style="max-width:360px" onchange="filterId=this.value;render()">'+list.map(x=>'<option value="'+x.id+'" '+(x.id===filterId?'selected':'')+'>'+esc(filterMode==='teacher'?teacherLabel(x):displayClass(x))+'</option>').join('')+'</select><button class="alt" onclick="window.print()">🖨️ طباعة</button><button class="alt" onclick="exportCSV()">تصدير CSV لبديل</button></div>';
- let entries=state.placements.map(p=>({p,l:byId(state.loads,p.loadId)})).filter(x=>x.l&&(filterMode==='teacher'?x.l.teacherId===filterId:x.l.classId===filterId));
+ let entries=state.placements.map(p=>({p,l:byId(state.loads,p.loadId)})).filter(x=>x.l&&selectedGroup(byId(state.classes,x.l.classId)?.stage)&&(filterMode==='teacher'?x.l.teacherId===filterId:x.l.classId===filterId));
  let selectedTeacher=filterMode==='teacher'?byId(state.teachers,filterId):null;
  let title=filterMode==='teacher'?teacherLabel(selectedTeacher):displayClass(byId(state.classes,filterId));
  let summary=selectedTeacher?'<p class="small">النصاب المستهدف: '+teacherWeeklyLoad(selectedTeacher.id)+' — التكليفات المعرّفة: '+teacherDefinedLoad(selectedTeacher.id)+' — الموزعة: '+teacherScheduledLoad(selectedTeacher.id)+' — غير الموزعة: '+Math.max(0,teacherWeeklyLoad(selectedTeacher.id)-teacherScheduledLoad(selectedTeacher.id))+' حصة.</p>':'';
@@ -227,7 +235,7 @@ function viewConstraints(){
 function viewSettings(){return panel('نسخ احتياطي واسترجاع','<div class="actions"><button onclick="downloadJson()">تنزيل نسخة JSON</button><label class="pill" style="cursor:pointer">استعادة نسخة <input type="file" accept=".json" style="display:none" onchange="restoreJson(this.files[0])"></label></div><div class="note">هذه النسخة تحفظ على نفس المتصفح فقط. نزّل نسخة احتياطية قبل أي تغيير كبير.</div>')+panel('إعادة ضبط بيانات الجدول','<p class="small">مسح بيانات هذا النظام فقط؛ لن يمس بيانات نظام بديل أو راصد.</p><button class="danger" onclick="resetAll()">مسح بيانات الجدول الذكي</button>')}
 function resetAll(){if(!confirm('سيتم مسح جميع بيانات الجدول الذكي من هذا المتصفح. هل أخذت نسخة احتياطية؟'))return;if(prompt('اكتب مسح الجدول للتأكيد')!=='مسح الجدول')return;state=initial();save()}
 function showTab(v){tab=v;render()}
-function render(){document.getElementById('nav').innerHTML=[['setup','🧑‍🏫 المعلمون والفصول'],['times','⏰ مواعيد الحصص'],['constraints','🔒 إدارة القيود'],['generate','✨ التوليد الذكي'],['timetable','📅 الجدول والطباعة'],['settings','⚙️ النسخ الاحتياطي']].map(x=>'<button class="'+(tab===x[0]?'active':'')+'" onclick="showTab(\''+x[0]+'\')">'+x[1]+'</button>').join('');document.getElementById('stats').innerHTML=[['المعلمون',state.teachers.length],['الفصول',state.classes.length],['التكليفات',state.loads.length],['الحصص الموزعة',state.placements.length]].map(x=>'<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({setup:viewSetup,times:viewTimes,generate:viewGenerate,timetable:viewTimetable,constraints:viewConstraints,settings:viewSettings})[tab]()}
+function render(){document.getElementById('nav').innerHTML=[['setup','🧑‍🏫 المعلمون والفصول'],['times','⏰ مواعيد الحصص'],['constraints','🔒 إدارة القيود'],['generate','✨ التوليد الذكي'],['timetable','📅 الجدول والطباعة'],['settings','⚙️ النسخ الاحتياطي']].map(x=>'<button class="'+(tab===x[0]?'active':'')+'" onclick="showTab(\''+x[0]+'\')">'+x[1]+'</button>').join('');document.getElementById('stats').innerHTML=[['المعلمون',state.teachers.length],['الفصول',state.classes.length],['التكليفات',state.loads.length],['الحصص الموزعة',state.placements.length]].map(x=>'<div class="stat"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=stageGroupBar()+({setup:viewSetup,times:viewTimes,generate:viewGenerate,timetable:viewTimetable,constraints:viewConstraints,settings:viewSettings})[tab]()}
 render();
 </script><script>
 (function(){
