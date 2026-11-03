@@ -330,7 +330,7 @@ function buildImport(rows){
   if(conflict){issues.push('صف '+item.line+': تعارض توقيت/فصل للمعلم '+base.teachers.find(t=>t.id===load.teacherId).name);continue}
   base.placements.push({id:id(),loadId:load.id,day:item.day,period:item.period});
  }
- base.lastImport={total:rows.length,accepted:base.placements.length,reserved:base.reservations.length,unplaced:rows.length-base.placements.length-base.reservations.length,issues:issues.slice(0,80),more:Math.max(0,issues.length-80)};
+ base.lastImport={parserVersion:2,total:rows.length,accepted:base.placements.length,reserved:base.reservations.length,unplaced:rows.length-base.placements.length-base.reservations.length,issues:issues.slice(0,80),more:Math.max(0,issues.length-80)};
  return base;
 }
 async function importBadeelCSV(file){
@@ -345,7 +345,13 @@ async function importBadeelCSV(file){
 function reviewPanel(){
  const a=state.lastImport;
  if(!a)return '';
- return panel('نتائج آخر استيراد من بديل','<p><b>الصفوف:</b> '+a.total+' | <b>الموزعة:</b> '+a.accepted+' | <b>حافلات:</b> '+(a.reserved||0)+' | <b>غير محددة/معلّقة:</b> '+a.unplaced+'</p>'+(a.issues?.length?'<details><summary>عرض الملاحظات ('+(a.issues.length+a.more)+')</summary><ul>'+a.issues.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>':'<div class="note">لم تُرصد ملاحظات.</div>')+'<div class="note warn">تم التعرف تلقائيًا على الفصول ذات الإضافات الوصفية. الصفوف التي لا تذكر فصلًا محددًا مثل «حصة محجوزة» أو «متوسط» أو «تكليف خارج المتوسط والثانوي» تُترك للمراجعة، دون اختراع فصل أو حذف بيانات بديل.</div>');
+ const stale=!a.parserVersion||a.parserVersion<2;
+ const renew='<div class="note warn">'+(stale?'<b>هذا تقرير قديم لم يُحدَّث عند إصلاح الاستيراد.</b> ':'')+
+ 'ارفع ملف بديل نفسه مجددًا للحصول على عدد الملاحظات بعد معالجة الحافلات والتوصيفات. سيتم إنشاء نسخة احتياطية قبل استبدال الجدول، فلا تعِد الاستيراد إذا لديك تعديلات لم تحفظها.</div>'+
+ '<div class="actions"><label class="tag" style="cursor:pointer">🔄 إعادة تحليل واستيراد ملف بديل CSV <input type="file" accept=".csv,text/csv" style="display:none" onchange="importBadeelCSV(this.files[0]);this.value=\'\'"></label></div>';
+ const summary='<p><b>الصفوف:</b> '+a.total+' | <b>الموزعة:</b> '+a.accepted+' | <b>حافلات:</b> '+(a.reserved||0)+' | <b>غير محددة/معلّقة:</b> '+a.unplaced+'</p>';
+ const notes=(a.issues?.length?'<details><summary>عرض الملاحظات ('+(a.issues.length+a.more)+')</summary><ul>'+a.issues.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>':'<div class="note">لم تُرصد ملاحظات.</div>');
+ return panel('نتائج آخر استيراد من بديل',summary+renew+notes+'<div class="note warn">الرموز «حصة محجوزة» و«تكليف خارج المتوسط والثانوي» و«متوسط» لا تحدد فصلًا بعينه، لذلك تبقى للمراجعة ولا يُخترع لها فصل. الحرف «ح» يُفسَّر حافلة.</div>');
 }
 function deleteStoredBackup(bid){
  let all=getBackups();if(!all.some(x=>x.id===bid))return;
