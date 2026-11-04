@@ -222,24 +222,41 @@ function printDutyNotes(teacher,day,period,data){
  const iso=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
  return (data.duties||[]).filter(d=>d.teacher===t.id&&(!d.track||d.track===stageGroup)&&Number(d.period)===period&&(d.mode==='weekly'?d.day===day:d.date===iso)).map(d=>(d.kind==='bus'?'🚌 حافلة':d.kind==='assignment'?'📚 تكليف':'🛡 مراقبة')+(d.notes?' · '+d.notes:''));
 }
+function printSubjectLabel(value){
+ const raw=String(value||'').trim();
+ if(!raw)return '';
+ if(/حاسب|رقمية|حياتية|روبوت/i.test(raw))return 'حاسب';
+ if(/أحياء|احياء|علم\s*أرض|علم الأرض/.test(raw))return 'أحياء';
+ return raw
+  .replace(/\s*[—–-]?\s*تكليف\s+خارج\s+(?:الابتدائي|المتوسط\s*والثانوي|المتوسط|الثانوي)\s*/g,' ')
+  .replace(/\s+/g,' ').trim();
+}
 function teacherPrintSheet(t,stageLabel,data){
  const lessons=smartPrintLessons().filter(x=>x.l.teacherId===t.id&&selectedGroup(x.c.stage));
- const rows=DAYS.map(day=>[esc(day),...Array.from({length:8},(_,i)=>{
-  const period=i+1,cells=lessons.filter(x=>x.p.day===day&&x.p.period===period).map(x=>esc(x.l.subject)+'<small>'+esc(displayClass(x.c))+'</small>');
-  if((state.reservations||[]).some(r=>r.kind==='bus'&&r.teacherId===t.id&&r.day===day&&r.period===period))cells.push('🚌 حافلة');
-  cells.push(...printDutyNotes(t,day,period,data).map(esc));
+ const busAt=(day,period)=>(state.reservations||[]).some(r=>r.kind==='bus'&&r.teacherId===t.id&&r.day===day&&r.period===period);
+ const dutiesAt=(day,period)=>printDutyNotes(t,day,period,data).filter(x=>!/(تكليف\s+خارج|خارج\s+(?:الابتدائي|المتوسط|الثانوي))/u.test(x));
+ const periods=Array.from({length:8},(_,i)=>i+1).filter(period=>DAYS.some(day=>
+  lessons.some(x=>x.p.day===day&&x.p.period===period)||busAt(day,period)||dutiesAt(day,period).length
+ ));
+ const rows=DAYS.map(day=>[esc(day),...periods.map(period=>{
+  const cells=lessons.filter(x=>x.p.day===day&&x.p.period===period).map(x=>esc(printSubjectLabel(x.l.subject))+'<small>'+esc(displayClass(x.c))+'</small>');
+  if(busAt(day,period))cells.push('🚌 حافلة');
+  cells.push(...dutiesAt(day,period).map(esc));
   return cells.join('<hr>')||'—';
  })]);
  const quota=lessons.length,allQuota=teacherScheduledLoad(t.id),bus=(state.reservations||[]).filter(r=>r.kind==='bus'&&r.teacherId===t.id).length;
- return smartPrintSheet('جدول حصص المعلم: '+t.name,'المرحلة: '+stageLabel+' | نصاب المجموعة: '+quota+' | النصاب الكلي الموزع: '+allQuota+' | حافلات: '+bus,table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows));
+ const digits=['١','٢','٣','٤','٥','٦','٧','٨'];
+ return smartPrintSheet('جدول حصص المعلم: '+t.name,'المرحلة: '+stageLabel+' | نصاب المجموعة: '+quota+' | النصاب الكلي الموزع: '+allQuota+' | حافلات: '+bus,table(['اليوم / الحصة',...periods.map(p=>digits[p-1])],rows));
 }
 function classPrintSheet(cls,stageLabel){
  const lessons=smartPrintLessons().filter(x=>x.c.id===cls.id);
- const rows=DAYS.map(day=>[esc(day),...Array.from({length:8},(_,i)=>{
-  const matches=lessons.filter(x=>x.p.day===day&&x.p.period===i+1);
-  return matches.map(x=>esc(x.l.subject)+'<small>'+esc(byId(state.teachers,x.l.teacherId)?.name||'—')+'</small>').join('<hr>')||'—';
+ const periods=Array.from({length:8},(_,i)=>i+1).filter(period=>DAYS.some(day=>lessons.some(x=>x.p.day===day&&x.p.period===period)));
+ const digits=['١','٢','٣','٤','٥','٦','٧','٨'];
+ const rows=DAYS.map(day=>[esc(day),...periods.map(period=>{
+  const matches=lessons.filter(x=>x.p.day===day&&x.p.period===period);
+  return matches.map(x=>esc(printSubjectLabel(x.l.subject))+'<small>'+esc(byId(state.teachers,x.l.teacherId)?.name||'—')+'</small>').join('<hr>')||'—';
  })]);
- return smartPrintSheet('جدول حصص الفصل: '+cls.name,'المرحلة: '+cls.stage,table(['اليوم / الحصة','١','٢','٣','٤','٥','٦','٧','٨'],rows));
+ return smartPrintSheet('جدول حصص الفصل: '+cls.name,'المرحلة: '+cls.stage,table(['اليوم / الحصة',...periods.map(p=>digits[p-1])],rows));
 }
 function generalPrintSheets(classes,stageLabel){
  const lessons=smartPrintLessons();
