@@ -102,12 +102,13 @@ async function saveAllImprovements(){
   const snapshots=await Promise.all(refs.map(ref=>ref.get()));
   snapshots.forEach((snap,i)=>{
    const x=changes[i],old=snap.exists?snap.data():null;
-   if(old&&((old.teacherEmail&&norm(old.teacherEmail)!==selectedTeacher)
-    ||(old.testId&&String(old.testId)!==String(test.id))
-    ||(old.grade!==undefined&&String(old.grade)!==el("grade").value)
-    ||(old.section!==undefined&&String(old.section)!==el("section").value)
+   // Canonical document ID binds this record to testId + studentCode.
+   // Teacher reassignment may leave legacy teacherEmail metadata; do not reject the student's grade for that.
+   if(old&&((old.testId&&String(old.testId)!==String(test.id))
+    ||(old.grade!==undefined&&String(old.grade).trim()!==String(el("grade").value).trim())
+    ||(old.section!==undefined&&String(old.section).trim()!==String(el("section").value).trim())
     ||(old.studentCode&&norm(old.studentCode)!==norm(x.student.code))))
-    throw Error("السجل الموجود لا يطابق الطالب أو الاختبار أو الفصل المحدد: "+x.student.name);
+    throw Error("بيانات سجل الطالب لا تطابق الاختبار أو الصف أو الفصل الحالي: "+x.student.name);
    const hadMark=!!old&&old.attendance!=="absent"&&old.mark!==null&&old.mark!==undefined&&old.mark!=="";
    const before=hadMark&&Number.isFinite(Number(old.mark))?Number(old.mark):null;
    const original=old?(old.originalMark!==undefined?old.originalMark:before):null;
@@ -125,7 +126,7 @@ async function saveAllImprovements(){
     previous:old?{mark:before,attendance:old.attendance}:null,
     next:{mark:approved,attemptMark:x.mark},originalMark:original,
     createdAt:firebase.firestore.FieldValue.serverTimestamp()}});
-   const fields={teacherEmail:old?.teacherEmail||selectedTeacher,teacherName:old?.teacherName||teacherName,
+   const fields={teacherEmail:selectedTeacher,teacherName,
     originalMark:original,originalAttendance:old?.originalAttendance||(old?old.attendance:"not_recorded"),
     mark:approved,attendance:"present",lastImprovementMark:x.mark,
     improvementHistory:firebase.firestore.FieldValue.arrayUnion(entry),
