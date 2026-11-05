@@ -94,7 +94,7 @@ async function saveEvent(){
  if(effectiveType==="selected"&&!effectiveTargets.length){alert("لا يوجد معلمون مستهدفون ضمن نطاقك.");return}
  const materialUrl=el("materialUrl").value.trim();
  if(materialUrl&&!validUrl(materialUrl)){alert("رابط الملف غير صحيح.");return}
- if(!materialUrl&&kind==="course"){alert("أرفق ملفًا أو أدخل رابطًا للمادة.");return}
+ if(!materialUrl&&kind==="course"&&!description){alert("أدخل وصف المحتوى قبل النشر.");return}
  const agenda=el("meetingAgenda").value.trim();
  if(kind==="meeting"&&!materialUrl&&!agenda){alert("أضف رابطًا/ملفًا للاجتماع أو أضف بنود الاجتماع.");return}
  const ref=id?db.collection("trainingCourses").doc(id):db.collection("trainingCourses").doc(),current=events.find(x=>x.id===id)||{};
