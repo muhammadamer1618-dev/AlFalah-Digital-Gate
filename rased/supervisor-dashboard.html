@@ -262,7 +262,7 @@ document.addEventListener("click",function(event){
 
 
 const firebaseConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};firebase.initializeApp(firebaseConfig);const db=firebase.firestore();
-const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));let students=[],teachers=[],subjects=[],tests=[],grades=[],messages=[],activities=[],schedules=[];let currentPermissions={},currentSupervisorType="general_supervisor",currentSupervisorPhone="";
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));let students=[],teachers=[],subjects=[],tests=[],grades=[],messages=[],activities=[],schedules=[];let currentPermissions={},currentSupervisorType="general_supervisor",currentSupervisorPhone="",assignedTeacherEmails=[];
 function hydrateAlfalahGateSession(){
  try{
   const gate=JSON.parse(localStorage.getItem("alfalah.gate.session.v1")||"null");
@@ -304,6 +304,7 @@ if(!d.exists||String(d.data()?.role||"").toLowerCase()!=="supervisor")throw Erro
 const x=d.data()||{};
 currentSupervisorType=String(x.supervisorType||"general_supervisor").toLowerCase();
 currentSupervisorPhone=String(x.phone||x.mobile||"").trim();
+assignedTeacherEmails=Array.isArray(x.assignedTeacherEmails)?[...new Set(x.assignedTeacherEmails.map(v=>String(v||"").trim().toLowerCase()).filter(Boolean))]:[];
 currentPermissions=x.permissions&&typeof x.permissions==="object"?x.permissions:{};
 const roleLabel=roleTypeLabel(currentSupervisorType);
 supName.textContent=x.name||rasedAuthGet("currentUserName")||u;
@@ -330,6 +331,11 @@ loadCollectionIfAllowed("activitiesView","activities",d=>({id:d.id,...d.data()})
 loadCollectionIfAllowed("examSchedulesView","examSchedules",d=>({id:d.id,...d.data()}))
 ]);
 [students,teachers,subjects,tests,grades,messages,activities,schedules]=results;
+// Restricted supervisors may only see message logs belonging to the teachers explicitly assigned to them.
+if(currentSupervisorType==="supervisor"){
+ const allowed=new Set(assignedTeacherEmails);
+ messages=messages.filter(x=>allowed.has(String(x.teacherEmail||"").trim().toLowerCase()));
+}
 
 if(document.getElementById("sStudents"))sStudents.textContent=students.length;
 if(document.getElementById("sTeachers"))sTeachers.textContent=teachers.length;
