@@ -101,14 +101,20 @@ async function saveAllImprovements(){
   const refs=changes.map(x=>db.collection("grades").doc(x.grade?.id||String(test.id)+"_"+String(x.student.code)));
   const snapshots=await Promise.all(refs.map(ref=>ref.get()));
   snapshots.forEach((snap,i)=>{
-   const x=changes[i],old=snap.exists?snap.data():null;
-   // Canonical document ID binds this record to testId + studentCode.
-   // Teacher reassignment may leave legacy teacherEmail metadata; do not reject the student's grade for that.
-   if(old&&((old.testId&&String(old.testId)!==String(test.id))
+   const x=changes[i];
+   let old=snap.exists?snap.data():null;
+   // A legacy deterministic ID may already belong to another class/test record.
+   // Never overwrite that record: create a separate grade document for this exact student/test/class.
+   const identityMismatch=!!old&&(
+    (old.testId&&String(old.testId)!==String(test.id))
     ||(old.grade!==undefined&&String(old.grade).trim()!==String(el("grade").value).trim())
     ||(old.section!==undefined&&String(old.section).trim()!==String(el("section").value).trim())
-    ||(old.studentCode&&norm(old.studentCode)!==norm(x.student.code))))
-    throw Error("بيانات سجل الطالب لا تطابق الاختبار أو الصف أو الفصل الحالي: "+x.student.name);
+    ||(old.studentCode&&norm(old.studentCode)!==norm(x.student.code))
+   );
+   if(identityMismatch){
+    refs[i]=db.collection("grades").doc();
+    old=null;
+   }
    const hadMark=!!old&&old.attendance!=="absent"&&old.mark!==null&&old.mark!==undefined&&old.mark!=="";
    const before=hadMark&&Number.isFinite(Number(old.mark))?Number(old.mark):null;
    const original=old?(old.originalMark!==undefined?old.originalMark:before):null;
