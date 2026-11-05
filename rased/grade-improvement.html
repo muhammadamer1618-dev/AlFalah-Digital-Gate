@@ -23,7 +23,7 @@ async function load(){
    const code=norm(x.studentCode);
    if(!code)return;
    if(String(x.grade??"").trim()!==gradeValue||String(x.section??"").trim()!==sectionValue)return;
-   if(x.teacherEmail&&norm(x.teacherEmail)!==selectedTeacher)return;
+   // A test document is shared by test/student; legacy teacher ownership metadata may be stale.
    found.set(code,x);
   });
 
@@ -38,7 +38,7 @@ async function load(){
    if(data.testId&&String(data.testId)!==testId)return;
    if(data.grade!==undefined&&String(data.grade).trim()!==gradeValue)return;
    if(data.section!==undefined&&String(data.section).trim()!==sectionValue)return;
-   if(data.teacherEmail&&norm(data.teacherEmail)!==selectedTeacher)return;
+   // Do not hide the canonical test/student record because of legacy teacherEmail metadata.
    // Fill legacy metadata from the selected class and roster for consistent rendering.
    x.studentCode=String(data.studentCode||st.code);
    x.grade=String(data.grade??gradeValue);
