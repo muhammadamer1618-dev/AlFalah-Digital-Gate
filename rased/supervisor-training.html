@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>راصد - الدورات والاجتماعات والمواد</title>
+<title>راصد - متابعة أعمال الإشراف</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,10 +13,11 @@
 <link rel="stylesheet" href="rased-theme.css">
 </head>
 <body>
-<header class="head"><button class="back" onclick="location.href='supervisor-dashboard.html'">← لوحة الإشراف</button><img src="logo.jpeg" class="logo"><h1>مدارس الفلاح الأهلية</h1><p>إدارة الدورات والاجتماعات والمواد</p><button class="logout" onclick="logout()">تسجيل الخروج</button></header>
+<header class="head"><button class="back" onclick="location.href='supervisor-dashboard.html'">← لوحة الإشراف</button><img src="logo.jpeg" class="logo"><h1>مدارس الفلاح الأهلية</h1><p>متابعة أعمال الإشراف</p><button class="logout" onclick="logout()">تسجيل الخروج</button></header>
 <main class="wrap">
-<section class="card"><div class="title">📚 إنشاء مادة أو اجتماع</div><div class="body">
-<div class="note">أضف ملفًا أو رابطًا للمادة. في الاجتماعات تظهر البنود والتوصيات للمعلمين، ويسجل النظام اطلاع المعلم عند فتح الاجتماع ثم توقيعه الإلكتروني مرة واحدة بعد مراجعة جميع البنود.</div>
+<section class="card"><div class="title">📚 إنشاء وتوثيق عمل إشرافي</div><div class="body">
+<div class="note">اختر نوع العمل الإشرافي، ودوّن بياناته ومحاوره، وحدّد المعلمين المستهدفين. تظهر التفاصيل في صفحة المعلم مع إقرار الاطلاع والتوقيع الإلكتروني، ويمكن طباعة شاهد التوثيق من المتابعة.</div>
+<div class="note" id="connectionStatus" role="status" style="display:none"><span id="connectionMessage"></span> <button type="button" class="light" id="retryLoadBtn" onclick="retryLoad()" style="margin-inline-start:8px">🔄 إعادة محاولة الاتصال</button></div>
 <input type="hidden" id="editId">
 <div class="fields">
 <div><label>نوع المحتوى</label><select id="eventKind" onchange="toggleKind()"><option value="meeting">اجتماع</option><option value="item1">ورشة عمل</option><option value="item2">نقاش</option><option value="item3">حضور درس (تبادل زيارات)</option><option value="course">دورات</option><option value="item5">حلقة تنشيطية</option><option value="item6">مناقشة أعمال الاختبارات</option><option value="item7">مناقشة التحصيلي والقدرات</option><option value="item8">مناقشة مستوى الطلاب</option><option value="item9">مناقشة مستوى المعلمين</option><option value="item10">المقابلات</option><option value="item11">حضور حصص القدرات والتحصيلي</option><option value="item12">متابعة السجلات</option><option value="item13">متابعة المشاريع والخطط</option><option value="item14">متابعة المناهج</option><option value="item15">متابعة أوراق العمل</option><option value="item16">متابعة حضور الإذاعة الصباحية</option><option value="item17">متابعة البحوث والابتكارات</option><option value="item18">متابعة مستوى الطلاب الضعاف</option><option value="item19">متابعة مشاريع المقررات</option><option value="item20">متابعة الطلاب الموهوبين</option><option value="item21">حضور برنامج</option><option value="item22">أعمال مكتبية</option><option value="item23">متابعة تلبية الاحتياجات</option><option value="item24">متابعة توزيع الحصص على المعلمين (الانتظار)</option></select></div>
@@ -39,7 +40,7 @@
 </div>
 <div class="actions"><button class="primary" onclick="saveEvent()">💾 حفظ</button><button class="light" onclick="resetForm()">عنصر جديد</button></div>
 </div></section>
-<section class="card"><div class="title">📊 متابعة المواد والاجتماعات</div><div class="body"><div class="stats">
+<section class="card"><div class="title">📊 متابعة أعمال الإشراف والشواهد</div><div class="body"><div class="stats">
 <div class="stat">الإجمالي<b id="sAll">0</b></div><div class="stat">الدورات<b id="sCourses">0</b></div><div class="stat">الاجتماعات<b id="sMeetings">0</b></div><div class="stat">أقروا بالاطلاع<b id="sCompleted">0</b></div><div class="stat">التوقيعات<b id="sSigned">0</b></div>
 </div><div class="table-wrap"><table><thead><tr><th>#</th><th>العنوان</th><th>النوع</th><th>التاريخ</th><th>الفئة المستهدفة</th><th>فتحوا المادة</th><th>الإكمال / التوقيع</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="eventsBody"></tbody></table></div></div></section>
 <div class="foot">نظام راصد - مدارس الفلاح الأهلية | تصميم محمد عامر أحمد</div>
@@ -65,6 +66,20 @@ function specialtyKey(a){if(a?.subjectId)return"id:"+String(a.subjectId);if(a?.s
 function teacherKeys(t){const s=new Set((Array.isArray(t?.assignments)?t.assignments:[]).map(specialtyKey).filter(Boolean));if(t?.specialty)s.add("name:"+String(t.specialty).trim());return s}
 async function protect(){const role=(localStorage.getItem("currentUserRole")||"").toLowerCase();currentUser=(localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"").trim().toLowerCase();if(role==="manager"){currentSupervisorType="manager";isSupervisorUser=false;permissions={};return true}if(role!=="supervisor"){alert("هذه الصفحة لحسابات الإشراف.");location.href="index.html";return false}isSupervisorUser=true;const d=await db.collection("users").doc(currentUser).get();if(!d.exists){location.href="index.html";return false}const u=d.data()||{};permissions=u.permissions||{};currentSupervisorType=String(u.supervisorType||"general_supervisor").toLowerCase();assignedTeacherEmails=[...(Array.isArray(u.assignedTeacherEmails)?u.assignedTeacherEmails:[]),...(Array.isArray(u.assignedTeacherIds)?u.assignedTeacherIds:[]),...(Array.isArray(u.assignedTeachers)?u.assignedTeachers:[])].flatMap(x=>x&&typeof x==="object"?[x.email,x.teacherEmail,x.username,x.id,x.value]:[x]).map(x=>String(x||"").trim().toLowerCase()).filter(Boolean);if(!has("trainingManage")){alert("لا توجد لديك صلاحية إدارة الدورات والاجتماعات.");location.href="supervisor-dashboard.html";return false}return true}
 async function loadAll(){const [ts,us,cs,ps]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),db.collection("trainingProgress").get()]);const docs=[...ts.docs,...us.docs.filter(d=>String(d.data()?.role||"").toLowerCase()==="teacher")];teachers=docs.map(d=>{const x=d.data()||{};return {...x,id:d.id,email:String(x.email||x.username||d.id).trim().toLowerCase(),_keys:[d.id,x.email,x.username,x.teacherEmail,x.name].map(v=>String(v||"").trim().toLowerCase())}}).filter((t,i,a)=>a.findIndex(x=>x.email===t.email)===i);if(isSupervisorUser&&currentSupervisorType==="supervisor"){const allow=new Set(assignedTeacherEmails);teachers=teachers.filter(t=>t._keys.some(k=>allow.has(k)))}events=cs.docs.map(d=>({id:d.id,...d.data()}));if(isSupervisorUser)events=events.filter(c=>String(c.createdBy||c.updatedBy||"").trim().toLowerCase()===currentUser);events.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));const ids=new Set(events.map(x=>x.id));progress=ps.docs.map(d=>({id:d.id,...d.data()})).filter(p=>ids.has(p.courseId));renderTeacherChoices();updateTargetCount();renderEvents();renderStats()}
+function setConnectionStatus(message){
+ const box=el("connectionStatus");box.style.display=message?"block":"none";
+ el("connectionMessage").textContent=message||"";
+}
+async function retryLoad(){
+ const btn=el("retryLoadBtn");btn.disabled=true;btn.textContent="جارٍ إعادة الاتصال...";
+ try{
+  if(typeof db.enableNetwork==="function")await db.enableNetwork();
+  await loadAll();setConnectionStatus("");
+ }catch(e){
+  console.error("تعذر تحميل أعمال الإشراف",e);
+  setConnectionStatus("تعذر تحميل بيانات الإشراف من قاعدة البيانات. تحقق من اتصال الإنترنت، ثم أعد المحاولة. التفاصيل: "+(e.message||e));
+ }finally{btn.disabled=false;btn.textContent="🔄 إعادة محاولة الاتصال"}
+}
 function renderTeacherChoices(){el("teachersGrid").innerHTML=teachers.map(t=>'<label class="teacher-check"><input type="checkbox" class="target-teacher" value="'+esc(t.email)+'"><span>'+esc(t.name||t.email)+'<br><small>'+esc(t.email)+'</small></span></label>').join("")||"لا يوجد معلمون مسندون إلى حسابك. راجع إسناد المعلمين من لوحة الإدارة.";const m=new Map();teachers.forEach(t=>(Array.isArray(t.assignments)?t.assignments:[]).forEach(a=>{const k=specialtyKey(a);if(k&&!m.has(k))m.set(k,a.subjectName||a.subjectId||k)}));el("specialtiesGrid").innerHTML=[...m.entries()].sort((a,b)=>String(a[1]).localeCompare(String(b[1]),"ar")).map(([k,n])=>'<label class="teacher-check"><input type="checkbox" class="target-specialty" value="'+esc(k)+'"><span>'+esc(n)+'</span></label>').join("")||"لا توجد تخصصات"}
 function toggleTargets(){el("targetType").value="selected";el("targetsWrap").style.display="block";el("specialtiesWrap").style.display="none";updateTargetCount()}
 function updateTargetCount(){el("targetCount").textContent="تم اختيار "+selectedTeachers().length+" من "+teachers.length+" معلم"}
@@ -157,7 +172,7 @@ function printMinutes(id){
  if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة المحضر.");return}
  w.document.write(html);w.document.close();
 }
-async function start(){try{if(await protect())await loadAll()}catch(e){console.error(e);alert("تعذر تحميل الدورات والاجتماعات: "+e.message)}}start();toggleKind();
+async function start(){try{if(await protect()){await loadAll();setConnectionStatus("")}}catch(e){console.error(e);setConnectionStatus("تعذر تحميل بيانات الإشراف. تأكد من الاتصال بالإنترنت ثم اضغط إعادة المحاولة. التفاصيل: "+(e.message||e))}}start();toggleKind();
 </script>
 
 <script src="rased-portal-back.js?v=20261031-universal1"></script>
