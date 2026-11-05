@@ -103,12 +103,17 @@ async function saveAllImprovements(){
     mark:approved,attendance:"present",lastImprovementMark:x.mark,
     improvementHistory:firebase.firestore.FieldValue.arrayUnion(entry),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
-   gradeBatch.set(refs[i],old?fields:{...fields,testId:String(test.id),studentCode:String(x.student.code),
+   const completeFields={...fields,testId:String(test.id),studentCode:String(x.student.code),
     studentName:x.student.name||"",subjectId:String(test.subjectId||el("subject").value),
     subjectName:subjects.find(a=>a.id===String(test.subjectId))?.name||"",
     grade:el("grade").value,section:el("section").value,testName:test.name||"",
-    testDate:test.date||"",fullMark:Number(test.fullMark),
-    createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    testDate:test.date||"",fullMark:Number(test.fullMark)};
+   if(old){
+    // Preserve the student's existing grade fields; a plain set() replaces the whole Firestore document.
+    gradeBatch.set(refs[i],completeFields,{merge:true});
+   }else{
+    gradeBatch.set(refs[i],{...completeFields,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+   }
   });
   say("جارٍ حفظ "+changes.length+" درجة...");
   await gradeBatch.commit();
