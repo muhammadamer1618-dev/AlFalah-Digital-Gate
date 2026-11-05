@@ -12,22 +12,49 @@ async function load(){
  if(!eligible())return say("اختر اختبارًا ضمن إسناداتك.");
  el("load").disabled=true;
  try{
-  const testId=String(el("test").value),gradeValue=String(el("grade").value),sectionValue=String(el("section").value);
-  const snap=await db.collection("grades").where("testId","==",testId).get();
+  const testId=String(el("test").value),gradeValue=String(el("grade").value).trim(),sectionValue=String(el("section").value).trim();
+  const roster=students.filter(x=>String(x.grade).trim()===gradeValue&&String(x.section).trim()===sectionValue);
   const found=new Map();
-  snap.docs.forEach(d=>{const x={id:d.id,...d.data()};if(String(x.grade)===gradeValue&&String(x.section)===sectionValue&&(!x.teacherEmail||norm(x.teacherEmail)===selectedTeacher))found.set(norm(x.studentCode),x)});
-  // Legacy/partially indexed records may not be returned by the testId query.
-  const roster=students.filter(x=>String(x.grade)===gradeValue&&String(x.section)===sectionValue);
-  const missing=roster.filter(x=>!found.has(norm(x.code)));
-  const direct=await Promise.all(missing.map(st=>db.collection("grades").doc(testId+"_"+String(st.code)).get()));
-  direct.forEach((d,i)=>{if(!d.exists)return;const x={id:d.id,...d.data()},st=missing[i];
-   if(String(x.studentCode||st.code)===String(st.code)&&String(x.grade)===gradeValue&&String(x.section)===sectionValue&&(!x.testId||String(x.testId)===testId)&&(!x.teacherEmail||norm(x.teacherEmail)===selectedTeacher))found.set(norm(st.code),x);
+
+  // Read the standard grade query first, matching the teacher's regular grading page.
+  const snap=await db.collection("grades").where("testId","==",testId).get();
+  snap.docs.forEach(d=>{
+   const x={id:d.id,...d.data()};
+   const code=norm(x.studentCode);
+   if(!code)return;
+   if(String(x.grade??"").trim()!==gradeValue||String(x.section??"").trim()!==sectionValue)return;
+   if(x.teacherEmail&&norm(x.teacherEmail)!==selectedTeacher)return;
+   found.set(code,x);
   });
+
+  // Always check the deterministic document IDs used by teacher.html.
+  // This covers first-time grade entries and legacy records that are absent from the query result.
+  const exact=await Promise.all(roster.map(st=>db.collection("grades").doc(testId+"_"+String(st.code)).get()));
+  exact.forEach((d,i)=>{
+   if(!d.exists)return;
+   const st=roster[i],data=d.data()||{};
+   const x={id:d.id,...data};
+   if(data.studentCode&&norm(data.studentCode)!==norm(st.code))return;
+   if(data.testId&&String(data.testId)!==testId)return;
+   if(data.grade!==undefined&&String(data.grade).trim()!==gradeValue)return;
+   if(data.section!==undefined&&String(data.section).trim()!==sectionValue)return;
+   if(data.teacherEmail&&norm(data.teacherEmail)!==selectedTeacher)return;
+   // Fill legacy metadata from the selected class and roster for consistent rendering.
+   x.studentCode=String(data.studentCode||st.code);
+   x.grade=String(data.grade??gradeValue);
+   x.section=String(data.section??sectionValue);
+   found.set(norm(st.code),x);
+  });
+
   grades=[...found.values()];
   render();
   say(await closed(tests.find(x=>String(x.id)===testId))?"الرصد الأصلي مغلق، يمكنك إدخال درجات التحسين.":"الرصد الأصلي لا يزال مفتوحًا، لا يمكن حفظ التحسين حتى يغلق.");
- }catch(e){console.error("GRADE IMPROVEMENT LOAD ERROR",e);say("تعذر تحميل الدرجات: "+(e?.message||String(e)))}
- finally{el("load").disabled=false}
+ }catch(e){
+  console.error("GRADE IMPROVEMENT LOAD ERROR",e);
+  say("تعذر تحميل الدرجات: "+(e?.message||String(e)));
+ }finally{
+  el("load").disabled=false;
+ }
 }
 function render(){
  const t=tests.find(x=>x.id===el("test").value);
