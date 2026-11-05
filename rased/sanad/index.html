@@ -179,6 +179,38 @@ function quickFill(){
  }
  save();toast('تم تغطية '+assigned+' مراقبة، والمتبقي '+unfilled+' خانة دون مراقب');
 }
+
+function quickCurrentNeeds(){
+ const sites=new Set(quickSites()),limit=s.quickMonitoringPeriods[monitoringTrack]||7;
+ return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.has(n.notes)&&days.includes(n.day)&&Number(n.period)>=1&&Number(n.period)<=limit);
+}
+function quickBackupBeforeChange(){
+ const key='sanad-monitoring-backup-'+new Date().toISOString().replace(/[:.]/g,'-');
+ try{localStorage.setItem(key,JSON.stringify(s));return true}
+ catch(e){console.error('تعذر حفظ نسخة احتياطية قبل تغيير المراقبات',e);alert('تعذر إنشاء نسخة احتياطية. لم يتم تغيير المراقبات.');return false}
+}
+function quickClearAssignments(){
+ const needs=quickCurrentNeeds(),allocated=needs.filter(n=>n.assignedTeacher);
+ if(!allocated.length)return toast('لا توجد أسماء مراقبين لتفريغها في هذا الجدول');
+ if(!confirm('تفريغ '+allocated.length+' تكليف مراقبة من جدول '+monitorTrackLabel(monitoringTrack)+'؟ ستبقى الخانات والمواقع والأيام كما هي، ويمكن إعادة توزيعها.'))return;
+ if(!quickBackupBeforeChange())return;
+ const ids=new Set(needs.map(n=>n.id));
+ s.duties=s.duties.filter(d=>!ids.has(d.needId));
+ needs.forEach(n=>n.assignedTeacher='');
+ save();toast('تم تفريغ '+allocated.length+' مراقبة مع بقاء الجدول');
+}
+function quickDeleteSchedule(){
+ const needs=quickCurrentNeeds();
+ if(!needs.length)return toast('لا توجد مراقبات أسبوعية لحذفها في هذا الجدول');
+ const siteLabel=quickSites().join(' + ');
+ if(!confirm('حذف جدول المراقبات الأسبوعي لمرحلة '+monitorTrackLabel(monitoringTrack)+' في المواقع: '+siteLabel+'؟\nسيتم حذف '+needs.length+' خانة مراقبة وتكليفاتها، ولن تُحذف حصص المعلمين أو مراقبات المراحل الأخرى.'))return;
+ if(!quickBackupBeforeChange())return;
+ const ids=new Set(needs.map(n=>n.id));
+ s.monitoringNeeds=s.monitoringNeeds.filter(n=>!ids.has(n.id));
+ s.duties=s.duties.filter(d=>!ids.has(d.needId));
+ save();toast('تم حذف '+needs.length+' خانة من الجدول الأسبوعي');
+}
+
 function quickPrint(){
  const title='جدول مناوبة المراقبات - '+monitorTrackLabel(monitoringTrack);
  const html='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>@page{size:A4 landscape;margin:8mm}body{font-family:Tahoma,Arial;margin:0;color:#111}h2{text-align:center;font-size:18px;margin:5px}p{text-align:center;font-size:11px;margin:4px}table{border-collapse:collapse;width:100%;table-layout:fixed}td,th{border:1px solid #444;text-align:center;padding:5px 2px;font-size:10px;overflow-wrap:anywhere}th{background:#e6efea}.foot{display:flex;justify-content:space-between;margin-top:18px;font-size:11px;font-weight:bold}</style></head><body><div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #555;margin-bottom:9px"><img src="../alfalah-round-logo.png" style="width:63px;height:63px;object-fit:contain" alt="شعار المدرسة"><div style="text-align:center"><p>المملكة العربية السعودية | وزارة التعليم</p><h2>مدارس الفلاح الأهلية</h2><h2>'+esc(title)+'</h2></div><img src="../moe-vision2030-logo.png" style="width:86px;height:63px;object-fit:contain" alt="شعار وزارة التعليم"></div>'+quickGrid(true)+'<div class="foot"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div><p>تصميم محمد عامر أحمد</p></body></html>';
@@ -192,7 +224,7 @@ function quickMonitoringPanel(){
  '<div class="fields">'+(monitoringTrack==='upper'?'<div class="notice"><b>الموقعان المطلوب تغطيتهما في كل حصة:</b> ثانوي شرقي + ثانوي غربي</div>':field('مواقع المراقبة (افصل بفاصلة)','<input id="quickSites" value="'+esc(sites.join('، '))+'" placeholder="حدد مواقع المرحلة">'))+
  field('عدد الحصص يوميًا','<input id="quickPeriods" type="number" min="1" max="12" value="'+periods+'">')+
  field('عدد المراقبين لكل موقع وحصة','<input id="quickQuantity" type="number" min="1" max="5" value="1">')+'</div>'+
- '<div class="actions"><button onclick="quickGenerate()">✨ إنشاء وتوزيع الجدول كاملًا</button><button class="alt" onclick="quickFill()">⚖ توزيع الخانات الفارغة</button><button class="alt" onclick="quickPrint()">🖨 طباعة الجدول</button></div>'+
+ '<div class="actions"><button onclick="quickGenerate()">✨ إنشاء وتوزيع الجدول كاملًا</button><button class="alt" onclick="quickFill()">⚖ توزيع الخانات الفارغة</button><button class="alt" onclick="quickPrint()">🖨 طباعة الجدول</button><button class="alt" onclick="quickClearAssignments()">🧹 تفريغ التوزيع</button><button class="danger" onclick="quickDeleteSchedule()">🗑 حذف الجدول</button></div>'+
  '<p class="muted">المراقبات الموزعة: '+needs.filter(n=>n.assignedTeacher).length+' من '+needs.length+' · غير المغطاة: '+needs.filter(n=>!n.assignedTeacher).length+'. الأولوية لتغطية الموقعين في كل حصة، بدون تكليف المعلم مرتين في نفس الموعد. اختر المعلمين المسموح لهم بالمراقبة قبل إنشاء الجدول.</p>';
  return box('⚡ التوزيع الأسبوعي السريع للمراقبات',form+quickGrid());
 }
