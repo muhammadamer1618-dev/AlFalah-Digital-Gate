@@ -264,12 +264,17 @@ document.addEventListener("click",function(event){
 const firebaseConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};firebase.initializeApp(firebaseConfig);const db=firebase.firestore();
 const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));let students=[],teachers=[],subjects=[],tests=[],grades=[],messages=[],activities=[],schedules=[];let currentPermissions={},currentSupervisorType="general_supervisor",currentSupervisorPhone="",assignedTeacherEmails=[];
 function hydrateAlfalahGateSession(){
+ // A tab with an established login must never be overwritten by another
+ // account that logged into the shared AlFalah portal in a different tab.
+ if(sessionStorage.getItem("rasedTabAuthReady")==="1"
+    && sessionStorage.getItem("currentUserRole")
+    && (sessionStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUser")))return;
  try{
   const gate=JSON.parse(localStorage.getItem("alfalah.gate.session.v1")||"null");
   const gateRole=gate?.rasedRole||gate?.sourceRole||(gate?.type==="supervision"?"supervisor":"");
-  if(gate&&gate.username&&gateRole){
+  if(gate&&gate.username&&String(gateRole).toLowerCase()==="supervisor"){
    sessionStorage.setItem("rasedTabAuthReady","1");
-   sessionStorage.setItem("currentUserRole",String(gateRole));
+   sessionStorage.setItem("currentUserRole","supervisor");
    sessionStorage.setItem("currentUser",String(gate.username));
    sessionStorage.setItem("currentUserEmail",String(gate.username));
    if(gate.name)sessionStorage.setItem("currentUserName",String(gate.name));
@@ -279,7 +284,7 @@ function hydrateAlfalahGateSession(){
  }catch(e){}
 }
 function protect(){hydrateAlfalahGateSession();const r=(rasedAuthGet("currentUserRole")||"").toLowerCase();if(r!=="supervisor"){alert("هذه الصفحة لحسابات الإشراف فقط");location.href="index.html";return false}return true}
-function logout(){rasedLogoutThisTab();try{localStorage.removeItem("alfalah.gate.session.v1")}catch(e){}location.href="../"}
+function logout(){rasedLogoutThisTab();location.href="../"}
 function fmtTs(v){try{const d=v?.toDate?v.toDate():new Date(v);return isNaN(d)?"—":new Intl.DateTimeFormat("ar-SA",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d)}catch{return "—"}}
 function roleTypeLabel(type){
 const t=String(type||"").toLowerCase();
