@@ -99,9 +99,12 @@ function legacyMonitoringPanel(){
 }
 
 /* Weekly monitoring matrix: existing monitoringNeeds and duties stay authoritative. */
-s.quickMonitoringSites ||= {primary:['الفناء'],upper:['ثانوي شرقي','ثانوي غربي']};
+s.quickMonitoringSites ||= {primary:[],upper:['ثانوي شرقي','ثانوي غربي']};
 s.quickMonitoringPeriods ||= {primary:7,upper:7};
-function quickSites(){return [...new Set((s.quickMonitoringSites[monitoringTrack]||[]).filter(Boolean))]}
+function quickSites(){
+ if(monitoringTrack==='upper')return ['ثانوي شرقي','ثانوي غربي'];
+ return [...new Set((s.quickMonitoringSites[monitoringTrack]||[]).filter(Boolean))];
+}
 function quickNeeds(site,day,p){return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&n.day===day&&Number(n.period)===p&&n.notes===site)}
 function quickAllowed(t,need){
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).includes(t.id))return false;
@@ -138,7 +141,7 @@ function quickGrid(print=false){
  return '<div style="overflow-x:auto"><table style="width:100%;min-width:950px;table-layout:fixed;border-collapse:collapse">'+head+body+'</table></div>';
 }
 function quickGenerate(){
- const sites=[...new Set((document.getElementById('quickSites')?.value||'').split(/[,،\n]+/).map(x=>x.trim()).filter(Boolean))];
+ const sites=monitoringTrack==='upper'?['ثانوي شرقي','ثانوي غربي']:[...new Set((document.getElementById('quickSites')?.value||'').split(/[,،\n]+/).map(x=>x.trim()).filter(Boolean))];
  const periods=Number(document.getElementById('quickPeriods')?.value),qty=Number(document.getElementById('quickQuantity')?.value);
  if(!sites.length||sites.length>8||!Number.isInteger(periods)||periods<1||periods>12||!Number.isInteger(qty)||qty<1||qty>5)return toast('حدد المواقع وعدد الحصص والمراقبين بصورة صحيحة');
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('حدد المعلمين المسموح لهم بالمراقبات أولًا من القائمة أسفل الجدول');
@@ -154,12 +157,27 @@ function quickGenerate(){
 }
 function quickFill(){
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('اختر المعلمين المسموح لهم بالمراقبة أولًا');
- let n=0,left=0;const sites=new Set(quickSites());
- for(const need of s.monitoringNeeds.filter(x=>x.track===monitoringTrack&&x.mode==='weekly'&&!x.assignedTeacher&&sites.has(x.notes))){
-  const teacher=fairCandidate(need);if(!teacher){left++;continue}
-  need.assignedTeacher=teacher.id;s.duties.push({id:id(),needId:need.id,track:need.track,teacher:teacher.id,kind:'monitoring',mode:'weekly',day:need.day,date:'',period:need.period,notes:need.notes});n++;
+ let assigned=0,unfilled=0;
+ const sites=quickSites(),periods=s.quickMonitoringPeriods[monitoringTrack]||7;
+ // Cover different sites in the same period before placing second monitors.
+ // Rotate the first site by day/period to avoid always preferring the eastern building.
+ for(let di=0;di<days.length;di++)for(let period=1;period<=periods;period++){
+  const first=(di+period-1)%Math.max(1,sites.length);
+  const rotatingSites=sites.slice(first).concat(sites.slice(0,first));
+  const layers=rotatingSites.map(site=>quickNeeds(site,days[di],period).filter(n=>!n.assignedTeacher));
+  const maxDepth=Math.max(0,...layers.map(x=>x.length));
+  for(let level=0;level<maxDepth;level++)for(const needs of layers){
+   const need=needs[level];if(!need)continue;
+   const candidates=s.teachers.filter(t=>quickAllowed(t,need));
+   candidates.sort((a,b)=>monitoringCount(a.id)-monitoringCount(b.id)||teachingLoad(a.id)-teachingLoad(b.id)||count(a.id)-count(b.id)||a.name.localeCompare(b.name,'ar'));
+   const teacher=candidates[0];
+   if(!teacher){unfilled++;continue}
+   need.assignedTeacher=teacher.id;
+   s.duties.push({id:id(),needId:need.id,track:need.track,teacher:teacher.id,kind:'monitoring',mode:'weekly',day:need.day,date:'',period:need.period,notes:need.notes});
+   assigned++;
+  }
  }
- save();toast('تم توزيع '+n+' مراقبة · متبقي '+left);
+ save();toast('تم تغطية '+assigned+' مراقبة، والمتبقي '+unfilled+' خانة دون مراقب');
 }
 function quickPrint(){
  const title='جدول مناوبة المراقبات - '+monitorTrackLabel(monitoringTrack);
@@ -171,11 +189,11 @@ function quickMonitoringPanel(){
  const sites=quickSites(),periods=s.quickMonitoringPeriods[monitoringTrack]||7;
  const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes));
  const form='<div class="notice"><b>التوزيع السريع:</b> أدخل المواقع مرة واحدة ثم اضغط «إنشاء وتوزيع». ستظهر أمامك الأيام والحصص في جدول واحد مثل الصورة، ويمكن تغيير اسم أي مراقب من نفس الخانة. الحصص والتكليفات المتعارضة مستبعدة آليًا.</div>'+
- '<div class="fields">'+field('مواقع المراقبة (افصل بفاصلة)','<input id="quickSites" value="'+esc(sites.join('، '))+'" placeholder="ثانوي شرقي، ثانوي غربي">')+
+ '<div class="fields">'+(monitoringTrack==='upper'?'<div class="notice"><b>الموقعان المطلوب تغطيتهما في كل حصة:</b> ثانوي شرقي + ثانوي غربي</div>':field('مواقع المراقبة (افصل بفاصلة)','<input id="quickSites" value="'+esc(sites.join('، '))+'" placeholder="حدد مواقع المرحلة">'))+
  field('عدد الحصص يوميًا','<input id="quickPeriods" type="number" min="1" max="12" value="'+periods+'">')+
  field('عدد المراقبين لكل موقع وحصة','<input id="quickQuantity" type="number" min="1" max="5" value="1">')+'</div>'+
  '<div class="actions"><button onclick="quickGenerate()">✨ إنشاء وتوزيع الجدول كاملًا</button><button class="alt" onclick="quickFill()">⚖ توزيع الخانات الفارغة</button><button class="alt" onclick="quickPrint()">🖨 طباعة الجدول</button></div>'+
- '<p class="muted">المراقبات الموزعة: '+needs.filter(n=>n.assignedTeacher).length+' من '+needs.length+'. اختر المعلمين المسموح لهم بالمراقبة من القسم التالي قبل إنشاء الجدول.</p>';
+ '<p class="muted">المراقبات الموزعة: '+needs.filter(n=>n.assignedTeacher).length+' من '+needs.length+' · غير المغطاة: '+needs.filter(n=>!n.assignedTeacher).length+'. الأولوية لتغطية الموقعين في كل حصة، بدون تكليف المعلم مرتين في نفس الموعد. اختر المعلمين المسموح لهم بالمراقبة قبل إنشاء الجدول.</p>';
  return box('⚡ التوزيع الأسبوعي السريع للمراقبات',form+quickGrid());
 }
 
