@@ -69,7 +69,7 @@ async function protect(){
  const d=await db.collection("users").doc(currentUser).get();
  if(!d.exists){alert("لم يتم العثور على بيانات حساب المشرف: "+currentUser);location.href="index.html";return false}
  const u=d.data()||{};permissions=u.permissions||{};currentSupervisorType=String(u.supervisorType||"general_supervisor").toLowerCase();
- assignedTeacherEmails=Array.isArray(u.assignedTeacherEmails)?[...new Set(u.assignedTeacherEmails.map(x=>String(x||"").trim().toLowerCase()).filter(Boolean))]:[];
+ assignedTeacherEmails=[...new Set([...(Array.isArray(u.assignedTeacherEmails)?u.assignedTeacherEmails:[]),...(Array.isArray(u.assignedTeacherIds)?u.assignedTeacherIds:[]),...(Array.isArray(u.assignedTeachers)?u.assignedTeachers:[]),...(Array.isArray(u.teachers)?u.teachers:[])].flatMap(x=>{if(x&&typeof x==="object")return [x.email,x.teacherEmail,x.username,x.id,x.value];return [x]}).map(x=>String(x||"").trim().toLowerCase()).filter(Boolean))];
  if(!has("trainingManage")){alert("لا توجد لديك صلاحية إدارة الدورات والاجتماعات.");location.href="supervisor-dashboard.html";return false}
  return true
 }
