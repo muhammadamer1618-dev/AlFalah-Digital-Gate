@@ -553,6 +553,12 @@ body{
 }
 
 
+.visit-checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:5px}
+.visit-check{border:1px solid var(--border);border-radius:5px;padding:3px 5px;text-align:center;font-size:7px;font-weight:800}
+.visit-check b{display:block;font-size:7px;color:var(--green)}
+.visit-check span{display:block;font-size:7px;margin-top:2px}
+@media print{.visit-check{border-color:#000!important;color:#000!important}.visit-check b{color:#000!important}}
+
 /* =====================================
    VIEW STATUS
 ===================================== */
@@ -1453,6 +1459,12 @@ body{
 
 
 
+<div class="visit-checks" aria-label="متابعة مطابقة الخطة وتصحيح الكتب وسجل المتابعة">
+  <div class="visit-check"><b>مطابقة الخطة مع الشرح</b><span id="planMatchStatus">—</span></div>
+  <div class="visit-check"><b>حالة تصحيح الكتب</b><span id="bookCorrectionStatus">—</span></div>
+  <div class="visit-check"><b>متابعة سجل المتابعة</b><span id="followUpRegisterStatus">—</span></div>
+</div>
+
 <div
   id="teacherAck"
   class="ack"
@@ -2135,6 +2147,16 @@ function renderVisit(v){
   el("recommendations")
     .textContent =
     v.recommendations || "";
+
+  el("planMatchStatus").textContent =
+    v.planMatchStatus === "matched" ? "مطابقة" :
+    v.planMatchStatus === "not_matched" ? "غير مطابقة" : "غير محدد";
+  el("bookCorrectionStatus").textContent =
+    v.bookCorrectionStatus === "corrected" ? "مصحح" :
+    v.bookCorrectionStatus === "not_corrected" ? "غير مصحح" : "غير محدد";
+  el("followUpRegisterStatus").textContent =
+    v.followUpRegisterStatus === "enabled" ? "مفعل" :
+    v.followUpRegisterStatus === "not_enabled" ? "غير مفعل" : "غير محدد";
 
 
   renderRubric(
