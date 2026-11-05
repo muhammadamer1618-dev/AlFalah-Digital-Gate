@@ -95,6 +95,12 @@ async function saveAllImprovements(){
   });
   say("جارٍ حفظ "+changes.length+" درجة...");
   await gradeBatch.commit();
+
+  // Verify each write by reading the exact document back before showing success.
+  const verified=await Promise.all(refs.map(ref=>ref.get()));
+  const missing=verified.map((snap,i)=>!snap.exists?changes[i].student.name:null).filter(Boolean);
+  if(missing.length)throw Error("تم إرسال الحفظ لكن تعذر التحقق من وجود سجلات الطلاب التالية في قاعدة البيانات: "+missing.join("، "));
+
   let auditWarning="";
   try{
    for(let start=0;start<auditRows.length;start+=450){
@@ -103,9 +109,14 @@ async function saveAllImprovements(){
     await batch.commit();
    }
   }catch(auditError){console.error("GRADE IMPROVEMENT AUDIT LOG ERROR",auditError);auditWarning=" (تعذر تسجيل سجل التدقيق: "+auditError.message+")"}
+
   await load();
+  const reloadedCodes=new Set(grades.map(g=>norm(g.studentCode)));
+  const notReloaded=changes.map(x=>x.student.name).filter((name,i)=>!reloadedCodes.has(norm(changes[i].student.code)));
+  if(notReloaded.length)throw Error("تمت الكتابة في قاعدة البيانات، لكن استعلام إعادة التحميل لم يُظهر سجلات: "+notReloaded.join("، ")+". راجع مطابقة الاختبار/الفصل/المعلم.");
+
   await loadAllImprovements();
-  say("تم حفظ "+changes.length+" درجة بنجاح؛ منها "+firstCount+" رصد أول مرة و"+improving+" تحسين."+auditWarning);
+  say("تم حفظ والتحقق من "+changes.length+" درجة بنجاح؛ منها "+firstCount+" رصد أول مرة و"+improving+" تحسين."+auditWarning);
  }catch(e){
   console.error("GRADE IMPROVEMENT SAVE ERROR",e);
   say("تعذر حفظ الدرجات: "+(e?.message||String(e)));
