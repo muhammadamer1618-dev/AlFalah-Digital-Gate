@@ -197,21 +197,33 @@ async function loadAllImprovements(){
   if(role!=="teacher"&&!allowedTeacherIds.includes(selectedTeacher))throw Error("لا تملك صلاحية عرض تحسينات هذا المعلم.");
   const snap=await db.collection("grades").get(),rows=[];
   snap.forEach(d=>{
-   const g=d.data();
-   for(const h of (g.improvementHistory||[])){
+   const g=d.data()||{},history=Array.isArray(g.improvementHistory)?g.improvementHistory:[];
+   let matched=0;
+   for(const h of history){
     const recordTeacher=norm(h.teacherEmail||g.teacherEmail),recordName=norm(h.teacherName||g.teacherName);
     if(recordTeacher?recordTeacher!==selectedTeacher:recordName!==norm(teacherName))continue;
-    rows.push({teacher:g.teacherName||h.teacherName||teacherName,student:g.studentName||"",subject:g.subjectName||"",test:g.testName||"",grade:g.grade||"",section:g.section||"",original:g.originalMark,previous:h.beforeMark,attempt:h.attemptMark,approved:h.approvedMark,date:h.date||"",actor:h.actorName||h.teacherName||"",role:h.actorRole||"teacher"})
+    matched++;
+    rows.push({teacher:g.teacherName||h.teacherName||teacherName,student:g.studentName||"",subject:g.subjectName||"",test:g.testName||"",grade:g.grade||"",section:g.section||"",original:g.originalMark,previous:h.beforeMark,attempt:h.attemptMark,approved:h.approvedMark,date:h.date||"",actor:h.actorName||h.teacherName||"",role:h.actorRole||"teacher"});
+   }
+   // Fallback for a first-time grade entry whose grade document was saved
+   // but whose improvementHistory array is absent/incomplete.
+   const owner=norm(g.teacherEmail)===selectedTeacher;
+   const hasLatest=g.lastImprovementMark!==undefined&&g.lastImprovementMark!==null&&g.lastImprovementMark!=="";
+   if(!matched&&owner&&hasLatest){
+    let date="";
+    try{date=g.updatedAt?.toDate?g.updatedAt.toDate().toISOString():String(g.updatedAt||"")}catch(_){}
+    const firstRecord=g.originalAttendance==="not_recorded"||g.originalMark===null||g.originalMark===undefined;
+    rows.push({teacher:g.teacherName||teacherName,student:g.studentName||"",subject:g.subjectName||"",test:g.testName||"",grade:g.grade||"",section:g.section||"",original:firstRecord?"لم يُرصد":(g.originalMark??"غائب"),previous:firstRecord?"لم يُرصد":(g.originalMark??"غائب"),attempt:g.lastImprovementMark,approved:g.mark??g.lastImprovementMark,date,actor:g.teacherName||teacherName,role:"رصد أول مرة"});
    }
   });
   allImprovementRows=rows.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   el("allRows").innerHTML=allImprovementRows.map(x=>'<tr><td>'+esc(x.teacher)+'</td><td>'+esc(x.student)+'</td><td>'+esc(x.subject)+' / '+esc(x.test)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.original??"غائب")+'</td><td>'+esc(x.previous??"لم يُرصد")+'</td><td>'+esc(x.attempt)+'</td><td><strong>'+esc(x.approved)+'</strong></td><td>'+esc(x.date)+'</td><td>'+esc(x.actor)+' ('+esc(x.role)+')</td></tr>').join("")||'<tr><td colspan="10">لا توجد درجات تحسين لهذا المعلم</td></tr>';
-  el("allCount").textContent="المعلم: "+teacherName+" — عدد محاولات التحسين: "+allImprovementRows.length+" — عدد الطلاب: "+new Set(allImprovementRows.map(x=>x.student+"|"+x.test+"|"+x.grade+"|"+x.section)).size
+  el("allCount").textContent="المعلم: "+teacherName+" — عدد محاولات التحسين: "+allImprovementRows.length+" — عدد الطلاب: "+new Set(allImprovementRows.map(x=>x.student+"|"+x.test+"|"+x.grade+"|"+x.section)).size;
  }catch(e){
   allImprovementRows=[];
   el("allRows").innerHTML='<tr><td colspan="10">'+esc(e.message)+'</td></tr>';
   el("allCount").textContent="";
-  say("تعذر تحميل سجل التحسينات: "+e.message)
+  say("تعذر تحميل سجل التحسينات: "+e.message);
  }finally{btn.disabled=false}
 }
 function printAllImprovements(){if(!allImprovementRows.length){say("اعرض التحسينات أولًا قبل الطباعة.");return}document.body.classList.add("print-all");window.print();setTimeout(()=>document.body.classList.remove("print-all"),1000)}
