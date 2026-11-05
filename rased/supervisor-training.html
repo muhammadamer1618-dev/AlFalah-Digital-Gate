@@ -30,7 +30,7 @@
 <div class="span3"><label>التوصيات — توصية في كل سطر</label><textarea id="meetingRecommendations"></textarea></div>
 </div></div>
 <div class="span3" id="courseDateFields"><div class="fields"><div><label>تاريخ بداية إتاحة المادة (اختياري)</label><input id="startDate" type="date"></div><div><label>تاريخ نهاية الإتاحة (اختياري)</label><input id="endDate" type="date"></div></div></div>
-<div><label>الفئة المستهدفة</label><select id="targetType" onchange="toggleTargets()"><option value="all">كل المعلمين</option><option value="specialties">تخصصات محددة</option><option value="selected">معلمون محددون</option></select></div>
+<div><label>الفئة المستهدفة</label><select id="targetType" onchange="toggleTargets()"><option value="selected">معلمون محددون</option><option value="all">كل المعلمين</option><option value="specialties">تخصصات محددة</option></select></div><div class="span3" id="targetsWrap" style="display:block"><div class="actions"><button class="light" type="button" onclick="selectTeachers(true)">☑️ اختيار الكل</button><button class="light" type="button" onclick="selectTeachers(false)">إلغاء التحديد</button></div><div id="teachersGrid" class="teachers" style="margin-top:8px"></div><div class="note">اختر معلمًا واحدًا أو عدة معلمين، أو استخدم اختيار الكل.</div></div>
 <div class="span2"><label>رابط ملف أو مادة (اختياري عند رفع ملف)</label><input id="materialUrl" placeholder="https://..." style="direction:ltr;text-align:left"></div>
 <div class="span3 upload"><label>رفع ملف الدورة أو الاجتماع</label><div class="fields" style="grid-template-columns:1fr auto"><input id="materialFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip"><button class="primary" id="uploadBtn" onclick="uploadMaterial()">⬆️ رفع الملف</button></div><div id="uploadProgress" class="progress"></div></div>
 <div class="span3" id="specialtiesWrap" style="display:none"><label>التخصصات</label><div class="actions"><button class="light" type="button" onclick="selectSpecialties(true)">تحديد الكل</button><button class="light" type="button" onclick="selectSpecialties(false)">إلغاء التحديد</button></div><div id="specialtiesGrid" class="teachers"></div></div>
@@ -120,15 +120,5 @@ async function start(){try{if(await protect())await loadAll()}catch(e){console.e
 </script>
 
 <script src="rased-portal-back.js?v=20261031-universal1"></script>
-
-<!-- alfalah-designer-credit:start -->
-<style id="alfalah-designer-credit-style">
-#alfalah-designer-credit{display:none!important;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
-@media print {
- #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
-}
-</style>
-<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
-<!-- alfalah-designer-credit:end -->
 </body>
 </html>
