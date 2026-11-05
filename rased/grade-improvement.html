@@ -75,7 +75,6 @@ async function saveAllImprovements(){
   const snapshots=await Promise.all(refs.map(ref=>ref.get()));
   snapshots.forEach((snap,i)=>{
    const x=changes[i],old=snap.exists?snap.data():null;
-   if(x.grade&&!snap.exists)throw Error("تعذر العثور على سجل الطالب "+x.student.name+" عند الحفظ. أعد تحميل الاختبار وحاول مرة أخرى.");
    if(old&&((old.teacherEmail&&norm(old.teacherEmail)!==selectedTeacher)
     ||(old.testId&&String(old.testId)!==String(test.id))
     ||(old.grade!==undefined&&String(old.grade)!==el("grade").value)
@@ -104,8 +103,7 @@ async function saveAllImprovements(){
     mark:approved,attendance:"present",lastImprovementMark:x.mark,
     improvementHistory:firebase.firestore.FieldValue.arrayUnion(entry),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
-   if(old)gradeBatch.update(refs[i],fields);
-   else gradeBatch.set(refs[i],{...fields,testId:String(test.id),studentCode:String(x.student.code),
+   gradeBatch.set(refs[i],old?fields:{...fields,testId:String(test.id),studentCode:String(x.student.code),
     studentName:x.student.name||"",subjectId:String(test.subjectId||el("subject").value),
     subjectName:subjects.find(a=>a.id===String(test.subjectId))?.name||"",
     grade:el("grade").value,section:el("section").value,testName:test.name||"",
