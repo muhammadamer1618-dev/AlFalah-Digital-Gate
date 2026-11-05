@@ -97,6 +97,88 @@ function legacyMonitoringPanel(){
  return (rows.length?box('مراقبات قديمة تحتاج تحديد المرحلة',table(['المراقبة','عدد الحصص','المعلم','تحديد المرحلة'],rows)):'')+
  (unclassifiedDuties.length?box('تكليفات قديمة تحتاج تحديد المرحلة',table(['المعلم','النوع','التوقيت','المرحلة'],unclassifiedDuties.map(d=>[esc(nm(d.teacher)),esc(dutyName(d)),esc(d.mode==='weekly'?d.day:d.date)+' / '+d.period,'<button class="alt" onclick="assignLegacyDutyTrack(\''+d.id+'\',\'primary\')">ابتدائي</button> <button class="alt" onclick="assignLegacyDutyTrack(\''+d.id+'\',\'upper\')">متوسط وثانوي</button>']))) : '');
 }
+
+/* Weekly monitoring matrix: existing monitoringNeeds and duties stay authoritative. */
+s.quickMonitoringSites ||= {primary:['الفناء'],upper:['ثانوي شرقي','ثانوي غربي']};
+s.quickMonitoringPeriods ||= {primary:7,upper:7};
+function quickSites(){return [...new Set((s.quickMonitoringSites[monitoringTrack]||[]).filter(Boolean))]}
+function quickNeeds(site,day,p){return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&n.day===day&&Number(n.period)===p&&n.notes===site)}
+function quickAllowed(t,need){
+ if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).includes(t.id))return false;
+ if(s.lessons.some(l=>l.teacher===t.id&&l.day===need.day&&Number(l.period)===Number(need.period)))return false;
+ if(s.duties.some(d=>d.teacher===t.id&&d.needId!==need.id&&Number(d.period)===Number(need.period)&&(d.mode==='weekly'?d.day===need.day:dt(d.date)===need.day)))return false;
+ if(s.covers.some(c=>c.to===t.id&&Number(c.period)===Number(need.period)&&dt(c.date)===need.day))return false;
+ if(s.swaps.some(c=>c.to===t.id&&Number(c.period)===Number(need.period)&&dt(c.date)===need.day))return false;
+ return true;
+}
+function quickSet(needId,teacherId){
+ const n=s.monitoringNeeds.find(x=>x.id===needId);if(!n)return;
+ if(teacherId){const t=s.teachers.find(x=>x.id===teacherId);if(!t||!quickAllowed(t,n)){render();return toast('المعلم غير متاح لهذا الموعد')}}
+ s.duties=s.duties.filter(d=>d.needId!==n.id);n.assignedTeacher=teacherId||'';
+ if(teacherId)s.duties.push({id:id(),needId:n.id,teacher:teacherId,kind:'monitoring',mode:'weekly',day:n.day,date:'',period:n.period,track:n.track,notes:n.notes});
+ save();toast('تم تحديث المراقبة');
+}
+function quickCell(site,day,p,print){
+ const needs=quickNeeds(site,day,p);if(!needs.length)return '<td style="color:#b45309">—</td>';
+ return '<td>'+needs.map(n=>{
+  if(print)return '<div>'+esc(n.assignedTeacher?nm(n.assignedTeacher):'—')+'</div>';
+  const chosen=n.assignedTeacher||'';
+  const teachers=s.teachers.filter(t=>t.id===chosen||((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).includes(t.id));
+  return '<select style="width:100%;min-width:110px;font-size:11px;padding:5px 1px;margin:2px 0" aria-label="مراقب '+esc(day)+' الحصة '+p+'" onchange="quickSet(\''+esc(n.id)+'\',this.value)"><option value="">— غير موزعة —</option>'+
+   teachers.map(t=>'<option value="'+esc(t.id)+'" '+(t.id===chosen?'selected':'')+' '+(!quickAllowed(t,n)&&t.id!==chosen?'disabled':'')+'>'+esc(t.name)+'</option>').join('')+'</select>';
+ }).join('')+'</td>';
+}
+function quickGrid(print=false){
+ const sites=quickSites(),periods=s.quickMonitoringPeriods[monitoringTrack]||7;
+ if(!sites.length)return '<p>أدخل مواقع المراقبة.</p>';
+ const columns=Array.from({length:periods},(_,i)=>i+1);
+ const head='<tr><th>اليوم</th><th>موقع المراقبة</th>'+columns.map(p=>'<th>الحصة '+p+'</th>').join('')+'</tr>';
+ const body=days.map(day=>sites.map((site,i)=>'<tr>'+(i===0?'<th rowspan="'+sites.length+'">'+esc(day)+'</th>':'')+
+  '<td><b>'+esc(site)+'</b></td>'+columns.map(p=>quickCell(site,day,p,print)).join('')+'</tr>').join('')).join('');
+ return '<div style="overflow-x:auto"><table style="width:100%;min-width:950px;table-layout:fixed;border-collapse:collapse">'+head+body+'</table></div>';
+}
+function quickGenerate(){
+ const sites=[...new Set((document.getElementById('quickSites')?.value||'').split(/[,،\n]+/).map(x=>x.trim()).filter(Boolean))];
+ const periods=Number(document.getElementById('quickPeriods')?.value),qty=Number(document.getElementById('quickQuantity')?.value);
+ if(!sites.length||sites.length>8||!Number.isInteger(periods)||periods<1||periods>12||!Number.isInteger(qty)||qty<1||qty>5)return toast('حدد المواقع وعدد الحصص والمراقبين بصورة صحيحة');
+ if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('حدد المعلمين المسموح لهم بالمراقبات أولًا من القائمة أسفل الجدول');
+ s.quickMonitoringSites[monitoringTrack]=sites;s.quickMonitoringPeriods[monitoringTrack]=periods;
+ const missing=sites.reduce((a,site)=>a+days.reduce((b,day)=>b+Array.from({length:periods},(_,i)=>Math.max(0,qty-quickNeeds(site,day,i+1).length)).reduce((x,y)=>x+y,0),0),0);
+ if(missing+s.monitoringNeeds.length>3000)return toast('عدد المراقبات كبير جدًا');
+ const groupId=id();
+ for(const day of days)for(const site of sites)for(let p=1;p<=periods;p++){
+  const count=Math.max(0,qty-quickNeeds(site,day,p).length);
+  for(let i=0;i<count;i++)s.monitoringNeeds.push({id:id(),groupId,track:monitoringTrack,mode:'weekly',day,date:'',period:p,notes:site,assignedTeacher:''});
+ }
+ quickFill();
+}
+function quickFill(){
+ if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('اختر المعلمين المسموح لهم بالمراقبة أولًا');
+ let n=0,left=0;const sites=new Set(quickSites());
+ for(const need of s.monitoringNeeds.filter(x=>x.track===monitoringTrack&&x.mode==='weekly'&&!x.assignedTeacher&&sites.has(x.notes))){
+  const teacher=fairCandidate(need);if(!teacher){left++;continue}
+  need.assignedTeacher=teacher.id;s.duties.push({id:id(),needId:need.id,track:need.track,teacher:teacher.id,kind:'monitoring',mode:'weekly',day:need.day,date:'',period:need.period,notes:need.notes});n++;
+ }
+ save();toast('تم توزيع '+n+' مراقبة · متبقي '+left);
+}
+function quickPrint(){
+ const title='جدول مناوبة المراقبات - '+monitorTrackLabel(monitoringTrack);
+ const html='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>@page{size:A4 landscape;margin:8mm}body{font-family:Tahoma,Arial;margin:0;color:#111}h2{text-align:center;font-size:18px;margin:5px}p{text-align:center;font-size:11px;margin:4px}table{border-collapse:collapse;width:100%;table-layout:fixed}td,th{border:1px solid #444;text-align:center;padding:5px 2px;font-size:10px;overflow-wrap:anywhere}th{background:#e6efea}.foot{display:flex;justify-content:space-between;margin-top:18px;font-size:11px;font-weight:bold}</style></head><body><p>المملكة العربية السعودية | وزارة التعليم</p><h2>مدارس الفلاح الأهلية</h2><h2>'+esc(title)+'</h2>'+quickGrid(true)+'<div class="foot"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div><p>تصميم محمد عامر أحمد</p></body></html>';
+ const w=window.open('','_blank');if(!w)return toast('السماح بالنوافذ المنبثقة مطلوب للطباعة');
+ w.document.write(html);w.document.close();w.onload=()=>w.print();
+}
+function quickMonitoringPanel(){
+ const sites=quickSites(),periods=s.quickMonitoringPeriods[monitoringTrack]||7;
+ const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes));
+ const form='<div class="notice"><b>التوزيع السريع:</b> أدخل المواقع مرة واحدة ثم اضغط «إنشاء وتوزيع». ستظهر أمامك الأيام والحصص في جدول واحد مثل الصورة، ويمكن تغيير اسم أي مراقب من نفس الخانة. الحصص والتكليفات المتعارضة مستبعدة آليًا.</div>'+
+ '<div class="fields">'+field('مواقع المراقبة (افصل بفاصلة)','<input id="quickSites" value="'+esc(sites.join('، '))+'" placeholder="ثانوي شرقي، ثانوي غربي">')+
+ field('عدد الحصص يوميًا','<input id="quickPeriods" type="number" min="1" max="12" value="'+periods+'">')+
+ field('عدد المراقبين لكل موقع وحصة','<input id="quickQuantity" type="number" min="1" max="5" value="1">')+'</div>'+
+ '<div class="actions"><button onclick="quickGenerate()">✨ إنشاء وتوزيع الجدول كاملًا</button><button class="alt" onclick="quickFill()">⚖ توزيع الخانات الفارغة</button><button class="alt" onclick="quickPrint()">🖨 طباعة الجدول</button></div>'+
+ '<p class="muted">المراقبات الموزعة: '+needs.filter(n=>n.assignedTeacher).length+' من '+needs.length+'. اختر المعلمين المسموح لهم بالمراقبة من القسم التالي قبل إنشاء الجدول.</p>';
+ return box('⚡ التوزيع الأسبوعي السريع للمراقبات',form+quickGrid());
+}
+
 function monitoring(){
  const form='<div class="fields">'+
  field('المعلم','<select id="dteacher">'+opts(s.teachers)+'</select>')+
@@ -108,7 +190,7 @@ function monitoring(){
  field('ملاحظة اختيارية','<input id="dnotes" placeholder="مراقبة فناء أو حافلة">')+
  '</div><div class="actions"><button onclick="saveDuty()">حفظ التكليف</button><button class="alt" onclick="editingDutyId=\'\';render()">إلغاء التعديل</button></div><p class="muted">اختر أسبوعية للمراقبات المتكررة في نفس اليوم والحصة، أو بتاريخ محدد للمراقبة الاستثنائية. لا يُرشح المعلم للتغطية أثناء أي مراقبة أو حافلة مسجلة.</p>';
  const rows=(s.duties||[]).filter(d=>d.track===monitoringTrack).map(d=>[esc(nm(d.teacher)),esc(dutyName(d)),d.mode==='weekly'?esc(d.day)+' (أسبوعيًا)':esc(d.date),d.period,esc(d.notes||'—'),'<button class="alt" onclick="editDuty(\''+d.id+'\')">تعديل</button> <button class="danger" onclick="deleteDuty(\''+d.id+'\')">حذف</button>']);
- return monitoringStageSelector()+legacyMonitoringPanel()+monitoringTeachersPanel()+weeklyMonitoringBlockPanel()+monitoringNeedsPanel()+box('إضافة وإدارة المراقبات والحافلات',form)+box('سجل المراقبات والحافلات',rows.length?table(['المعلم','التكليف','التوقيت','الحصة','ملاحظات','الإجراءات'],rows):empty('لا توجد مراقبات أو حافلات مسجلة'));
+ return monitoringStageSelector()+quickMonitoringPanel()+legacyMonitoringPanel()+monitoringTeachersPanel()+weeklyMonitoringBlockPanel()+monitoringNeedsPanel()+box('إضافة وإدارة المراقبات والحافلات',form)+box('سجل المراقبات والحافلات',rows.length?table(['المعلم','التكليف','التوقيت','الحصة','ملاحظات','الإجراءات'],rows):empty('لا توجد مراقبات أو حافلات مسجلة'));
 }
 function saveDuty(){
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
