@@ -537,7 +537,7 @@
 
     .work-overall{
       display:grid;
-      grid-template-columns:1fr 1fr;
+      grid-template-columns:repeat(3,minmax(0,1fr));
       gap:10px;
       margin:12px 0 0;
     }
@@ -874,6 +874,21 @@
           </label>
         </div>
       </div>
+
+      <div class="work-overall-box">
+        <div class="work-overall-title">📋 متابعة سجل المتابعة</div>
+        <div class="work-overall-choices">
+          <label class="workOverallChoice">
+            <input type="radio" name="followUpRegisterStatus" value="enabled">
+            ✓ مفعل
+          </label>
+          <label class="workOverallChoice">
+            <input type="radio" name="followUpRegisterStatus" value="not_enabled">
+            ✕ غير مفعل
+          </label>
+        </div>
+      </div>
+
 
     </div>
 
@@ -1990,6 +2005,11 @@ async function saveVisit(){
         'input[name="bookCorrectionStatus"]:checked'
       )?.value || "",
 
+    followUpRegisterStatus:
+      document.querySelector(
+        'input[name="followUpRegisterStatus"]:checked'
+      )?.value || "",
+
     teacherViewed:false,
 
     teacherViewedAt:null,
@@ -2145,6 +2165,11 @@ async function loadVisitForEditing(){
       `input[name="bookCorrectionStatus"][value="${editVisitData.bookCorrectionStatus || ""}"]`
     );
     if(bookCorrectionInput) bookCorrectionInput.checked = true;
+
+    const followUpRegisterInput = document.querySelector(
+      `input[name="followUpRegisterStatus"][value="${editVisitData.followUpRegisterStatus || ""}"]`
+    );
+    if(followUpRegisterInput) followUpRegisterInput.checked = true;
 
     calculateScore();
     document.querySelector(".page-title h2").textContent = "تعديل الزيارة التربوية";
