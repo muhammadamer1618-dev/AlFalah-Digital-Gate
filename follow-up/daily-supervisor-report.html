@@ -338,6 +338,14 @@ td textarea{height:25px;resize:none}
   </section>
 
 
+  <section class="section">
+    <div class="section-title">📋 متابعة سجل المتابعة <span class="tag">تُسحب من استمارة الزيارة ويمكن تعديلها</span></div>
+    <table>
+      <thead><tr><th style="width:7%">م</th><th style="width:28%">اسم المعلم</th><th style="width:28%">حالة سجل المتابعة</th><th>الملاحظة</th></tr></thead>
+      <tbody id="registerBody"></tbody>
+    </table>
+  </section>
+
   <section class="section notes">
     <div class="section-title">📝 ملاحظات عامة</div>
     <textarea id="generalNotes" placeholder="اكتب الملاحظات العامة هنا..."></textarea>
@@ -579,6 +587,24 @@ function renderPlan(){
   }).join("");
 }
 
+function renderRegister(){
+  const teachers=uniqueVisitedTeachers(),map=savedReport?.registers||{};
+  if(!teachers.length){
+    el("registerBody").innerHTML='<tr><td colspan="4" class="empty-row">تظهر أسماء المعلمين تلقائيًا بعد وجود زيارة في هذا اليوم.</td></tr>';
+    return;
+  }
+  el("registerBody").innerHTML=teachers.map((v,i)=>{
+    const key=teacherKey(v),x=map[key]||{},status=x.status||String(v.followUpRegisterStatus||""),name="register_"+i;
+    return `<tr data-teacher-key="${esc(key)}">
+      <td>${i+1}</td><td>${esc(v.teacherName||key)}</td>
+      <td>
+        <label class="choice"><input type="radio" name="${name}" value="enabled" ${checked(status,"enabled")}> مفعل</label>
+        <label class="choice"><input type="radio" name="${name}" value="not_enabled" ${checked(status,"not_enabled")}> غير مفعل</label>
+      </td>
+      <td><input class="register-note" value="${esc(x.note||"")}" placeholder="ملاحظة"></td></tr>`;
+  }).join("");
+}
+
 function collectReportData(){
   const visitSummaries={};
   document.querySelectorAll(".visit-summary").forEach(input=>{
@@ -609,6 +635,15 @@ function collectReportData(){
     };
   });
 
+  const registers={};
+  el("registerBody").querySelectorAll("tr[data-teacher-key]").forEach(row=>{
+    const key=row.dataset.teacherKey;
+    registers[key]={
+      status:row.querySelector('input[type="radio"]:checked')?.value||"",
+      note:row.querySelector(".register-note")?.value.trim()||""
+    };
+  });
+
   return {
     reportDate:currentDate(),
     supervisorId:String(supervisor.id||""),
@@ -626,13 +661,15 @@ function collectReportData(){
       positives:String(v.positives||""),
       recommendations:String(v.recommendations||""),
       planMatchStatus:String(v.planMatchStatus||""),
-      bookCorrectionStatus:String(v.bookCorrectionStatus||"")
+      bookCorrectionStatus:String(v.bookCorrectionStatus||""),
+      followUpRegisterStatus:String(v.followUpRegisterStatus||"")
     })),
 
     visitSummaries,
     exchange,
     corrections,
     plans,
+    registers,
     generalNotes:el("generalNotes").value.trim()
   };
 }
@@ -751,6 +788,7 @@ window.deleteSavedReport=async function(id){
       renderExchange();
       renderCorrection();
       renderPlan();
+      renderRegister();
       updateHeader();
     }
 
@@ -773,6 +811,7 @@ async function loadSavedReport(){
   renderExchange();
   renderCorrection();
   renderPlan();
+  renderRegister();
   updateHeader();
 }
 
