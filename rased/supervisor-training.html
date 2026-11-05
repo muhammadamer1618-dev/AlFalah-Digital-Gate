@@ -97,7 +97,7 @@ document.addEventListener("click",event=>{const button=event.target.closest("[da
 function printReport(id){
  const c=events.find(x=>x.id===id);if(!c)return;
  const rows=records(c);
- const html='<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>تقرير متابعة</title><style>body{font-family:Tahoma,Arial;padding:24px;color:#163e36}h1{text-align:center}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #888;padding:8px;text-align:center}th{background:#e9f3ef}</style><h1>مدارس الفلاح الأهلية</h1><h2>'+esc("تقرير "+contentLabel(c)+": "+(c.title||""))+'</h2><p>التاريخ: '+esc(formatDate(c.startDate))+'</p><table><thead><tr><th>الاسم</th><th>الوظيفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th><th>تاريخ ووقت التوقيع</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+'</td><td>'+(Number(x.p.visitCount||0)>0||x.p.meetingMinutesViewed===true?"اطلع":"لم يطلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td><td>'+esc(signedDate(c,x.p))+'</td></tr>').join("")+'</tbody></table><script>window.onload=()=>window.print()<\\/script></html>';
+ const html='<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>تقرير متابعة</title><style>body{font-family:Tahoma,Arial;padding:24px;color:#163e36}h1{text-align:center}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #888;padding:8px;text-align:center}th{background:#e9f3ef}</style><h1>مدارس الفلاح الأهلية</h1><h2>'+esc("تقرير "+contentLabel(c)+": "+(c.title||""))+'</h2><p>التاريخ: '+esc(formatDate(c.startDate))+'</p><table><thead><tr><th>الاسم</th><th>الوظيفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th><th>تاريخ ووقت التوقيع</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+'</td><td>'+(Number(x.p.visitCount||0)>0||x.p.meetingMinutesViewed===true?"اطلع":"لم يطلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td><td>'+esc(signedDate(c,x.p))+'</td></tr>').join("")+'</tbody></table><script>window.onload=()=>window.print()<\/script></html>';
  const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة التقرير.");return}w.document.write(html);w.document.close();
 }
 function printEvidence(id){
@@ -121,7 +121,7 @@ function printEvidence(id){
  '<div class="sign-title">سجل الاطلاع والتوقيعات الإلكترونية ('+signed+' من '+rows.length+')</div>'+
  '<table><thead><tr><th>م</th><th>اسم المعلم</th><th>الصفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th><th>وقت التوقيع</th></tr></thead><tbody>'+
  (rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+'</td><td>'+(Number(x.p.visitCount||0)>0||x.p.meetingMinutesViewed===true?"تم الاطلاع":"لم يطلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td><td>'+esc(signedDate(c,x.p))+'</td></tr>').join("")||'<tr><td colspan="6">لا يوجد معلمون مستهدفون.</td></tr>')+
- '</tbody></table><div class="foot">نظام راصد | مدارس الفلاح الأهلية | تصميم محمد عامر أحمد</div></main><script>window.onload=()=>window.print()<\\/script></body></html>';
+ '</tbody></table><div class="foot">نظام راصد | مدارس الفلاح الأهلية | تصميم محمد عامر أحمد</div></main><script>window.onload=()=>window.print()<\/script></body></html>';
  const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة الشاهد.");return}w.document.write(html);w.document.close();
 }
 
