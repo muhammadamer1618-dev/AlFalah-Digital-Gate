@@ -956,7 +956,7 @@ function addFixedSiteMonitor(){
  const conflicts=[];
  for(const day of days)for(let period=1;period<=monitoringDayPeriodLimit(day);period++){
   const matching=quickNeeds(site,day,period);
-  const replaceable=matching.find(n=>!fixedNeedRecord(n));
+  const replaceable=matching.find(n=>!fixedNeedRecord(n)&&!n.closed);
   const replaces=replaceable?[replaceable.id]:[];
   if(s.lessons.some(l=>l.teacher===teacher&&l.day===day&&Number(l.period)===period))
    conflicts.push(day+' الحصة '+period+' (حصة دراسية)');
@@ -981,7 +981,8 @@ function addFixedSiteMonitor(){
  s.duties ||= [];
  for(const day of days)for(let period=1;period<=monitoringDayPeriodLimit(day);period++){
   const existing=quickNeeds(site,day,period);
-  let n=existing.find(x=>!fixedNeedRecord(x));
+  let n=existing.find(x=>!fixedNeedRecord(x)&&!x.closed);
+  if(!n&&existing.length&&existing.every(x=>x.closed))continue;
   if(!n){
    n={id:id(),track:monitoringTrack,mode:'weekly',day,date:'',period,notes:site,assignedTeacher:''};
    s.monitoringNeeds.push(n);
@@ -1196,7 +1197,7 @@ function quickPrint(){
 function quickMonitoringPanel(){
  const sites=quickSites(),periods=monitoringBasePeriods();
  const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes)&&Number(n.period)<=monitoringDayPeriodLimit(n.day));
- const form='<div class="notice"><b>التوزيع السريع:</b> أدخل المواقع مرة واحدة ثم اضغط «إنشاء وتوزيع». ستظهر أمامك الأيام والحصص في جدول واحد مثل الصورة، ويمكن تغيير اسم أي مراقب من نفس الخانة. الحصص والتكليفات المتعارضة مستبعدة آليًا.</div>'+
+ const form='<div class="notice"><b>التوزيع السريع:</b> أدخل المواقع مرة واحدة ثم اضغط «إنشاء وتوزيع». ستظهر أمامك الأيام والحصص في جدول واحد مثل الصورة، ويمكن تغيير اسم أي مراقب من نفس الخانة، أو اختيار «🔒 إغلاق هذه الخانة» من قائمة غير موزعة لمنع التوزيع فيها دون حذفها. الحصص والتكليفات المتعارضة مستبعدة آليًا.</div>'+
  '<p class="muted">'+(monitoringTrack==='primary'?'عليا ١ وعليا ٢: الأحد والاثنين والثلاثاء ٨ مراقبات، والأربعاء والخميس ٧ مراقبات لكل موقع.':'ثانوي شرقي وغربي: الأحد إلى الأربعاء ٧ مراقبات، والخميس ٦ لكل موقع.')+'</p>'+
  '<div class="fields">'+field('موقعا المراقبة الثابتان','<div class="notice"><b>'+esc(sites.join(' + '))+'</b></div>')+
  field('عدد المراقبات الأساسي يوميًا','<input type="number" value="'+periods+'" disabled><small>يتحدد حسب المرحلة واليوم تلقائيًا</small>')+
@@ -1529,8 +1530,8 @@ function monitoringNeedsPanel(){
  field('الحصة','<input id="needPeriod" type="number" min="1" max="12" value="1">')+
  field('الموقع أو المهمة','<input id="needTitle" placeholder="بوابة المدرسة أو الفناء">')+
  field('عدد المراقبين المطلوب','<input id="needCount" type="number" min="1" max="30" value="1">')+
- '</div><div class="actions"><button onclick="addMonitoringNeed()">إضافة للمراقبات المطلوبة</button><button class="alt" onclick="downloadMonitoringTemplate()">نموذج CSV للمراقبات</button><label class="tag" style="cursor:pointer">استيراد مراقبات CSV <input type="file" accept=".csv,text/csv" style="display:none" onchange="importMonitoringCSV(this.files[0]);this.value=\'\'"></label><button onclick="distributeMonitoring()">⚖ توزيع المراقبات بعدل</button></div><p class="muted">يرتب النظام المتاحين حسب أقل عدد مراقبات، ثم أقل نصاب تدريس، ثم أقل حصص انتظار سابقة. المراقبة بلا معلم متاح تبقى معلّقة للمراجعة ولا تُسند عشوائيًا.</p>';
- const rows=s.monitoringNeeds.filter(x=>!x.groupId&&x.track===monitoringTrack).map(x=>[esc(x.notes),x.mode==='weekly'?esc(x.day)+' أسبوعيًا':esc(x.date),x.period,x.assignedTeacher?esc(nm(x.assignedTeacher)):'<b>لم تُوزع</b>','<button class="danger" onclick="deleteMonitoringNeed(\''+x.id+'\')">حذف</button>']);
+ '</div><div class="actions"><button onclick="addMonitoringNeed()">إضافة للمراقبات المطلوبة</button><button class="alt" onclick="downloadMonitoringTemplate()">نموذج CSV للمراقبات</button><label class="tag" style="cursor:pointer">استيراد مراقبات CSV <input type="file" accept=".csv,text/csv" style="display:none" onchange="importMonitoringCSV(this.files[0]);this.value=\'\'"></label><button onclick="distributeMonitoring()">⚖ توزيع المراقبات بعدل</button></div><p class="muted">يرتب النظام المتاحين حسب أقل عدد مراقبات، ثم أقل نصاب تدريس، ثم أقل حصص انتظار سابقة. المراقبة بلا معلم متاح تبقى معلّقة للمراجعة ولا تُسند عشوائيًا. الخانات المغلقة مستبعدة من التوزيع ولا تُحسب ضمن الناقص.</p>';
+ const rows=s.monitoringNeeds.filter(x=>!x.groupId&&x.track===monitoringTrack).map(x=>[esc(x.notes),x.mode==='weekly'?esc(x.day)+' أسبوعيًا':esc(x.date),x.period,x.closed?'<b>🔒 مغلقة</b>':x.assignedTeacher?esc(nm(x.assignedTeacher)):'<b>لم تُوزع</b>','<button class="danger" onclick="deleteMonitoringNeed(\''+x.id+'\')">حذف</button>']);
  return box('توزيع المراقبات الآلي العادل',form)+box('المراقبات الفردية ونتيجة التوزيع',rows.length?table(['المهمة','التوقيت','الحصة','المعلم','الإجراء'],rows):empty('المجموعات الأسبوعية تظهر أعلاه؛ لا توجد مراقبات فردية'));
 }
 function cancelLessonEdit(){editingLessonId='';render()}
