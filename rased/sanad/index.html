@@ -179,6 +179,36 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-timetable .print-sheet tr{page-break-inside:avoid!important;break-inside:avoid!important}
 }
 
+
+/* Compact card navigation: all modules, responsive and keyboard accessible. */
+#view.ui-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,295px),1fr));align-items:start;gap:13px}
+#view.ui-card-grid>.ui-card{margin:0;min-width:0;align-self:start}
+#view.ui-card-grid>.ui-card[open]{grid-column:1/-1}
+#view.ui-card-grid>.two,#view.ui-card-grid>.print-sheet,#view.ui-card-grid>.daily-cover-sheet{grid-column:1/-1;min-width:0}
+details.ui-card{padding:0!important;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+details.ui-card[open]{border-color:#a8ccc4;box-shadow:0 8px 26px #16404813}
+.ui-card-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:19px 20px;cursor:pointer;list-style:none;color:#164b46;font-size:15px;font-weight:850;min-height:65px;user-select:none;background:linear-gradient(115deg,#fff,#f2f8f6)}
+.ui-card-summary::-webkit-details-marker{display:none}
+.ui-card-summary:focus-visible{outline:3px solid #159883;outline-offset:-3px}
+.ui-card-summary:hover{background:#eaf5f0}
+.ui-card-summary:before{content:"▤";display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#dbefe9;color:#116757;font-size:19px;flex:none}
+.ui-card-summary .ui-card-toggle{margin-inline-start:auto;font-size:11px;color:#35796d;border:1px solid #c5ded6;border-radius:15px;padding:5px 10px;white-space:nowrap;font-weight:700}
+.ui-card-summary .ui-card-toggle:after{content:" ▾"}
+details.ui-card[open]>.ui-card-summary{border-bottom:1px solid #dfebe7;background:#edf7f3}
+details.ui-card[open]>.ui-card-summary .ui-card-toggle{background:#d8eee6}
+details.ui-card[open]>.ui-card-summary .ui-card-toggle:after{content:" ▴"}
+details.ui-card>.ui-card-body{padding:20px;min-width:0}
+details.ui-card>.ui-card-body>.scroll{max-height:68vh;overflow:auto;border:1px solid #e2ebe9;border-radius:10px}
+details.ui-card>.ui-card-body table{max-width:100%}
+@media(max-width:650px){#view.ui-card-grid{grid-template-columns:1fr}details.ui-card>.ui-card-body{padding:13px}.ui-card-summary{padding:15px 13px;font-size:13px}}
+@media print{
+ #view.ui-card-grid{display:block!important}
+ #view details.ui-card{display:block!important;overflow:visible!important;box-shadow:none!important}
+ #view details.ui-card>.ui-card-summary{display:none!important}
+ #view details.ui-card>.ui-card-body{padding:4px!important;overflow:visible!important}
+ #view details.ui-card>.ui-card-body>.scroll{max-height:none!important;overflow:visible!important}
+}
+
 </style><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script></head><body><a class="rased-back" href="../admin.html" aria-label="العودة إلى لوحة إدارة راصد">↩ العودة إلى راصد</a><div class="layout"><aside><div class="school-brand"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الأهلية"><div><h1>بديل</h1><p>النظام الذكي لتأمين الحصص<br>مدارس الفلاح الأهلية</p></div></div><nav id="nav"></nav></aside><main><header><div><h2 id="title">لوحة التحكم</h2><small>مدارس الفلاح الأهلية · إدارة اليوم الدراسي</small></div><span class="tag" id="sanadCloudStatus" role="status" aria-live="polite">⏳ جارٍ ربط الحفظ السحابي</span></header><div class="container"><section class="hero"><h2>صباح الخير، أهلاً بك في بديل ✨</h2><p>نُبديل المعلم، ونضمن استمرار التعلّم — إدارة ذكية وعادلة للحصص.</p></section><div class="stats" id="stats"></div><div class="section-tools"><button class="alt" type="button" onclick="window.print()">🖨️ طباعة القسم الحالي</button><span class="muted">تُطبع البيانات الظاهرة في القسم المحدد</span></div><div id="view"></div><footer>بديل المطوّر © ٢٠٢٦ — مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</footer></div></main></div><div id="toast"></div><script>
 const KEY='sanad-falah-demo-1',days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],pages=[['home','⌂','لوحة التحكم'],['absence','◎','حصص الانتظار'],['swap','⇄','تبديل الحصص'],['teachers','♙','المعلمون والأقسام'],['schedule','▤','الجداول'],['monitoring','🛡','إدارة المراقبات'],['assignments','📚','التكليفات الإضافية'],['printing','🖨','مركز الطباعة'],['loads','◷','احتساب الحصص'],['charts','▥','رسوم بيانية'],['report','▣','التقرير الشهري'],['settings','⚙','الإعدادات']];let s=JSON.parse(localStorage.getItem(KEY)||'null')||{teachers:[],lessons:[],absences:[],covers:[],swaps:[],duties:[],monitoringNeeds:[],cap:4},page='home',selectedDate=new Date().toISOString().slice(0,10);
 s.duties ||= [];
@@ -416,8 +446,52 @@ function inferImportedStage(group,room){
 function normalizeImportedRoom(room){return String(room||'').replace(/\s*\+\s*تكليف خارج المتوسط والثانوي$/,'').replace(/^متوسط\s*\+\s*/,'').trim()}
 function isBusClass(label){return /^ح(?:\s*\(|$)/.test(String(label||'').trim())}
 function teachingLoad(i){return s.lessons.filter(l=>l.teacher===i&&!isBusClass(l.className)).length}
-function opts(list){return list.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')}function field(label,control){return '<div class="field"><label>'+label+'</label>'+control+'</div>'}function table(head,rows){return '<div class="scroll"><table><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</table></div>'}function empty(m){return '<div class="empty">◌<p>'+m+'</p></div>'}function box(title,content){return '<section class="panel"><h3>'+title+'</h3>'+content+'</section>'}
-function render(){document.getElementById('nav').innerHTML=pages.map(x=>'<button class="'+(x[0]===page?'active':'')+'" onclick="go(\''+x[0]+'\')"><span>'+x[1]+'</span> '+x[2]+'</button>').join('');document.getElementById('title').textContent=pages.find(x=>x[0]===page)[2];document.getElementById('stats').innerHTML=[['إجمالي المعلمين',s.teachers.length],['الغائبون اليوم',s.absences.filter(a=>a.date===new Date().toISOString().slice(0,10)).length],['حصص الانتظار',s.covers.length],['حصص الجدول الأسبوعي',s.lessons.length]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({home,absence,swap,teachers,schedule,monitoring,assignments,printing,loads,charts,report,settings})[page]();if(page==='report')showReport()}
+function opts(list){return list.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')}function field(label,control){return '<div class="field"><label>'+label+'</label>'+control+'</div>'}function table(head,rows){return '<div class="scroll"><table><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</table></div>'}function empty(m){return '<div class="empty">◌<p>'+m+'</p></div>'}/* Compact action cards. Open state lives in page UI only; business data is unchanged. */
+const sanadOpenCards=new Set();
+let sanadCardPrintSnapshot=null;
+function sanadCardKey(title){return page+'|'+(page==='monitoring'?monitoringTrack:'')+'|'+String(title)}
+function rememberCardState(summary){
+ const card=summary.closest('details.ui-card');if(!card)return;
+ const key=card.dataset.cardKey;
+ if(card.open)sanadOpenCards.delete(key);
+ else sanadOpenCards.add(key);
+}
+function filterTeacherDirectory(input){
+ const card=input.closest('.ui-card');
+ if(!card)return;
+ const term=String(input.value||'').trim().toLocaleLowerCase('ar');
+ card.querySelectorAll('.ui-card-body table tr').forEach((tr,i)=>{
+  if(i)tr.style.display=tr.textContent.toLocaleLowerCase('ar').includes(term)?'':'none';
+ });
+}
+function filterMonitoringTeacherCards(input){
+ const card=input.closest('.ui-card');
+ if(!card)return;
+ const term=String(input.value||'').trim().toLocaleLowerCase('ar');
+ card.querySelectorAll('label.monitorTeacherItem').forEach(label=>{
+  label.style.display=label.textContent.toLocaleLowerCase('ar').includes(term)?'':'none';
+ });
+}
+window.addEventListener('beforeprint',()=>{
+ sanadCardPrintSnapshot=[...document.querySelectorAll('#view details.ui-card')].map(el=>({el,opened:el.open}));
+ sanadCardPrintSnapshot.forEach(x=>x.el.open=true);
+});
+window.addEventListener('afterprint',()=>{
+ if(!sanadCardPrintSnapshot)return;
+ sanadCardPrintSnapshot.forEach(x=>{if(x.el.isConnected)x.el.open=x.opened});
+ sanadCardPrintSnapshot=null;
+});
+function box(title,content){
+ const key=sanadCardKey(title);
+ const defaultOpen=page==='home'||page==='printing'||page==='report'||
+   (page==='monitoring'&&String(title)==='مرحلة مراقبات مستقلة');
+ const open=sanadOpenCards.has(key)||(!sanadOpenCards.size&&defaultOpen);
+ return '<details class="panel ui-card" data-card-key="'+esc(key)+'" '+(open?'open':'')+'>'+
+  '<summary class="ui-card-summary" onclick="rememberCardState(this)">'+title+
+  '<span class="ui-card-toggle" aria-hidden="true">عرض التفاصيل</span></summary>'+
+  '<div class="ui-card-body">'+content+'</div></details>';
+}
+function render(){document.getElementById('view').classList.toggle('ui-card-grid',page!=='printing');document.getElementById('nav').innerHTML=pages.map(x=>'<button class="'+(x[0]===page?'active':'')+'" onclick="go(\''+x[0]+'\')"><span>'+x[1]+'</span> '+x[2]+'</button>').join('');document.getElementById('title').textContent=pages.find(x=>x[0]===page)[2];document.getElementById('stats').innerHTML=[['إجمالي المعلمين',s.teachers.length],['الغائبون اليوم',s.absences.filter(a=>a.date===new Date().toISOString().slice(0,10)).length],['حصص الانتظار',s.covers.length],['حصص الجدول الأسبوعي',s.lessons.length]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({home,absence,swap,teachers,schedule,monitoring,assignments,printing,loads,charts,report,settings})[page]();if(page==='report')showReport()}
 function home(){return '<div class="two">'+box('البدء السريع','<p class="muted">جهّز دليل المعلمين ثم أدخل حصص الجدول، وبعدها سجل الغياب لتظهر اقتراحات الانتظار.</p><div class="actions"><button onclick="go(\'teachers\')">إدارة المعلمين</button><button class="alt" onclick="go(\'schedule\')">الجدول الدراسي</button><button class="alt" onclick="go(\'absence\')">حصص الانتظار</button></div>')+box('ملخص العمليات','<p>الغيابات المسجلة: <b>'+s.absences.length+'</b></p><p>الحصص التم إسنادها: <b>'+s.covers.length+'</b></p><p>تبديلات الحصص: <b>'+s.swaps.length+'</b></p><div class="notice">البيانات محفوظة على هذا المتصفح فقط. استخدم النسخ الاحتياطي من الإعدادات.</div>')+'</div>'+box('أحدث حصص الانتظار',s.covers.length?table(['التاريخ','الصف','الحصة','المعلم البديل'],s.covers.slice(-8).reverse().map(c=>[c.date,esc(c.className),c.period,esc(nm(c.to))])):empty('لم تسجل أي تغطيات بعد'))}
 function teachers(){
  const actions='<div class="actions"><button class="alt" type="button" onclick="syncRasedTeacherPhonesClick()">🔄 تحديث أرقام راصد</button></div>'+
@@ -431,7 +505,7 @@ function teachers(){
    '<button class="alt small" onclick="rasedTeacherPicker(\''+esc(t.id)+'\')">🔗 ربط بحساب راصد</button> <button class="alt small" onclick="editTeacherWhatsAppPhone(\''+esc(t.id)+'\')">📱 رقم احتياطي</button> <button class="danger small" onclick="delTeacher(\''+esc(t.id)+'\')">حذف</button>'];
  });
  return box('إضافة معلم','<div class="fields">'+field('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+field('القسم','<input id="dept" placeholder="مثل: اللغة العربية">')+'</div><div class="actions"><button onclick="addTeacher()">إضافة المعلم</button></div>')+
- box('دليل المعلمين وأرقام الجوال',actions+(rows.length?table(['المعلم','القسم','نصابه الأسبوعي','حصص الانتظار','رقم الجوال','الإجراءات'],rows):empty('أضف معلمي المدرسة للبدء')));
+ box('دليل المعلمين وأرقام الجوال',actions+'<div class="field"><label>البحث عن معلم</label><input type="search" oninput="filterTeacherDirectory(this)" placeholder="اكتب اسم المعلم أو القسم أو الجوال"></div>'+(rows.length?table(['المعلم','القسم','نصابه الأسبوعي','حصص الانتظار','رقم الجوال','الإجراءات'],rows):empty('أضف معلمي المدرسة للبدء')));
 }
 function addTeacher(){let n=document.getElementById('tname').value.trim(),d=document.getElementById('dept').value.trim();if(!n)return toast('أدخل اسم المعلم');if(s.teachers.some(t=>t.name===n))return toast('هذا المعلم مسجل');s.teachers.push({id:id(),name:n,dept:d});save();toast('تم إضافة المعلم')}function delTeacher(i){if(s.lessons.some(l=>l.teacher===i)||s.absences.some(a=>a.teacher===i))return toast('احذف جدول وغيابات المعلم أولاً');s.teachers=s.teachers.filter(t=>t.id!==i);save()}
 
@@ -1028,7 +1102,8 @@ function monitoringTeachersPanel(){
  return box('المعلمون المسموح لهم بالمراقبة',
  '<p class="muted">حدد المعلمين المشاركين في التوزيع فقط؛ المعلم الذي لديه أي تكليف إضافي مستبعد من المراقبات آليًا حتى لو كان محددًا هنا، وكذلك تُراجع الحصص والحافلات قبل الإسناد.</p>'+
  '<div class="actions"><button class="alt" onclick="setMonitoringCheckAll(true)">تحديد الكل</button><button class="alt" onclick="setMonitoringCheckAll(false)">إلغاء تحديد الكل</button><button onclick="saveMonitoringEligible()">حفظ المعلمين المختارين</button></div>'+
- '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+s.teachers.map(t=>'<label style="display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #dce7e3;border-radius:10px;cursor:pointer"><input class="monitorTeacherCheck" type="checkbox" value="'+esc(t.id)+'" '+(selected.includes(t.id)?'checked':'')+' '+(hasExtraAssignment(t.id)?'disabled':'')+'><span>'+esc(t.name)+' <small>('+teachingLoad(t.id)+' حصص)</small>'+(hasExtraAssignment(t.id)?' <small style="color:#b45309">⛔ لديه تكليف إضافي</small>':'')+'</span></label>').join('')+'</div>'+
+ '<div class="field"><label>بحث داخل المعلمين</label><input type="search" oninput="filterMonitoringTeacherCards(this)" placeholder="اسم المعلم أو المادة"></div>'+
+ '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+s.teachers.map(t=>'<label class="monitorTeacherItem" style="display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #dce7e3;border-radius:10px;cursor:pointer"><input class="monitorTeacherCheck" type="checkbox" value="'+esc(t.id)+'" '+(selected.includes(t.id)?'checked':'')+' '+(hasExtraAssignment(t.id)?'disabled':'')+'><span>'+esc(t.name)+' <small>('+teachingLoad(t.id)+' حصص)</small>'+(hasExtraAssignment(t.id)?' <small style="color:#b45309">⛔ لديه تكليف إضافي</small>':'')+'</span></label>').join('')+'</div>'+
  '<p class="muted">المختارون حاليًا: '+selected.filter(i=>s.teachers.some(t=>t.id===i)).length+' من '+s.teachers.length+'</p>');
 }
 function setMonitoringCheckAll(checked){document.querySelectorAll('.monitorTeacherCheck').forEach(x=>x.checked=checked)}
