@@ -676,7 +676,7 @@ async function sanadCloudConnect(){
     if(sanadCloudChangeSeq!==sequence)throw Error('تغيرت بيانات الجهاز أثناء التهيئة؛ تم إنشاء النسخة السحابية، يلزم إعادة فحص البيانات');
     sanadCloudAdoptRemote({data:candidate,revision:newRevision});
    }else{
-    sanadCloudRevision=0;sanadCloudMode='connected';sanadCloudStatus();
+    sanadCloudRevision=0;sanadCloudMode='connected';render();sanadCloudStatus();
    }
    return;
   }
@@ -690,7 +690,7 @@ async function sanadCloudConnect(){
  }catch(e){
   console.error('Sanad Firebase-first initialization failed',e);
   sanadCloudLastError=e.message||String(e);
-  sanadCloudMode='error';sanadCloudStatus();
+  sanadCloudMode='error';render();sanadCloudStatus();
  }finally{
   sanadCloudStartupPending=false;
   if(sanadCloudMode==='connected'){
@@ -815,7 +815,7 @@ function box(title,content){
   '<span class="ui-card-toggle" aria-hidden="true">عرض التفاصيل</span></summary>'+
   '<div class="ui-card-body">'+content+'</div></details>';
 }
-function render(){document.getElementById('view').classList.toggle('ui-card-grid',page!=='printing');document.getElementById('nav').innerHTML=pages.map(x=>'<button class="'+(x[0]===page?'active':'')+'" onclick="go(\''+x[0]+'\')"><span>'+x[1]+'</span> '+x[2]+'</button>').join('');document.getElementById('title').textContent=pages.find(x=>x[0]===page)[2];document.getElementById('stats').innerHTML=[['إجمالي المعلمين',s.teachers.length],['الغائبون اليوم',s.absences.filter(a=>a.date===new Date().toISOString().slice(0,10)).length],['حصص الانتظار',s.covers.length],['حصص الجدول الأسبوعي',s.lessons.length]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({home,absence,swap,teachers,schedule,monitoring,assignments,printing,loads,charts,report,settings})[page]();if(page==='report')showReport()}
+function render(){if(sanadCloudMode==='connecting'){document.getElementById('view').classList.add('ui-card-grid');document.getElementById('view').innerHTML='<section class="panel" style="text-align:center;padding:28px"><h3>☁️ جاري تحميل البيانات من Firebase</h3><p class="muted">يتم جلب البيانات المعتمدة من راصد قبل إتاحة التعديل، حفاظًا على الجداول والمراقبات.</p></section>';return;}document.getElementById('view').classList.toggle('ui-card-grid',page!=='printing');document.getElementById('nav').innerHTML=pages.map(x=>'<button class="'+(x[0]===page?'active':'')+'" onclick="go(\''+x[0]+'\')"><span>'+x[1]+'</span> '+x[2]+'</button>').join('');document.getElementById('title').textContent=pages.find(x=>x[0]===page)[2];document.getElementById('stats').innerHTML=[['إجمالي المعلمين',s.teachers.length],['الغائبون اليوم',s.absences.filter(a=>a.date===new Date().toISOString().slice(0,10)).length],['حصص الانتظار',s.covers.length],['حصص الجدول الأسبوعي',s.lessons.length]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({home,absence,swap,teachers,schedule,monitoring,assignments,printing,loads,charts,report,settings})[page]();if(page==='report')showReport()}
 function home(){return '<div class="two">'+box('البدء السريع','<p class="muted">جهّز دليل المعلمين ثم أدخل حصص الجدول، وبعدها سجل الغياب لتظهر اقتراحات الانتظار.</p><div class="actions"><button onclick="go(\'teachers\')">إدارة المعلمين</button><button class="alt" onclick="go(\'schedule\')">الجدول الدراسي</button><button class="alt" onclick="go(\'absence\')">حصص الانتظار</button></div>')+box('ملخص العمليات','<p>الغيابات المسجلة: <b>'+s.absences.length+'</b></p><p>الحصص التم إسنادها: <b>'+s.covers.length+'</b></p><p>تبديلات الحصص: <b>'+s.swaps.length+'</b></p><div class="notice">البيانات محفوظة على هذا المتصفح فقط. استخدم النسخ الاحتياطي من الإعدادات.</div>')+'</div>'+box('أحدث حصص الانتظار',s.covers.length?table(['التاريخ','الصف','الحصة','المعلم البديل'],s.covers.slice(-8).reverse().map(c=>[c.date,esc(c.className),c.period,esc(nm(c.to))])):empty('لم تسجل أي تغطيات بعد'))}
 let editingTeacherId='',editingLessonId='',editingAbsenceId='',editingSwapId='',editingAssignmentId='';
 function cardPrintButton(title){return '<div class="actions no-print"><button class="alt small" onclick="printBadeelCard(\''+esc(sanadCardKey(title))+'\')">🖨 طباعة القسم</button></div>'}
