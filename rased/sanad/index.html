@@ -188,6 +188,7 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-selected-card #view details.ui-card.selected-print-card{display:block!important}
  body.printing-selected-card #view .no-print{display:none!important}
 }
+.quick-closed-slot{padding:6px 4px;border:1px solid #d6dce2;border-radius:7px;background:#f0f2f5;color:#526574;font-size:11px;font-weight:750;display:flex;align-items:center;justify-content:space-between;gap:5px}.quick-closed-slot button{padding:4px 7px;font-size:11px}
 /* Compact card navigation: all modules, responsive and keyboard accessible. */
 #view.ui-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,295px),1fr));align-items:start;gap:13px}
 #view.ui-card-grid>.ui-card{margin:0;min-width:0;align-self:start}
@@ -1005,6 +1006,7 @@ function removeFixedSiteMonitor(fixedId){
 
 function quickNeeds(site,day,p){return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&n.day===day&&Number(n.period)===p&&n.notes===site)}
 function quickAllowed(t,need){
+ if(need.closed)return false;
  if(fixedNeedRecord(need)||fixedSiteRules().some(x=>x.teacher===t.id))return false;
  if(need.assignedTeacher!==t.id&&monitoringTotalLoad(t.id)>=monitoringTarget())return false;
  // Extra assignments restrict only their own day/period, checked against s.duties below.
@@ -1017,6 +1019,20 @@ function quickAllowed(t,need){
 }
 function quickSet(needId,teacherId){
  const n=s.monitoringNeeds.find(x=>x.id===needId);if(!n)return;
+ if(teacherId==='__closed__'){
+  if(fixedNeedRecord(n))return toast('هذه مراقبة ثابتة؛ ألغِ التثبيت قبل إغلاقها');
+  if(n.closed)return;
+  if(!quickBackupBeforeChange())return;
+  s.duties=s.duties.filter(d=>d.needId!==n.id);
+  n.assignedTeacher='';n.closed=true;
+  save();toast('🔒 تم إغلاق الخانة واستبعادها من التوزيع');
+  return;
+ }
+ if(n.closed){
+  if(teacherId)return toast('افتح الخانة أولًا');
+  n.closed=false;save();toast('🔓 تم فتح الخانة للتوزيع');
+  return;
+ }
  if(fixedNeedRecord(n))return toast('المراقب ثابت؛ ألغِ تثبيته أولًا لتعديل هذه الخانة');
  if(Number(n.period)>monitoringDayPeriodLimit(n.day))return toast('هذه الحصة خارج عدد المراقبات المسموح لهذا اليوم');
  if(teacherId){const t=s.teachers.find(x=>x.id===teacherId);if(!t||!quickAllowed(t,n)){render();return toast('المعلم غير متاح لهذا الموعد')}}
@@ -1028,11 +1044,12 @@ function quickCell(site,day,p,print){
  if(p>monitoringDayPeriodLimit(day))return '<td style="background:#eff3f2;color:#57716b;font-weight:800">—</td>';
  const needs=quickNeeds(site,day,p);if(!needs.length)return '<td style="color:#b45309">—</td>';
  return '<td>'+needs.map(n=>{
-  if(print)return '<div>'+esc(n.assignedTeacher?nm(n.assignedTeacher):'—')+'</div>';
+  if(print)return '<div>'+esc(n.closed?'مغلقة':n.assignedTeacher?nm(n.assignedTeacher):'—')+'</div>';
+  if(n.closed)return '<div class="quick-closed-slot">🔒 مغلقة <button type="button" class="alt small" onclick="quickSet(\''+esc(n.id)+'\',\'\')">فتح</button></div>';
   if(fixedNeedRecord(n))return '<div style="font-weight:800;color:#11634c;padding:5px">📌 '+esc(nm(n.assignedTeacher))+' <small>(ثابت)</small></div>';
   const chosen=n.assignedTeacher||'';
   const teachers=s.teachers.filter(t=>t.id===chosen||((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).includes(t.id));
-  return '<select style="width:100%;min-width:110px;font-size:11px;padding:5px 1px;margin:2px 0" aria-label="مراقب '+esc(day)+' الحصة '+p+'" onchange="quickSet(\''+esc(n.id)+'\',this.value)"><option value="">— غير موزعة —</option>'+
+  return '<select style="width:100%;min-width:110px;font-size:11px;padding:5px 1px;margin:2px 0" aria-label="مراقب '+esc(day)+' الحصة '+p+'" onchange="quickSet(\''+esc(n.id)+'\',this.value)"><option value="">— غير موزعة —</option><option value="__closed__">🔒 إغلاق هذه الخانة</option>'+
    teachers.map(t=>'<option value="'+esc(t.id)+'" '+(t.id===chosen?'selected':'')+' '+(!quickAllowed(t,n)&&t.id!==chosen?'disabled':'')+'>'+esc(t.name)+'</option>').join('')+'</select>';
  }).join('')+'</td>';
 }
@@ -1072,7 +1089,7 @@ function quickFill(){
  for(let di=0;di<days.length;di++)for(let period=1;period<=monitoringDayPeriodLimit(days[di],periods);period++){
   const first=(di+period-1)%Math.max(1,sites.length);
   const rotatingSites=sites.slice(first).concat(sites.slice(0,first));
-  const layers=rotatingSites.map(site=>quickNeeds(site,days[di],period).filter(n=>!n.assignedTeacher));
+  const layers=rotatingSites.map(site=>quickNeeds(site,days[di],period).filter(n=>!n.assignedTeacher&&!n.closed));
   const maxDepth=Math.max(0,...layers.map(x=>x.length));
   for(let level=0;level<maxDepth;level++)for(const needs of layers){
    const need=needs[level];if(!need)continue;
@@ -1132,7 +1149,7 @@ function quickPrintableCell(site,day,period){
  const entries=quickNeeds(site,day,period);
  if(!entries.length)return '<span class="quick-not-assigned">—</span>';
  return entries.map(n=>'<span class="quick-duty-name'+(!n.assignedTeacher?' quick-not-assigned':'')+'">'+
-  esc(n.assignedTeacher?nm(n.assignedTeacher):'غير موزعة')+'</span>').join('');
+  esc(n.closed?'مغلقة':n.assignedTeacher?nm(n.assignedTeacher):'غير موزعة')+'</span>').join('');
 }
 function quickPrint(){
  const sites=quickSites();
@@ -1210,9 +1227,10 @@ function monitoringWorkloadData(track=monitoringTrack){
   return {name:t.name,teaching,weekly:entry.weekly,dated:entry.dated,total,overall:teaching+total,teacherId:t.id};
  }).sort((a,b)=>a.overall-b.overall||a.name.localeCompare(b.name,'ar'));
  const needs=s.monitoringNeeds.filter(n=>n.track===track);
- const allocated=needs.filter(n=>n.assignedTeacher).length;
+ const openNeeds=needs.filter(n=>!n.closed);
+ const allocated=openNeeds.filter(n=>n.assignedTeacher).length;
  const assigned=relevant.length;
- return {rows,assigned,unassigned:needs.length-allocated,needed:needs.length,weekly:relevant.filter(d=>d.mode==='weekly').length,dated:relevant.filter(d=>d.mode!=='weekly').length};
+ return {rows,assigned,unassigned:openNeeds.length-allocated,closed:needs.length-openNeeds.length,needed:openNeeds.length,weekly:relevant.filter(d=>d.mode==='weekly').length,dated:relevant.filter(d=>d.mode!=='weekly').length};
 }
 function monitoringWorkloadTable(print=false,track=monitoringTrack){
  const data=monitoringWorkloadData(track);
@@ -1225,7 +1243,7 @@ function monitoringWorkloadTable(print=false,track=monitoringTrack){
    r.overall===(s.monitoringTarget||26)?'<strong style="color:#16806a">مكتمل</strong>':
    'متبقٍ '+((s.monitoringTarget||26)-r.overall)
  ]);
- const heading='<div class="notice">المستهدف للمعلم: <b>'+(s.monitoringTarget||26)+'</b> حصة · إجمالي المراقبات المسندة: <b>'+data.assigned+'</b> · المراقبات الأسبوعية: <b>'+data.weekly+'</b> · المراقبات المؤرخة: <b>'+data.dated+'</b> · خانات المراقبة غير الموزعة: <b>'+data.unassigned+'</b></div>';
+ const heading='<div class="notice">المستهدف للمعلم: <b>'+(s.monitoringTarget||26)+'</b> حصة · إجمالي المراقبات المسندة: <b>'+data.assigned+'</b> · المراقبات الأسبوعية: <b>'+data.weekly+'</b> · المراقبات المؤرخة: <b>'+data.dated+'</b> · خانات المراقبة غير الموزعة: <b>'+data.unassigned+'</b> · الخانات المغلقة: <b>'+data.closed+'</b></div>';
  return (print?'':heading)+table(['م','اسم المعلم','النصاب','مراقبات أسبوعية','مراقبات مؤرخة','مجموع المراقبات','الإجمالي (النصاب + المراقبات)','المتبقي للمستهدف'],rows);
 }
 function monitoringWorkloadPanel(){
@@ -1248,7 +1266,7 @@ function printMonitoringWorkload(track=monitoringTrack){
   '<h3>كشف عدد المراقبات — '+esc(monitorTrackLabel(track))+'</h3></div>'+
   '<img src="/rased/alfalah-round-logo.png" alt="شعار المدرسة"></header>'+
   '<p class="monitor-workload-summary">إجمالي المراقبات: '+data.assigned+' | أسبوعية: '+data.weekly+
-  ' | مؤرخة: '+data.dated+' | خانات غير موزعة: '+data.unassigned+'</p>'+
+  ' | مؤرخة: '+data.dated+' | خانات غير موزعة: '+data.unassigned+' | مغلقة: '+data.closed+'</p>'+
   monitoringWorkloadTable(true,track)+
   '<div class="monitor-workload-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div>'+
   '<div class="monitor-workload-credit">تصميم محمد عامر أحمد</div>';
@@ -1347,7 +1365,7 @@ function fairCandidate(need){
  if(Number(need.period)>monitoringDayPeriodLimit(actualDay,monitoringBasePeriods(need.track),need.track))return undefined;
  const candidates=s.teachers.filter(t=>{
   if(fixedSiteRules().some(x=>x.teacher===t.id))return false;
-  if(monitoringTotalLoad(t.id)>=monitoringTarget())return false;
+  if(need.closed||monitoringTotalLoad(t.id)>=monitoringTarget())return false;
   if(!((s.monitoringEligibleByTrack||{})[need.track]||[]).includes(t.id))return false;
   if(s.lessons.some(l=>l.teacher===t.id&&l.day===actualDay&&l.period===need.period))return false;
   if((s.duties||[]).some(d=>d.teacher===t.id&&d.period===need.period&&(d.mode==='weekly'?d.day===actualDay:need.mode==='weekly'?dt(d.date)===actualDay:d.date===need.date)))return false;
@@ -1386,7 +1404,7 @@ function rebalanceMonitoringToTarget(){
  if(!confirm('إعادة توزيع مراقبات '+monitorTrackLabel(monitoringTrack)+' للوصول إلى '+input+' حصة إجمالية قدر الإمكان؟\\nسيُعاد إسناد المراقبات الموجودة في هذه المرحلة. لن تتغير الحصص الدراسية أو المراقبات المستقلة خارج جدول هذه المرحلة.'))return;
  if(!quickBackupBeforeChange())return;
  s.monitoringTarget=input;
- const movable=needs.filter(n=>!fixedNeedRecord(n));
+ const movable=needs.filter(n=>!fixedNeedRecord(n)&&!n.closed);
  const ids=new Set(movable.map(n=>n.id));
  s.duties=s.duties.filter(d=>!ids.has(d.needId));
  movable.forEach(n=>{n.assignedTeacher=''});
@@ -1421,7 +1439,7 @@ function rebalanceMonitoringToTarget(){
 function distributeMonitoring(){
  if(!s.teachers.length)return toast('أضف المعلمين أولًا');
  let assigned=0,waiting=0;
- for(const need of s.monitoringNeeds.filter(x=>!x.assignedTeacher&&x.track===monitoringTrack)){
+ for(const need of s.monitoringNeeds.filter(x=>!x.assignedTeacher&&!x.closed&&x.track===monitoringTrack)){
   const teacher=fairCandidate(need);
   if(!teacher){waiting++;continue}
   const duty={id:id(),needId:need.id,teacher:teacher.id,kind:'monitoring',mode:need.mode,day:need.day,date:need.date,period:need.period,notes:need.notes};
