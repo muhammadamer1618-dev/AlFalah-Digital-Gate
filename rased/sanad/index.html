@@ -77,7 +77,7 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-quick-monitor #alfalah-designer-credit{display:none!important}
 }
 </style><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script></head><body><a class="rased-back" href="../admin.html" aria-label="العودة إلى لوحة إدارة راصد">↩ العودة إلى راصد</a><div class="layout"><aside><div class="school-brand"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الأهلية"><div><h1>بديل</h1><p>النظام الذكي لتأمين الحصص<br>مدارس الفلاح الأهلية</p></div></div><nav id="nav"></nav></aside><main><header><div><h2 id="title">لوحة التحكم</h2><small>مدارس الفلاح الأهلية · إدارة اليوم الدراسي</small></div><span class="tag">● حفظ محلي تلقائي</span></header><div class="container"><section class="hero"><h2>صباح الخير، أهلاً بك في بديل ✨</h2><p>نُبديل المعلم، ونضمن استمرار التعلّم — إدارة ذكية وعادلة للحصص.</p></section><div class="stats" id="stats"></div><div class="section-tools"><button class="alt" type="button" onclick="window.print()">🖨️ طباعة القسم الحالي</button><span class="muted">تُطبع البيانات الظاهرة في القسم المحدد</span></div><div id="view"></div><footer>بديل المطوّر © ٢٠٢٦ — مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</footer></div></main></div><div id="toast"></div><script>
-const KEY='sanad-falah-demo-1',days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],pages=[['home','⌂','لوحة التحكم'],['absence','◎','تغطية الغياب'],['swap','⇄','تبديل الحصص'],['teachers','♙','المعلمون والأقسام'],['schedule','▤','الجداول'],['monitoring','🛡','إدارة المراقبات'],['assignments','📚','التكليفات الإضافية'],['printing','🖨','مركز الطباعة'],['loads','◷','احتساب الحصص'],['charts','▥','رسوم بيانية'],['report','▣','التقرير الشهري'],['settings','⚙','الإعدادات']];let s=JSON.parse(localStorage.getItem(KEY)||'null')||{teachers:[],lessons:[],absences:[],covers:[],swaps:[],duties:[],monitoringNeeds:[],cap:4},page='home',selectedDate=new Date().toISOString().slice(0,10);
+const KEY='sanad-falah-demo-1',days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],pages=[['home','⌂','لوحة التحكم'],['absence','◎','حصص الانتظار'],['swap','⇄','تبديل الحصص'],['teachers','♙','المعلمون والأقسام'],['schedule','▤','الجداول'],['monitoring','🛡','إدارة المراقبات'],['assignments','📚','التكليفات الإضافية'],['printing','🖨','مركز الطباعة'],['loads','◷','احتساب الحصص'],['charts','▥','رسوم بيانية'],['report','▣','التقرير الشهري'],['settings','⚙','الإعدادات']];let s=JSON.parse(localStorage.getItem(KEY)||'null')||{teachers:[],lessons:[],absences:[],covers:[],swaps:[],duties:[],monitoringNeeds:[],cap:4},page='home',selectedDate=new Date().toISOString().slice(0,10);
 s.duties ||= [];
 s.monitoringNeeds ||= [];
 s.monitoringEligible ??= s.teachers.map(t=>t.id);
@@ -105,9 +105,21 @@ function normalizeImportedRoom(room){return String(room||'').replace(/\s*\+\s*ت
 function isBusClass(label){return /^ح(?:\s*\(|$)/.test(String(label||'').trim())}
 function teachingLoad(i){return s.lessons.filter(l=>l.teacher===i&&!isBusClass(l.className)).length}
 function opts(list){return list.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')}function field(label,control){return '<div class="field"><label>'+label+'</label>'+control+'</div>'}function table(head,rows){return '<div class="scroll"><table><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</table></div>'}function empty(m){return '<div class="empty">◌<p>'+m+'</p></div>'}function box(title,content){return '<section class="panel"><h3>'+title+'</h3>'+content+'</section>'}
-function render(){document.getElementById('nav').innerHTML=pages.map(x=>'<button class="'+(x[0]===page?'active':'')+'" onclick="go(\''+x[0]+'\')"><span>'+x[1]+'</span> '+x[2]+'</button>').join('');document.getElementById('title').textContent=pages.find(x=>x[0]===page)[2];document.getElementById('stats').innerHTML=[['إجمالي المعلمين',s.teachers.length],['الغائبون اليوم',s.absences.filter(a=>a.date===new Date().toISOString().slice(0,10)).length],['حصص التغطية',s.covers.length],['حصص الجدول الأسبوعي',s.lessons.length]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({home,absence,swap,teachers,schedule,monitoring,assignments,printing,loads,charts,report,settings})[page]();if(page==='report')showReport()}
-function home(){return '<div class="two">'+box('البدء السريع','<p class="muted">جهّز دليل المعلمين ثم أدخل حصص الجدول، وبعدها سجل الغياب لتظهر اقتراحات التغطية.</p><div class="actions"><button onclick="go(\'teachers\')">إدارة المعلمين</button><button class="alt" onclick="go(\'schedule\')">الجدول الدراسي</button><button class="alt" onclick="go(\'absence\')">تغطية الغياب</button></div>')+box('ملخص العمليات','<p>الغيابات المسجلة: <b>'+s.absences.length+'</b></p><p>الحصص المغطاة: <b>'+s.covers.length+'</b></p><p>تبديلات الحصص: <b>'+s.swaps.length+'</b></p><div class="notice">البيانات محفوظة على هذا المتصفح فقط. استخدم النسخ الاحتياطي من الإعدادات.</div>')+'</div>'+box('أحدث التغطيات',s.covers.length?table(['التاريخ','الصف','الحصة','المعلم البديل'],s.covers.slice(-8).reverse().map(c=>[c.date,esc(c.className),c.period,esc(nm(c.to))])):empty('لم تسجل أي تغطيات بعد'))}
-function teachers(){return box('إضافة معلم', '<div class="fields">'+field('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+field('القسم','<input id="dept" placeholder="مثل: اللغة العربية">')+'</div><div class="actions"><button onclick="addTeacher()">إضافة المعلم</button></div>')+box('دليل المعلمين',s.teachers.length?table(['المعلم','القسم','نصابه الأسبوعي','تكليفات التغطية',''],s.teachers.map(t=>[esc(t.name),esc(t.dept),teachingLoad(t.id),count(t.id),'<button class="alt small" onclick="editTeacherWhatsAppPhone(\''+t.id+'\')">📱 رقم واتساب</button> <button class="danger small" onclick="delTeacher(\''+t.id+'\')">حذف</button>'])):empty('أضف معلمي المدرسة للبدء'))}
+function render(){document.getElementById('nav').innerHTML=pages.map(x=>'<button class="'+(x[0]===page?'active':'')+'" onclick="go(\''+x[0]+'\')"><span>'+x[1]+'</span> '+x[2]+'</button>').join('');document.getElementById('title').textContent=pages.find(x=>x[0]===page)[2];document.getElementById('stats').innerHTML=[['إجمالي المعلمين',s.teachers.length],['الغائبون اليوم',s.absences.filter(a=>a.date===new Date().toISOString().slice(0,10)).length],['حصص الانتظار',s.covers.length],['حصص الجدول الأسبوعي',s.lessons.length]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({home,absence,swap,teachers,schedule,monitoring,assignments,printing,loads,charts,report,settings})[page]();if(page==='report')showReport()}
+function home(){return '<div class="two">'+box('البدء السريع','<p class="muted">جهّز دليل المعلمين ثم أدخل حصص الجدول، وبعدها سجل الغياب لتظهر اقتراحات الانتظار.</p><div class="actions"><button onclick="go(\'teachers\')">إدارة المعلمين</button><button class="alt" onclick="go(\'schedule\')">الجدول الدراسي</button><button class="alt" onclick="go(\'absence\')">حصص الانتظار</button></div>')+box('ملخص العمليات','<p>الغيابات المسجلة: <b>'+s.absences.length+'</b></p><p>الحصص التم إسنادها: <b>'+s.covers.length+'</b></p><p>تبديلات الحصص: <b>'+s.swaps.length+'</b></p><div class="notice">البيانات محفوظة على هذا المتصفح فقط. استخدم النسخ الاحتياطي من الإعدادات.</div>')+'</div>'+box('أحدث حصص الانتظار',s.covers.length?table(['التاريخ','الصف','الحصة','المعلم البديل'],s.covers.slice(-8).reverse().map(c=>[c.date,esc(c.className),c.period,esc(nm(c.to))])):empty('لم تسجل أي تغطيات بعد'))}
+function teachers(){
+ const actions='<div class="actions"><button class="alt" type="button" onclick="syncRasedTeacherPhonesClick()">🔄 جلب أرقام الجوال من راصد</button></div>'+
+ '<p class="muted">تُطابق الأسماء تلقائيًا مع إدارة المعلمين في راصد، ويُستخدم رقم الجوال الموجود هناك لإرسال حصص الانتظار. إدخال رقم يدوي اختياري عند عدم التطابق فقط.</p>';
+ const rows=s.teachers.map(t=>{
+  const manual=normalizeSaudiMobile(t.whatsappPhone||''),rased=normalizeSaudiMobile(t.rasedPhone||'');
+  const phone=manual||rased,source=manual?'رقم يدوي':rased?'راصد':t.rasedPhoneStatus==='ambiguous'?'أسماء متشابهة':'غير مربوط';
+  return [esc(t.name),esc(t.dept||''),teachingLoad(t.id),count(t.id),
+   phone?esc('0'+phone.slice(3))+' <small>('+source+')</small>':'<span class="muted">'+source+'</span>',
+   '<button class="alt small" onclick="editTeacherWhatsAppPhone(\''+esc(t.id)+'\')">📱 تعديل الرقم يدويًا</button> <button class="danger small" onclick="delTeacher(\''+esc(t.id)+'\')">حذف</button>'];
+ });
+ return box('إضافة معلم','<div class="fields">'+field('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+field('القسم','<input id="dept" placeholder="مثل: اللغة العربية">')+'</div><div class="actions"><button onclick="addTeacher()">إضافة المعلم</button></div>')+
+ box('دليل المعلمين وأرقام الجوال',actions+(rows.length?table(['المعلم','القسم','نصابه الأسبوعي','حصص الانتظار','رقم الجوال','الإجراءات'],rows):empty('أضف معلمي المدرسة للبدء')));
+}
 function addTeacher(){let n=document.getElementById('tname').value.trim(),d=document.getElementById('dept').value.trim();if(!n)return toast('أدخل اسم المعلم');if(s.teachers.some(t=>t.name===n))return toast('هذا المعلم مسجل');s.teachers.push({id:id(),name:n,dept:d});save();toast('تم إضافة المعلم')}function delTeacher(i){if(s.lessons.some(l=>l.teacher===i)||s.absences.some(a=>a.teacher===i))return toast('احذف جدول وغيابات المعلم أولاً');s.teachers=s.teachers.filter(t=>t.id!==i);save()}
 
 let editingDutyId='';
@@ -291,7 +303,7 @@ function quickMonitoringPanel(){
  field('عدد الحصص يوميًا','<input id="quickPeriods" type="number" min="1" max="12" value="'+periods+'">')+
  field('عدد المراقبين لكل موقع وحصة','<input id="quickQuantity" type="number" min="1" max="5" value="1">')+'</div>'+
  '<div class="actions"><button onclick="quickGenerate()">✨ إنشاء وتوزيع الجدول كاملًا</button><button class="alt" onclick="quickFill()">⚖ توزيع الخانات الفارغة</button><button class="alt" onclick="quickPrint()">🖨 طباعة الجدول</button><button class="alt" onclick="quickClearAssignments()">🧹 تفريغ التوزيع</button><button class="danger" onclick="quickDeleteSchedule()">🗑 حذف الجدول</button></div>'+
- '<p class="muted">المراقبات الموزعة: '+needs.filter(n=>n.assignedTeacher).length+' من '+needs.length+' · غير المغطاة: '+needs.filter(n=>!n.assignedTeacher).length+'. الأولوية لتغطية الموقعين في كل حصة، بدون تكليف المعلم مرتين في نفس الموعد. اختر المعلمين المسموح لهم بالمراقبة قبل إنشاء الجدول.</p>';
+ '<p class="muted">المراقبات الموزعة: '+needs.filter(n=>n.assignedTeacher).length+' من '+needs.length+' · غير التم إسنادها: '+needs.filter(n=>!n.assignedTeacher).length+'. الأولوية لتغطية الموقعين في كل حصة، بدون تكليف المعلم مرتين في نفس الموعد. اختر المعلمين المسموح لهم بالمراقبة قبل إنشاء الجدول.</p>';
  return box('⚡ التوزيع الأسبوعي السريع للمراقبات',form+quickGrid());
 }
 
@@ -466,14 +478,14 @@ function monitoringNeedsPanel(){
  field('الحصة','<input id="needPeriod" type="number" min="1" max="12" value="1">')+
  field('الموقع أو المهمة','<input id="needTitle" placeholder="بوابة المدرسة أو الفناء">')+
  field('عدد المراقبين المطلوب','<input id="needCount" type="number" min="1" max="30" value="1">')+
- '</div><div class="actions"><button onclick="addMonitoringNeed()">إضافة للمراقبات المطلوبة</button><button class="alt" onclick="downloadMonitoringTemplate()">نموذج CSV للمراقبات</button><label class="tag" style="cursor:pointer">استيراد مراقبات CSV <input type="file" accept=".csv,text/csv" style="display:none" onchange="importMonitoringCSV(this.files[0]);this.value=\'\'"></label><button onclick="distributeMonitoring()">⚖ توزيع المراقبات بعدل</button></div><p class="muted">يرتب النظام المتاحين حسب أقل عدد مراقبات، ثم أقل نصاب تدريس، ثم أقل تغطيات سابقة. المراقبة بلا معلم متاح تبقى معلّقة للمراجعة ولا تُسند عشوائيًا.</p>';
+ '</div><div class="actions"><button onclick="addMonitoringNeed()">إضافة للمراقبات المطلوبة</button><button class="alt" onclick="downloadMonitoringTemplate()">نموذج CSV للمراقبات</button><label class="tag" style="cursor:pointer">استيراد مراقبات CSV <input type="file" accept=".csv,text/csv" style="display:none" onchange="importMonitoringCSV(this.files[0]);this.value=\'\'"></label><button onclick="distributeMonitoring()">⚖ توزيع المراقبات بعدل</button></div><p class="muted">يرتب النظام المتاحين حسب أقل عدد مراقبات، ثم أقل نصاب تدريس، ثم أقل حصص انتظار سابقة. المراقبة بلا معلم متاح تبقى معلّقة للمراجعة ولا تُسند عشوائيًا.</p>';
  const rows=s.monitoringNeeds.filter(x=>!x.groupId&&x.track===monitoringTrack).map(x=>[esc(x.notes),x.mode==='weekly'?esc(x.day)+' أسبوعيًا':esc(x.date),x.period,x.assignedTeacher?esc(nm(x.assignedTeacher)):'<b>لم تُوزع</b>','<button class="danger" onclick="deleteMonitoringNeed(\''+x.id+'\')">حذف</button>']);
  return box('توزيع المراقبات الآلي العادل',form)+box('المراقبات الفردية ونتيجة التوزيع',rows.length?table(['المهمة','التوقيت','الحصة','المعلم','الإجراء'],rows):empty('المجموعات الأسبوعية تظهر أعلاه؛ لا توجد مراقبات فردية'));
 }
 function schedule(){let f='<div class="fields">'+field('المعلم','<select id="lteacher">'+opts(s.teachers)+'</select>')+field('المرحلة','<select id="lstage"><option>ابتدائي</option><option>متوسط</option><option>ثانوي</option></select>')+field('اليوم','<select id="lday">'+days.map(d=>'<option>'+d+'</option>').join('')+'</select>')+field('رقم الحصة','<input id="lperiod" type="number" min="1" max="12" value="1">')+field('الصف / الفصل','<input id="lclass" placeholder="ثالث أ">')+field('المادة','<input id="lsubject" placeholder="تربية بدنية">')+'</div><div class="actions"><button onclick="addLesson()">إضافة حصة</button><button class="alt" onclick="downloadTemplate()">نموذج CSV</button><label class="tag" style="cursor:pointer">استيراد CSV <input type="file" accept=".csv" style="display:none" onchange="importCSV(this.files[0])"></label><button class="alt" onclick="exportSchedule()">تصدير CSV</button></div><div class="notice">الاستيراد يدعم أعمدة: المعلم، القسم، اليوم، الحصة، الصف، المادة. ابدأ بنموذج CSV.</div>';return box('إدارة الجدول المعتمد',f)+box('حصص الجدول',s.lessons.length?table(['اليوم','الحصة','الصف','المادة','المعلم',''],s.lessons.map(l=>[esc(l.day),l.period,esc(l.className),esc(l.subject),esc(nm(l.teacher)),'<button class="danger small" onclick="delLesson(\''+l.id+'\')">حذف</button>'])):empty('لا يوجد جدول حتى الآن'))}function addLesson(){let t=document.getElementById('lteacher').value,d=document.getElementById('lday').value,p=+document.getElementById('lperiod').value,c=document.getElementById('lclass').value.trim(),sub=document.getElementById('lsubject').value.trim();if(!t||!c||p<1||p>12)return toast('أكمل بيانات الحصة');if(s.lessons.some(l=>l.teacher===t&&l.day===d&&l.period===p))return toast('المعلم لديه حصة في نفس الموعد');s.lessons.push({id:id(),teacher:t,day:d,period:p,className:c,subject:sub,stage:document.getElementById('lstage').value});save()}function delLesson(i){s.lessons=s.lessons.filter(l=>l.id!==i);s.covers=s.covers.filter(c=>c.lesson!==i);save()}
-function absence(){let form='<div class="fields">'+field('التاريخ','<input id="adate" type="date" value="'+selectedDate+'" onchange="selectedDate=this.value;render()">')+field('المعلم الغائب','<select id="ateacher">'+opts(s.teachers)+'</select>')+field('سبب الغياب','<select id="reason"><option>مرضية</option><option>مهمة رسمية</option><option>ورشة</option><option>إجازة تعويضية</option><option>أخرى</option></select>')+'</div><div class="actions"><button onclick="addAbs()">تسجيل الغياب</button></div><div class="notice">يقترح النظام المعلمين المتاحين، مرتبين حسب أقل عدد من حصص التغطية المسجلة.</div>';let a=s.absences.filter(x=>x.date===selectedDate),list=a.map(x=>{let ls=s.lessons.filter(l=>l.teacher===x.teacher&&l.day===dt(x.date));return '<div class="row"><b>'+esc(nm(x.teacher))+'</b><span class="tag">'+esc(x.reason)+'</span><button class="danger" onclick="delAbs(\''+x.id+'\')">حذف الغياب</button></div>'+(ls.length?ls.map(l=>{let c=s.covers.find(y=>y.lesson===l.id&&y.date===x.date);let avail=s.teachers.filter(t=>t.id!==x.teacher&&isFree(t.id,x.date,l.period)).sort((a,b)=>teachingLoad(a.id)-teachingLoad(b.id)||count(a.id)-count(b.id));
+function absence(){let form='<div class="fields">'+field('التاريخ','<input id="adate" type="date" value="'+selectedDate+'" onchange="selectedDate=this.value;render()">')+field('المعلم الغائب','<select id="ateacher">'+opts(s.teachers)+'</select>')+field('سبب الغياب','<select id="reason"><option>مرضية</option><option>مهمة رسمية</option><option>ورشة</option><option>إجازة تعويضية</option><option>أخرى</option></select>')+'</div><div class="actions"><button onclick="addAbs()">تسجيل الغياب</button></div><div class="notice">يقترح النظام المعلمين المتاحين، مرتبين حسب أقل عدد من حصص الانتظار المسجلة.</div>';let a=s.absences.filter(x=>x.date===selectedDate),list=a.map(x=>{let ls=s.lessons.filter(l=>l.teacher===x.teacher&&l.day===dt(x.date));return '<div class="row"><b>'+esc(nm(x.teacher))+'</b><span class="tag">'+esc(x.reason)+'</span><button class="danger" onclick="delAbs(\''+x.id+'\')">حذف الغياب</button></div>'+(ls.length?ls.map(l=>{let c=s.covers.find(y=>y.lesson===l.id&&y.date===x.date);let avail=s.teachers.filter(t=>t.id!==x.teacher&&isFree(t.id,x.date,l.period)).sort((a,b)=>teachingLoad(a.id)-teachingLoad(b.id)||count(a.id)-count(b.id));
  let busy=s.teachers.filter(t=>t.id!==x.teacher&&!isFree(t.id,x.date,l.period));
- let busyNote=busy.length?'<small class="muted" style="display:block">غير متاحين: '+busy.map(t=>esc(t.name)+' ('+esc(availabilityReason(t.id,x.date,l.period))+')').join('، ')+'</small>':'';return '<div class="row"><div>الحصة '+l.period+' · '+esc(l.className)+' · '+esc(l.subject)+'</div>'+(c?'<span class="tag">مغطاة: '+esc(nm(c.to))+'</span><button class="alt" onclick="openCoverageWhatsApp(\''+c.id+'\')">🟢 واتساب</button><button class="alt" onclick="undoCover(\''+c.id+'\')">إلغاء</button>':avail.length?'<select style="max-width:190px" id="candidate-'+l.id+'">'+avail.map(t=>'<option value="'+t.id+'">'+esc(t.name)+' — النصاب '+teachingLoad(t.id)+' — تغطيات سابقة '+count(t.id)+' — مراقبة: لا</option>').join('')+'</select><button onclick="cover(\''+x.id+'\',\''+l.id+'\')">إسناد</button>':'<span class="muted">لا يوجد معلم متاح</span>')+busyNote+'</div>'}).join(''):'<p class="muted">لا توجد حصص لهذا المعلم في هذا اليوم.</p>')}).join('');return '<div class="two">'+box('تسجيل غياب جديد',form)+box('الغيابات والحصص المتأثرة',list||empty('لا يوجد غياب في التاريخ المحدد'))+'</div>'+dailyCoveragePanel()}
+ let busyNote=busy.length?'<small class="muted" style="display:block">غير متاحين: '+busy.map(t=>esc(t.name)+' ('+esc(availabilityReason(t.id,x.date,l.period))+')').join('، ')+'</small>':'';return '<div class="row"><div>الحصة '+l.period+' · '+esc(l.className)+' · '+esc(l.subject)+'</div>'+(c?'<span class="tag">تم إسنادها: '+esc(nm(c.to))+'</span><button class="alt" onclick="openCoverageWhatsApp(\''+c.id+'\')">📲 إرسال حصة الانتظار</button><button class="alt" onclick="undoCover(\''+c.id+'\')">إلغاء</button>':avail.length?'<select style="max-width:190px" id="candidate-'+l.id+'">'+avail.map(t=>'<option value="'+t.id+'">'+esc(t.name)+' — النصاب '+teachingLoad(t.id)+' — حصص انتظار سابقة '+count(t.id)+' — مراقبة: لا</option>').join('')+'</select><button onclick="cover(\''+x.id+'\',\''+l.id+'\')">إسناد</button>':'<span class="muted">لا يوجد معلم متاح</span>')+busyNote+'</div>'}).join(''):'<p class="muted">لا توجد حصص لهذا المعلم في هذا اليوم.</p>')}).join('');return '<div class="two">'+box('تسجيل غياب جديد',form)+box('الغيابات والحصص المتأثرة',list||empty('لا يوجد غياب في التاريخ المحدد'))+'</div>'+dailyCoveragePanel()}
 function coverageDetail(cover){
  const lesson=s.lessons.find(l=>l.id===cover.lesson),absence=s.absences.find(a=>a.id===cover.absence);
  return {cover,lesson,absence,teacher:nm(cover.to),absent:absence?nm(absence.teacher):'غير محدد',subject:lesson?.subject||'غير محددة',className:cover.className||lesson?.className||'غير محدد'};
@@ -484,7 +496,7 @@ function dailyCoverageItems(date=selectedDate){
 function coverageWhatsAppText(cid){
  const c=s.covers.find(x=>x.id===cid);if(!c)return '';
  const d=coverageDetail(c);
- return 'السلام عليكم ورحمة الله وبركاته\n\nالأستاذ الفاضل/ '+d.teacher+'\n\nنظراً للحاجة إلى تأمين سير اليوم الدراسي، تم تكليفكم بتغطية الحصة التالية:\n'+
+ return 'السلام عليكم ورحمة الله وبركاته\n\nالأستاذ الفاضل/ '+d.teacher+'\n\nنظراً للحاجة إلى تأمين سير اليوم الدراسي، تم تكليفكم بحصة الانتظار التالية:\n'+
  'اليوم: '+dt(c.date)+'\nالتاريخ: '+c.date+'\nالحصة: '+c.period+'\nالفصل: '+d.className+'\nالمادة: '+d.subject+'\nالمعلم الغائب: '+d.absent+
  '\n\nنأمل منكم التواجد في الفصل في موعد الحصة والقيام بما يلزم، مع خالص الشكر والتقدير لتعاونكم.\n\nإدارة مدارس الفلاح الأهلية';
 }
@@ -528,19 +540,64 @@ function editTeacherWhatsAppPhone(teacherId){
  if(input.trim()&&!normalized)return toast('رقم الجوال غير صحيح. أدخل رقمًا سعوديًا يبدأ بـ 05');
  teacher.whatsappPhone=normalized;save();toast(normalized?'تم حفظ رقم واتساب المعلم':'تم حذف الرقم اليدوي؛ سيُستخدم رقم راصد عند توفره');
 }
-async function rasedTeacherPhone(teacher){
- if(teacher.whatsappPhone)return normalizeSaudiMobile(teacher.whatsappPhone);
- if(typeof firebase==='undefined'||!firebase.firestore)throw Error('تعذر تحميل الاتصال براصد');
- const role=sessionStorage.getItem('currentUserRole')||localStorage.getItem('currentUserRole')||'';
- if(!['admin','superadmin','manager'].includes(role.toLowerCase()))throw Error('الربط بأرقام راصد متاح للإدارة فقط');
- if(!firebase.apps.length)firebase.initializeApp(RADED_FIREBASE_CONFIG);
- const snap=await firebase.firestore().collection('teachers').where('name','==',teacher.name).limit(3).get();
- if(snap.docs.length!==1)throw Error(snap.docs.length>1?'يوجد أكثر من معلم بالاسم نفسه في راصد؛ سجّل رقمه يدويًا':'لم يُعثر على المعلم في راصد؛ سجّل رقمه يدويًا');
- const data=snap.docs[0].data()||{};
- const phone=normalizeSaudiMobile(data.phone||data.mobile||'');
- if(!phone)throw Error('لا يوجد رقم جوال صحيح لهذا المعلم في راصد');
- return phone;
+
+function normalizedTeacherName(value){
+ return String(value||'').normalize('NFKC').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ـ/g,'').replace(/\s+/g,' ').trim().toLowerCase();
 }
+let sanadPhoneSyncPromise=null;
+function sanadTeacherDatabase(){
+ if(typeof firebase==='undefined'||!firebase.firestore)throw Error('تعذر تحميل اتصال Firebase براصد');
+ const role=String(sessionStorage.getItem('currentUserRole')||localStorage.getItem('currentUserRole')||'').trim().toLowerCase();
+ if(!['admin','superadmin','manager'].includes(role))throw Error('مزامنة الأرقام متاحة للإدارة فقط');
+ const name='sanad-rased-teachers';let app;
+ try{app=firebase.app(name)}catch(e){app=firebase.initializeApp(RADED_FIREBASE_CONFIG,name)}
+ return app.firestore();
+}
+async function syncRasedTeacherPhones(silent=false){
+ if(sanadPhoneSyncPromise)return sanadPhoneSyncPromise;
+ sanadPhoneSyncPromise=(async()=>{
+  const snapshot=await sanadTeacherDatabase().collection('teachers').get(),groups=new Map();
+  snapshot.forEach(doc=>{
+   const d=doc.data()||{},name=normalizedTeacherName(d.name);
+   if(!name)return;
+   const records=groups.get(name)||[];
+   records.push({email:String(d.email||doc.id).trim().toLowerCase(),phone:normalizeSaudiMobile(d.phone||d.mobile||'')});
+   groups.set(name,records);
+  });
+  let found=0,missing=0,ambiguous=0;
+  for(const t of s.teachers){
+   const matches=groups.get(normalizedTeacherName(t.name))||[];
+   const email=String(t.email||t.username||'').trim().toLowerCase();
+   let matched=email?matches.find(x=>x.email===email):null;
+   if(!matched&&matches.length===1)matched=matches[0];
+   const phones=[...new Set(matches.map(x=>x.phone).filter(Boolean))];
+   if(!matched&&phones.length===1)matched=matches.find(x=>x.phone===phones[0]);
+   t.rasedPhone=matched?.phone||'';
+   t.rasedPhoneStatus=t.rasedPhone?'linked':matches.length>1?'ambiguous':'missing';
+   if(t.rasedPhone)found++;else if(matches.length>1)ambiguous++;else missing++;
+  }
+  localStorage.setItem(KEY,JSON.stringify(s));
+  if(page==='teachers'||page==='absence')render();
+  if(!silent)toast('تم ربط '+found+' رقم من راصد · غير مطابق: '+missing+' · مكرر: '+ambiguous);
+  return {found,missing,ambiguous};
+ })().finally(()=>{sanadPhoneSyncPromise=null});
+ return sanadPhoneSyncPromise;
+}
+function syncRasedTeacherPhonesClick(){
+ syncRasedTeacherPhones().catch(e=>{console.error(e);alert('تعذر سحب أرقام المعلمين من راصد: '+(e.message||e))});
+}
+async function rasedTeacherPhone(teacher){
+ const manual=normalizeSaudiMobile(teacher.whatsappPhone||'');
+ if(manual)return manual;
+ const cached=normalizeSaudiMobile(teacher.rasedPhone||'');
+ if(cached)return cached;
+ await syncRasedTeacherPhones(true);
+ const resolved=normalizeSaudiMobile(teacher.rasedPhone||'');
+ if(resolved)return resolved;
+ if(teacher.rasedPhoneStatus==='ambiguous')throw Error('يوجد أكثر من معلم مطابق للاسم؛ تحقق من المعلم المقصود');
+ throw Error('لم يُعثر على رقم مطابق لهذا المعلم في إدارة المعلمين براصد');
+}
+
 async function openCoverageWhatsApp(cid){
  const message=coverageWhatsAppText(cid),cover=s.covers.find(x=>x.id===cid);
  if(!message||!cover)return toast('تعذر العثور على التكليف');
@@ -573,21 +630,21 @@ function printDailyCoverage(){
 function dailyCoveragePanel(){
  const entries=dailyCoverageItems(),head=['م','المعلم الغائب','الحصة','الفصل / المادة','المعلم المكلف','التوقيع'];
  const printable=entries.map((d,i)=>[i+1,esc(d.absent),d.cover.period,esc(d.className)+'<small>'+esc(d.subject)+'</small>',esc(d.teacher),'ـــــــــــــــــ']);
- const rows=entries.map(d=>[esc(nm(d.cover.to)),esc(d.absent),d.cover.period,esc(d.className),esc(d.subject),'<button class="alt" onclick="openCoverageWhatsApp(\''+d.cover.id+'\')">🟢 إرسال واتساب</button> <button class="alt" onclick="copyCoverageWhatsApp(\''+d.cover.id+'\')">نسخ الرسالة</button>']);
- const control=box('📄 كشف التغطية اليومي — '+esc(selectedDate),
-  '<div class="actions"><button onclick="printDailyCoverage()">🖨️ طباعة كشف التغطيات اليومية</button></div>'+
-  '<p class="muted">تُطبع تغطيات اليوم المحدد فقط، مع خانة توقيع لكل معلم. زر واتساب يفتح رسالة جاهزة لتختار المستلم وتراجعها قبل إرسالها.</p>'+
+ const rows=entries.map(d=>[esc(nm(d.cover.to)),esc(d.absent),d.cover.period,esc(d.className),esc(d.subject),'<button class="alt" onclick="openCoverageWhatsApp(\''+d.cover.id+'\')">📲 إرسال حصة الانتظار</button> <button class="alt" onclick="copyCoverageWhatsApp(\''+d.cover.id+'\')">نسخ الرسالة</button>']);
+ const control=box('📄 كشف حصص الانتظار اليومي — '+esc(selectedDate),
+  '<div class="actions"><button onclick="printDailyCoverage()">🖨️ طباعة كشف حصص الانتظار اليومية</button></div>'+
+  '<p class="muted">تُطبع حصص الانتظار لليوم المحدد فقط، مع خانة توقيع لكل معلم. زر واتساب يفتح رسالة جاهزة لتختار المستلم وتراجعها قبل إرسالها.</p>'+
   (rows.length?table(['المعلم المكلف','المعلم الغائب','الحصة','الفصل','المادة','الإرسال'],rows):empty('لم تُسند أي تغطية في هذا اليوم بعد')));
- const paper='<section class="daily-cover-sheet"><div class="daily-print-head"><img src="../alfalah-round-logo.png" alt="شعار المدرسة الدائري"><div><p>المملكة العربية السعودية</p><p>وزارة التعليم</p><p>الإدارة العامة للتعليم بالمنطقة الشرقية</p><p>مدارس الفلاح الأهلية</p><h2>كشف تكليفات التغطية اليومي</h2><p>اليوم: '+esc(dt(selectedDate))+' — التاريخ: '+esc(selectedDate)+'</p></div></div>'+
+ const paper='<section class="daily-cover-sheet"><div class="daily-print-head"><img src="../alfalah-round-logo.png" alt="شعار المدرسة الدائري"><div><p>المملكة العربية السعودية</p><p>وزارة التعليم</p><p>الإدارة العامة للتعليم بالمنطقة الشرقية</p><p>مدارس الفلاح الأهلية</p><h2>كشف تكليفات حصص الانتظار اليومي</h2><p>اليوم: '+esc(dt(selectedDate))+' — التاريخ: '+esc(selectedDate)+'</p></div></div>'+
  (printable.length?table(head,printable):'<p>لا توجد تغطيات مسجلة.</p>')+
  '<div class="daily-print-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div><div class="daily-print-credit">تصميم محمد عامر أحمد</div></section>';
  return control+paper;
 }
 function addAbs(){let t=document.getElementById('ateacher').value;if(!t)return toast('أضف معلمين أولاً');if(s.absences.some(a=>a.teacher===t&&a.date===selectedDate))return toast('تم تسجيل الغياب مسبقًا');s.absences.push({id:id(),date:selectedDate,teacher:t,reason:document.getElementById('reason').value});save()}function delAbs(i){s.absences=s.absences.filter(a=>a.id!==i);s.covers=s.covers.filter(c=>c.absence!==i);save()}function cover(a,l){let x=s.lessons.find(q=>q.id===l),t=document.getElementById('candidate-'+l).value;if(!isFree(t,selectedDate,x.period))return toast('المعلم غير متاح');s.covers.push({id:id(),absence:a,lesson:l,date:selectedDate,to:t,period:x.period,className:x.className});save()}function undoCover(i){s.covers=s.covers.filter(x=>x.id!==i);save()}
 function swap(){return '<div class="two">'+box('تسجيل تبديل', '<div class="fields">'+field('التاريخ','<input type="date" id="sdate" value="'+selectedDate+'">')+field('المعلم صاحب الحصة','<select id="sfrom">'+opts(s.teachers)+'</select>')+field('المعلم البديل','<select id="sto">'+opts(s.teachers)+'</select>')+field('الحصة','<input type="number" id="speriod" value="1" min="1" max="12">')+'</div><div class="actions"><button onclick="addSwap()">حفظ التبديل</button></div><div class="notice">يتحقق النظام من وجود درس للمعلم الأصلي وتفرغ البديل.</div>')+box('سجل التبديلات',s.swaps.length?table(['التاريخ','الحصة','من','إلى'],s.swaps.map(x=>[x.date,x.period,esc(nm(x.from)),esc(nm(x.to))])):empty('لا توجد تبديلات بعد'))+'</div>'}function addSwap(){let d=document.getElementById('sdate').value,from=document.getElementById('sfrom').value,to=document.getElementById('sto').value,p=+document.getElementById('speriod').value;if(!from||!to||from===to)return toast('اختر معلمين مختلفين');if(!s.lessons.some(l=>l.teacher===from&&l.day===dt(d)&&l.period===p))return toast('لا يوجد درس للمعلم الأصلي بهذا الموعد');if(!isFree(to,d,p))return toast('المعلم البديل مشغول');s.swaps.push({id:id(),date:d,from,to,period:p});save()}
-function loads(){return box('توزيع النصاب والتغطية',s.teachers.length?table(['المعلم','القسم','حصص التدريس','التغطيات','الإجمالي','الحالة'],s.teachers.map(t=>{let l=s.lessons.filter(x=>x.teacher===t.id).length,c=count(t.id);return [esc(t.name),esc(t.dept),l,c,l+c,c>=s.cap?'<span class="tag">بلغ حد التنبيه</span>':'طبيعي']})):empty('لا يوجد معلمون'))}
-function charts(){let max=Math.max(1,...s.teachers.map(t=>count(t.id)));return box('توزيع حصص التغطية بين المعلمين',s.teachers.length?'<div class="bars">'+s.teachers.map(t=>'<div><div class="row"><span>'+esc(t.name)+'</span><b>'+count(t.id)+' تكليف</b></div><div class="bar"><div style="width:'+(count(t.id)/max*100)+'%"></div></div></div>').join('')+'</div>':empty('ستظهر الرسوم بعد إضافة بيانات'))}
-function report(){return box('التقرير الشهري','<div class="fields">'+field('الشهر','<input id="month" type="month" value="'+new Date().toISOString().slice(0,7)+'" onchange="showReport()">')+'</div><div class="actions"><button onclick="exportReport()">تنزيل التقرير CSV</button></div><div id="reportData"></div>')}function showReport(){let m=document.getElementById('month').value,a=s.absences.filter(x=>x.date.startsWith(m)),c=s.covers.filter(x=>x.date.startsWith(m));document.getElementById('reportData').innerHTML='<div class="notice">حالات الغياب: '+a.length+' | التغطيات: '+c.length+' | التبديلات: '+s.swaps.filter(x=>x.date.startsWith(m)).length+'</div>'+(c.length?table(['التاريخ','الحصة','الصف','المعلم المكلف'],c.map(x=>[x.date,x.period,esc(x.className),esc(nm(x.to))])):empty('لا توجد تغطيات في هذا الشهر'))}
+function loads(){return box('توزيع النصاب وحصص الانتظار',s.teachers.length?table(['المعلم','القسم','حصص التدريس','حصص الانتظار','الإجمالي','الحالة'],s.teachers.map(t=>{let l=s.lessons.filter(x=>x.teacher===t.id).length,c=count(t.id);return [esc(t.name),esc(t.dept),l,c,l+c,c>=s.cap?'<span class="tag">بلغ حد التنبيه</span>':'طبيعي']})):empty('لا يوجد معلمون'))}
+function charts(){let max=Math.max(1,...s.teachers.map(t=>count(t.id)));return box('توزيع حصص الانتظار بين المعلمين',s.teachers.length?'<div class="bars">'+s.teachers.map(t=>'<div><div class="row"><span>'+esc(t.name)+'</span><b>'+count(t.id)+' تكليف</b></div><div class="bar"><div style="width:'+(count(t.id)/max*100)+'%"></div></div></div>').join('')+'</div>':empty('ستظهر الرسوم بعد إضافة بيانات'))}
+function report(){return box('التقرير الشهري','<div class="fields">'+field('الشهر','<input id="month" type="month" value="'+new Date().toISOString().slice(0,7)+'" onchange="showReport()">')+'</div><div class="actions"><button onclick="exportReport()">تنزيل التقرير CSV</button></div><div id="reportData"></div>')}function showReport(){let m=document.getElementById('month').value,a=s.absences.filter(x=>x.date.startsWith(m)),c=s.covers.filter(x=>x.date.startsWith(m));document.getElementById('reportData').innerHTML='<div class="notice">حالات الغياب: '+a.length+' | حصص الانتظار: '+c.length+' | التبديلات: '+s.swaps.filter(x=>x.date.startsWith(m)).length+'</div>'+(c.length?table(['التاريخ','الحصة','الصف','المعلم المكلف'],c.map(x=>[x.date,x.period,esc(x.className),esc(nm(x.to))])):empty('لا توجد تغطيات في هذا الشهر'))}
 
 let printMode='teacher',printTarget='',printAll=false,printStage='ابتدائي',printWeek=selectedDate;
 function printDateISO(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
@@ -626,7 +683,7 @@ function teacherPrint(t){
   return cell.join('<hr>')||'—';
  })]);
  const uniqueDuty=ds.filter(x=>x.teacher===t.id&&(x.mode==='weekly'||week.some(w=>w.date===x.date)));
- const detail='التخصص: '+(t.dept||'—')+' | نصاب التدريس: '+teachingLoad(t.id)+' | مراقبات: '+uniqueDuty.filter(x=>x.kind==='monitoring').length+' | حافلات: '+(uniqueDuty.filter(x=>x.kind==='bus').length+own.filter(l=>isBusClass(l.className)).length)+' | تكليفات إضافية: '+uniqueDuty.filter(x=>x.kind==='assignment').length+' | تغطيات سابقة: '+count(t.id);
+ const detail='التخصص: '+(t.dept||'—')+' | نصاب التدريس: '+teachingLoad(t.id)+' | مراقبات: '+uniqueDuty.filter(x=>x.kind==='monitoring').length+' | حافلات: '+(uniqueDuty.filter(x=>x.kind==='bus').length+own.filter(l=>isBusClass(l.className)).length)+' | تكليفات إضافية: '+uniqueDuty.filter(x=>x.kind==='assignment').length+' | حصص انتظار سابقة: '+count(t.id);
  return printPage('جدول المعلم: '+t.name,detail,printGrid(['اليوم / الحصة',...periods.map(String)],rows));
 }
 function classPrint(cls){
@@ -655,7 +712,7 @@ function printing(){
  const controls='<div class="no-print">'+
  '<div class="fields">'+field('نوع الجدول','<select onchange="printMode=this.value;printTarget=\'\';render()"><option value="teacher" '+(printMode==='teacher'?'selected':'')+'>جدول المعلم</option><option value="class" '+(printMode==='class'?'selected':'')+'>جدول الفصل</option><option value="general" '+(printMode==='general'?'selected':'')+'>الجدول العام للمرحلة</option></select>')+
  (printMode==='general'?field('المرحلة','<select onchange="printStage=this.value;render()"><option value="ابتدائي" '+(printStage==='ابتدائي'?'selected':'')+'>ابتدائي فقط</option><option value="متوسط وثانوي" '+(printStage!=='ابتدائي'?'selected':'')+'>متوسط وثانوي معًا</option></select>'):field(printMode==='teacher'?'المعلم':'الفصل','<select onchange="printTarget=this.value;render()">'+options.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===printTarget?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select>'))+
- (printMode==='teacher'?field('أسبوع الطباعة (للمراقبات المؤرخة والتغطيات)','<input type="date" value="'+printWeek+'" onchange="printWeek=this.value;render()">'):'')+
+ (printMode==='teacher'?field('أسبوع الطباعة (للمراقبات المؤرخة وحصص الانتظار)','<input type="date" value="'+printWeek+'" onchange="printWeek=this.value;render()">'):'')+
  '</div><div class="actions">'+(printMode==='general'?'': '<label class="tag"><input type="checkbox" '+(printAll?'checked':'')+' onchange="printAll=this.checked;render()"> طباعة جميع '+(printMode==='teacher'?'المعلمين':'الفصول')+'</label>')+'<button onclick="window.print()">🖨 طباعة الجدول</button></div><p class="muted">معاينة قابلة للطباعة على ورق A4 أفقي. كل جدول في صفحة مستقلة، والجدول العام صفحة لكل يوم دراسي.</p></div>';
  let pagesHtml='';
  if(printMode==='general')pagesHtml=generalPrint();
@@ -663,7 +720,7 @@ function printing(){
  else if(printTarget)pagesHtml=printMode==='teacher'?teacherPrint(s.teachers.find(t=>t.id===printTarget)):classPrint(classOptions().find(y=>y.id===printTarget));
  return box('مركز طباعة الجداول',controls)+pagesHtml;
 }
-function settings(){return '<div class="two">'+box('إعدادات التغطية',field('التنبيه عند عدد تكليفات','<input id="cap" type="number" min="1" value="'+s.cap+'">')+'<div class="actions"><button onclick="s.cap=+document.getElementById(\'cap\').value||4;save();toast(\'تم الحفظ\')">حفظ</button></div>')+box('نسخ احتياطي واسترجاع','<p class="muted">البيانات على هذا الجهاز وفي هذا المتصفح فقط. لا تدخل بيانات حساسة في النسخة التجريبية.</p><div class="actions"><button onclick="backup()">تنزيل JSON</button><label class="tag" style="cursor:pointer">استرجاع JSON<input type="file" accept=".json" style="display:none" onchange="restore(this.files[0])"></label></div>')+'</div>'}
+function settings(){return '<div class="two">'+box('إعدادات حصص الانتظار',field('التنبيه عند عدد تكليفات','<input id="cap" type="number" min="1" value="'+s.cap+'">')+'<div class="actions"><button onclick="s.cap=+document.getElementById(\'cap\').value||4;save();toast(\'تم الحفظ\')">حفظ</button></div>')+box('نسخ احتياطي واسترجاع','<p class="muted">البيانات على هذا الجهاز وفي هذا المتصفح فقط. لا تدخل بيانات حساسة في النسخة التجريبية.</p><div class="actions"><button onclick="backup()">تنزيل JSON</button><label class="tag" style="cursor:pointer">استرجاع JSON<input type="file" accept=".json" style="display:none" onchange="restore(this.files[0])"></label></div>')+'</div>'}
 function csv(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}function dl(name,txt,type='text/csv'){let a=document.createElement('a'),u=URL.createObjectURL(new Blob(['\ufeff',txt],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}function downloadTemplate(){dl('sanad-template.csv','المعلم,القسم,اليوم,الحصة,الصف,المادة\nمحمد أحمد,الرياضيات,الأحد,1,ثالث أ,رياضيات')}function exportSchedule(){dl('sanad-schedule.csv','المعلم,القسم,اليوم,الحصة,الصف,المادة\n'+s.lessons.map(l=>[nm(l.teacher),s.teachers.find(t=>t.id===l.teacher)?.dept,l.day,l.period,l.className,l.subject].map(csv).join(',')).join('\n'))}async function importCSV(file){if(!file)return;let lines=(await file.text()).replace(/^\ufeff/,'').trim().split(/\r?\n/),head=lines.shift().split(',').map(x=>x.trim());if(!['المعلم','القسم','اليوم','الحصة','الصف','المادة'].every(x=>head.includes(x)))return toast('استخدم نموذج CSV المرفق');let n=0;for(let line of lines){let cells=line.split(',').map(x=>x.trim().replace(/^"|"$/g,'')),o=Object.fromEntries(head.map((h,i)=>[h,cells[i]])),p=+o['الحصة'];if(!o['المعلم']||!days.includes(o['اليوم'])||!p)continue;let t=s.teachers.find(x=>x.name===o['المعلم']);if(!t){t={id:id(),name:o['المعلم'],dept:o['القسم']};s.teachers.push(t)}if(isBusClass(o['الصف'])){
  if(s.lessons.some(l=>l.teacher===t.id&&l.day===o['اليوم']&&l.period===p&&isBusClass(l.className)))continue;
  if(!(s.duties||[]).some(x=>x.teacher===t.id&&x.kind==='bus'&&x.mode==='weekly'&&x.day===o['اليوم']&&x.period===p)){
@@ -699,7 +756,7 @@ s.lessons.push({id:id(),teacher:t.id,day:o['اليوم'],period:p,className:norm
     if(!days.includes(d)||!Number.isInteger(p)||p<1||p>12||!c)return msg('بيانات الحصة غير صالحة');
     if(s.lessons.some(x=>x.id!==i&&x.teacher===t.id&&x.day===d&&x.period===p))return msg('المعلم مشغول في هذه الحصة');
     if(s.covers.some(x=>x.lesson===i)&& (l.period!==p||l.day!==d||l.teacher!==t.id)){
-      return msg('ألغِ تغطية هذه الحصة قبل تغيير موعدها أو معلمها');
+      return msg('ألغِ حصة الانتظار هذه قبل تغيير موعدها أو معلمها');
     }
     Object.assign(l,{teacher:t.id,day:d,period:p,className:c,subject:sub});sync();msg('تم تعديل الحصة');
   }
@@ -714,7 +771,7 @@ s.lessons.push({id:id(),teacher:t.id,day:o['اليوم'],period:p,className:norm
     const t=s.teachers.find(x=>x.name===candidate);if(!t)return msg('المعلم غير موجود');
     const a=s.absences.find(x=>x.id===c.absence);if(a?.teacher===t.id)return msg('المعلم الغائب لا يمكنه تغطية حصته');
     if(c.to!==t.id&&!isFree(t.id,c.date,c.period))return msg('المعلم الجديد غير متاح');
-    c.to=t.id;sync();msg('تم تعديل التغطية');
+    c.to=t.id;sync();msg('تم تعديل حصة الانتظار');
   }
   function editSwap(i){
     const x=s.swaps.find(x=>x.id===i);if(!x)return;
@@ -726,7 +783,7 @@ s.lessons.push({id:id(),teacher:t.id,day:o['اليوم'],period:p,className:norm
   }
   delTeacher=function(i){if(confirm('حذف المعلم؟ لا يمكن حذفه إذا كان مرتبطًا بجدول أو غياب.'))oldTeacherDelete(i)};
   delLesson=function(i){if(confirm('حذف هذه الحصة وكل تغطياتها المرتبطة؟'))oldLessonDelete(i)};
-  delAbs=function(i){if(confirm('حذف الغياب وكل التغطيات المرتبطة به؟'))oldAbsDelete(i)};
+  delAbs=function(i){if(confirm('حذف الغياب وكل حصص الانتظار المرتبطة به؟'))oldAbsDelete(i)};
   undoCover=function(i){if(confirm('إلغاء هذا الإسناد؟'))oldUndo(i)};
   function attachActions(){
     document.querySelectorAll('button[onclick^="delTeacher("]').forEach(b=>{
@@ -762,7 +819,7 @@ s.lessons.push({id:id(),teacher:t.id,day:o['اليوم'],period:p,className:norm
  const write=a=>localStorage.setItem(BK,JSON.stringify(a));
  const valid=d=>d&&['teachers','lessons','absences','covers','swaps'].every(k=>Array.isArray(d[k]));
  function resetAllData(){
-  if(!confirm('سيتم مسح جميع المعلمين والحصص والغياب والتغطيات والتبديلات، بعد إنشاء نسخة احتياطية. متابعة؟'))return;
+  if(!confirm('سيتم مسح جميع المعلمين والحصص والغياب وحصص الانتظار والتبديلات، بعد إنشاء نسخة احتياطية. متابعة؟'))return;
   if(prompt('للتأكيد اكتب: مسح الكل')!=='مسح الكل')return toast('تم إلغاء المسح');
   try{
    let b={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),at:new Date().toISOString(),data:JSON.parse(JSON.stringify(s))};
