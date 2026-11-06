@@ -239,9 +239,15 @@ function sanadCloudNormalized(source){
  return v;
 }
 function sanadCloudCanonical(source){
+ const v=sanadCloudNormalized(source);
+ // Rased's phone directory is a read-through cache; keep explicit manual links and phone overrides.
+ for(const t of v.teachers||[]){
+  delete t.rasedPhone;
+  delete t.rasedPhoneStatus;
+ }
  const ordered=item=>Array.isArray(item)?item.map(ordered):
   item&&typeof item==='object'?Object.fromEntries(Object.keys(item).sort().map(k=>[k,ordered(item[k])])):item;
- return JSON.stringify(ordered(sanadCloudNormalized(source)));
+ return JSON.stringify(ordered(v));
 }
 function sanadCloudCounts(source){
  const v=source||{};
@@ -1341,6 +1347,8 @@ async function syncRasedTeacherPhones(silent=false){
    if(t.rasedPhone)found++;else if(t.rasedPhoneStatus==='ambiguous')ambiguous++;else missing++;
   }
   localStorage.setItem(KEY,JSON.stringify(s));
+  // Phone-cache updates are local convenience data, not an independent cloud revision.
+  // Explicit manual linking actions continue to use save().
   if(page==='teachers'||page==='absence')render();
   if(!silent)toast('أرقام مرتبطة: '+found+' · تحتاج ربطًا: '+missing+' · أسماء متشابهة: '+ambiguous);
   return {found,missing,ambiguous};
