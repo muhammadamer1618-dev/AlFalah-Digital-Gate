@@ -288,6 +288,13 @@ function sanadCloudStatus(textValue){
   local:'⚠️ حفظ محلي فقط — راجع الإعدادات'
  };
  el.textContent=textValue||map[sanadCloudMode]||map.local;
+ el.title='اضغط لفتح إعدادات الحفظ السحابي ومراجعة النسختين';
+ el.style.cursor='pointer';
+ el.onclick=()=>{
+  page='settings';
+  sanadCardStates.set(sanadCardKey('☁️ حماية بيانات بديل والحفظ السحابي'),true);
+  render();
+ };
  el.style.background=sanadCloudMode==='connected'?'#dff4ea':sanadCloudMode==='saving'?'#e5f0ff':'#fff2da';
  el.style.color=sanadCloudMode==='connected'?'#096049':sanadCloudMode==='saving'?'#21548a':'#8a5200';
 }
@@ -520,7 +527,8 @@ window.addEventListener('afterprint',()=>{
 function box(title,content){
  const key=sanadCardKey(title);
  const defaultOpen=page==='home'||page==='printing'||page==='report'||
-   (page==='monitoring'&&String(title)==='مرحلة مراقبات مستقلة');
+   (page==='monitoring'&&String(title)==='مرحلة مراقبات مستقلة')||
+   (page==='settings'&&String(title)==='☁️ حماية بيانات بديل والحفظ السحابي'&&sanadCloudMode!=='connected');
  const open=sanadCardStates.has(key)?sanadCardStates.get(key):defaultOpen;
  return '<details class="panel ui-card" data-card-key="'+esc(key)+'" '+(open?'open':'')+'>'+
   '<summary class="ui-card-summary" onclick="rememberCardState(this)">'+title+
