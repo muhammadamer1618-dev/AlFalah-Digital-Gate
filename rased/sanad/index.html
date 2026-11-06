@@ -285,6 +285,86 @@ function sanadCloudDifferenceReport(local,remote){
  }
  return report;
 }
+/* Explicit conflict-safe merge: only disjoint records, no contested edits or deletions. */
+function sanadCloudMergeCandidates(local,remote){
+ const fields=['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds','fixedMonitors'];
+ const result=JSON.parse(JSON.stringify(remote));
+ const conflicts=[];
+ const ordered=item=>Array.isArray(item)?item.map(ordered):
+  item&&typeof item==='object'?Object.fromEntries(Object.keys(item).sort().map(k=>[k,ordered(item[k])])):item;
+ const serialize=item=>JSON.stringify(ordered(item));
+ for(const key of fields){
+  const theirs=remote[key]||[],mine=local[key]||[];
+  const map=new Map(theirs.map((item,i)=>[String(item.id??'index_'+i),item]));
+  const merged=JSON.parse(JSON.stringify(theirs));
+  for(let i=0;i<mine.length;i++){
+   const item=mine[i],id=String(item.id??'index_'+i);
+   if(!map.has(id)){merged.push(item);continue}
+   const cloud=map.get(id);
+   const a={...item},b={...cloud};
+   if(key==='teachers')for(const t of [a,b]){delete t.rasedPhone;delete t.rasedPhoneStatus}
+   if(serialize(a)!==serialize(b))conflicts.push(key+': '+String(item.name||id));
+  }
+  result[key]=merged;
+ }
+ const ignored=new Set(fields.concat(['monitoringEligible','monitoringEligibleByTrack','quickMonitoringSites','quickMonitoringPeriods','monitoringTarget','cap']));
+ for(const [key,value] of Object.entries(local)){
+  if(ignored.has(key))continue;
+  if(!(key in result))result[key]=value;
+  else if(serialize(result[key])!==serialize(value))conflicts.push('إعداد '+key);
+ }
+ // Selection/config are not automatically unioned: mixing them may change allocation rules.
+ for(const key of ['monitoringEligible','monitoringEligibleByTrack','quickMonitoringSites','quickMonitoringPeriods','monitoringTarget','cap']){
+  const a=sanadCloudNormalized(local)[key],b=sanadCloudNormalized(remote)[key];
+  if(serialize(a)!==serialize(b))conflicts.push('إعداد '+key);
+ }
+ // Never merge if either side omits an existing record: could represent intentional deletion.
+ for(const key of fields){
+  const localIds=new Set((local[key]||[]).map((v,i)=>String(v.id??'index_'+i)));
+  const remoteIds=new Set((remote[key]||[]).map((v,i)=>String(v.id??'index_'+i)));
+  if([...remoteIds].some(id=>!localIds.has(id))&&[...localIds].some(id=>!remoteIds.has(id))){
+   conflicts.push('سجلات متبادلة تحتاج مراجعة: '+key);
+  }
+ }
+ return {merged:result,conflicts:[...new Set(conflicts)]};
+}
+async function sanadCloudDownloadBoth(){
+ const remote=await sanadCloudRead();
+ if(!remote.data)return toast('لا توجد نسخة سحابية');
+ dl('badeel-device-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(s,null,2),'application/json');
+ dl('badeel-cloud-revision-'+remote.revision+'.json',JSON.stringify(remote.data,null,2),'application/json');
+ toast('تم إعداد نسختين مستقلتين للتنزيل');
+}
+async function sanadCloudMergeSafe(){
+ if(!confirm('سيتم فحص نسختَي البيانات لمحاولة دمج السجلات غير المتعارضة فقط. لن يتم استبدال بيانات متعارضة. متابعة الفحص؟'))return;
+ try{
+  const remote=await sanadCloudRead();
+  if(!remote.data)return toast('لا توجد نسخة سحابية للدمج');
+  const plan=sanadCloudMergeCandidates(s,remote.data);
+  if(plan.conflicts.length){
+   alert('لا يمكن الدمج تلقائيًا بأمان؛ يوجد اختلاف في سجلات أو إعدادات مشتركة:\n'+plan.conflicts.slice(0,12).join('\n')+
+     '\nاحفظ النسختين من زر تنزيل النسختين للمراجعة. لم يتم تعديل أي بيانات.');
+   return;
+  }
+  if(sanadCloudCanonical(plan.merged)===sanadCloudCanonical(remote.data)){
+   // Still avoid replacing local data without explicit consent and a backup.
+   if(!confirm('البيانات المطلوبة موجودة بالفعل في السحابة. هل تريد اعتمادها على هذا الجهاز بعد حفظ نسخة احتياطية؟'))return;
+   await sanadCloudUseRemote();
+   return;
+  }
+  if(!confirm('لا توجد سجلات متعارضة. سيتم دمج السجلات الإضافية في نسخة جديدة بعد حفظ النسختين والاحتفاظ بنسخة احتياطية للجهاز. موافق؟'))return;
+  if(!sanadCloudBackup('قبل دمج البيانات من الجهاز والسحابة'))return;
+  // Saving external JSON files is part of recovery; do not write cloud until snapshots are offered.
+  dl('badeel-before-merge-cloud-'+remote.revision+'.json',JSON.stringify(remote.data,null,2),'application/json');
+  dl('badeel-before-merge-device.json',JSON.stringify(s,null,2),'application/json');
+  const seq=sanadCloudChangeSeq;
+  const newRevision=await sanadCloudCommit(plan.merged,remote.revision);
+  if(sanadCloudChangeSeq!==seq)throw Error('تغيرت بيانات الجهاز أثناء الدمج؛ تم حفظ نسخة مدمجة على السحابة، وتحتاج إعادة فحص قبل اعتمادها على الجهاز');
+  s=plan.merged;localStorage.setItem(KEY,JSON.stringify(s));
+  sanadCloudRevision=newRevision;sanadCloudMode='connected';sanadCloudDirty=false;sanadCloudConflictDetails=null;
+  render();sanadCloudStatus();toast('تم دمج السجلات غير المتعارضة وحفظها سحابيًا');
+ }catch(e){sanadCloudLastError=e.message||String(e);sanadCloudMode='conflict';sanadCloudStatus();alert('لم تكتمل عملية الدمج: '+sanadCloudLastError)}
+}
 let sanadCloudConflictDetails=null;
 async function sanadCloudReview(){
  try{
@@ -502,7 +582,7 @@ function sanadCloudSettings(){
   '<p><b>'+label+'</b></p>'+
   '<p class="muted">تُحفظ نسخة محلية فورًا، ويُرسل التعديل إلى Firebase في راصد. إذا انقطع الاتصال أو اختلفت النسخ، لا تُحذف بيانات الجهاز ولا تُستبدل النسخة السحابية تلقائيًا.</p>'+
   (sanadCloudLastError?'<p class="notice">'+esc(sanadCloudLastError)+'</p>':'')+comparison+
-  '<div class="actions"><button class="alt" onclick="sanadCloudReview()">🔍 مقارنة النسختين</button><button class="alt" onclick="sanadCloudAction(\'retry\')">↻ فحص الاتصال</button>'+
+  '<div class="actions"><button class="alt" onclick="sanadCloudDownloadBoth().catch(e=>alert(e.message))">⬇ تنزيل النسختين منفصلتين</button><button class="alt" onclick="sanadCloudMergeSafe()">🔒 دمج آمن عند عدم وجود تعارضات</button><button class="alt" onclick="sanadCloudReview()">🔍 مقارنة النسختين</button><button class="alt" onclick="sanadCloudAction(\'retry\')">↻ فحص الاتصال</button>'+
   '<button class="alt" onclick="sanadCloudAction(\'download\')">↓ استعادة من السحابة</button>'+
   '<button onclick="sanadCloudAction(\'upload\')">↑ رفع بيانات هذا الجهاز</button>'+
   '<button class="alt" onclick="backup()">⬇ تنزيل نسخة JSON احتياطية</button></div>');
