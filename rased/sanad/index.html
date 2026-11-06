@@ -466,25 +466,27 @@ function legacyMonitoringPanel(){
 }
 
 /* Weekly monitoring matrix: existing monitoringNeeds and duties stay authoritative. */
-s.quickMonitoringSites ||= {primary:[],upper:['ثانوي شرقي','ثانوي غربي']};
-s.quickMonitoringPeriods ||= {primary:7,upper:7};
-function quickSites(){
- if(monitoringTrack==='upper')return ['ثانوي شرقي','ثانوي غربي'];
- return [...new Set((s.quickMonitoringSites[monitoringTrack]||[]).filter(Boolean))];
+s.quickMonitoringSites ||= {primary:['عليا ١','عليا ٢'],upper:['ثانوي شرقي','ثانوي غربي']};
+s.quickMonitoringPeriods ||= {primary:8,upper:7};
+function quickSites(){return monitoringTrack==='upper'?['ثانوي شرقي','ثانوي غربي']:['عليا ١','عليا ٢']}
+function monitoringBasePeriods(track=monitoringTrack){return track==='primary'?8:(Number(s.quickMonitoringPeriods?.upper)||7)}
+function monitoringDayPeriodLimit(day,periods=monitoringBasePeriods(),track=monitoringTrack){
+ if(track==='primary')return day==='الأربعاء'||day==='الخميس'?7:8;
+ const base=Number(periods)||7;return day==='الخميس'?Math.min(6,base):base;
 }
-function monitoringDayPeriodLimit(day,periods){return day==='الخميس'?Math.min(6,Number(periods)||7):(Number(periods)||7)}
-function invalidThursdayMonitoringNeeds(track=monitoringTrack){return s.monitoringNeeds.filter(n=>n.track===track&&n.mode==='weekly'&&n.day==='الخميس'&&Number(n.period)>6)}
-function clearOldThursdaySeventh(quiet=false){
- const old=invalidThursdayMonitoringNeeds();
- if(!old.length){if(!quiet)toast('جدول الخميس صحيح: ست حصص فقط');return true}
- if(!confirm('يوجد '+old.length+' خانة مراقبة قديمة بعد الحصة السادسة يوم الخميس في المرحلة المختارة. هل تريد حذف هذه الخانات وتكليفاتها فقط؟ سيتم أخذ نسخة احتياطية أولًا، ولن يتغير باقي الأسبوع.'))return false;
+function invalidMonitoringNeeds(track=monitoringTrack){return s.monitoringNeeds.filter(n=>n.track===track&&n.mode==='weekly'&&Number(n.period)>monitoringDayPeriodLimit(n.day,monitoringBasePeriods(track),track))}
+function clearOldExcessMonitoring(quiet=false){
+ const old=invalidMonitoringNeeds();
+ if(!old.length){if(!quiet)toast('عدد حصص المراقبة صحيح في جميع أيام الأسبوع');return true}
+ const explanation=monitoringTrack==='primary'?'الأربعاء والخميس ٧ حصص وباقي الأيام ٨':'الخميس ٦ حصص وباقي الأيام ٧';
+ if(!confirm('يوجد '+old.length+' خانة مراقبة خارج أوقات '+monitorTrackLabel(monitoringTrack)+' ('+explanation+').\nهل تريد حذف الخانات الزائدة وتكليفاتها فقط؟ سيتم إنشاء نسخة احتياطية أولًا.'))return false;
  if(!quickBackupBeforeChange())return false;
  const ids=new Set(old.map(n=>n.id));
  s.monitoringNeeds=s.monitoringNeeds.filter(n=>!ids.has(n.id));
  s.duties=s.duties.filter(d=>!ids.has(d.needId));
- save();toast('تم حذف '+old.length+' خانة الخميس الزائدة مع بقاء بقية الجدول');
- return true;
+ save();toast('تم إزالة '+old.length+' خانة زائدة بعد حفظ نسخة احتياطية');return true;
 }
+
 function quickNeeds(site,day,p){return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&n.day===day&&Number(n.period)===p&&n.notes===site)}
 function quickAllowed(t,need){
  if(need.assignedTeacher!==t.id&&monitoringTotalLoad(t.id)>=monitoringTarget())return false;
@@ -498,14 +500,14 @@ function quickAllowed(t,need){
 }
 function quickSet(needId,teacherId){
  const n=s.monitoringNeeds.find(x=>x.id===needId);if(!n)return;
- if(n.day==='الخميس'&&Number(n.period)>6)return toast('الخميس ست حصص فقط، ولا يمكن توزيع الحصة السابعة');
+ if(Number(n.period)>monitoringDayPeriodLimit(n.day))return toast('هذه الحصة خارج عدد المراقبات المسموح لهذا اليوم');
  if(teacherId){const t=s.teachers.find(x=>x.id===teacherId);if(!t||!quickAllowed(t,n)){render();return toast('المعلم غير متاح لهذا الموعد')}}
  s.duties=s.duties.filter(d=>d.needId!==n.id);n.assignedTeacher=teacherId||'';
  if(teacherId)s.duties.push({id:id(),needId:n.id,teacher:teacherId,kind:'monitoring',mode:'weekly',day:n.day,date:'',period:n.period,track:n.track,notes:n.notes});
  save();toast('تم تحديث المراقبة');
 }
 function quickCell(site,day,p,print){
- if(p>monitoringDayPeriodLimit(day,s.quickMonitoringPeriods[monitoringTrack]||7))return '<td style="background:#eff3f2;color:#57716b;font-weight:800">—</td>';
+ if(p>monitoringDayPeriodLimit(day))return '<td style="background:#eff3f2;color:#57716b;font-weight:800">—</td>';
  const needs=quickNeeds(site,day,p);if(!needs.length)return '<td style="color:#b45309">—</td>';
  return '<td>'+needs.map(n=>{
   if(print)return '<div>'+esc(n.assignedTeacher?nm(n.assignedTeacher):'—')+'</div>';
@@ -516,7 +518,7 @@ function quickCell(site,day,p,print){
  }).join('')+'</td>';
 }
 function quickGrid(print=false){
- const sites=quickSites(),periods=s.quickMonitoringPeriods[monitoringTrack]||7;
+ const sites=quickSites(),periods=monitoringBasePeriods();
  if(!sites.length)return '<p>أدخل مواقع المراقبة.</p>';
  const columns=Array.from({length:periods},(_,i)=>i+1);
  const head='<tr><th>اليوم</th><th>موقع المراقبة</th>'+columns.map(p=>'<th>الحصة '+p+'</th>').join('')+'</tr>';
@@ -525,12 +527,12 @@ function quickGrid(print=false){
  return '<div style="overflow-x:auto"><table style="width:100%;min-width:950px;table-layout:fixed;border-collapse:collapse">'+head+body+'</table></div>';
 }
 function quickGenerate(){
- const sites=monitoringTrack==='upper'?['ثانوي شرقي','ثانوي غربي']:[...new Set((document.getElementById('quickSites')?.value||'').split(/[,،\n]+/).map(x=>x.trim()).filter(Boolean))];
- const periods=Number(document.getElementById('quickPeriods')?.value),qty=Number(document.getElementById('quickQuantity')?.value);
+ const sites=quickSites();
+ const periods=monitoringBasePeriods(),qty=Number(document.getElementById('quickQuantity')?.value);
  if(!sites.length||sites.length>8||!Number.isInteger(periods)||periods<1||periods>12||!Number.isInteger(qty)||qty<1||qty>5)return toast('حدد المواقع وعدد الحصص والمراقبين بصورة صحيحة');
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('حدد المعلمين المسموح لهم بالمراقبات أولًا من القائمة أسفل الجدول');
  s.quickMonitoringSites[monitoringTrack]=sites;s.quickMonitoringPeriods[monitoringTrack]=periods;
- if(!clearOldThursdaySeventh(true))return;
+ if(!clearOldExcessMonitoring(true))return;
  const missing=sites.reduce((a,site)=>a+days.reduce((b,day)=>b+Array.from({length:monitoringDayPeriodLimit(day,periods)},(_,i)=>Math.max(0,qty-quickNeeds(site,day,i+1).length)).reduce((x,y)=>x+y,0),0),0);
  if(missing+s.monitoringNeeds.length>3000)return toast('عدد المراقبات كبير جدًا');
  const groupId=id();
@@ -541,11 +543,11 @@ function quickGenerate(){
  quickFill();
 }
 function quickFill(){
- if(!clearOldThursdaySeventh(true))return;
+ if(!clearOldExcessMonitoring(true))return;
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('اختر المعلمين المسموح لهم بالمراقبة أولًا');
  let assigned=0,unfilled=0;
  s.monitoringTarget=monitoringTarget();
- const sites=quickSites(),periods=s.quickMonitoringPeriods[monitoringTrack]||7;
+ const sites=quickSites(),periods=monitoringBasePeriods();
  // Cover different sites in the same period before placing second monitors.
  // Rotate the first site by day/period to avoid always preferring the eastern building.
  for(let di=0;di<days.length;di++)for(let period=1;period<=monitoringDayPeriodLimit(days[di],periods);period++){
@@ -568,7 +570,7 @@ function quickFill(){
 }
 
 function quickCurrentNeeds(){
- const sites=new Set(quickSites()),limit=s.quickMonitoringPeriods[monitoringTrack]||7;
+ const sites=new Set(quickSites()),limit=monitoringBasePeriods();
  return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.has(n.notes)&&days.includes(n.day)&&Number(n.period)>=1&&Number(n.period)<=monitoringDayPeriodLimit(n.day,limit));
 }
 function quickBackupBeforeChange(){
@@ -599,14 +601,14 @@ function quickDeleteSchedule(){
 }
 
 function quickPrintablePeriods(sites){
- const configured=Number(s.quickMonitoringPeriods[monitoringTrack])||7;
+ const configured=monitoringBasePeriods();
  const largest=Math.max(0,...s.monitoringNeeds
   .filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes))
   .map(n=>Number(n.period)||0));
  return Math.min(12,Math.max(configured,largest));
 }
 function quickPrintableCell(site,day,period){
- if(period>monitoringDayPeriodLimit(day,quickPrintablePeriods(quickSites())))return '<span class="quick-not-assigned">—</span>';
+ if(period>monitoringDayPeriodLimit(day))return '<span class="quick-not-assigned">—</span>';
  const entries=quickNeeds(site,day,period);
  if(!entries.length)return '<span class="quick-not-assigned">—</span>';
  return entries.map(n=>'<span class="quick-duty-name'+(!n.assignedTeacher?' quick-not-assigned':'')+'">'+
@@ -614,7 +616,7 @@ function quickPrintableCell(site,day,period){
 }
 function quickPrint(){
  const sites=quickSites();
- const occupied=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes)&&Number(n.period)<=monitoringDayPeriodLimit(n.day,s.quickMonitoringPeriods[monitoringTrack]||7));
+ const occupied=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes)&&Number(n.period)<=monitoringDayPeriodLimit(n.day));
  if(!occupied.length)return toast('لا يوجد جدول مراقبات للطباعة. أنشئ الجدول أولًا.');
  const title='جدول مناوبة المراقبات - '+monitorTrackLabel(monitoringTrack);
  const lastPeriod=quickPrintablePeriods(sites);
@@ -655,15 +657,15 @@ function quickPrint(){
  }))).then(()=>window.print());
 }
 function quickMonitoringPanel(){
- const sites=quickSites(),periods=s.quickMonitoringPeriods[monitoringTrack]||7;
- const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes)&&Number(n.period)<=monitoringDayPeriodLimit(n.day,periods));
+ const sites=quickSites(),periods=monitoringBasePeriods();
+ const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes)&&Number(n.period)<=monitoringDayPeriodLimit(n.day));
  const form='<div class="notice"><b>التوزيع السريع:</b> أدخل المواقع مرة واحدة ثم اضغط «إنشاء وتوزيع». ستظهر أمامك الأيام والحصص في جدول واحد مثل الصورة، ويمكن تغيير اسم أي مراقب من نفس الخانة. الحصص والتكليفات المتعارضة مستبعدة آليًا.</div>'+
- '<p class="muted">الأحد إلى الأربعاء: '+periods+' حصص · الخميس: '+monitoringDayPeriodLimit('الخميس',periods)+' حصص فقط؛ الحصة السابعة يوم الخميس غير متاحة للمراقبة.</p>'+
- '<div class="fields">'+(monitoringTrack==='upper'?'<div class="notice"><b>الموقعان المطلوب تغطيتهما في كل حصة:</b> ثانوي شرقي + ثانوي غربي</div>':field('مواقع المراقبة (افصل بفاصلة)','<input id="quickSites" value="'+esc(sites.join('، '))+'" placeholder="حدد مواقع المرحلة">'))+
- field('عدد الحصص يوميًا','<input id="quickPeriods" type="number" min="1" max="12" value="'+periods+'">')+
+ '<p class="muted">'+(monitoringTrack==='primary'?'عليا ١ وعليا ٢: الأحد والاثنين والثلاثاء ٨ مراقبات، والأربعاء والخميس ٧ مراقبات لكل موقع.':'ثانوي شرقي وغربي: الأحد إلى الأربعاء ٧ مراقبات، والخميس ٦ لكل موقع.')+'</p>'+
+ '<div class="fields">'+field('موقعا المراقبة الثابتان','<div class="notice"><b>'+esc(sites.join(' + '))+'</b></div>')+
+ field('عدد المراقبات الأساسي يوميًا','<input type="number" value="'+periods+'" disabled><small>يتحدد حسب المرحلة واليوم تلقائيًا</small>')+
  field('عدد المراقبين لكل موقع وحصة','<input id="quickQuantity" type="number" min="1" max="5" value="1">')+
  field('المستهدف للنصاب + المراقبات','<input id="monitoringTarget" type="number" min="1" max="40" value="'+(s.monitoringTarget||26)+'">')+'</div>'+
- '<div class="actions">'+(invalidThursdayMonitoringNeeds().length?'<button class="danger" onclick="clearOldThursdaySeventh()">🧹 حذف الحصة السابعة القديمة يوم الخميس ('+invalidThursdayMonitoringNeeds().length+')</button>':'')+'<button onclick="saveMonitoringTarget()">💾 حفظ مستهدف الحصص</button><button onclick="rebalanceMonitoringToTarget()">⚖ إعادة التوزيع للوصول للمستهدف</button><button onclick="quickGenerate()">✨ إنشاء وتوزيع الجدول كاملًا</button><button class="alt" onclick="quickFill()">⚖ توزيع الخانات الفارغة</button><button class="alt" onclick="quickPrint()">🖨 طباعة الجدول</button><button class="alt" onclick="quickClearAssignments()">🧹 تفريغ التوزيع</button><button class="danger" onclick="quickDeleteSchedule()">🗑 حذف الجدول</button></div>'+
+ '<div class="actions">'+(invalidMonitoringNeeds().length?'<button class="danger" onclick="clearOldExcessMonitoring()">🧹 حذف خانات المراقبة الزائدة ('+invalidMonitoringNeeds().length+')</button>':'')+'<button onclick="saveMonitoringTarget()">💾 حفظ مستهدف الحصص</button><button onclick="rebalanceMonitoringToTarget()">⚖ إعادة التوزيع للوصول للمستهدف</button><button onclick="quickGenerate()">✨ إنشاء وتوزيع الجدول كاملًا</button><button class="alt" onclick="quickFill()">⚖ توزيع الخانات الفارغة</button><button class="alt" onclick="quickPrint()">🖨 طباعة الجدول</button><button class="alt" onclick="quickClearAssignments()">🧹 تفريغ التوزيع</button><button class="danger" onclick="quickDeleteSchedule()">🗑 حذف الجدول</button></div>'+
  '<p class="muted">المراقبات الموزعة: '+needs.filter(n=>n.assignedTeacher).length+' من '+needs.length+' · غير المغطاة: '+needs.filter(n=>!n.assignedTeacher).length+'. تُعطى الأولوية للأقل في مجموع النصاب والمراقبات، ولا يتجاوز التوزيع التلقائي المستهدف المحدد، مع منع تعارض الحصص. اختر المعلمين المسموح لهم بالمراقبة قبل إنشاء الجدول.</p>';
  return box('⚡ التوزيع الأسبوعي السريع للمراقبات',form+quickGrid());
 }
@@ -753,7 +755,7 @@ function monitoring(){
 function saveDuty(){
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
  if(!teacher||!['monitoring','bus'].includes(kind)||!['weekly','dated'].includes(mode)||!Number.isInteger(period)||period<1||period>12||mode==='dated'&&!date)return toast('أكمل بيانات التكليف');
- if(kind==='monitoring'&&(mode==='weekly'?day:dt(date))==='الخميس'&&period>6)return toast('الخميس ست حصص فقط؛ لا توجد مراقبة للحصة السابعة');
+ if(kind==='monitoring'&&period>monitoringDayPeriodLimit(mode==='weekly'?day:dt(date)))return toast('هذه الحصة خارج عدد مراقبات اليوم في المرحلة المختارة');
  if(kind==='monitoring'&&hasExtraAssignment(teacher))return toast('المعلم لديه تكليف إضافي؛ لا يمكن إسناد مراقبة له');
  if(kind==='monitoring'&&(!editingDutyId||s.duties.find(d=>d.id===editingDutyId)?.teacher!==teacher)&&monitoringTotalLoad(teacher)>=monitoringTarget())return toast('المعلم وصل إلى مستهدف '+monitoringTarget()+' حصة إجمالية؛ اختر معلمًا أقل نصابًا');
  const actualDay=mode==='weekly'?day:dt(date);
@@ -805,13 +807,13 @@ function addExtraAssignment(){
 function addMonitoringNeed(){
  const mode=document.getElementById('needMode')?.value,day=document.getElementById('needDay')?.value,date=document.getElementById('needDate')?.value,period=Number(document.getElementById('needPeriod')?.value),notes=document.getElementById('needTitle')?.value.trim()||'مراقبة',quantity=Number(document.getElementById('needCount')?.value);
  if(!Number.isInteger(period)||period<1||period>12||!Number.isInteger(quantity)||quantity<1||quantity>30||mode==='dated'&&!date)return toast('أكمل بيانات المراقبة');
- if((mode==='weekly'?day:dt(date))==='الخميس'&&period>6)return toast('الخميس ست حصص فقط؛ لا يمكن إضافة مراقبة للحصة السابعة');
+ if(period>monitoringDayPeriodLimit(mode==='weekly'?day:dt(date)))return toast('هذه الحصة خارج عدد مراقبات اليوم في المرحلة المختارة');
  for(let i=0;i<quantity;i++)s.monitoringNeeds.push({id:id(),track:monitoringTrack,mode,day:mode==='weekly'?day:'',date:mode==='dated'?date:'',period,notes,assignedTeacher:''});
  save();toast('أُضيفت '+quantity+' مراقبة للتوزيع');
 }
 function fairCandidate(need){
  const actualDay=need.mode==='weekly'?need.day:dt(need.date);
- if(actualDay==='الخميس'&&Number(need.period)>6)return undefined;
+ if(Number(need.period)>monitoringDayPeriodLimit(actualDay,monitoringBasePeriods(need.track),need.track))return undefined;
  const candidates=s.teachers.filter(t=>{
   if(hasExtraAssignment(t.id)||monitoringTotalLoad(t.id)>=monitoringTarget())return false;
   if(!((s.monitoringEligibleByTrack||{})[need.track]||[]).includes(t.id))return false;
@@ -843,10 +845,10 @@ function saveMonitoringTarget(){
  s.monitoringTarget=raw;save();toast('تم ضبط المستهدف عند '+raw+' حصة إجمالية');
 }
 function rebalanceMonitoringToTarget(){
- if(!clearOldThursdaySeventh(true))return;
+ if(!clearOldExcessMonitoring(true))return;
  const input=Number(document.getElementById('monitoringTarget')?.value);
  if(!Number.isInteger(input)||input<1||input>40)return toast('أدخل مستهدفًا صحيحًا من 1 إلى 40');
- const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&(n.mode!=='weekly'||Number(n.period)<=monitoringDayPeriodLimit(n.day,12)));
+ const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&(n.mode!=='weekly'||Number(n.period)<=monitoringDayPeriodLimit(n.day)));
  if(!needs.length)return toast('لا توجد مراقبات في المرحلة المختارة');
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('حدد المعلمين المسموح لهم بالمراقبة أولًا');
  if(!confirm('إعادة توزيع مراقبات '+monitorTrackLabel(monitoringTrack)+' للوصول إلى '+input+' حصة إجمالية قدر الإمكان؟\\nسيُعاد إسناد المراقبات الموجودة في هذه المرحلة. لن تتغير الحصص الدراسية أو المراقبات المستقلة خارج جدول هذه المرحلة.'))return;
@@ -913,7 +915,7 @@ async function importMonitoringCSV(file){
    if(!line.trim())continue;
    let fields=line.split(',').map(v=>v.trim().replace(/^"|"$/g,'')),v=Object.fromEntries(header.map((h,i)=>[h,fields[i]||'']));
    let mode=v['النظام']==='أسبوعي'?'weekly':'dated',period=Number(v['الحصة']),qty=Number(v['العدد']||1);
-   if((mode==='weekly'?v['اليوم']:dt(v['التاريخ']))==='الخميس'&&period>6)throw Error('الخميس ست حصص فقط، تحقق من صف الحصة السابعة');
+   if(period>monitoringDayPeriodLimit(mode==='weekly'?v['اليوم']:dt(v['التاريخ'])))throw Error('رقم الحصة يتجاوز مراقبات هذا اليوم في المرحلة المختارة');
    if(!Number.isInteger(period)||period<1||period>12||!Number.isInteger(qty)||qty<1||qty>30||mode==='weekly'&&!days.includes(v['اليوم'])||mode==='dated'&&!/^\d{4}-\d{2}-\d{2}$/.test(v['التاريخ']))throw Error('سطر غير صحيح: '+line);
    for(let j=0;j<qty;j++)items.push({id:id(),mode,day:mode==='weekly'?v['اليوم']:'',date:mode==='dated'?v['التاريخ']:'',period,notes:v['المهمة']||'مراقبة',assignedTeacher:''});
   }
