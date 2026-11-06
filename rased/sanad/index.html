@@ -655,6 +655,44 @@ function box(title,content){
 }
 function render(){document.getElementById('view').classList.toggle('ui-card-grid',page!=='printing');document.getElementById('nav').innerHTML=pages.map(x=>'<button class="'+(x[0]===page?'active':'')+'" onclick="go(\''+x[0]+'\')"><span>'+x[1]+'</span> '+x[2]+'</button>').join('');document.getElementById('title').textContent=pages.find(x=>x[0]===page)[2];document.getElementById('stats').innerHTML=[['إجمالي المعلمين',s.teachers.length],['الغائبون اليوم',s.absences.filter(a=>a.date===new Date().toISOString().slice(0,10)).length],['حصص الانتظار',s.covers.length],['حصص الجدول الأسبوعي',s.lessons.length]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({home,absence,swap,teachers,schedule,monitoring,assignments,printing,loads,charts,report,settings})[page]();if(page==='report')showReport()}
 function home(){return '<div class="two">'+box('البدء السريع','<p class="muted">جهّز دليل المعلمين ثم أدخل حصص الجدول، وبعدها سجل الغياب لتظهر اقتراحات الانتظار.</p><div class="actions"><button onclick="go(\'teachers\')">إدارة المعلمين</button><button class="alt" onclick="go(\'schedule\')">الجدول الدراسي</button><button class="alt" onclick="go(\'absence\')">حصص الانتظار</button></div>')+box('ملخص العمليات','<p>الغيابات المسجلة: <b>'+s.absences.length+'</b></p><p>الحصص التم إسنادها: <b>'+s.covers.length+'</b></p><p>تبديلات الحصص: <b>'+s.swaps.length+'</b></p><div class="notice">البيانات محفوظة على هذا المتصفح فقط. استخدم النسخ الاحتياطي من الإعدادات.</div>')+'</div>'+box('أحدث حصص الانتظار',s.covers.length?table(['التاريخ','الصف','الحصة','المعلم البديل'],s.covers.slice(-8).reverse().map(c=>[c.date,esc(c.className),c.period,esc(nm(c.to))])):empty('لم تسجل أي تغطيات بعد'))}
+let editingTeacherId='',editingLessonId='',editingAbsenceId='',editingSwapId='',editingAssignmentId='';
+function cardPrintButton(title){return '<div class="actions no-print"><button class="alt small" onclick="printBadeelCard(\''+esc(sanadCardKey(title))+'\')">🖨 طباعة القسم</button></div>'}
+function printBadeelCard(key){
+ const card=[...document.querySelectorAll('#view details.ui-card')].find(el=>el.dataset.cardKey===key);
+ if(!card)return toast('لم يتم العثور على القسم');
+ document.body.classList.add('printing-selected-card');
+ document.querySelectorAll('#view details.ui-card').forEach(el=>el.classList.toggle('selected-print-card',el===card));
+ window.print();
+}
+window.addEventListener('afterprint',()=>{
+ document.body.classList.remove('printing-selected-card');
+ document.querySelectorAll('#view .selected-print-card').forEach(el=>el.classList.remove('selected-print-card'));
+});
+function editTeacher(id){
+ const t=s.teachers.find(x=>x.id===id);if(!t)return;
+ editingTeacherId=id;sanadCardStates.set(sanadCardKey('إضافة معلم'),true);render();
+ document.getElementById('tname').value=t.name;document.getElementById('dept').value=t.dept||'';
+}
+function editLesson(id){
+ const l=s.lessons.find(x=>x.id===id);if(!l)return;
+ editingLessonId=id;sanadCardStates.set(sanadCardKey('إدارة الجدول المعتمد'),true);render();
+ for(const [key,val] of Object.entries({lteacher:l.teacher,lstage:l.stage||'ابتدائي',lday:l.day,lperiod:l.period,lclass:l.className,lsubject:l.subject||''})){const el=document.getElementById(key);if(el)el.value=val}
+}
+function editAbsence(id){
+ const a=s.absences.find(x=>x.id===id);if(!a)return;
+ editingAbsenceId=id;selectedDate=a.date;render();
+ document.getElementById('ateacher').value=a.teacher;document.getElementById('reason').value=a.reason;
+}
+function editSwap(id){
+ const a=s.swaps.find(x=>x.id===id);if(!a)return;
+ editingSwapId=id;sanadCardStates.set(sanadCardKey('تسجيل تبديل'),true);render();
+ for(const [k,v] of Object.entries({sdate:a.date,sfrom:a.from,sto:a.to,speriod:a.period})){const el=document.getElementById(k);if(el)el.value=v}
+}
+function editAssignment(id){
+ const a=s.duties.find(x=>x.id===id&&x.kind==='assignment');if(!a)return;
+ editingAssignmentId=id;sanadCardStates.set(sanadCardKey('إضافة حصص التقوية والتكليفات الإضافية'),true);render();
+ for(const [k,v] of Object.entries({extraTeacher:a.teacher,extraTitle:a.notes,extraMode:a.mode,extraDay:a.day||days[0],extraDate:a.date||selectedDate,extraPeriod:a.period,extraClass:a.className||''})){const el=document.getElementById(k);if(el)el.value=v}
+}
 function teachers(){
  const actions='<div class="actions"><button class="alt" type="button" onclick="syncRasedTeacherPhonesClick()">🔄 تحديث أرقام راصد</button></div>'+
  '<p class="muted">الأسماء المستوردة من الجدول قد تختلف عن أسماء الحسابات في راصد. للمعلم الذي لا يظهر رقمه، اضغط «ربط بحساب راصد»، واختر حسابه مرة واحدة؛ بعدها يستخدم واتساب رقم الحساب تلقائيًا.</p>'+
@@ -664,12 +702,12 @@ function teachers(){
   const phone=manual||rased,source=manual?'رقم احتياطي':rased?'راصد':t.rasedPhoneStatus==='ambiguous'?'أسماء متشابهة':t.rasedPhoneStatus==='no-phone'?'لا يوجد رقم في راصد':'غير مربوط';
   return [esc(t.name),esc(t.dept||''),teachingLoad(t.id),count(t.id),
    phone?esc('0'+phone.slice(3))+' <small>('+source+')</small>':'<span class="muted">'+source+'</span>',
-   '<button class="alt small" onclick="rasedTeacherPicker(\''+esc(t.id)+'\')">🔗 ربط بحساب راصد</button> <button class="alt small" onclick="editTeacherWhatsAppPhone(\''+esc(t.id)+'\')">📱 رقم احتياطي</button> <button class="danger small" onclick="delTeacher(\''+esc(t.id)+'\')">حذف</button>'];
+   '<button class="alt small" onclick="rasedTeacherPicker(\''+esc(t.id)+'\')">🔗 ربط بحساب راصد</button> <button class="alt small" onclick="editTeacherWhatsAppPhone(\''+esc(t.id)+'\')">📱 رقم احتياطي</button> <button class="alt small" onclick="editTeacher(\''+esc(t.id)+'\')">تعديل</button> <button class="danger small" onclick="delTeacher(\''+esc(t.id)+'\')">حذف</button>'];
  });
- return box('إضافة معلم','<div class="fields">'+field('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+field('القسم','<input id="dept" placeholder="مثل: اللغة العربية">')+'</div><div class="actions"><button onclick="addTeacher()">إضافة المعلم</button></div>')+
- box('دليل المعلمين وأرقام الجوال',actions+'<div class="field"><label>البحث عن معلم</label><input type="search" oninput="filterTeacherDirectory(this)" placeholder="اكتب اسم المعلم أو القسم أو الجوال"></div>'+(rows.length?table(['المعلم','القسم','نصابه الأسبوعي','حصص الانتظار','رقم الجوال','الإجراءات'],rows):empty('أضف معلمي المدرسة للبدء')));
+ return box('إضافة معلم','<div class="fields">'+field('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+field('القسم','<input id="dept" placeholder="مثل: اللغة العربية">')+'</div><div class="actions"><button onclick="addTeacher()">'+(editingTeacherId?'💾 حفظ التعديل':'إضافة المعلم')+'</button>'+(editingTeacherId?'<button class="alt" onclick="editingTeacherId=\'\';render()">إلغاء</button>':'')+'</div>')+
+ box('دليل المعلمين وأرقام الجوال',cardPrintButton('دليل المعلمين وأرقام الجوال')+actions+'<div class="field"><label>البحث عن معلم</label><input type="search" oninput="filterTeacherDirectory(this)" placeholder="اكتب اسم المعلم أو القسم أو الجوال"></div>'+(rows.length?table(['المعلم','القسم','نصابه الأسبوعي','حصص الانتظار','رقم الجوال','الإجراءات'],rows):empty('أضف معلمي المدرسة للبدء')));
 }
-function addTeacher(){let n=document.getElementById('tname').value.trim(),d=document.getElementById('dept').value.trim();if(!n)return toast('أدخل اسم المعلم');if(s.teachers.some(t=>t.name===n))return toast('هذا المعلم مسجل');s.teachers.push({id:id(),name:n,dept:d});save();toast('تم إضافة المعلم')}function delTeacher(i){if(s.lessons.some(l=>l.teacher===i)||s.absences.some(a=>a.teacher===i))return toast('احذف جدول وغيابات المعلم أولاً');s.teachers=s.teachers.filter(t=>t.id!==i);save()}
+function addTeacher(){let n=document.getElementById('tname').value.trim(),d=document.getElementById('dept').value.trim();if(!n)return toast('أدخل اسم المعلم');if(s.teachers.some(t=>t.name===n&&t.id!==editingTeacherId))return toast('هذا المعلم مسجل');if(editingTeacherId){const t=s.teachers.find(x=>x.id===editingTeacherId);if(!t)return toast('المعلم غير موجود');t.name=n;t.dept=d;editingTeacherId=''}else s.teachers.push({id:id(),name:n,dept:d});save();toast('تم حفظ بيانات المعلم')}function delTeacher(i){if(s.lessons.some(l=>l.teacher===i)||s.absences.some(a=>a.teacher===i)||s.duties.some(d=>d.teacher===i)||s.covers.some(c=>c.to===i)||s.swaps.some(x=>x.from===i||x.to===i)||(s.fixedMonitors||[]).some(x=>x.teacher===i))return toast('المعلم مرتبط بحصص أو مراقبات أو تكليفات؛ لا يمكن حذفه');if(!confirm('حذف المعلم نهائيًا؟'))return;s.teachers=s.teachers.filter(t=>t.id!==i);save()}
 
 let editingDutyId='';
 function monitorTrackLabel(track){return track==='primary'?'الابتدائي':track==='upper'?'المتوسط والثانوي':'غير مصنفة'}
