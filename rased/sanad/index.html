@@ -541,6 +541,7 @@ function quickGenerate(){
  quickFill();
 }
 function quickFill(){
+ if(!clearOldThursdaySeventh(true))return;
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('اختر المعلمين المسموح لهم بالمراقبة أولًا');
  let assigned=0,unfilled=0;
  s.monitoringTarget=monitoringTarget();
@@ -752,6 +753,7 @@ function monitoring(){
 function saveDuty(){
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
  if(!teacher||!['monitoring','bus'].includes(kind)||!['weekly','dated'].includes(mode)||!Number.isInteger(period)||period<1||period>12||mode==='dated'&&!date)return toast('أكمل بيانات التكليف');
+ if(kind==='monitoring'&&(mode==='weekly'?day:dt(date))==='الخميس'&&period>6)return toast('الخميس ست حصص فقط؛ لا توجد مراقبة للحصة السابعة');
  if(kind==='monitoring'&&hasExtraAssignment(teacher))return toast('المعلم لديه تكليف إضافي؛ لا يمكن إسناد مراقبة له');
  if(kind==='monitoring'&&(!editingDutyId||s.duties.find(d=>d.id===editingDutyId)?.teacher!==teacher)&&monitoringTotalLoad(teacher)>=monitoringTarget())return toast('المعلم وصل إلى مستهدف '+monitoringTarget()+' حصة إجمالية؛ اختر معلمًا أقل نصابًا');
  const actualDay=mode==='weekly'?day:dt(date);
@@ -803,6 +805,7 @@ function addExtraAssignment(){
 function addMonitoringNeed(){
  const mode=document.getElementById('needMode')?.value,day=document.getElementById('needDay')?.value,date=document.getElementById('needDate')?.value,period=Number(document.getElementById('needPeriod')?.value),notes=document.getElementById('needTitle')?.value.trim()||'مراقبة',quantity=Number(document.getElementById('needCount')?.value);
  if(!Number.isInteger(period)||period<1||period>12||!Number.isInteger(quantity)||quantity<1||quantity>30||mode==='dated'&&!date)return toast('أكمل بيانات المراقبة');
+ if((mode==='weekly'?day:dt(date))==='الخميس'&&period>6)return toast('الخميس ست حصص فقط؛ لا يمكن إضافة مراقبة للحصة السابعة');
  for(let i=0;i<quantity;i++)s.monitoringNeeds.push({id:id(),track:monitoringTrack,mode,day:mode==='weekly'?day:'',date:mode==='dated'?date:'',period,notes,assignedTeacher:''});
  save();toast('أُضيفت '+quantity+' مراقبة للتوزيع');
 }
@@ -910,6 +913,7 @@ async function importMonitoringCSV(file){
    if(!line.trim())continue;
    let fields=line.split(',').map(v=>v.trim().replace(/^"|"$/g,'')),v=Object.fromEntries(header.map((h,i)=>[h,fields[i]||'']));
    let mode=v['النظام']==='أسبوعي'?'weekly':'dated',period=Number(v['الحصة']),qty=Number(v['العدد']||1);
+   if((mode==='weekly'?v['اليوم']:dt(v['التاريخ']))==='الخميس'&&period>6)throw Error('الخميس ست حصص فقط، تحقق من صف الحصة السابعة');
    if(!Number.isInteger(period)||period<1||period>12||!Number.isInteger(qty)||qty<1||qty>30||mode==='weekly'&&!days.includes(v['اليوم'])||mode==='dated'&&!/^\d{4}-\d{2}-\d{2}$/.test(v['التاريخ']))throw Error('سطر غير صحيح: '+line);
    for(let j=0;j<qty;j++)items.push({id:id(),mode,day:mode==='weekly'?v['اليوم']:'',date:mode==='dated'?v['التاريخ']:'',period,notes:v['المهمة']||'مراقبة',assignedTeacher:''});
   }
