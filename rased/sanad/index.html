@@ -453,7 +453,8 @@ function monitoringWorkloadData(){
  }
  const rows=s.teachers.map(t=>{
   const entry=totals.get(String(t.id))||{weekly:0,dated:0};
-  return {name:t.name,weekly:entry.weekly,dated:entry.dated,total:entry.weekly+entry.dated,teacherId:t.id};
+  const teaching=teachingLoad(t.id),total=entry.weekly+entry.dated;
+  return {name:t.name,teaching,weekly:entry.weekly,dated:entry.dated,total,overall:teaching+total,teacherId:t.id};
  }).sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name,'ar'));
  const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack);
  const allocated=needs.filter(n=>n.assignedTeacher).length;
@@ -464,15 +465,15 @@ function monitoringWorkloadTable(print=false){
  const data=monitoringWorkloadData();
  if(!s.teachers.length)return empty('أضف المعلمين أولًا لعرض إحصائية المراقبات.');
  const rows=data.rows.map((r,i)=>[
-  String(i+1),esc(r.name),String(r.weekly),String(r.dated),
-  '<strong>'+r.total+'</strong>'
+  String(i+1),esc(r.name),String(r.teaching),String(r.weekly),String(r.dated),
+  '<strong>'+r.total+'</strong>','<strong>'+r.overall+'</strong>'
  ]);
  const heading='<div class="notice">إجمالي المراقبات المسندة: <b>'+data.assigned+'</b> · المراقبات الأسبوعية: <b>'+data.weekly+'</b> · المراقبات المؤرخة: <b>'+data.dated+'</b> · خانات المراقبة غير الموزعة: <b>'+data.unassigned+'</b></div>';
- return (print?'':heading)+table(['م','اسم المعلم','أسبوعية','بتاريخ محدد','الإجمالي'],rows);
+ return (print?'':heading)+table(['م','اسم المعلم','النصاب','مراقبات أسبوعية','مراقبات مؤرخة','مجموع المراقبات','الإجمالي (النصاب + المراقبات)'],rows);
 }
 function monitoringWorkloadPanel(){
  return box('📊 عدد المراقبات لكل معلم — '+monitorTrackLabel(monitoringTrack),
-  '<p class="muted">الإحصائية تخص المرحلة المختارة، وتتحدث مباشرة بعد أي إسناد أو تغيير أو تفريغ. الأسبوعية والمراقبات المؤرخة تظهران منفصلتين، ولا تُحسب الحافلات أو حصص الانتظار ضمن المراقبات.</p>'+
+  '<p class="muted">الإحصائية تخص المرحلة المختارة، وتتحدث مباشرة بعد أي إسناد أو تغيير أو تفريغ. الإجمالي = النصاب التدريسي الأسبوعي + المراقبات الأسبوعية + المراقبات المؤرخة، ولا تُحتسب الحافلات أو حصص الانتظار. المراقبات المؤرخة تُحسب كتكليفات مسجلة وليست ضمن النصاب الأسبوعي المتكرر.</p>'+
   '<div class="actions"><button class="alt" onclick="printMonitoringWorkload()">🖨 طباعة كشف عدد المراقبات</button></div>'+
   monitoringWorkloadTable());
 }
