@@ -158,6 +158,27 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-monitor-workload #alfalah-designer-credit{display:none!important}
 }
 
+
+/* A4 portrait only for individual teacher and classroom schedules */
+@media print {
+ body.printing-timetable #view > .panel{display:none!important}
+ body.printing-timetable .container > :not(#view){display:none!important}
+ body.printing-timetable #view:before{display:none!important}
+ body.printing-timetable #view .print-sheet{display:block!important;width:100%!important;max-width:100%!important;margin:0!important;padding:2mm 0!important;overflow:visible!important;break-after:page!important;page-break-after:always!important}
+ body.printing-timetable #view .print-sheet:last-child{break-after:auto!important;page-break-after:auto!important}
+ body.printing-timetable .print-sheet .scroll{overflow:visible!important}
+ body.printing-timetable .print-sheet table{width:100%!important;max-width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important;white-space:normal!important}
+ body.printing-timetable .print-sheet th,body.printing-timetable .print-sheet td{padding:5px 2px!important;font-size:8.5px!important;line-height:1.5!important;border:1px solid #9ebbb0!important;vertical-align:middle!important;text-align:center!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important}
+ body.printing-timetable .print-sheet th{background:#e7f1eb!important;color:#153e37!important;font-weight:800!important}
+ body.printing-timetable .print-sheet th:first-child,body.printing-timetable .print-sheet td:first-child{width:16%!important;font-weight:800!important}
+ body.printing-timetable .print-sheet small{display:block!important;font-size:7.5px!important;line-height:1.45!important}
+ body.printing-timetable .print-heading{margin-bottom:11px!important;padding-bottom:8px!important}
+ body.printing-timetable .print-heading img{width:52px!important;height:52px!important}
+ body.printing-timetable .print-heading h2{font-size:17px!important}
+ body.printing-timetable .print-heading p{font-size:10px!important}
+ body.printing-timetable .print-sheet tr{page-break-inside:avoid!important;break-inside:avoid!important}
+}
+
 </style><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script></head><body><a class="rased-back" href="../admin.html" aria-label="العودة إلى لوحة إدارة راصد">↩ العودة إلى راصد</a><div class="layout"><aside><div class="school-brand"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الأهلية"><div><h1>بديل</h1><p>النظام الذكي لتأمين الحصص<br>مدارس الفلاح الأهلية</p></div></div><nav id="nav"></nav></aside><main><header><div><h2 id="title">لوحة التحكم</h2><small>مدارس الفلاح الأهلية · إدارة اليوم الدراسي</small></div><span class="tag">● حفظ محلي تلقائي</span></header><div class="container"><section class="hero"><h2>صباح الخير، أهلاً بك في بديل ✨</h2><p>نُبديل المعلم، ونضمن استمرار التعلّم — إدارة ذكية وعادلة للحصص.</p></section><div class="stats" id="stats"></div><div class="section-tools"><button class="alt" type="button" onclick="window.print()">🖨️ طباعة القسم الحالي</button><span class="muted">تُطبع البيانات الظاهرة في القسم المحدد</span></div><div id="view"></div><footer>بديل المطوّر © ٢٠٢٦ — مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</footer></div></main></div><div id="toast"></div><script>
 const KEY='sanad-falah-demo-1',days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],pages=[['home','⌂','لوحة التحكم'],['absence','◎','حصص الانتظار'],['swap','⇄','تبديل الحصص'],['teachers','♙','المعلمون والأقسام'],['schedule','▤','الجداول'],['monitoring','🛡','إدارة المراقبات'],['assignments','📚','التكليفات الإضافية'],['printing','🖨','مركز الطباعة'],['loads','◷','احتساب الحصص'],['charts','▥','رسوم بيانية'],['report','▣','التقرير الشهري'],['settings','⚙','الإعدادات']];let s=JSON.parse(localStorage.getItem(KEY)||'null')||{teachers:[],lessons:[],absences:[],covers:[],swaps:[],duties:[],monitoringNeeds:[],cap:4},page='home',selectedDate=new Date().toISOString().slice(0,10);
 s.duties ||= [];
@@ -387,10 +408,10 @@ function quickPrint(){
     '</tr>';
  }).join('')).join('');
  sheet.innerHTML='<header class="quick-print-head">'+
- '<img src="../alfalah-round-logo.png" alt="شعار المدرسة">'+
+ '<img src="/rased/alfalah-round-logo.png" alt="شعار المدرسة">'+
  '<div><p>المملكة العربية السعودية | وزارة التعليم</p><h2>مدارس الفلاح الأهلية</h2><h2>'+esc(title)+'</h2>'+
  '<p>الحصص من 1 إلى '+lastPeriod+' | المراقبات الموزعة: '+assigned+' من '+occupied.length+'</p></div>'+
- '<img src="../moe-vision2030-logo.png" alt="شعار وزارة التعليم"></header>'+
+ '<img src="/rased/moe-vision2030-logo.png" alt="شعار وزارة التعليم"></header>'+
  '<table class="quick-weekly-table">'+head+'<tbody>'+rows+'</tbody></table>'+
  '<div class="quick-print-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div>'+
  '<div class="quick-print-credit">تصميم محمد عامر أحمد</div>';
@@ -401,7 +422,10 @@ function quickPrint(){
  };
  window.addEventListener('afterprint',cleanup);
  document.body.classList.add('printing-quick-monitor');
- window.print();
+ const pictures=[...sheet.querySelectorAll('img')];
+ Promise.all(pictures.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{
+  img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true});
+ }))).then(()=>window.print());
 }
 function quickMonitoringPanel(){
  const sites=quickSites(),periods=s.quickMonitoringPeriods[monitoringTrack]||7;
@@ -931,6 +955,19 @@ function generalPrint(){
   return printPage(groupTitle+' — '+day,'جميع المعلمين والفصول — '+(stage==='ابتدائي'?'الابتدائية':'المتوسطة والثانوية'),printGrid(['المعلم','التخصص','١','٢','٣','٤','٥','٦','٧','٨'],rows));
  }).join('');
 }
+function printTimetable(){
+ const portrait=printMode==='teacher'||printMode==='class';
+ let dynamic=document.getElementById('sanadTimetablePageStyle');
+ if(!dynamic){dynamic=document.createElement('style');dynamic.id='sanadTimetablePageStyle';document.head.appendChild(dynamic)}
+ dynamic.textContent=portrait?'@page{size:A4 portrait;margin:10mm}':'@page{size:A4 landscape;margin:9mm}';
+ if(portrait)document.body.classList.add('printing-timetable');
+ const clean=()=>{
+  document.body.classList.remove('printing-timetable');dynamic.remove();
+  window.removeEventListener('afterprint',clean);
+ };
+ window.addEventListener('afterprint',clean);
+ window.print();
+}
 function printing(){
  const options=printMode==='teacher'?s.teachers.map(t=>({id:t.id,name:t.name})):classOptions();
  if(!options.some(x=>x.id===printTarget))printTarget=options[0]?.id||'';
@@ -938,7 +975,7 @@ function printing(){
  '<div class="fields">'+field('نوع الجدول','<select onchange="printMode=this.value;printTarget=\'\';render()"><option value="teacher" '+(printMode==='teacher'?'selected':'')+'>جدول المعلم</option><option value="class" '+(printMode==='class'?'selected':'')+'>جدول الفصل</option><option value="general" '+(printMode==='general'?'selected':'')+'>الجدول العام للمرحلة</option></select>')+
  (printMode==='general'?field('المرحلة','<select onchange="printStage=this.value;render()"><option value="ابتدائي" '+(printStage==='ابتدائي'?'selected':'')+'>ابتدائي فقط</option><option value="متوسط وثانوي" '+(printStage!=='ابتدائي'?'selected':'')+'>متوسط وثانوي معًا</option></select>'):field(printMode==='teacher'?'المعلم':'الفصل','<select onchange="printTarget=this.value;render()">'+options.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===printTarget?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select>'))+
  (printMode==='teacher'?field('أسبوع الطباعة (للمراقبات المؤرخة وحصص الانتظار)','<input type="date" value="'+printWeek+'" onchange="printWeek=this.value;render()">'):'')+
- '</div><div class="actions">'+(printMode==='general'?'': '<label class="tag"><input type="checkbox" '+(printAll?'checked':'')+' onchange="printAll=this.checked;render()"> طباعة جميع '+(printMode==='teacher'?'المعلمين':'الفصول')+'</label>')+'<button onclick="window.print()">🖨 طباعة الجدول</button></div><p class="muted">معاينة قابلة للطباعة على ورق A4 أفقي. كل جدول في صفحة مستقلة، والجدول العام صفحة لكل يوم دراسي.</p></div>';
+ '</div><div class="actions">'+(printMode==='general'?'': '<label class="tag"><input type="checkbox" '+(printAll?'checked':'')+' onchange="printAll=this.checked;render()"> طباعة جميع '+(printMode==='teacher'?'المعلمين':'الفصول')+'</label>')+'<button onclick="printTimetable()">🖨 طباعة الجدول</button></div><p class="muted">جداول المعلمين والفصول على ورق A4 طولي، والجدول العام للمرحلة على A4 عرضي. كل جدول في صفحة مستقلة.</p></div>';
  let pagesHtml='';
  if(printMode==='general')pagesHtml=generalPrint();
  else if(printAll)pagesHtml=options.map(x=>printMode==='teacher'?teacherPrint(s.teachers.find(t=>t.id===x.id)):classPrint(classOptions().find(y=>y.id===x.id))).join('');
