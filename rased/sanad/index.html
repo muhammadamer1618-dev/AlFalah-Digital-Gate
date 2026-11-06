@@ -87,6 +87,7 @@ function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,
  return (s.duties||[]).filter(x=>x.teacher===teacher&&Number(x.period)===Number(period)&&(x.mode==='weekly'?x.day===dt(date):x.date===date));
 }
 function dutyName(x){return x.kind==='bus'?'حافلة':x.kind==='assignment'?'تكليف إضافي':'مراقبة'}
+function hasExtraAssignment(teacherId){return (s.duties||[]).some(d=>d.teacher===teacherId&&d.kind==='assignment')}
 function availabilityReason(i,d,p){
  if(s.absences.some(a=>a.teacher===i&&a.date===d))return 'غائب';
  const lesson=s.lessons.find(l=>l.teacher===i&&l.day===dt(d)&&l.period===p);if(lesson)return isBusClass(lesson.className)?'لديه حافلة':'لديه حصة';
@@ -162,6 +163,7 @@ function quickSites(){
 }
 function quickNeeds(site,day,p){return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&n.day===day&&Number(n.period)===p&&n.notes===site)}
 function quickAllowed(t,need){
+ if(hasExtraAssignment(t.id))return false;
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).includes(t.id))return false;
  if(s.lessons.some(l=>l.teacher===t.id&&l.day===need.day&&Number(l.period)===Number(need.period)))return false;
  if(s.duties.some(d=>d.teacher===t.id&&d.needId!==need.id&&Number(d.period)===Number(need.period)&&(d.mode==='weekly'?d.day===need.day:dt(d.date)===need.day)))return false;
@@ -324,6 +326,7 @@ function monitoring(){
 function saveDuty(){
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
  if(!teacher||!['monitoring','bus'].includes(kind)||!['weekly','dated'].includes(mode)||!Number.isInteger(period)||period<1||period>12||mode==='dated'&&!date)return toast('أكمل بيانات التكليف');
+ if(kind==='monitoring'&&hasExtraAssignment(teacher))return toast('المعلم لديه تكليف إضافي؛ لا يمكن إسناد مراقبة له');
  const actualDay=mode==='weekly'?day:dt(date);
  if(s.lessons.some(l=>l.teacher===teacher&&l.day===actualDay&&l.period===period))return toast('المعلم لديه حصة تدريس في هذا الموعد');
  if((s.duties||[]).some(x=>x.id!==editingDutyId&&x.teacher===teacher&&x.period===period&&(x.mode==='weekly'?x.day===actualDay:mode==='weekly'?dt(x.date)===day:x.date===date)))return toast('المعلم عليه مراقبة أو حافلة في نفس الموعد');
@@ -379,6 +382,7 @@ function addMonitoringNeed(){
 function fairCandidate(need){
  const actualDay=need.mode==='weekly'?need.day:dt(need.date);
  const candidates=s.teachers.filter(t=>{
+  if(hasExtraAssignment(t.id))return false;
   if(!((s.monitoringEligibleByTrack||{})[need.track]||[]).includes(t.id))return false;
   if(s.lessons.some(l=>l.teacher===t.id&&l.day===actualDay&&l.period===need.period))return false;
   if((s.duties||[]).some(d=>d.teacher===t.id&&d.period===need.period&&(d.mode==='weekly'?d.day===actualDay:need.mode==='weekly'?dt(d.date)===actualDay:d.date===need.date)))return false;
@@ -431,9 +435,9 @@ async function importMonitoringCSV(file){
 function monitoringTeachersPanel(){
  const selected=(s.monitoringEligibleByTrack||{})[monitoringTrack]||[];
  return box('المعلمون المسموح لهم بالمراقبة',
- '<p class="muted">حدد المعلمين المشاركين في التوزيع فقط؛ المشرف الذي لديه حصص ولا يُكلف بمراقبة اتركه غير محدد. الحصص والمراقبات والحافلات تُراجع قبل الإسناد.</p>'+
+ '<p class="muted">حدد المعلمين المشاركين في التوزيع فقط؛ المعلم الذي لديه أي تكليف إضافي مستبعد من المراقبات آليًا حتى لو كان محددًا هنا، وكذلك تُراجع الحصص والحافلات قبل الإسناد.</p>'+
  '<div class="actions"><button class="alt" onclick="setMonitoringCheckAll(true)">تحديد الكل</button><button class="alt" onclick="setMonitoringCheckAll(false)">إلغاء تحديد الكل</button><button onclick="saveMonitoringEligible()">حفظ المعلمين المختارين</button></div>'+
- '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+s.teachers.map(t=>'<label style="display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #dce7e3;border-radius:10px;cursor:pointer"><input class="monitorTeacherCheck" type="checkbox" value="'+esc(t.id)+'" '+(selected.includes(t.id)?'checked':'')+'><span>'+esc(t.name)+' <small>('+teachingLoad(t.id)+' حصص)</small></span></label>').join('')+'</div>'+
+ '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+s.teachers.map(t=>'<label style="display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #dce7e3;border-radius:10px;cursor:pointer"><input class="monitorTeacherCheck" type="checkbox" value="'+esc(t.id)+'" '+(selected.includes(t.id)?'checked':'')+' '+(hasExtraAssignment(t.id)?'disabled':'')+'><span>'+esc(t.name)+' <small>('+teachingLoad(t.id)+' حصص)</small>'+(hasExtraAssignment(t.id)?' <small style="color:#b45309">⛔ لديه تكليف إضافي</small>':'')+'</span></label>').join('')+'</div>'+
  '<p class="muted">المختارون حاليًا: '+selected.filter(i=>s.teachers.some(t=>t.id===i)).length+' من '+s.teachers.length+'</p>');
 }
 function setMonitoringCheckAll(checked){document.querySelectorAll('.monitorTeacherCheck').forEach(x=>x.checked=checked)}
