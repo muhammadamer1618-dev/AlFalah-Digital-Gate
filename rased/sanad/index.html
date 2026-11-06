@@ -1007,7 +1007,7 @@ function quickNeeds(site,day,p){return s.monitoringNeeds.filter(n=>n.track===mon
 function quickAllowed(t,need){
  if(fixedNeedRecord(need)||fixedSiteRules().some(x=>x.teacher===t.id))return false;
  if(need.assignedTeacher!==t.id&&monitoringTotalLoad(t.id)>=monitoringTarget())return false;
- if(hasExtraAssignment(t.id))return false;
+ // Extra assignments restrict only their own day/period, checked against s.duties below.
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).includes(t.id))return false;
  if(s.lessons.some(l=>l.teacher===t.id&&l.day===need.day&&Number(l.period)===Number(need.period)))return false;
  if(s.duties.some(d=>d.teacher===t.id&&d.needId!==need.id&&Number(d.period)===Number(need.period)&&(d.mode==='weekly'?d.day===need.day:dt(d.date)===need.day)))return false;
@@ -1284,7 +1284,6 @@ function saveDuty(){
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
  if(!teacher||!['monitoring','bus'].includes(kind)||!['weekly','dated'].includes(mode)||!Number.isInteger(period)||period<1||period>12||mode==='dated'&&!date)return toast('أكمل بيانات التكليف');
  if(kind==='monitoring'&&period>monitoringDayPeriodLimit(mode==='weekly'?day:dt(date)))return toast('هذه الحصة خارج عدد مراقبات اليوم في المرحلة المختارة');
- if(kind==='monitoring'&&hasExtraAssignment(teacher))return toast('المعلم لديه تكليف إضافي؛ لا يمكن إسناد مراقبة له');
  if(kind==='monitoring'&&(!editingDutyId||s.duties.find(d=>d.id===editingDutyId)?.teacher!==teacher)&&monitoringTotalLoad(teacher)>=monitoringTarget())return toast('المعلم وصل إلى مستهدف '+monitoringTarget()+' حصة إجمالية؛ اختر معلمًا أقل نصابًا');
  const actualDay=mode==='weekly'?day:dt(date);
  if(s.lessons.some(l=>l.teacher===teacher&&l.day===actualDay&&l.period===period))return toast('المعلم لديه حصة تدريس في هذا الموعد');
@@ -1348,7 +1347,7 @@ function fairCandidate(need){
  if(Number(need.period)>monitoringDayPeriodLimit(actualDay,monitoringBasePeriods(need.track),need.track))return undefined;
  const candidates=s.teachers.filter(t=>{
   if(fixedSiteRules().some(x=>x.teacher===t.id))return false;
-  if(hasExtraAssignment(t.id)||monitoringTotalLoad(t.id)>=monitoringTarget())return false;
+  if(monitoringTotalLoad(t.id)>=monitoringTarget())return false;
   if(!((s.monitoringEligibleByTrack||{})[need.track]||[]).includes(t.id))return false;
   if(s.lessons.some(l=>l.teacher===t.id&&l.day===actualDay&&l.period===need.period))return false;
   if((s.duties||[]).some(d=>d.teacher===t.id&&d.period===need.period&&(d.mode==='weekly'?d.day===actualDay:need.mode==='weekly'?dt(d.date)===actualDay:d.date===need.date)))return false;
@@ -1463,10 +1462,10 @@ async function importMonitoringCSV(file){
 function monitoringTeachersPanel(){
  const selected=(s.monitoringEligibleByTrack||{})[monitoringTrack]||[];
  return box('المعلمون المسموح لهم بالمراقبة',
- '<p class="muted">حدد المعلمين المشاركين في التوزيع فقط؛ المعلم الذي لديه أي تكليف إضافي مستبعد من المراقبات آليًا حتى لو كان محددًا هنا، وكذلك تُراجع الحصص والحافلات قبل الإسناد.</p>'+
+ '<p class="muted">حدد المعلمين المشاركين في التوزيع. التكليف الإضافي يمنع المراقبة في نفس اليوم والحصة فقط، أما باقي الحصص فيظل المعلم متاحًا فيها وفق نصابه والتعارضات.</p>'+
  '<div class="actions"><button class="alt" onclick="setMonitoringCheckAll(true)">تحديد الكل</button><button class="alt" onclick="setMonitoringCheckAll(false)">إلغاء تحديد الكل</button><button onclick="saveMonitoringEligible()">حفظ المعلمين المختارين</button></div>'+
  '<div class="field"><label>بحث داخل المعلمين</label><input type="search" oninput="filterMonitoringTeacherCards(this)" placeholder="اسم المعلم أو المادة"></div>'+
- '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+s.teachers.map(t=>'<label class="monitorTeacherItem" style="display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #dce7e3;border-radius:10px;cursor:pointer"><input class="monitorTeacherCheck" type="checkbox" value="'+esc(t.id)+'" '+(selected.includes(t.id)?'checked':'')+' '+(hasExtraAssignment(t.id)?'disabled':'')+'><span>'+esc(t.name)+' <small>('+teachingLoad(t.id)+' حصص)</small>'+(hasExtraAssignment(t.id)?' <small style="color:#b45309">⛔ لديه تكليف إضافي</small>':'')+'</span></label>').join('')+'</div>'+
+ '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+s.teachers.map(t=>'<label class="monitorTeacherItem" style="display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #dce7e3;border-radius:10px;cursor:pointer"><input class="monitorTeacherCheck" type="checkbox" value="'+esc(t.id)+'" '+(selected.includes(t.id)?'checked':'')+' ><span>'+esc(t.name)+' <small>('+teachingLoad(t.id)+' حصص)</small>'+'</span></label>').join('')+'</div>'+
  '<p class="muted">المختارون حاليًا: '+selected.filter(i=>s.teachers.some(t=>t.id===i)).length+' من '+s.teachers.length+'</p>');
 }
 function setMonitoringCheckAll(checked){document.querySelectorAll('.monitorTeacherCheck').forEach(x=>x.checked=checked)}
