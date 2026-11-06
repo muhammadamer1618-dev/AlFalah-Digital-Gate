@@ -487,8 +487,89 @@ function clearOldExcessMonitoring(quiet=false){
  save();toast('تم إزالة '+old.length+' خانة زائدة بعد حفظ نسخة احتياطية');return true;
 }
 
+
+/* Optional fixed site monitors: explicit user choice per teacher, track, and site. */
+s.fixedMonitors ||= [];
+function fixedSiteRules(track=monitoringTrack,site=''){
+ return (s.fixedMonitors||[]).filter(x=>x.track===track&&(!site||x.site===site));
+}
+function fixedNeedRecord(n){return (s.fixedMonitors||[]).some(x=>x.id===n.fixedMonitorId)}
+function fixedMonitorPanel(){
+ const sites=quickSites(),fixed=fixedSiteRules();
+ const choices=s.teachers.slice().sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+ const entry='<div class="fields">'+
+ field('المعلم / المراقب','<select id="fixedTeacher"><option value="">اختر المراقب</option>'+opts(choices)+'</select>')+
+ field('موقع المراقبة','<select id="fixedSite">'+sites.map(site=>'<option value="'+esc(site)+'">'+esc(site)+'</option>').join('')+'</select>')+
+ '</div><div class="actions"><button onclick="addFixedSiteMonitor()">📌 تثبيت مراقب لكل أيام وحصص الموقع</button></div>';
+ const rows=fixed.map(x=>{
+  const count=s.monitoringNeeds.filter(n=>n.fixedMonitorId===x.id&&n.track===x.track).length;
+  return [esc(nm(x.teacher)),esc(x.site),String(count),
+  '<button class="alt" onclick="removeFixedSiteMonitor(\''+esc(x.id)+'\')">إلغاء التثبيت</button>'];
+ });
+ return box('📌 المراقبون الثابتون — ميزة اختيارية',
+  '<p class="muted">اختياري: ثبّت أي مراقب في موقع كامل طوال الأسبوع، أو اترك كل المواقع للتوزيع العادل المعتاد. يمكن تثبيت مراقبين مختلفين في المواقع المختلفة، وحتى أكثر من مراقب في الموقع نفسه. المراقبات الثابتة لا تخضع لمستهدف ٢٦، ولا يغيّرها زر إعادة التوزيع.</p>'+
+  entry+(rows.length?table(['المراقب','الموقع','المراقبات الثابتة','الإجراء'],rows):empty('لا توجد مراقبات ثابتة لهذه المرحلة؛ التوزيع العادي مستمر.')));
+}
+function addFixedSiteMonitor(){
+ const teacher=document.getElementById('fixedTeacher')?.value;
+ const site=document.getElementById('fixedSite')?.value;
+ const t=s.teachers.find(x=>x.id===teacher);
+ if(!t||!quickSites().includes(site))return toast('اختر المراقب والموقع أولًا');
+ if(fixedSiteRules().some(x=>x.teacher===teacher&&x.site===site))return toast('هذا المراقب مثبت بالفعل في الموقع المحدد');
+ const conflicts=[];
+ for(const day of days)for(let period=1;period<=monitoringDayPeriodLimit(day);period++){
+  const matching=quickNeeds(site,day,period);
+  const replaceable=matching.find(n=>!fixedNeedRecord(n));
+  const replaces=replaceable?[replaceable.id]:[];
+  if(s.lessons.some(l=>l.teacher===teacher&&l.day===day&&Number(l.period)===period))
+   conflicts.push(day+' الحصة '+period+' (حصة دراسية)');
+  else if(s.duties.some(d=>d.teacher===teacher&&Number(d.period)===period&&
+    (d.mode==='weekly'?d.day===day:dt(d.date)===day)&&!replaces.includes(d.needId)))
+   conflicts.push(day+' الحصة '+period+' (تكليف آخر)');
+  else if(s.covers.some(c=>c.to===teacher&&Number(c.period)===period&&dt(c.date)===day)||
+          s.swaps.some(c=>c.to===teacher&&Number(c.period)===period&&dt(c.date)===day))
+   conflicts.push(day+' الحصة '+period+' (حصة انتظار أو تبديل)');
+ }
+ if(conflicts.length){
+  alert('لا يمكن تثبيت المراقب قبل معالجة التعارضات التالية:\n'+conflicts.slice(0,9).join('\n')+
+    (conflicts.length>9?'\nو '+(conflicts.length-9)+' تعارض آخر':''));
+  return;
+ }
+ const times=days.reduce((n,day)=>n+monitoringDayPeriodLimit(day),0);
+ if(!confirm('تثبيت '+t.name+' في '+site+' لكل أيام وحصص الأسبوع ('+times+' مراقبة)؟\nسيتم استبدال اسم المراقب العادي في خانة واحدة بالموقع عند وجوده، مع الاحتفاظ بباقي المراقبين والخانات. لن يُطبّق عليه سقف ٢٦.'))return;
+ if(!quickBackupBeforeChange())return;
+ s.fixedMonitors ||= [];
+ const item={id:id(),teacher,track:monitoringTrack,site};
+ s.fixedMonitors.push(item);
+ s.duties ||= [];
+ for(const day of days)for(let period=1;period<=monitoringDayPeriodLimit(day);period++){
+  const existing=quickNeeds(site,day,period);
+  let n=existing.find(x=>!fixedNeedRecord(x));
+  if(!n){
+   n={id:id(),track:monitoringTrack,mode:'weekly',day,date:'',period,notes:site,assignedTeacher:''};
+   s.monitoringNeeds.push(n);
+  }
+  s.duties=s.duties.filter(d=>d.needId!==n.id);
+  n.assignedTeacher=teacher;n.fixedMonitorId=item.id;
+  s.duties.push({id:id(),needId:n.id,teacher,kind:'monitoring',
+    mode:'weekly',day,date:'',period,notes:site,track:monitoringTrack,fixedMonitorId:item.id});
+ }
+ save();toast('تم تثبيت '+t.name+' في '+site+' طوال الأسبوع');
+}
+function removeFixedSiteMonitor(fixedId){
+ const item=(s.fixedMonitors||[]).find(x=>x.id===fixedId&&x.track===monitoringTrack);
+ if(!item)return toast('تعذر العثور على المراقب الثابت');
+ if(!confirm('إلغاء تثبيت '+nm(item.teacher)+' في '+item.site+'؟ ستظل المراقبات الحالية باسمه، لكنها ستصبح قابلة للتعديل وإعادة التوزيع العادل.'))return;
+ if(!quickBackupBeforeChange())return;
+ s.fixedMonitors=s.fixedMonitors.filter(x=>x.id!==fixedId);
+ for(const n of s.monitoringNeeds)if(n.fixedMonitorId===fixedId)delete n.fixedMonitorId;
+ for(const d of s.duties)if(d.fixedMonitorId===fixedId)delete d.fixedMonitorId;
+ save();toast('أُلغي التثبيت، والمراقبات المسندة محفوظة');
+}
+
 function quickNeeds(site,day,p){return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&n.day===day&&Number(n.period)===p&&n.notes===site)}
 function quickAllowed(t,need){
+ if(fixedNeedRecord(need)||fixedSiteRules().some(x=>x.teacher===t.id))return false;
  if(need.assignedTeacher!==t.id&&monitoringTotalLoad(t.id)>=monitoringTarget())return false;
  if(hasExtraAssignment(t.id))return false;
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).includes(t.id))return false;
@@ -500,6 +581,7 @@ function quickAllowed(t,need){
 }
 function quickSet(needId,teacherId){
  const n=s.monitoringNeeds.find(x=>x.id===needId);if(!n)return;
+ if(fixedNeedRecord(n))return toast('المراقب ثابت؛ ألغِ تثبيته أولًا لتعديل هذه الخانة');
  if(Number(n.period)>monitoringDayPeriodLimit(n.day))return toast('هذه الحصة خارج عدد المراقبات المسموح لهذا اليوم');
  if(teacherId){const t=s.teachers.find(x=>x.id===teacherId);if(!t||!quickAllowed(t,n)){render();return toast('المعلم غير متاح لهذا الموعد')}}
  s.duties=s.duties.filter(d=>d.needId!==n.id);n.assignedTeacher=teacherId||'';
@@ -511,6 +593,7 @@ function quickCell(site,day,p,print){
  const needs=quickNeeds(site,day,p);if(!needs.length)return '<td style="color:#b45309">—</td>';
  return '<td>'+needs.map(n=>{
   if(print)return '<div>'+esc(n.assignedTeacher?nm(n.assignedTeacher):'—')+'</div>';
+  if(fixedNeedRecord(n))return '<div style="font-weight:800;color:#11634c;padding:5px">📌 '+esc(nm(n.assignedTeacher))+' <small>(ثابت)</small></div>';
   const chosen=n.assignedTeacher||'';
   const teachers=s.teachers.filter(t=>t.id===chosen||((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).includes(t.id));
   return '<select style="width:100%;min-width:110px;font-size:11px;padding:5px 1px;margin:2px 0" aria-label="مراقب '+esc(day)+' الحصة '+p+'" onchange="quickSet(\''+esc(n.id)+'\',this.value)"><option value="">— غير موزعة —</option>'+
@@ -579,7 +662,7 @@ function quickBackupBeforeChange(){
  catch(e){console.error('تعذر حفظ نسخة احتياطية قبل تغيير المراقبات',e);alert('تعذر إنشاء نسخة احتياطية. لم يتم تغيير المراقبات.');return false}
 }
 function quickClearAssignments(){
- const needs=quickCurrentNeeds(),allocated=needs.filter(n=>n.assignedTeacher);
+ const needs=quickCurrentNeeds().filter(n=>!fixedNeedRecord(n)),allocated=needs.filter(n=>n.assignedTeacher);
  if(!allocated.length)return toast('لا توجد أسماء مراقبين لتفريغها في هذا الجدول');
  if(!confirm('تفريغ '+allocated.length+' تكليف مراقبة من جدول '+monitorTrackLabel(monitoringTrack)+'؟ ستبقى الخانات والمواقع والأيام كما هي، ويمكن إعادة توزيعها.'))return;
  if(!quickBackupBeforeChange())return;
@@ -595,6 +678,7 @@ function quickDeleteSchedule(){
  if(!confirm('حذف جدول المراقبات الأسبوعي لمرحلة '+monitorTrackLabel(monitoringTrack)+' في المواقع: '+siteLabel+'؟\nسيتم حذف '+needs.length+' خانة مراقبة وتكليفاتها، ولن تُحذف حصص المعلمين أو مراقبات المراحل الأخرى.'))return;
  if(!quickBackupBeforeChange())return;
  const ids=new Set(needs.map(n=>n.id));
+ s.fixedMonitors=(s.fixedMonitors||[]).filter(x=>x.track!==monitoringTrack);
  s.monitoringNeeds=s.monitoringNeeds.filter(n=>!ids.has(n.id));
  s.duties=s.duties.filter(d=>!ids.has(d.needId));
  save();toast('تم حذف '+needs.length+' خانة من الجدول الأسبوعي');
@@ -750,7 +834,7 @@ function monitoring(){
  field('ملاحظة اختيارية','<input id="dnotes" placeholder="مراقبة فناء أو حافلة">')+
  '</div><div class="actions"><button onclick="saveDuty()">حفظ التكليف</button><button class="alt" onclick="editingDutyId=\'\';render()">إلغاء التعديل</button></div><p class="muted">اختر أسبوعية للمراقبات المتكررة في نفس اليوم والحصة، أو بتاريخ محدد للمراقبة الاستثنائية. لا يُرشح المعلم للتغطية أثناء أي مراقبة أو حافلة مسجلة.</p>';
  const rows=(s.duties||[]).filter(d=>d.track===monitoringTrack).map(d=>[esc(nm(d.teacher)),esc(dutyName(d)),d.mode==='weekly'?esc(d.day)+' (أسبوعيًا)':esc(d.date),d.period,esc(d.notes||'—'),'<button class="alt" onclick="editDuty(\''+d.id+'\')">تعديل</button> <button class="danger" onclick="deleteDuty(\''+d.id+'\')">حذف</button>']);
- return monitoringStageSelector()+quickMonitoringPanel()+monitoringWorkloadPanel()+legacyMonitoringPanel()+monitoringTeachersPanel()+weeklyMonitoringBlockPanel()+monitoringNeedsPanel()+box('إضافة وإدارة المراقبات والحافلات',form)+box('سجل المراقبات والحافلات',rows.length?table(['المعلم','التكليف','التوقيت','الحصة','ملاحظات','الإجراءات'],rows):empty('لا توجد مراقبات أو حافلات مسجلة'));
+ return monitoringStageSelector()+fixedMonitorPanel()+quickMonitoringPanel()+monitoringWorkloadPanel()+legacyMonitoringPanel()+monitoringTeachersPanel()+weeklyMonitoringBlockPanel()+monitoringNeedsPanel()+box('إضافة وإدارة المراقبات والحافلات',form)+box('سجل المراقبات والحافلات',rows.length?table(['المعلم','التكليف','التوقيت','الحصة','ملاحظات','الإجراءات'],rows):empty('لا توجد مراقبات أو حافلات مسجلة'));
 }
 function saveDuty(){
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
@@ -815,6 +899,7 @@ function fairCandidate(need){
  const actualDay=need.mode==='weekly'?need.day:dt(need.date);
  if(Number(need.period)>monitoringDayPeriodLimit(actualDay,monitoringBasePeriods(need.track),need.track))return undefined;
  const candidates=s.teachers.filter(t=>{
+  if(fixedSiteRules().some(x=>x.teacher===t.id))return false;
   if(hasExtraAssignment(t.id)||monitoringTotalLoad(t.id)>=monitoringTarget())return false;
   if(!((s.monitoringEligibleByTrack||{})[need.track]||[]).includes(t.id))return false;
   if(s.lessons.some(l=>l.teacher===t.id&&l.day===actualDay&&l.period===need.period))return false;
@@ -854,12 +939,13 @@ function rebalanceMonitoringToTarget(){
  if(!confirm('إعادة توزيع مراقبات '+monitorTrackLabel(monitoringTrack)+' للوصول إلى '+input+' حصة إجمالية قدر الإمكان؟\\nسيُعاد إسناد المراقبات الموجودة في هذه المرحلة. لن تتغير الحصص الدراسية أو المراقبات المستقلة خارج جدول هذه المرحلة.'))return;
  if(!quickBackupBeforeChange())return;
  s.monitoringTarget=input;
- const ids=new Set(needs.map(n=>n.id));
+ const movable=needs.filter(n=>!fixedNeedRecord(n));
+ const ids=new Set(movable.map(n=>n.id));
  s.duties=s.duties.filter(d=>!ids.has(d.needId));
- needs.forEach(n=>{n.assignedTeacher=''});
+ movable.forEach(n=>{n.assignedTeacher=''});
  // Distribute the first slot per site before second slots in the same period.
  const groups=new Map();
- for(const n of needs){
+ for(const n of movable){
   const key=(n.mode==='weekly'?'W'+n.day:'D'+n.date)+'|'+n.period;
   if(!groups.has(key))groups.set(key,[]);
   groups.get(key).push(n);
