@@ -783,6 +783,7 @@ function monitoringWorkloadTable(print=false){
  const rows=data.rows.map((r,i)=>[
   String(i+1),esc(r.name),String(r.teaching),String(r.weekly),String(r.dated),
   '<strong>'+r.total+'</strong>','<strong>'+r.overall+'</strong>',
+  fixedSiteRules().some(x=>x.teacher===r.teacherId)?'<strong style="color:#11634c">📌 مراقب ثابت (مستثنى)</strong>':
   r.overall>Number(s.monitoringTarget||26)?'<strong style="color:#a43e26">فوق المستهدف بـ '+(r.overall-(s.monitoringTarget||26))+'</strong>':
    r.overall===(s.monitoringTarget||26)?'<strong style="color:#16806a">مكتمل</strong>':
    'متبقٍ '+((s.monitoringTarget||26)-r.overall)
@@ -792,7 +793,7 @@ function monitoringWorkloadTable(print=false){
 }
 function monitoringWorkloadPanel(){
  return box('📊 عدد المراقبات لكل معلم — '+monitorTrackLabel(monitoringTrack),
-  '<p class="muted">الإحصائية تخص المرحلة المختارة، وتتحدث مباشرة بعد أي إسناد أو تغيير أو تفريغ. الإجمالي = النصاب التدريسي الأسبوعي + المراقبات الأسبوعية + المراقبات المؤرخة، ولا تُحتسب الحافلات أو حصص الانتظار. المراقبات المؤرخة تُحسب كتكليفات مسجلة وليست ضمن النصاب الأسبوعي المتكرر.</p>'+
+  '<p class="muted">الإحصائية تخص المرحلة المختارة، وتتحدث مباشرة بعد أي إسناد أو تغيير أو تفريغ. الإجمالي = النصاب التدريسي الأسبوعي + المراقبات الأسبوعية + المراقبات المؤرخة، ولا تُحتسب الحافلات أو حصص الانتظار. المراقبات المؤرخة تُحسب كتكليفات مسجلة وليست ضمن النصاب الأسبوعي المتكرر. المراقب الثابت يُحسب كاملًا في الجدول لكنه مستثنى من سقف التوزيع العادل.</p>'+
   '<div class="actions"><button class="alt" onclick="printMonitoringWorkload()">🖨 طباعة كشف عدد المراقبات</button></div>'+
   monitoringWorkloadTable());
 }
@@ -837,6 +838,7 @@ function monitoring(){
  return monitoringStageSelector()+fixedMonitorPanel()+quickMonitoringPanel()+monitoringWorkloadPanel()+legacyMonitoringPanel()+monitoringTeachersPanel()+weeklyMonitoringBlockPanel()+monitoringNeedsPanel()+box('إضافة وإدارة المراقبات والحافلات',form)+box('سجل المراقبات والحافلات',rows.length?table(['المعلم','التكليف','التوقيت','الحصة','ملاحظات','الإجراءات'],rows):empty('لا توجد مراقبات أو حافلات مسجلة'));
 }
 function saveDuty(){
+ if(editingDutyId){const old=s.duties.find(x=>x.id===editingDutyId);if(old?.fixedMonitorId&&fixedSiteRules(old.track).some(x=>x.id===old.fixedMonitorId))return toast('المراقبة ثابتة؛ ألغِ التثبيت قبل التعديل');}
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
  if(!teacher||!['monitoring','bus'].includes(kind)||!['weekly','dated'].includes(mode)||!Number.isInteger(period)||period<1||period>12||mode==='dated'&&!date)return toast('أكمل بيانات التكليف');
  if(kind==='monitoring'&&period>monitoringDayPeriodLimit(mode==='weekly'?day:dt(date)))return toast('هذه الحصة خارج عدد مراقبات اليوم في المرحلة المختارة');
@@ -853,6 +855,7 @@ function saveDuty(){
 }
 function editDuty(id){
  const duty=s.duties.find(x=>x.id===id);if(!duty)return;
+ if(duty.fixedMonitorId&&fixedSiteRules(duty.track).some(x=>x.id===duty.fixedMonitorId))return toast('هذه مراقبة ثابتة؛ ألغِ التثبيت أولًا قبل تعديلها');
  editingDutyId=id;page='monitoring';render();
  document.getElementById('dteacher').value=duty.teacher;
  document.getElementById('dkind').value=duty.kind;
@@ -863,6 +866,8 @@ function editDuty(id){
  document.getElementById('dnotes').value=duty.notes||'';
 }
 function deleteDuty(id){
+ const locked=s.duties.find(x=>x.id===id);
+ if(locked?.fixedMonitorId&&fixedSiteRules(locked.track).some(x=>x.id===locked.fixedMonitorId))return toast('لا يمكن حذف مراقبة ثابتة؛ ألغِ التثبيت أولًا');
  if(!confirm('حذف هذا التكليف؟'))return;
  const old=s.duties.find(x=>x.id===id);if(old?.needId){const need=s.monitoringNeeds.find(x=>x.id===old.needId);if(need)need.assignedTeacher='';}s.duties=s.duties.filter(x=>x.id!==id);if(editingDutyId===id)editingDutyId='';save();
 }
@@ -983,6 +988,8 @@ function distributeMonitoring(){
  save();toast('تم توزيع '+assigned+' مراقبة، والمتبقي '+waiting);
 }
 function deleteMonitoringNeed(id){
+ const item=s.monitoringNeeds.find(x=>x.id===id);
+ if(item&&fixedNeedRecord(item))return toast('هذه المراقبة ثابتة؛ ألغِ تثبيت المراقب أولًا');
  if(!confirm('حذف هذه المراقبة من قائمة التوزيع؟'))return;
  s.monitoringNeeds=s.monitoringNeeds.filter(x=>x.id!==id);
  s.duties=s.duties.filter(x=>x.needId!==id);save();
