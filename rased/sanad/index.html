@@ -35,78 +35,85 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-daily-cover .daily-print-credit{text-align:center;margin-top:25px;font-size:10px;color:#427367}
 }
 
-/* Official multi-page A4 monitoring report: one table per day, full-width names */
+/* Weekly monitoring – one professional A4 landscape table */
 #quickMonitoringPrintSheet{display:none}
 @media print{
- body.printing-quick-monitor{margin:0!important;background:white!important;color:#172c2b!important}
+ body.printing-quick-monitor{margin:0!important;padding:0!important;background:#fff!important;color:#142d29!important}
  body.printing-quick-monitor > :not(#quickMonitoringPrintSheet){display:none!important}
  body.printing-quick-monitor #quickMonitoringPrintSheet{
-  display:block!important;position:static!important;width:100%!important;
-  padding:0!important;margin:0!important;border:0!important;
-  direction:rtl!important;color:#172c2b!important;font-family:Tahoma,Arial,sans-serif!important
+  display:block!important;position:static!important;box-sizing:border-box!important;
+  width:100%!important;max-width:100%!important;margin:0!important;padding:0!important;
+  border:0!important;direction:rtl!important;color:#142d29!important;
+  font-family:Tahoma,Arial,sans-serif!important
  }
  body.printing-quick-monitor .quick-print-head{
-  display:flex!important;align-items:center!important;justify-content:space-between!important;
-  gap:10px!important;padding:0 0 9px!important;margin-bottom:9px!important;
-  border-bottom:2px solid #193c38!important;text-align:center!important
+  display:grid!important;grid-template-columns:50px 1fr 65px!important;
+  gap:8px!important;align-items:center!important;text-align:center!important;
+  border-bottom:2px solid #20453a!important;padding:0 0 6px!important;margin:0 0 7px!important
  }
- body.printing-quick-monitor .quick-print-head img{display:block!important;width:62px!important;height:62px!important;object-fit:contain!important}
- body.printing-quick-monitor .quick-print-head h2{font-size:17px!important;margin:3px 0!important;color:#163e38!important}
- body.printing-quick-monitor .quick-print-head p{font-size:10px!important;margin:3px!important}
- body.printing-quick-monitor .quick-day-report{
-  display:block!important;width:100%!important;margin:0 0 13px!important;
-  break-inside:avoid!important;page-break-inside:avoid!important
+ body.printing-quick-monitor .quick-print-head img{
+  display:block!important;width:100%!important;height:49px!important;object-fit:contain!important
  }
- body.printing-quick-monitor .quick-day-heading{
-  display:block!important;background:#dce9e4!important;color:#103b36!important;
-  font-size:13px!important;font-weight:900!important;
-  text-align:center!important;padding:7px 4px!important;
-  border:2.4px solid #264941!important;border-bottom:0!important
+ body.printing-quick-monitor .quick-print-head h2{
+  font-size:15px!important;font-weight:900!important;margin:2px 0!important;color:#163d33!important
  }
- body.printing-quick-monitor .quick-day-table{
-  border-collapse:collapse!important;width:100%!important;max-width:100%!important;
-  min-width:0!important;table-layout:fixed!important;white-space:normal!important
+ body.printing-quick-monitor .quick-print-head p{font-size:9px!important;margin:2px 0!important}
+ body.printing-quick-monitor .quick-weekly-table{
+  display:table!important;table-layout:fixed!important;border-collapse:collapse!important;
+  direction:rtl!important;width:100%!important;min-width:0!important;max-width:100%!important;
+  border:2px solid #263e37!important;white-space:normal!important
  }
- body.printing-quick-monitor .quick-day-table th,
- body.printing-quick-monitor .quick-day-table td{
+ body.printing-quick-monitor .quick-weekly-table thead{display:table-header-group!important}
+ body.printing-quick-monitor .quick-weekly-table tbody{display:table-row-group!important}
+ body.printing-quick-monitor .quick-weekly-table tr{page-break-inside:avoid!important;break-inside:avoid!important}
+ body.printing-quick-monitor .quick-weekly-table th,
+ body.printing-quick-monitor .quick-weekly-table td{
   box-sizing:border-box!important;display:table-cell!important;
-  border:1px solid #8fa7a0!important;padding:6px 7px!important;
-  font-size:11.2px!important;line-height:1.55!important;
+  border:0.75px solid #a6b9b0!important;
+  padding:7px 3px!important;color:#172c27!important;
+  font-size:9px!important;line-height:1.6!important;
   text-align:center!important;vertical-align:middle!important;
-  white-space:normal!important;overflow-wrap:anywhere!important;
-  color:#142d29!important
+  white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;
+  background:#fff!important
  }
- body.printing-quick-monitor .quick-day-table thead th{
-  border-top:2.4px solid #264941!important;border-bottom:1.5px solid #264941!important;
-  background:#edf3f0!important;font-size:11.4px!important;font-weight:900!important
+ body.printing-quick-monitor .quick-weekly-table thead th{
+  font-size:9.4px!important;font-weight:900!important;padding:9px 2px!important;
+  background:#e5eee9!important;border-bottom:2px solid #314f44!important
  }
- body.printing-quick-monitor .quick-day-table th:first-child,
- body.printing-quick-monitor .quick-day-table td:first-child{
-  width:18%!important;font-weight:900!important;background:#f3f6f4!important
+ body.printing-quick-monitor .quick-weekly-table .quick-day-name{
+  font-size:11px!important;font-weight:900!important;
+  background:#e7f0eb!important
  }
- body.printing-quick-monitor .quick-day-table tbody tr{
-  break-inside:avoid!important;page-break-inside:avoid!important
+ body.printing-quick-monitor .quick-weekly-table .quick-site-name{
+  font-size:9.5px!important;font-weight:800!important;background:#f4f7f4!important
  }
- body.printing-quick-monitor .quick-day-table tbody tr+tr td{
-  border-top:1.2px solid #829c93!important
+ /* Thick separators between days; lighter dividers between east and west */
+ body.printing-quick-monitor .quick-weekly-table tr.quick-day-first td,
+ body.printing-quick-monitor .quick-weekly-table tr.quick-day-first th{
+  border-top:2.7px solid #25423a!important
  }
- body.printing-quick-monitor .quick-duty-name{
-  display:block!important;padding:1px 2px!important;font-weight:700!important
+ body.printing-quick-monitor .quick-weekly-table tr.quick-site-second td,
+ body.printing-quick-monitor .quick-weekly-table tr.quick-site-second th{
+  border-top:1px solid #93aea1!important
  }
- body.printing-quick-monitor .quick-duty-name+.quick-duty-name{
-  border-top:1px dashed #c0d0cb!important;margin-top:3px!important;padding-top:4px!important
+ body.printing-quick-monitor .quick-weekly-table .quick-duty-name{
+  display:block!important;font-weight:700!important;padding:1px 0!important
  }
- body.printing-quick-monitor .quick-not-assigned{color:#8c5340!important;font-weight:500!important}
+ body.printing-quick-monitor .quick-weekly-table .quick-duty-name+.quick-duty-name{
+  border-top:1px dashed #b7c8be!important;padding-top:3px!important;margin-top:3px!important
+ }
+ body.printing-quick-monitor .quick-weekly-table .quick-not-assigned{
+  color:#8b5945!important;font-weight:500!important
+ }
  body.printing-quick-monitor .quick-print-sign{
-  display:flex!important;justify-content:space-between!important;gap:12px!important;
-  margin-top:15px!important;font-size:11px!important;font-weight:700!important
+  display:flex!important;justify-content:space-between!important;gap:8px!important;
+  margin-top:10px!important;font-size:10px!important;font-weight:700!important
  }
  body.printing-quick-monitor .quick-print-credit{
-  display:block!important;text-align:center!important;font-size:9px!important;margin-top:10px!important
+  text-align:center!important;font-size:9px!important;margin-top:6px!important
  }
  body.printing-quick-monitor #alfalah-designer-credit{display:none!important}
 }
-
 
 /* Printable teacher monitoring totals; isolated from other print modes. */
 #monitoringWorkloadPrintSheet{display:none}
@@ -366,23 +373,25 @@ function quickPrint(){
  if(!sheet){sheet=document.createElement('section');sheet.id='quickMonitoringPrintSheet';document.body.appendChild(sheet)}
  let printPageStyle=document.getElementById('quickMonitoringPortraitPage');
  if(!printPageStyle){printPageStyle=document.createElement('style');printPageStyle.id='quickMonitoringPortraitPage';document.head.appendChild(printPageStyle)}
- printPageStyle.textContent='@page{size:A4 portrait;margin:10mm}';
+ printPageStyle.textContent='@page{size:A4 landscape;margin:8mm}';
  const assigned=occupied.filter(n=>n.assignedTeacher).length;
- const dailyHtml=days.map(day=>{
-  const head='<thead><tr><th scope="col">الحصة</th>'+sites.map(site=>'<th scope="col">'+esc(site)+'</th>').join('')+'</tr></thead>';
-  const rows=Array.from({length:lastPeriod},(_,i)=>{
-   const period=i+1;
-   return '<tr><td>الحصة '+period+'</td>'+sites.map(site=>'<td>'+quickPrintableCell(site,day,period)+'</td>').join('')+'</tr>';
-  }).join('');
-  return '<section class="quick-day-report"><div class="quick-day-heading">'+esc(day)+'</div>'+
-   '<table class="quick-day-table">'+head+'<tbody>'+rows+'</tbody></table></section>';
- }).join('');
- sheet.innerHTML='<div class="quick-print-head">'+
+ const periods=Array.from({length:lastPeriod},(_,i)=>i+1);
+ const head='<thead><tr><th scope="col" style="width:9%">اليوم</th><th scope="col" style="width:12%">موقع المراقبة</th>'+
+  periods.map(p=>'<th scope="col">الحصة '+p+'</th>').join('')+'</tr></thead>';
+ const rows=days.map(day=>sites.map((site,i)=>{
+  const cls=i===0?'quick-day-first':'quick-site-second';
+  return '<tr class="'+cls+'">'+
+    (i===0?'<th class="quick-day-name" scope="rowgroup" rowspan="'+sites.length+'">'+esc(day)+'</th>':'')+
+    '<th class="quick-site-name" scope="row">'+esc(site)+'</th>'+
+    periods.map(p=>'<td>'+quickPrintableCell(site,day,p)+'</td>').join('')+
+    '</tr>';
+ }).join('')).join('');
+ sheet.innerHTML='<header class="quick-print-head">'+
  '<img src="../alfalah-round-logo.png" alt="شعار المدرسة">'+
  '<div><p>المملكة العربية السعودية | وزارة التعليم</p><h2>مدارس الفلاح الأهلية</h2><h2>'+esc(title)+'</h2>'+
- '<p>من الحصة الأولى حتى الحصة '+lastPeriod+' | الموزعة: '+assigned+' من '+occupied.length+'</p></div>'+
- '<img src="../moe-vision2030-logo.png" alt="شعار وزارة التعليم"></div>'+
- dailyHtml+
+ '<p>الحصص من 1 إلى '+lastPeriod+' | المراقبات الموزعة: '+assigned+' من '+occupied.length+'</p></div>'+
+ '<img src="../moe-vision2030-logo.png" alt="شعار وزارة التعليم"></header>'+
+ '<table class="quick-weekly-table">'+head+'<tbody>'+rows+'</tbody></table>'+
  '<div class="quick-print-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div>'+
  '<div class="quick-print-credit">تصميم محمد عامر أحمد</div>';
  const cleanup=()=>{
