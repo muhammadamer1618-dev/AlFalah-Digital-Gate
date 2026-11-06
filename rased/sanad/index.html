@@ -1801,16 +1801,16 @@ s.lessons.push({id:id(),teacher:t.id,day:o['اليوم'],period:p,className:norm
     if(t.id!==x.to&&!isFree(t.id,x.date,x.period))return msg('المعلم غير متاح');
     x.to=t.id;sync();msg('تم تعديل التبديل');
   }
-  delTeacher=function(i){if(confirm('حذف المعلم؟ لا يمكن حذفه إذا كان مرتبطًا بجدول أو غياب.'))oldTeacherDelete(i)};
-  delLesson=function(i){if(confirm('حذف هذه الحصة وكل تغطياتها المرتبطة؟'))oldLessonDelete(i)};
+  delTeacher=function(i){oldTeacherDelete(i)};
+  delLesson=function(i){oldLessonDelete(i)};
   delAbs=function(i){if(confirm('حذف الغياب وكل حصص الانتظار المرتبطة به؟'))oldAbsDelete(i)};
   undoCover=function(i){if(confirm('إلغاء هذا الإسناد؟'))oldUndo(i)};
   function attachActions(){
     document.querySelectorAll('button[onclick^="delTeacher("]').forEach(b=>{
-      const i=b.getAttribute('onclick').match(/'([^']+)'/)?.[1];if(i){b.before(makeButton('✏️ تعديل',()=>editTeacher(i)));b.classList.add('manage-delete')}
+      const i=b.getAttribute('onclick').match(/'([^']+)'/)?.[1];if(i){if(!b.parentElement?.querySelector('button[onclick^="editTeacher("]'))b.before(makeButton('✏️ تعديل',()=>editTeacher(i)));b.classList.add('manage-delete')}
     });
     document.querySelectorAll('button[onclick^="delLesson("]').forEach(b=>{
-      const i=b.getAttribute('onclick').match(/'([^']+)'/)?.[1];if(i){b.before(makeButton('✏️ تعديل',()=>editLesson(i)));b.classList.add('manage-delete')}
+      const i=b.getAttribute('onclick').match(/'([^']+)'/)?.[1];if(i){if(!b.parentElement?.querySelector('button[onclick^="editLesson("]'))b.before(makeButton('✏️ تعديل',()=>editLesson(i)));b.classList.add('manage-delete')}
     });
     document.querySelectorAll('button[onclick^="delAbs("]').forEach(b=>{
       const i=b.getAttribute('onclick').match(/'([^']+)'/)?.[1];if(i){b.before(makeButton('✏️ تعديل',()=>editAbs(i)));b.classList.add('manage-delete')}
