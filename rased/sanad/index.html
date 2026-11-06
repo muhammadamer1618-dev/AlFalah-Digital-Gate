@@ -447,14 +447,13 @@ function normalizeImportedRoom(room){return String(room||'').replace(/\s*\+\s*ت
 function isBusClass(label){return /^ح(?:\s*\(|$)/.test(String(label||'').trim())}
 function teachingLoad(i){return s.lessons.filter(l=>l.teacher===i&&!isBusClass(l.className)).length}
 function opts(list){return list.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')}function field(label,control){return '<div class="field"><label>'+label+'</label>'+control+'</div>'}function table(head,rows){return '<div class="scroll"><table><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</table></div>'}function empty(m){return '<div class="empty">◌<p>'+m+'</p></div>'}/* Compact action cards. Open state lives in page UI only; business data is unchanged. */
-const sanadOpenCards=new Set();
+const sanadCardStates=new Map();
 let sanadCardPrintSnapshot=null;
 function sanadCardKey(title){return page+'|'+(page==='monitoring'?monitoringTrack:'')+'|'+String(title)}
 function rememberCardState(summary){
  const card=summary.closest('details.ui-card');if(!card)return;
  const key=card.dataset.cardKey;
- if(card.open)sanadOpenCards.delete(key);
- else sanadOpenCards.add(key);
+ sanadCardStates.set(key,!card.open);
 }
 function filterTeacherDirectory(input){
  const card=input.closest('.ui-card');
@@ -485,7 +484,7 @@ function box(title,content){
  const key=sanadCardKey(title);
  const defaultOpen=page==='home'||page==='printing'||page==='report'||
    (page==='monitoring'&&String(title)==='مرحلة مراقبات مستقلة');
- const open=sanadOpenCards.has(key)||(!sanadOpenCards.size&&defaultOpen);
+ const open=sanadCardStates.has(key)?sanadCardStates.get(key):defaultOpen;
  return '<details class="panel ui-card" data-card-key="'+esc(key)+'" '+(open?'open':'')+'>'+
   '<summary class="ui-card-summary" onclick="rememberCardState(this)">'+title+
   '<span class="ui-card-toggle" aria-hidden="true">عرض التفاصيل</span></summary>'+
