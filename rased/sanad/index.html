@@ -205,8 +205,12 @@ function sanadCloudBackup(label){
  try{
   const list=JSON.parse(localStorage.getItem(key)||'[]');
   if(!Array.isArray(list))throw Error('Invalid backup list');
-  localStorage.setItem(key,JSON.stringify([backup,...list].slice(0,8)));
-  return true;
+  // Preserve newest snapshots without filling the browser's storage quota.
+  for(const count of [3,2,1]){
+   try{localStorage.setItem(key,JSON.stringify([backup,...list].slice(0,count)));return true}
+   catch(quotaError){if(count===1)throw quotaError}
+  }
+  return false;
  }catch(e){
   console.error('Cannot preserve local backup',e);
   alert('تعذر إنشاء نسخة احتياطية قبل نقل البيانات؛ لن يتم استبدال بياناتك. افتح الإعدادات ونزّل نسخة JSON ثم أعد المحاولة.');
@@ -313,9 +317,12 @@ async function sanadCloudFlush(){
  }
 }
 async function sanadCloudUseRemote(){
+ const seq=sanadCloudChangeSeq;
  const remote=await sanadCloudRead();
  if(!remote.data)throw Error('لا توجد نسخة سحابية للتحميل');
+ if(sanadCloudChangeSeq!==seq)throw Error('حدث تعديل جديد على هذا الجهاز أثناء تحميل السحابة؛ لم يتم استبدال البيانات المحلية');
  if(!sanadCloudBackup('قبل استعادة النسخة السحابية'))return;
+ if(sanadCloudChangeSeq!==seq)throw Error('حدث تعديل جديد أثناء إنشاء النسخة الاحتياطية؛ احتفظنا ببيانات هذا الجهاز');
  s=remote.data;
  localStorage.setItem(KEY,JSON.stringify(s));
  sanadCloudRevision=remote.revision;
