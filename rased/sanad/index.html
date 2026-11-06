@@ -391,10 +391,15 @@ function sanadCloudBackup(label){
  try{
   const list=JSON.parse(localStorage.getItem(key)||'[]');
   if(!Array.isArray(list))throw Error('Invalid backup list');
-  // Preserve newest snapshots without filling the browser's storage quota.
+  // Keep the archived pre-Firebase device copy even when later backups rotate.
+  const protectedCopy=backup.reason==='بيانات هذا الجهاز قبل اعتماد Firebase كمصدر رئيسي'
+    ?backup:list.find(x=>x.reason==='بيانات هذا الجهاز قبل اعتماد Firebase كمصدر رئيسي');
+  const candidates=[backup,...(protectedCopy&&protectedCopy.id!==backup.id?[protectedCopy]:[]),
+   ...list.filter(x=>x.id!==backup.id&&x.id!==protectedCopy?.id)];
   for(const count of [3,2,1]){
-   try{localStorage.setItem(key,JSON.stringify([backup,...list].slice(0,count)));return true}
-   catch(quotaError){if(count===1)throw quotaError}
+   if(protectedCopy&&count===1&&protectedCopy.id!==backup.id)continue;
+   try{localStorage.setItem(key,JSON.stringify(candidates.slice(0,count)));return true}
+   catch(quotaError){if(count===1||count===2&&protectedCopy)throw quotaError}
   }
   return false;
  }catch(e){
