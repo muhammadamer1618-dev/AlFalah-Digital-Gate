@@ -179,16 +179,217 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-timetable .print-sheet tr{page-break-inside:avoid!important;break-inside:avoid!important}
 }
 
-</style><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script></head><body><a class="rased-back" href="../admin.html" aria-label="العودة إلى لوحة إدارة راصد">↩ العودة إلى راصد</a><div class="layout"><aside><div class="school-brand"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الأهلية"><div><h1>بديل</h1><p>النظام الذكي لتأمين الحصص<br>مدارس الفلاح الأهلية</p></div></div><nav id="nav"></nav></aside><main><header><div><h2 id="title">لوحة التحكم</h2><small>مدارس الفلاح الأهلية · إدارة اليوم الدراسي</small></div><span class="tag">● حفظ محلي تلقائي</span></header><div class="container"><section class="hero"><h2>صباح الخير، أهلاً بك في بديل ✨</h2><p>نُبديل المعلم، ونضمن استمرار التعلّم — إدارة ذكية وعادلة للحصص.</p></section><div class="stats" id="stats"></div><div class="section-tools"><button class="alt" type="button" onclick="window.print()">🖨️ طباعة القسم الحالي</button><span class="muted">تُطبع البيانات الظاهرة في القسم المحدد</span></div><div id="view"></div><footer>بديل المطوّر © ٢٠٢٦ — مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</footer></div></main></div><div id="toast"></div><script>
+</style><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script></head><body><a class="rased-back" href="../admin.html" aria-label="العودة إلى لوحة إدارة راصد">↩ العودة إلى راصد</a><div class="layout"><aside><div class="school-brand"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الأهلية"><div><h1>بديل</h1><p>النظام الذكي لتأمين الحصص<br>مدارس الفلاح الأهلية</p></div></div><nav id="nav"></nav></aside><main><header><div><h2 id="title">لوحة التحكم</h2><small>مدارس الفلاح الأهلية · إدارة اليوم الدراسي</small></div><span class="tag" id="sanadCloudStatus" role="status" aria-live="polite">⏳ جارٍ ربط الحفظ السحابي</span></header><div class="container"><section class="hero"><h2>صباح الخير، أهلاً بك في بديل ✨</h2><p>نُبديل المعلم، ونضمن استمرار التعلّم — إدارة ذكية وعادلة للحصص.</p></section><div class="stats" id="stats"></div><div class="section-tools"><button class="alt" type="button" onclick="window.print()">🖨️ طباعة القسم الحالي</button><span class="muted">تُطبع البيانات الظاهرة في القسم المحدد</span></div><div id="view"></div><footer>بديل المطوّر © ٢٠٢٦ — مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</footer></div></main></div><div id="toast"></div><script>
 const KEY='sanad-falah-demo-1',days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],pages=[['home','⌂','لوحة التحكم'],['absence','◎','حصص الانتظار'],['swap','⇄','تبديل الحصص'],['teachers','♙','المعلمون والأقسام'],['schedule','▤','الجداول'],['monitoring','🛡','إدارة المراقبات'],['assignments','📚','التكليفات الإضافية'],['printing','🖨','مركز الطباعة'],['loads','◷','احتساب الحصص'],['charts','▥','رسوم بيانية'],['report','▣','التقرير الشهري'],['settings','⚙','الإعدادات']];let s=JSON.parse(localStorage.getItem(KEY)||'null')||{teachers:[],lessons:[],absences:[],covers:[],swaps:[],duties:[],monitoringNeeds:[],cap:4},page='home',selectedDate=new Date().toISOString().slice(0,10);
 s.duties ||= [];
 s.monitoringNeeds ||= [];
 s.monitoringEligible ??= s.teachers.map(t=>t.id);
 s.monitoringEligibleByTrack ??= {primary:[],upper:[]};
 let monitoringTrack='primary';
-function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function save(){s.duties ||= [];s.monitoringNeeds ||= [];s.monitoringEligible ??= s.teachers.map(t=>t.id);s.monitoringEligibleByTrack ??= {primary:[],upper:[]};localStorage.setItem(KEY,JSON.stringify(s));render()}function go(p){page=p;render();if((p==='teachers'||p==='absence')&&s.teachers.length&&!sanadPhoneSyncPromise){syncRasedTeacherPhones(true).catch(e=>console.warn('تعذر تحديث أرقام راصد',e))}}function toast(m){let e=document.getElementById('toast');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',3000)}function nm(i){return s.teachers.find(t=>t.id===i)?.name||'—'}function dt(d){return days[new Date(d+'T12:00:00').getDay()]}function count(i){return s.covers.filter(c=>c.to===i).length}function dutyAt(teacher,date,period){
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function save(){s.duties ||= [];s.monitoringNeeds ||= [];s.monitoringEligible ??= s.teachers.map(t=>t.id);s.monitoringEligibleByTrack ??= {primary:[],upper:[]};localStorage.setItem(KEY,JSON.stringify(s));markSanadCloudDirty();render()}function go(p){page=p;render();if((p==='teachers'||p==='absence')&&s.teachers.length&&!sanadPhoneSyncPromise){syncRasedTeacherPhones(true).catch(e=>console.warn('تعذر تحديث أرقام راصد',e))}}function toast(m){let e=document.getElementById('toast');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',3000)}function nm(i){return s.teachers.find(t=>t.id===i)?.name||'—'}function dt(d){return days[new Date(d+'T12:00:00').getDay()]}function count(i){return s.covers.filter(c=>c.to===i).length}function dutyAt(teacher,date,period){
  return (s.duties||[]).filter(x=>x.teacher===teacher&&Number(x.period)===Number(period)&&(x.mode==='weekly'?x.day===dt(date):x.date===date));
 }
+
+/* Cloud mirror: local state always remains intact; cloud writes use revisions and Firestore transactions.
+   The named Rased Firebase app is configured in sanadTeacherDatabase() below. */
+let sanadCloudMode='connecting',sanadCloudRevision=0,sanadCloudDirty=false;
+let sanadCloudTimer=null,sanadCloudSaving=false,sanadCloudLastError='',sanadCloudChangeSeq=0;
+const SANAD_CLOUD_COLLECTION='sanad_cloud_v1',SANAD_CLOUD_ID='alfalah_main';
+const SANAD_CLOUD_PARTS=['teachers','lessons','operations','monitoring','settings'];
+function sanadCloudStateIsMeaningful(value){
+ return ['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds'].some(k=>Array.isArray(value?.[k])&&value[k].length);
+}
+function sanadCloudBackup(label){
+ const key='sanad-falah-backups-v1',now=new Date().toISOString();
+ const backup={id:'cloud-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),at:now,reason:label,data:JSON.parse(JSON.stringify(s))};
+ try{
+  const list=JSON.parse(localStorage.getItem(key)||'[]');
+  if(!Array.isArray(list))throw Error('Invalid backup list');
+  localStorage.setItem(key,JSON.stringify([backup,...list].slice(0,8)));
+  return true;
+ }catch(e){
+  console.error('Cannot preserve local backup',e);
+  alert('تعذر إنشاء نسخة احتياطية قبل نقل البيانات؛ لن يتم استبدال بياناتك. افتح الإعدادات ونزّل نسخة JSON ثم أعد المحاولة.');
+  return false;
+ }
+}
+function sanadCloudStatus(textValue){
+ const el=document.getElementById('sanadCloudStatus');
+ if(!el)return;
+ const map={
+  connecting:'⏳ جارٍ الاتصال براصد',connected:'☁️ محفوظ سحابيًا',
+  saving:'☁️ جارٍ الحفظ السحابي',pending:'⚠️ محفوظ محليًا — بانتظار السحابة',
+  conflict:'⚠️ توجد نسختان مختلفتان — راجع الإعدادات',
+  error:'⚠️ فشل الحفظ السحابي — النسخة المحلية محفوظة',
+  local:'⚠️ حفظ محلي فقط — راجع الإعدادات'
+ };
+ el.textContent=textValue||map[sanadCloudMode]||map.local;
+ el.style.background=sanadCloudMode==='connected'?'#dff4ea':sanadCloudMode==='saving'?'#e5f0ff':'#fff2da';
+ el.style.color=sanadCloudMode==='connected'?'#096049':sanadCloudMode==='saving'?'#21548a':'#8a5200';
+}
+function sanadCloudRefs(){
+ const db=sanadTeacherDatabase();
+ const root=db.collection(SANAD_CLOUD_COLLECTION).doc(SANAD_CLOUD_ID);
+ return {db,root,parts:Object.fromEntries(SANAD_CLOUD_PARTS.map(key=>[key,root.collection('parts').doc(key)]))};
+}
+function sanadCloudPack(state){
+ const a={
+  teachers:{teachers:state.teachers||[]},
+  lessons:{lessons:state.lessons||[]},
+  operations:{absences:state.absences||[],covers:state.covers||[],swaps:state.swaps||[],duties:state.duties||[]},
+  monitoring:{monitoringNeeds:state.monitoringNeeds||[]},
+  settings:Object.fromEntries(Object.entries(state).filter(([k])=>!['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds'].includes(k)))
+ };
+ const packed={};
+ for(const [key,val] of Object.entries(a)){
+  const payload=JSON.stringify(val);
+  if(new Blob([payload]).size>950000)throw Error('حجم بيانات '+key+' كبير جدًا للحفظ السحابي؛ يُرجى تنزيل نسخة احتياطية والتواصل مع إدارة النظام');
+  packed[key]={payload};
+ }
+ return packed;
+}
+async function sanadCloudRead(){
+ const {root,parts}=sanadCloudRefs();
+ for(let attempt=0;attempt<3;attempt++){
+  const start=await root.get();
+  if(!start.exists)return {revision:0,data:null};
+  const rev=Number(start.data()?.revision||0);
+  const docs=await Promise.all(SANAD_CLOUD_PARTS.map(k=>parts[k].get()));
+  const end=await root.get();
+  if(Number(end.data()?.revision||0)!==rev)continue;
+  if(docs.some(d=>!d.exists))throw Error('نسخة السحابة غير مكتملة؛ لن يتم استبدال البيانات المحلية');
+  const result={};
+  docs.forEach((doc,i)=>Object.assign(result,JSON.parse(doc.data().payload||'{}')));
+  if(!['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds'].every(k=>Array.isArray(result[k])))
+   throw Error('النسخة السحابية غير مكتملة؛ احتفظ ببيانات المتصفح');
+  return {revision:rev,data:result};
+ }
+ throw Error('البيانات السحابية تتغير الآن؛ حاول مرة أخرى');
+}
+async function sanadCloudCommit(snapshot,revision){
+ const {db,root,parts}=sanadCloudRefs();
+ const packed=sanadCloudPack(snapshot);
+ return db.runTransaction(async transaction=>{
+  const existing=await transaction.get(root);
+  const current=existing.exists?Number(existing.data()?.revision||0):0;
+  if(current!==revision){const error=new Error('توجد تعديلات أحدث على السحابة من جهاز آخر');error.code='SANAD_REVISION_CONFLICT';throw error}
+  SANAD_CLOUD_PARTS.forEach(k=>transaction.set(parts[k],packed[k]));
+  const newRevision=current+1;
+  transaction.set(root,{revision:newRevision,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
+   updatedBy:String(sessionStorage.getItem('currentUserEmail')||localStorage.getItem('currentUserEmail')||'admin')});
+  return newRevision;
+ });
+}
+function markSanadCloudDirty(){
+ sanadCloudDirty=true;sanadCloudChangeSeq++;
+ if(sanadCloudMode==='connected'||sanadCloudMode==='saving'){
+  sanadCloudStatus('☁️ تغييرات محلية بانتظار مزامنة السحابة');
+  clearTimeout(sanadCloudTimer);
+  sanadCloudTimer=setTimeout(sanadCloudFlush,650);
+ }else sanadCloudStatus();
+}
+async function sanadCloudFlush(){
+ if(sanadCloudSaving||!sanadCloudDirty||!['connected','saving'].includes(sanadCloudMode))return;
+ sanadCloudSaving=true;sanadCloudMode='saving';sanadCloudStatus();
+ const seq=sanadCloudChangeSeq,snapshot=JSON.parse(JSON.stringify(s));
+ sanadCloudDirty=false;
+ try{
+  sanadCloudRevision=await sanadCloudCommit(snapshot,sanadCloudRevision);
+  sanadCloudMode='connected';sanadCloudLastError='';
+  if(sanadCloudChangeSeq!==seq)sanadCloudDirty=true;
+  sanadCloudStatus(sanadCloudDirty?'☁️ جارٍ حفظ أحدث التعديلات':null);
+ }catch(e){
+  console.error('Sanad cloud save failed',e);
+  sanadCloudDirty=true;
+  sanadCloudLastError=e.message||String(e);
+  sanadCloudMode=e.code==='SANAD_REVISION_CONFLICT'?'conflict':'error';
+  sanadCloudStatus();
+ }finally{
+  sanadCloudSaving=false;
+  if(sanadCloudDirty&&sanadCloudMode==='connected'){
+   clearTimeout(sanadCloudTimer);
+   sanadCloudTimer=setTimeout(sanadCloudFlush,350);
+  }
+ }
+}
+async function sanadCloudUseRemote(){
+ const remote=await sanadCloudRead();
+ if(!remote.data)throw Error('لا توجد نسخة سحابية للتحميل');
+ if(!sanadCloudBackup('قبل استعادة النسخة السحابية'))return;
+ s=remote.data;
+ localStorage.setItem(KEY,JSON.stringify(s));
+ sanadCloudRevision=remote.revision;
+ sanadCloudDirty=false;sanadCloudMode='connected';sanadCloudLastError='';
+ render();sanadCloudStatus();toast('تم تحميل النسخة السحابية وحفظ نسخة من بيانات الجهاز');
+}
+async function sanadCloudUploadLocal(){
+ if(!sanadCloudBackup('قبل رفع البيانات المحلية إلى السحابة'))return;
+ const remote=await sanadCloudRead();
+ // Never overwrite an existing cloud data set silently; require explicit second confirmation.
+ if(remote.data&&!confirm('توجد بيانات سحابية محفوظة. هل تريد استبدالها بالكامل ببيانات هذا الجهاز؟ تم إنشاء نسخة احتياطية من بيانات الجهاز، لكن يجب التأكد من عدم وجود عمل أحدث على جهاز آخر.'))return;
+ const candidate=JSON.parse(JSON.stringify(s)),seq=sanadCloudChangeSeq;
+ const newRevision=await sanadCloudCommit(candidate,remote.revision);
+ if(sanadCloudChangeSeq!==seq){
+  sanadCloudDirty=true;
+ }else sanadCloudDirty=false;
+ sanadCloudRevision=newRevision;sanadCloudMode='connected';sanadCloudLastError='';
+ sanadCloudStatus();
+ if(sanadCloudDirty)markSanadCloudDirty();
+ toast('تم نقل البيانات الحالية إلى السحابة بنجاح');
+}
+async function sanadCloudConnect(){
+ if(sanadCloudSaving)return;
+ sanadCloudMode='connecting';sanadCloudStatus();
+ try{
+  const remote=await sanadCloudRead();
+  if(!remote.data){
+   if(sanadCloudStateIsMeaningful(s)){
+    // First migration: back up the existing device before any cloud write.
+    await sanadCloudUploadLocal();
+   }else{
+    sanadCloudRevision=0;sanadCloudMode='connected';sanadCloudStatus();
+   }
+   return;
+  }
+  if(JSON.stringify(remote.data)===JSON.stringify(s)){
+   sanadCloudRevision=remote.revision;sanadCloudMode='connected';sanadCloudDirty=false;sanadCloudStatus();return;
+  }
+  if(!sanadCloudStateIsMeaningful(s)){
+   await sanadCloudUseRemote();
+   return;
+  }
+  sanadCloudRevision=remote.revision;sanadCloudMode='conflict';sanadCloudStatus();
+ }catch(e){
+  console.error('Sanad cloud startup failed',e);
+  sanadCloudLastError=e.message||String(e);sanadCloudMode='error';sanadCloudStatus();
+ }
+}
+function sanadCloudAction(name){
+ const done=()=>{render();sanadCloudStatus()};
+ const fail=e=>{sanadCloudLastError=e.message||String(e);console.error(e);sanadCloudMode='error';sanadCloudStatus();alert('تعذر إكمال العملية السحابية: '+sanadCloudLastError)};
+ if(name==='retry')return sanadCloudConnect().then(done).catch(fail);
+ if(name==='download'){
+  if(!confirm('تحميل النسخة السحابية إلى هذا الجهاز؟ سيتم حفظ نسخة احتياطية محلية قبل الاستبدال.'))return;
+  return sanadCloudUseRemote().then(done).catch(fail);
+ }
+ if(name==='upload'){
+  if(!confirm('رفع بيانات هذا الجهاز إلى السحابة؟ ستُراجع أي نسخة سحابية موجودة قبل الاستبدال.'))return;
+  return sanadCloudUploadLocal().then(done).catch(fail);
+ }
+}
+function sanadCloudSettings(){
+ const label=sanadCloudMode==='connected'?'☁️ الحفظ السحابي متصل':sanadCloudMode==='conflict'?'⚠️ بيانات هذا الجهاز تختلف عن السحابة':'⚠️ الحفظ السحابي يحتاج مراجعة';
+ return box('☁️ حماية بيانات بديل والحفظ السحابي',
+  '<p><b>'+label+'</b></p>'+
+  '<p class="muted">تُحفظ نسخة محلية فورًا، ويُرسل التعديل إلى Firebase في راصد. إذا انقطع الاتصال أو اختلفت النسخ، لا تُحذف بيانات الجهاز ولا تُستبدل النسخة السحابية تلقائيًا.</p>'+
+  (sanadCloudLastError?'<p class="notice">'+esc(sanadCloudLastError)+'</p>':'')+
+  '<div class="actions"><button class="alt" onclick="sanadCloudAction(\'retry\')">↻ فحص الاتصال</button>'+
+  '<button class="alt" onclick="sanadCloudAction(\'download\')">↓ استعادة من السحابة</button>'+
+  '<button onclick="sanadCloudAction(\'upload\')">↑ رفع بيانات هذا الجهاز</button>'+
+  '<button class="alt" onclick="backup()">⬇ تنزيل نسخة JSON احتياطية</button></div>');
+}
+window.addEventListener('load',()=>sanadCloudConnect());
+
 function dutyName(x){return x.kind==='bus'?'حافلة':x.kind==='assignment'?'تكليف إضافي':'مراقبة'}
 function hasExtraAssignment(teacherId){return (s.duties||[]).some(d=>d.teacher===teacherId&&d.kind==='assignment')}
 function availabilityReason(i,d,p){
@@ -982,7 +1183,7 @@ function printing(){
  else if(printTarget)pagesHtml=printMode==='teacher'?teacherPrint(s.teachers.find(t=>t.id===printTarget)):classPrint(classOptions().find(y=>y.id===printTarget));
  return box('مركز طباعة الجداول',controls)+pagesHtml;
 }
-function settings(){return '<div class="two">'+box('إعدادات حصص الانتظار',field('التنبيه عند عدد تكليفات','<input id="cap" type="number" min="1" value="'+s.cap+'">')+'<div class="actions"><button onclick="s.cap=+document.getElementById(\'cap\').value||4;save();toast(\'تم الحفظ\')">حفظ</button></div>')+box('نسخ احتياطي واسترجاع','<p class="muted">البيانات على هذا الجهاز وفي هذا المتصفح فقط. لا تدخل بيانات حساسة في النسخة التجريبية.</p><div class="actions"><button onclick="backup()">تنزيل JSON</button><label class="tag" style="cursor:pointer">استرجاع JSON<input type="file" accept=".json" style="display:none" onchange="restore(this.files[0])"></label></div>')+'</div>'}
+function settings(){return sanadCloudSettings()+'<div class="two">'+box('إعدادات حصص الانتظار',field('التنبيه عند عدد تكليفات','<input id="cap" type="number" min="1" value="'+s.cap+'">')+'<div class="actions"><button onclick="s.cap=+document.getElementById(\'cap\').value||4;save();toast(\'تم الحفظ\')">حفظ</button></div>')+box('نسخ احتياطي واسترجاع','<p class="muted">البيانات محفوظة محليًا، ومع تفعيل اتصال Firebase تُزامن مع راصد. احتفظ بنسخة JSON احتياطية عند الحاجة.</p><div class="actions"><button onclick="backup()">تنزيل JSON</button><label class="tag" style="cursor:pointer">استرجاع JSON<input type="file" accept=".json" style="display:none" onchange="restore(this.files[0])"></label></div>')+'</div>'}
 function csv(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}function dl(name,txt,type='text/csv'){let a=document.createElement('a'),u=URL.createObjectURL(new Blob(['\ufeff',txt],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}function downloadTemplate(){dl('sanad-template.csv','المعلم,القسم,اليوم,الحصة,الصف,المادة\nمحمد أحمد,الرياضيات,الأحد,1,ثالث أ,رياضيات')}function exportSchedule(){dl('sanad-schedule.csv','المعلم,القسم,اليوم,الحصة,الصف,المادة\n'+s.lessons.map(l=>[nm(l.teacher),s.teachers.find(t=>t.id===l.teacher)?.dept,l.day,l.period,l.className,l.subject].map(csv).join(',')).join('\n'))}async function importCSV(file){if(!file)return;let lines=(await file.text()).replace(/^\ufeff/,'').trim().split(/\r?\n/),head=lines.shift().split(',').map(x=>x.trim());if(!['المعلم','القسم','اليوم','الحصة','الصف','المادة'].every(x=>head.includes(x)))return toast('استخدم نموذج CSV المرفق');let n=0;for(let line of lines){let cells=line.split(',').map(x=>x.trim().replace(/^"|"$/g,'')),o=Object.fromEntries(head.map((h,i)=>[h,cells[i]])),p=+o['الحصة'];if(!o['المعلم']||!days.includes(o['اليوم'])||!p)continue;let t=s.teachers.find(x=>x.name===o['المعلم']);if(!t){t={id:id(),name:o['المعلم'],dept:o['القسم']};s.teachers.push(t)}if(isBusClass(o['الصف'])){
  if(s.lessons.some(l=>l.teacher===t.id&&l.day===o['اليوم']&&l.period===p&&isBusClass(l.className)))continue;
  if(!(s.duties||[]).some(x=>x.teacher===t.id&&x.kind==='bus'&&x.mode==='weekly'&&x.day===o['اليوم']&&x.period===p)){
