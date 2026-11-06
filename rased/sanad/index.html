@@ -509,6 +509,27 @@ async function sanadCloudFlush(){
   }
  }
 }
+async function sanadCloudRestoreToFirebase(candidate,label){
+ if(sanadCloudSaving||sanadCloudMode!=='connected')return alert('يلزم اتصال Firebase سليم قبل استعادة نسخة قديمة.');
+ if(!candidate||!['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds']
+    .every(key=>Array.isArray(candidate[key])))return toast('ملف النسخة لا يحتوي جميع أقسام بيانات بديل');
+ const remote=await sanadCloudRead();
+ if(!remote.data)throw Error('لا توجد نسخة سحابية معتمدة، لا يمكن الاستبدال تلقائيًا');
+ const counts=sanadCloudCounts(candidate);
+ const summary='المعلمون: '+counts.teachers+'، الحصص: '+counts.lessons+
+   '، المراقبات: '+counts.monitoringNeeds+'، التكليفات: '+counts.duties;
+ if(!confirm('استيراد '+label+' إلى Firebase الرئيسي سيستبدل بيانات المدرسة الحالية بالكامل.\n'+summary+
+ '\nسيتم تأمين نسخة من البيانات الحالية قبل الكتابة. هل تريد المتابعة؟'))return;
+ if(prompt('للتأكيد اكتب: اعتماد نسخة قديمة')!=='اعتماد نسخة قديمة')return toast('أُلغيت الاستعادة السحابية');
+ if(!sanadCloudBackup('قبل استبدال Firebase بنسخة قديمة'))return;
+ // Export the authoritative remote snapshot for independent recovery.
+ dl('badeel-cloud-before-import-revision-'+remote.revision+'.json',JSON.stringify(remote.data,null,2),'application/json');
+ const seq=sanadCloudChangeSeq;
+ const newRevision=await sanadCloudCommit(candidate,remote.revision);
+ if(seq!==sanadCloudChangeSeq)throw Error('تغيرت البيانات محليًا أثناء الاستعادة. راجع نسخ البيانات.');
+ sanadCloudAdoptRemote({data:candidate,revision:newRevision});
+ toast('تم اعتماد النسخة المستوردة في Firebase');
+}
 async function sanadCloudUseRemote(){
  const seq=sanadCloudChangeSeq;
  const remote=await sanadCloudRead();
@@ -516,11 +537,8 @@ async function sanadCloudUseRemote(){
  if(sanadCloudChangeSeq!==seq)throw Error('حدث تعديل جديد على هذا الجهاز أثناء تحميل السحابة؛ لم يتم استبدال البيانات المحلية');
  if(!sanadCloudBackup('قبل استعادة النسخة السحابية'))return;
  if(sanadCloudChangeSeq!==seq)throw Error('حدث تعديل جديد أثناء إنشاء النسخة الاحتياطية؛ احتفظنا ببيانات هذا الجهاز');
- s=remote.data;
- localStorage.setItem(KEY,JSON.stringify(s));
- sanadCloudRevision=remote.revision;
- sanadCloudDirty=false;sanadCloudMode='connected';sanadCloudLastError='';
- render();sanadCloudStatus();toast('تم تحميل النسخة السحابية وحفظ نسخة من بيانات الجهاز');
+ sanadCloudAdoptRemote(remote);
+ toast('تم تحميل بيانات Firebase بعد حفظ نسخة من الجهاز');
 }
 async function sanadCloudUploadLocal(){
  if(!sanadCloudBackup('قبل رفع البيانات المحلية إلى السحابة'))return;
@@ -1804,7 +1822,7 @@ function csv(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}function dl(name
  continue;
 }
 if(s.lessons.some(l=>l.teacher===t.id&&l.day===o['اليوم']&&l.period===p))continue;
-s.lessons.push({id:id(),teacher:t.id,day:o['اليوم'],period:p,className:normalizeImportedRoom(o['الصف']),subject:o['المادة'],stage:inferImportedStage(o['القسم'],o['الصف'])});n++}save();toast('استيراد '+n+' حصة')}function exportReport(){let m=document.getElementById('month').value;dl('sanad-report-'+m+'.csv','التاريخ,الحصة,الصف,المعلم المكلف\n'+s.covers.filter(c=>c.date.startsWith(m)).map(c=>[c.date,c.period,c.className,nm(c.to)].map(csv).join(',')).join('\n'))}function backup(){dl('sanad-backup.json',JSON.stringify(s,null,2),'application/json')}async function restore(f){if(!f)return;try{let x=JSON.parse(await f.text());if(!Array.isArray(x.teachers)||!Array.isArray(x.lessons)||!Array.isArray(x.covers))throw Error();if(confirm('استبدال كل البيانات الحالية؟')){s=x;save()}}catch{toast('ملف غير صالح')}}render();
+s.lessons.push({id:id(),teacher:t.id,day:o['اليوم'],period:p,className:normalizeImportedRoom(o['الصف']),subject:o['المادة'],stage:inferImportedStage(o['القسم'],o['الصف'])});n++}save();toast('استيراد '+n+' حصة')}function exportReport(){let m=document.getElementById('month').value;dl('sanad-report-'+m+'.csv','التاريخ,الحصة,الصف,المعلم المكلف\n'+s.covers.filter(c=>c.date.startsWith(m)).map(c=>[c.date,c.period,c.className,nm(c.to)].map(csv).join(',')).join('\n'))}function backup(){dl('sanad-backup.json',JSON.stringify(s,null,2),'application/json')}async function restore(f){if(!f)return;try{const x=JSON.parse(await f.text());await sanadCloudRestoreToFirebase(x,'ملف JSON')}catch(e){alert('تعذر استيراد الملف: '+(e.message||e))}}
 </script><script>
 (function(){
   const oldRender=render, oldTeacherDelete=delTeacher, oldLessonDelete=delLesson, oldAbsDelete=delAbs, oldUndo=undoCover;
@@ -1902,11 +1920,11 @@ s.lessons.push({id:id(),teacher:t.id,day:o['اليوم'],period:p,className:norm
    s=blank();save();toast('تم المسح وحُفظت نسخة احتياطية في الإعدادات');
   }catch(e){toast('فشل حفظ النسخة؛ لم يتم مسح البيانات')}
  }
- function restoreSavedBackup(id){
-  let b=list().find(x=>x.id===id);
+ async function restoreSavedBackup(id){
+  const b=list().find(x=>x.id===id);
   if(!b||!valid(b.data))return toast('النسخة غير صالحة');
-  if(!confirm('هل تريد استبدال جميع البيانات الحالية بمحتوى هذه النسخة؟'))return;
-  s=JSON.parse(JSON.stringify(b.data));save();toast('تمت الاستعادة');
+  try{await sanadCloudRestoreToFirebase(b.data,'نسخة '+new Date(b.at).toLocaleString('ar-SA'))}
+  catch(e){alert('تعذر الاستعادة: '+(e.message||e))}
  }
  function deleteSavedBackup(id){
   let a=list();if(!a.some(b=>b.id===id))return;
