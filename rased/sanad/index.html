@@ -1122,36 +1122,30 @@ function quickCurrentNeeds(){
  return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.has(n.notes)&&days.includes(n.day)&&Number(n.period)>=1&&Number(n.period)<=monitoringDayPeriodLimit(n.day,limit));
 }
 function quickBackupBeforeChange(){
- // One reusable backup instead of creating a full copy for every action.
- // Never delete old backups or the pre-Firebase archive automatically.
- let snapshot;
- try{snapshot=JSON.stringify(s)}
- catch(e){alert('تعذر تجهيز نسخة المراقبات، لم يتم تغيير البيانات.');return false}
+ // A monitoring operation must not duplicate the entire teacher timetable in storage.
+ // Store the records needed to restore monitoring decisions without touching older backups.
+ const snapshot={version:2,createdAt:new Date().toISOString(),track:monitoringTrack,
+  monitoringNeeds:s.monitoringNeeds||[],duties:s.duties||[],
+  fixedMonitors:s.fixedMonitors||[],monitoringTarget:s.monitoringTarget,
+  quickMonitoringSites:s.quickMonitoringSites,quickMonitoringPeriods:s.quickMonitoringPeriods};
+ let payload;
+ try{payload=JSON.stringify(snapshot)}
+ catch(e){console.error('Monitoring snapshot serialization failed',e);alert('تعذر تجهيز نسخة المراقبات. لم يتم إجراء تغيير.');return false}
  const key='sanad-monitoring-backup-latest';
- try{
-  localStorage.setItem(key,snapshot);
-  return true;
- }catch(localError){
-  console.warn('Monitoring local backup unavailable; trying session backup',localError);
+ for(const [label,store] of [['متصفح',()=>localStorage],['جلسة',()=>sessionStorage]]){
+  try{
+   const area=store();
+   area.setItem(key,payload);
+   if(area.getItem(key)!==payload)throw Error('Backup verification failed');
+   return true;
+  }catch(e){console.warn('Monitoring backup failed in '+label,e)}
  }
+ if(!confirm('مساحة حفظ النسخ الاحتياطية ممتلئة. هل تريد تنزيل نسخة احتياطية للمراقبات قبل تنفيذ الإجراء؟'))return false;
  try{
-  sessionStorage.setItem(key,snapshot);
+  dl('badeel-monitoring-backup-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json',payload,'application/json');
+  alert('تم طلب تنزيل نسخة المراقبات. تأكد من ظهور الملف ضمن التنزيلات.');
   return true;
- }catch(sessionError){
-  console.warn('Monitoring session backup unavailable',sessionError);
- }
- // Only proceed with a deliberately requested export when both stores are full.
- if(!confirm('مساحة المتصفح ممتلئة. يمكن تنزيل نسخة JSON احتياطية قبل تنفيذ الإجراء. هل تريد تنزيل النسخة والمتابعة؟'))return false;
- try{
-  const filename='badeel-monitoring-before-change-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
-  dl(filename,snapshot,'application/json');
-  alert('تم طلب تنزيل النسخة الاحتياطية. تأكد من ظهور الملف في التنزيلات قبل إجراء تغييرات كبيرة أخرى.');
-  return true;
- }catch(e){
-  console.error('Monitoring backup download failed',e);
-  alert('تعذر تجهيز النسخة الاحتياطية. لم يتم تغيير المراقبات.');
-  return false;
- }
+ }catch(e){console.error('Monitoring backup download failed',e);alert('فشل تنزيل النسخة الاحتياطية. لم يتم تغيير المراقبات.');return false}
 }
 function quickClearAssignments(){
  const needs=quickCurrentNeeds().filter(n=>!fixedNeedRecord(n)),allocated=needs.filter(n=>n.assignedTeacher);
@@ -1235,7 +1229,7 @@ function quickPrint(){
 function quickMonitoringPanel(){
  const sites=quickSites(),periods=monitoringBasePeriods();
  const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes)&&Number(n.period)<=monitoringDayPeriodLimit(n.day));
- const form='<div class="notice"><b>التوزيع السريع:</b> أدخل المواقع مرة واحدة ثم اضغط «إنشاء وتوزيع». ستظهر أمامك الأيام والحصص في جدول واحد مثل الصورة، ويمكن تغيير اسم أي مراقب من نفس الخانة، أو اختيار «🔒 إغلاق هذه الخانة» من قائمة غير موزعة لمنع التوزيع فيها دون حذفها. الحصص والتكليفات المتعارضة مستبعدة آليًا.</div>'+
+ const form='<div class="notice"><b>إصدار المراقبات: BKP-FIX-3</b> — نسخة المراقبات الاحتياطية صغيرة ولا تكرر جدول المدرسة بالكامل.</div><div class="notice"><b>التوزيع السريع:</b> أدخل المواقع مرة واحدة ثم اضغط «إنشاء وتوزيع». ستظهر أمامك الأيام والحصص في جدول واحد مثل الصورة، ويمكن تغيير اسم أي مراقب من نفس الخانة، أو اختيار «🔒 إغلاق هذه الخانة» من قائمة غير موزعة لمنع التوزيع فيها دون حذفها. الحصص والتكليفات المتعارضة مستبعدة آليًا.</div>'+
  '<p class="muted">'+(monitoringTrack==='primary'?'عليا ١ وعليا ٢: الأحد والاثنين والثلاثاء ٨ مراقبات، والأربعاء والخميس ٧ مراقبات لكل موقع.':'ثانوي شرقي وغربي: الأحد إلى الأربعاء ٧ مراقبات، والخميس ٦ لكل موقع.')+'</p>'+
  '<div class="fields">'+field('موقعا المراقبة الثابتان','<div class="notice"><b>'+esc(sites.join(' + '))+'</b></div>')+
  field('عدد المراقبات الأساسي يوميًا','<input type="number" value="'+periods+'" disabled><small>يتحدد حسب المرحلة واليوم تلقائيًا</small>')+
