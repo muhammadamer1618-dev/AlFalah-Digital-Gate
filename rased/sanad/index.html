@@ -666,7 +666,7 @@ function monitoringWorkloadData(){
   const entry=totals.get(String(t.id))||{weekly:0,dated:0};
   const teaching=teachingLoad(t.id),total=entry.weekly+entry.dated;
   return {name:t.name,teaching,weekly:entry.weekly,dated:entry.dated,total,overall:teaching+total,teacherId:t.id};
- }).sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name,'ar'));
+ }).sort((a,b)=>a.overall-b.overall||a.name.localeCompare(b.name,'ar'));
  const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack);
  const allocated=needs.filter(n=>n.assignedTeacher).length;
  const assigned=relevant.length;
@@ -677,10 +677,13 @@ function monitoringWorkloadTable(print=false){
  if(!s.teachers.length)return empty('أضف المعلمين أولًا لعرض إحصائية المراقبات.');
  const rows=data.rows.map((r,i)=>[
   String(i+1),esc(r.name),String(r.teaching),String(r.weekly),String(r.dated),
-  '<strong>'+r.total+'</strong>','<strong>'+r.overall+'</strong>'
+  '<strong>'+r.total+'</strong>','<strong>'+r.overall+'</strong>',
+  r.overall>Number(s.monitoringTarget||26)?'<strong style="color:#a43e26">فوق المستهدف بـ '+(r.overall-(s.monitoringTarget||26))+'</strong>':
+   r.overall===(s.monitoringTarget||26)?'<strong style="color:#16806a">مكتمل</strong>':
+   'متبقٍ '+((s.monitoringTarget||26)-r.overall)
  ]);
- const heading='<div class="notice">إجمالي المراقبات المسندة: <b>'+data.assigned+'</b> · المراقبات الأسبوعية: <b>'+data.weekly+'</b> · المراقبات المؤرخة: <b>'+data.dated+'</b> · خانات المراقبة غير الموزعة: <b>'+data.unassigned+'</b></div>';
- return (print?'':heading)+table(['م','اسم المعلم','النصاب','مراقبات أسبوعية','مراقبات مؤرخة','مجموع المراقبات','الإجمالي (النصاب + المراقبات)'],rows);
+ const heading='<div class="notice">المستهدف للمعلم: <b>'+(s.monitoringTarget||26)+'</b> حصة · إجمالي المراقبات المسندة: <b>'+data.assigned+'</b> · المراقبات الأسبوعية: <b>'+data.weekly+'</b> · المراقبات المؤرخة: <b>'+data.dated+'</b> · خانات المراقبة غير الموزعة: <b>'+data.unassigned+'</b></div>';
+ return (print?'':heading)+table(['م','اسم المعلم','النصاب','مراقبات أسبوعية','مراقبات مؤرخة','مجموع المراقبات','الإجمالي (النصاب + المراقبات)','المتبقي للمستهدف'],rows);
 }
 function monitoringWorkloadPanel(){
  return box('📊 عدد المراقبات لكل معلم — '+monitorTrackLabel(monitoringTrack),
@@ -732,6 +735,7 @@ function saveDuty(){
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
  if(!teacher||!['monitoring','bus'].includes(kind)||!['weekly','dated'].includes(mode)||!Number.isInteger(period)||period<1||period>12||mode==='dated'&&!date)return toast('أكمل بيانات التكليف');
  if(kind==='monitoring'&&hasExtraAssignment(teacher))return toast('المعلم لديه تكليف إضافي؛ لا يمكن إسناد مراقبة له');
+ if(kind==='monitoring'&&(!editingDutyId||s.duties.find(d=>d.id===editingDutyId)?.teacher!==teacher)&&monitoringTotalLoad(teacher)>=monitoringTarget())return toast('المعلم وصل إلى مستهدف '+monitoringTarget()+' حصة إجمالية؛ اختر معلمًا أقل نصابًا');
  const actualDay=mode==='weekly'?day:dt(date);
  if(s.lessons.some(l=>l.teacher===teacher&&l.day===actualDay&&l.period===period))return toast('المعلم لديه حصة تدريس في هذا الموعد');
  if((s.duties||[]).some(x=>x.id!==editingDutyId&&x.teacher===teacher&&x.period===period&&(x.mode==='weekly'?x.day===actualDay:mode==='weekly'?dt(x.date)===day:x.date===date)))return toast('المعلم عليه مراقبة أو حافلة في نفس الموعد');
