@@ -124,11 +124,11 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
   color:#142f29!important;font-family:Tahoma,Arial,sans-serif!important
  }
  body.printing-monitor-workload #monitoringWorkloadPrintSheet .monitor-workload-head{
-  display:grid!important;grid-template-columns:65px 1fr 80px;align-items:center;
+  display:grid!important;grid-template-columns:80px 1fr 80px;align-items:center;direction:rtl!important;
   text-align:center;border-bottom:2px solid #204a3e;padding-bottom:9px;margin-bottom:12px;gap:10px
  }
  body.printing-monitor-workload #monitoringWorkloadPrintSheet .monitor-workload-head img{
-  display:block!important;width:65px;height:65px;max-width:100%;object-fit:contain
+  display:block!important;width:76px;height:76px;max-width:100%;object-fit:contain
  }
  body.printing-monitor-workload #monitoringWorkloadPrintSheet h2{font-size:17px;margin:3px 0}
  body.printing-monitor-workload #monitoringWorkloadPrintSheet h3{font-size:14px;margin:3px 0}
@@ -756,8 +756,9 @@ function quickMonitoringPanel(){
 
 
 /* Monitoring workload summary counts only actual monitoring duties in the selected track. */
-function monitoringWorkloadData(){
- const relevant=(s.duties||[]).filter(d=>d.kind==='monitoring'&&d.track===monitoringTrack);
+function monitoringWorkloadData(track=monitoringTrack){
+ const relevant=(s.duties||[]).filter(d=>d.kind==='monitoring'&&d.track===track);
+ const listed=new Set([...(s.monitoringEligibleByTrack?.[track]||[]),...relevant.map(d=>d.teacher),...(s.fixedMonitors||[]).filter(x=>x.track===track).map(x=>x.teacher)]);
  const totals=new Map();
  for(const duty of relevant){
   const key=String(duty.teacher||'');
@@ -767,23 +768,23 @@ function monitoringWorkloadData(){
   else current.dated++;
   totals.set(key,current);
  }
- const rows=s.teachers.map(t=>{
+ const rows=s.teachers.filter(t=>listed.has(t.id)).map(t=>{
   const entry=totals.get(String(t.id))||{weekly:0,dated:0};
   const teaching=teachingLoad(t.id),total=entry.weekly+entry.dated;
   return {name:t.name,teaching,weekly:entry.weekly,dated:entry.dated,total,overall:teaching+total,teacherId:t.id};
  }).sort((a,b)=>a.overall-b.overall||a.name.localeCompare(b.name,'ar'));
- const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack);
+ const needs=s.monitoringNeeds.filter(n=>n.track===track);
  const allocated=needs.filter(n=>n.assignedTeacher).length;
  const assigned=relevant.length;
  return {rows,assigned,unassigned:needs.length-allocated,needed:needs.length,weekly:relevant.filter(d=>d.mode==='weekly').length,dated:relevant.filter(d=>d.mode!=='weekly').length};
 }
-function monitoringWorkloadTable(print=false){
- const data=monitoringWorkloadData();
- if(!s.teachers.length)return empty('أضف المعلمين أولًا لعرض إحصائية المراقبات.');
+function monitoringWorkloadTable(print=false,track=monitoringTrack){
+ const data=monitoringWorkloadData(track);
+ if(!data.rows.length)return empty('لا يوجد معلمون مشاركون أو مراقبات مسندة في هذه المرحلة.');
  const rows=data.rows.map((r,i)=>[
   String(i+1),esc(r.name),String(r.teaching),String(r.weekly),String(r.dated),
   '<strong>'+r.total+'</strong>','<strong>'+r.overall+'</strong>',
-  fixedSiteRules().some(x=>x.teacher===r.teacherId)?'<strong style="color:#11634c">📌 مراقب ثابت (مستثنى)</strong>':
+  fixedSiteRules(track).some(x=>x.teacher===r.teacherId)?'<strong style="color:#11634c">📌 مراقب ثابت (مستثنى)</strong>':
   r.overall>Number(s.monitoringTarget||26)?'<strong style="color:#a43e26">فوق المستهدف بـ '+(r.overall-(s.monitoringTarget||26))+'</strong>':
    r.overall===(s.monitoringTarget||26)?'<strong style="color:#16806a">مكتمل</strong>':
    'متبقٍ '+((s.monitoringTarget||26)-r.overall)
@@ -794,24 +795,25 @@ function monitoringWorkloadTable(print=false){
 function monitoringWorkloadPanel(){
  return box('📊 عدد المراقبات لكل معلم — '+monitorTrackLabel(monitoringTrack),
   '<p class="muted">الإحصائية تخص المرحلة المختارة، وتتحدث مباشرة بعد أي إسناد أو تغيير أو تفريغ. الإجمالي = النصاب التدريسي الأسبوعي + المراقبات الأسبوعية + المراقبات المؤرخة، ولا تُحتسب الحافلات أو حصص الانتظار. المراقبات المؤرخة تُحسب كتكليفات مسجلة وليست ضمن النصاب الأسبوعي المتكرر. المراقب الثابت يُحسب كاملًا في الجدول لكنه مستثنى من سقف التوزيع العادل.</p>'+
-  '<div class="actions"><button class="alt" onclick="printMonitoringWorkload()">🖨 طباعة كشف عدد المراقبات</button></div>'+
+  '<div class="actions"><button class="alt" onclick="printMonitoringWorkload(\'primary\')">🖨 طباعة كشف الابتدائي</button><button class="alt" onclick="printMonitoringWorkload(\'upper\')">🖨 طباعة كشف المتوسط والثانوي</button></div>'+
   monitoringWorkloadTable());
 }
-function printMonitoringWorkload(){
- const data=monitoringWorkloadData();
- if(!s.teachers.length)return toast('لا يوجد معلمون لإعداد الكشف');
+function printMonitoringWorkload(track=monitoringTrack){
+ if(!['primary','upper'].includes(track))return;
+ const data=monitoringWorkloadData(track);
+ if(!data.rows.length)return toast('لا يوجد معلمون أو مراقبات في '+monitorTrackLabel(track));
  let sheet=document.getElementById('monitoringWorkloadPrintSheet');
  if(!sheet){sheet=document.createElement('section');sheet.id='monitoringWorkloadPrintSheet';document.body.appendChild(sheet)}
  let pageStyle=document.getElementById('monitoringWorkloadPrintPageStyle');
  if(!pageStyle){pageStyle=document.createElement('style');pageStyle.id='monitoringWorkloadPrintPageStyle';document.head.appendChild(pageStyle)}
  pageStyle.textContent='@page{size:A4 portrait;margin:12mm}';
- sheet.innerHTML='<header class="monitor-workload-head"><img src="../alfalah-round-logo.png" alt="شعار المدرسة">'+
+ sheet.innerHTML='<header class="monitor-workload-head"><img src="/rased/moe-vision2030-logo.png" alt="شعار وزارة التعليم">'+
   '<div><small>المملكة العربية السعودية | وزارة التعليم</small><h2>مدارس الفلاح الأهلية</h2>'+
-  '<h3>كشف عدد المراقبات — '+esc(monitorTrackLabel(monitoringTrack))+'</h3></div>'+
-  '<img src="../moe-vision2030-logo.png" alt="شعار وزارة التعليم"></header>'+
+  '<h3>كشف عدد المراقبات — '+esc(monitorTrackLabel(track))+'</h3></div>'+
+  '<img src="/rased/alfalah-round-logo.png" alt="شعار المدرسة"></header>'+
   '<p class="monitor-workload-summary">إجمالي المراقبات: '+data.assigned+' | أسبوعية: '+data.weekly+
   ' | مؤرخة: '+data.dated+' | خانات غير موزعة: '+data.unassigned+'</p>'+
-  monitoringWorkloadTable(true)+
+  monitoringWorkloadTable(true,track)+
   '<div class="monitor-workload-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div>'+
   '<div class="monitor-workload-credit">تصميم محمد عامر أحمد</div>';
  const cleanup=()=>{
@@ -821,7 +823,11 @@ function printMonitoringWorkload(){
  };
  window.addEventListener('afterprint',cleanup);
  document.body.classList.add('printing-monitor-workload');
- window.print();
+ const images=[...sheet.querySelectorAll('img')];
+ Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{
+  img.addEventListener('load',resolve,{once:true});
+  img.addEventListener('error',resolve,{once:true});
+ }))).then(()=>window.print());
 }
 
 function monitoring(){
