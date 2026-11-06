@@ -226,6 +226,36 @@ let sanadCloudMode='connecting',sanadCloudRevision=0,sanadCloudDirty=false;
 let sanadCloudTimer=null,sanadCloudSaving=false,sanadCloudLastError='',sanadCloudChangeSeq=0;
 const SANAD_CLOUD_COLLECTION='sanad_cloud_v1',SANAD_CLOUD_ID='alfalah_main';
 const SANAD_CLOUD_PARTS=['teachers','lessons','operations','monitoring','settings'];
+
+/* Semantic comparison avoids false cloud conflicts from default fields and key order. */
+function sanadCloudNormalized(source){
+ const v=JSON.parse(JSON.stringify(source||{}));
+ v.duties ||= [];v.monitoringNeeds ||= [];
+ v.monitoringEligible ??=(v.teachers||[]).map(t=>t.id);
+ v.monitoringEligibleByTrack ??={primary:[],upper:[]};
+ v.quickMonitoringSites ??={primary:['عليا ١','عليا ٢'],upper:['ثانوي شرقي','ثانوي غربي']};
+ v.quickMonitoringPeriods ??={primary:8,upper:7};
+ v.fixedMonitors ??=[];
+ return v;
+}
+function sanadCloudCanonical(source){
+ const ordered=item=>Array.isArray(item)?item.map(ordered):
+  item&&typeof item==='object'?Object.fromEntries(Object.keys(item).sort().map(k=>[k,ordered(item[k])])):item;
+ return JSON.stringify(ordered(sanadCloudNormalized(source)));
+}
+function sanadCloudCounts(source){
+ const v=source||{};
+ return Object.fromEntries(['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds','fixedMonitors']
+  .map(key=>[key,Array.isArray(v[key])?v[key].length:0]));
+}
+let sanadCloudConflictDetails=null;
+async function sanadCloudReview(){
+ try{
+  const remote=await sanadCloudRead();
+  sanadCloudConflictDetails=remote.data?{remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data)}:{remote:false};
+  render();sanadCloudStatus();
+ }catch(e){sanadCloudLastError=e.message||String(e);sanadCloudStatus();alert('تعذر فحص النسختين: '+sanadCloudLastError)}
+}
 function sanadCloudStateIsMeaningful(value){
  return ['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds'].some(k=>Array.isArray(value?.[k])&&value[k].length);
 }
@@ -253,7 +283,7 @@ function sanadCloudStatus(textValue){
  const map={
   connecting:'⏳ جارٍ الاتصال براصد',connected:'☁️ محفوظ سحابيًا',
   saving:'☁️ جارٍ الحفظ السحابي',pending:'⚠️ محفوظ محليًا — بانتظار السحابة',
-  conflict:'⚠️ توجد نسختان مختلفتان — راجع الإعدادات',
+  conflict:'⚠️ اختلاف بيانات الجهاز والسحابة — لا يتم الاستبدال تلقائيًا',
   error:'⚠️ فشل الحفظ السحابي — النسخة المحلية محفوظة',
   local:'⚠️ حفظ محلي فقط — راجع الإعدادات'
  };
@@ -388,14 +418,14 @@ async function sanadCloudConnect(){
    }
    return;
   }
-  if(JSON.stringify(remote.data)===JSON.stringify(s)){
-   sanadCloudRevision=remote.revision;sanadCloudMode='connected';sanadCloudDirty=false;sanadCloudStatus();return;
+  if(sanadCloudCanonical(remote.data)===sanadCloudCanonical(s)){
+   sanadCloudRevision=remote.revision;sanadCloudMode='connected';sanadCloudDirty=false;sanadCloudConflictDetails=null;sanadCloudStatus();return;
   }
   if(!sanadCloudStateIsMeaningful(s)){
    await sanadCloudUseRemote();
    return;
   }
-  sanadCloudRevision=remote.revision;sanadCloudMode='conflict';sanadCloudStatus();
+  sanadCloudRevision=remote.revision;sanadCloudMode='conflict';sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data)};sanadCloudStatus();
  }catch(e){
   console.error('Sanad cloud startup failed',e);
   sanadCloudLastError=e.message||String(e);sanadCloudMode='error';sanadCloudStatus();
@@ -415,12 +445,19 @@ function sanadCloudAction(name){
  }
 }
 function sanadCloudSettings(){
+ const details=sanadCloudConflictDetails;
+ const names={teachers:'المعلمون',lessons:'الحصص الدراسية',absences:'الغياب',covers:'الانتظار',swaps:'التبديلات',duties:'التكليفات والمراقبات',monitoringNeeds:'خانات المراقبة',fixedMonitors:'المراقبون الثابتون'};
+ const comparison=(sanadCloudMode==='conflict'&&details?.remote)?
+  '<p><b>مقارنة عدد السجلات بين النسختين</b></p>'+
+  table(['البيانات','هذا الجهاز','السحابة'],Object.keys(names).map(k=>[
+    names[k],String(details.local?.[k]||0),String(details.cloud?.[k]||0)]))+
+  '<p class="muted">تساوي الأعداد لا يعني تطابق البيانات. لن نكتب فوق أي نسخة تلقائيًا. نزّل نسخة احتياطية JSON أولًا قبل اختيار الرفع أو الاستعادة.</p>':'';
  const label=sanadCloudMode==='connected'?'☁️ الحفظ السحابي متصل':sanadCloudMode==='conflict'?'⚠️ بيانات هذا الجهاز تختلف عن السحابة':'⚠️ الحفظ السحابي يحتاج مراجعة';
  return box('☁️ حماية بيانات بديل والحفظ السحابي',
   '<p><b>'+label+'</b></p>'+
   '<p class="muted">تُحفظ نسخة محلية فورًا، ويُرسل التعديل إلى Firebase في راصد. إذا انقطع الاتصال أو اختلفت النسخ، لا تُحذف بيانات الجهاز ولا تُستبدل النسخة السحابية تلقائيًا.</p>'+
-  (sanadCloudLastError?'<p class="notice">'+esc(sanadCloudLastError)+'</p>':'')+
-  '<div class="actions"><button class="alt" onclick="sanadCloudAction(\'retry\')">↻ فحص الاتصال</button>'+
+  (sanadCloudLastError?'<p class="notice">'+esc(sanadCloudLastError)+'</p>':'')+comparison+
+  '<div class="actions"><button class="alt" onclick="sanadCloudReview()">🔍 مقارنة النسختين</button><button class="alt" onclick="sanadCloudAction(\'retry\')">↻ فحص الاتصال</button>'+
   '<button class="alt" onclick="sanadCloudAction(\'download\')">↓ استعادة من السحابة</button>'+
   '<button onclick="sanadCloudAction(\'upload\')">↑ رفع بيانات هذا الجهاز</button>'+
   '<button class="alt" onclick="backup()">⬇ تنزيل نسخة JSON احتياطية</button></div>');
