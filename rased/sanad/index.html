@@ -1166,19 +1166,20 @@ function assignments(){
  field('اليوم','<select id="extraDay">'+days.map(day=>'<option>'+day+'</option>').join('')+'</select>')+
  field('التاريخ','<input type="date" id="extraDate" value="'+selectedDate+'">')+
  field('الحصة','<input id="extraPeriod" type="number" min="1" max="12" value="1">')+
- field('الفصل أو الموقع (اختياري)','<input id="extraClass" placeholder="سادس أ أو معمل">')+'</div><button onclick="addExtraAssignment()">إضافة التكليف</button>';
- const rows=(s.duties||[]).filter(x=>x.kind==='assignment').map(x=>[esc(nm(x.teacher)),esc(x.notes),x.mode==='weekly'?esc(x.day)+' أسبوعيًا':esc(x.date),x.period,esc(x.className||'—'),'<button class="danger" onclick="deleteDuty(\''+x.id+'\')">حذف</button>']);
- return box('إضافة حصص التقوية والتكليفات الإضافية',form)+box('سجل التكليفات',rows.length?table(['المعلم','التكليف','اليوم/التاريخ','الحصة','الفصل','الإجراء'],rows):empty('لا توجد تكليفات إضافية'));
+ field('الفصل أو الموقع (اختياري)','<input id="extraClass" placeholder="سادس أ أو معمل">')+'</div><div class="actions"><button onclick="addExtraAssignment()">'+(editingAssignmentId?'💾 حفظ تعديل التكليف':'إضافة التكليف')+'</button>'+(editingAssignmentId?'<button class="alt" onclick="editingAssignmentId=\'\';render()">إلغاء</button>':'')+'</div>';
+ const rows=(s.duties||[]).filter(x=>x.kind==='assignment').map(x=>[esc(nm(x.teacher)),esc(x.notes),x.mode==='weekly'?esc(x.day)+' أسبوعيًا':esc(x.date),x.period,esc(x.className||'—'),'<button class="alt" onclick="editAssignment(\''+x.id+'\')">تعديل</button> <button class="danger" onclick="deleteDuty(\''+x.id+'\')">حذف</button>']);
+ return box('إضافة حصص التقوية والتكليفات الإضافية',form)+box('سجل التكليفات',cardPrintButton('سجل التكليفات')+(rows.length?table(['المعلم','التكليف','اليوم/التاريخ','الحصة','الفصل','الإجراء'],rows):empty('لا توجد تكليفات إضافية')));
 }
 function addExtraAssignment(){
  const teacher=document.getElementById('extraTeacher')?.value,notes=document.getElementById('extraTitle')?.value.trim(),mode=document.getElementById('extraMode')?.value,day=document.getElementById('extraDay')?.value,date=document.getElementById('extraDate')?.value,period=Number(document.getElementById('extraPeriod')?.value),className=document.getElementById('extraClass')?.value.trim()||'';
  if(!teacher||!notes||!Number.isInteger(period)||period<1||period>12||mode==='dated'&&!date)return toast('أكمل بيانات التكليف');
  const weekday=mode==='weekly'?day:dt(date);
  if(s.lessons.some(l=>l.teacher===teacher&&l.day===weekday&&l.period===period))return toast('المعلم عنده حصة تدريس في نفس الموعد');
- if((s.duties||[]).some(x=>x.teacher===teacher&&x.period===period&&(x.mode==='weekly'?x.day===weekday:mode==='weekly'?dt(x.date)===day:x.date===date)))return toast('المعلم لديه مراقبة أو حافلة أو تكليف آخر');
+ if((s.duties||[]).some(x=>x.id!==editingAssignmentId&&x.teacher===teacher&&x.period===period&&(x.mode==='weekly'?x.day===weekday:mode==='weekly'?dt(x.date)===day:x.date===date)))return toast('المعلم لديه مراقبة أو حافلة أو تكليف آخر');
  if(s.covers.some(x=>x.to===teacher&&x.period===period&&(mode==='weekly'?dt(x.date)===day:x.date===date)))return toast('المعلم عنده تغطية في نفس الموعد');
- s.duties.push({id:id(),teacher,kind:'assignment',mode,day:mode==='weekly'?day:'',date:mode==='dated'?date:'',period,notes,className});
- save();toast('تمت إضافة التكليف');
+ const fields={teacher,kind:'assignment',mode,day:mode==='weekly'?day:'',date:mode==='dated'?date:'',period,notes,className};
+ if(editingAssignmentId){const a=s.duties.find(x=>x.id===editingAssignmentId&&x.kind==='assignment');if(!a)return toast('التكليف غير موجود');Object.assign(a,fields);editingAssignmentId=''}else s.duties.push({id:id(),...fields});
+ save();toast('تم حفظ التكليف');
 }
 function addMonitoringNeed(){
  const mode=document.getElementById('needMode')?.value,day=document.getElementById('needDay')?.value,date=document.getElementById('needDate')?.value,period=Number(document.getElementById('needPeriod')?.value),notes=document.getElementById('needTitle')?.value.trim()||'مراقبة',quantity=Number(document.getElementById('needCount')?.value);
