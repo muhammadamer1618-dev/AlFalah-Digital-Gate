@@ -505,6 +505,13 @@ async function sanadCloudFlush(){
   sanadCloudDirty=true;
   sanadCloudLastError=e.message||String(e);
   sanadCloudMode=e.code==='SANAD_REVISION_CONFLICT'?'conflict':'error';
+  if(e.code==='SANAD_REVISION_CONFLICT'){
+   try{
+    const remote=await sanadCloudRead();
+    if(remote.data)sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),
+     cloud:sanadCloudCounts(remote.data),differences:sanadCloudDifferenceReport(s,remote.data)};
+   }catch(readError){console.warn('Cloud conflict details are unavailable',readError)}
+  }
   sanadCloudStatus();
  }finally{
   sanadCloudSaving=false;
@@ -633,7 +640,23 @@ function sanadCloudStartRealtime(){
    sanadCloudAdoptRemote(remote);
   }catch(e){
    sanadCloudLastError=e.message||String(e);sanadCloudMode='error';sanadCloudStatus();
-  }finally{sanadCloudLiveRead=false}
+  }finally{
+   sanadCloudLiveRead=false;
+   if(sanadCloudPendingRemoteRevision>sanadCloudRevision&&!sanadCloudSaving){
+    const pending=sanadCloudPendingRemoteRevision;
+    sanadCloudPendingRemoteRevision=0;
+    try{
+     const latest=await sanadCloudRead();
+     if(latest.revision>=pending&&latest.revision>sanadCloudRevision){
+      if(sanadCloudDirty){
+       sanadCloudMode='conflict';sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),
+        cloud:sanadCloudCounts(latest.data),differences:sanadCloudDifferenceReport(s,latest.data)};
+       sanadCloudStatus();
+      }else sanadCloudAdoptRemote(latest);
+     }
+    }catch(e){sanadCloudLastError=e.message||String(e);sanadCloudMode='error';sanadCloudStatus()}
+   }
+  }
  },e=>{
   sanadCloudLastError=e.message||String(e);sanadCloudMode='error';sanadCloudStatus();
  });
