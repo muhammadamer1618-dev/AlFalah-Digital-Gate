@@ -108,14 +108,15 @@ function opts(list){return list.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.na
 function render(){document.getElementById('nav').innerHTML=pages.map(x=>'<button class="'+(x[0]===page?'active':'')+'" onclick="go(\''+x[0]+'\')"><span>'+x[1]+'</span> '+x[2]+'</button>').join('');document.getElementById('title').textContent=pages.find(x=>x[0]===page)[2];document.getElementById('stats').innerHTML=[['إجمالي المعلمين',s.teachers.length],['الغائبون اليوم',s.absences.filter(a=>a.date===new Date().toISOString().slice(0,10)).length],['حصص الانتظار',s.covers.length],['حصص الجدول الأسبوعي',s.lessons.length]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('');document.getElementById('view').innerHTML=({home,absence,swap,teachers,schedule,monitoring,assignments,printing,loads,charts,report,settings})[page]();if(page==='report')showReport()}
 function home(){return '<div class="two">'+box('البدء السريع','<p class="muted">جهّز دليل المعلمين ثم أدخل حصص الجدول، وبعدها سجل الغياب لتظهر اقتراحات الانتظار.</p><div class="actions"><button onclick="go(\'teachers\')">إدارة المعلمين</button><button class="alt" onclick="go(\'schedule\')">الجدول الدراسي</button><button class="alt" onclick="go(\'absence\')">حصص الانتظار</button></div>')+box('ملخص العمليات','<p>الغيابات المسجلة: <b>'+s.absences.length+'</b></p><p>الحصص التم إسنادها: <b>'+s.covers.length+'</b></p><p>تبديلات الحصص: <b>'+s.swaps.length+'</b></p><div class="notice">البيانات محفوظة على هذا المتصفح فقط. استخدم النسخ الاحتياطي من الإعدادات.</div>')+'</div>'+box('أحدث حصص الانتظار',s.covers.length?table(['التاريخ','الصف','الحصة','المعلم البديل'],s.covers.slice(-8).reverse().map(c=>[c.date,esc(c.className),c.period,esc(nm(c.to))])):empty('لم تسجل أي تغطيات بعد'))}
 function teachers(){
- const actions='<div class="actions"><button class="alt" type="button" onclick="syncRasedTeacherPhonesClick()">🔄 جلب أرقام الجوال من راصد</button></div>'+
- '<p class="muted">تُطابق الأسماء تلقائيًا مع إدارة المعلمين في راصد، ويُستخدم رقم الجوال الموجود هناك لإرسال حصص الانتظار. إدخال رقم يدوي اختياري عند عدم التطابق فقط.</p>';
+ const actions='<div class="actions"><button class="alt" type="button" onclick="syncRasedTeacherPhonesClick()">🔄 تحديث أرقام راصد</button></div>'+
+ '<p class="muted">الأسماء المستوردة من الجدول قد تختلف عن أسماء الحسابات في راصد. للمعلم الذي لا يظهر رقمه، اضغط «ربط بحساب راصد»، واختر حسابه مرة واحدة؛ بعدها يستخدم واتساب رقم الحساب تلقائيًا.</p>'+
+ '<div id="rasedTeacherLinkBox" class="notice" style="display:none"></div>';
  const rows=s.teachers.map(t=>{
   const manual=normalizeSaudiMobile(t.whatsappPhone||''),rased=normalizeSaudiMobile(t.rasedPhone||'');
-  const phone=manual||rased,source=manual?'رقم يدوي':rased?'راصد':t.rasedPhoneStatus==='ambiguous'?'أسماء متشابهة':'غير مربوط';
+  const phone=manual||rased,source=manual?'رقم احتياطي':rased?'راصد':t.rasedPhoneStatus==='ambiguous'?'أسماء متشابهة':t.rasedPhoneStatus==='no-phone'?'لا يوجد رقم في راصد':'غير مربوط';
   return [esc(t.name),esc(t.dept||''),teachingLoad(t.id),count(t.id),
    phone?esc('0'+phone.slice(3))+' <small>('+source+')</small>':'<span class="muted">'+source+'</span>',
-   '<button class="alt small" onclick="editTeacherWhatsAppPhone(\''+esc(t.id)+'\')">📱 تعديل الرقم يدويًا</button> <button class="danger small" onclick="delTeacher(\''+esc(t.id)+'\')">حذف</button>'];
+   '<button class="alt small" onclick="rasedTeacherPicker(\''+esc(t.id)+'\')">🔗 ربط بحساب راصد</button> <button class="alt small" onclick="editTeacherWhatsAppPhone(\''+esc(t.id)+'\')">📱 رقم احتياطي</button> <button class="danger small" onclick="delTeacher(\''+esc(t.id)+'\')">حذف</button>'];
  });
  return box('إضافة معلم','<div class="fields">'+field('اسم المعلم','<input id="tname" placeholder="الاسم الكامل">')+field('القسم','<input id="dept" placeholder="مثل: اللغة العربية">')+'</div><div class="actions"><button onclick="addTeacher()">إضافة المعلم</button></div>')+
  box('دليل المعلمين وأرقام الجوال',actions+(rows.length?table(['المعلم','القسم','نصابه الأسبوعي','حصص الانتظار','رقم الجوال','الإجراءات'],rows):empty('أضف معلمي المدرسة للبدء')));
@@ -545,6 +546,7 @@ function normalizedTeacherName(value){
  return String(value||'').normalize('NFKC').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ـ/g,'').replace(/\s+/g,' ').trim().toLowerCase();
 }
 let sanadPhoneSyncPromise=null;
+let sanadRasedTeachers=[];
 function sanadTeacherDatabase(){
  if(typeof firebase==='undefined'||!firebase.firestore)throw Error('تعذر تحميل اتصال Firebase براصد');
  const role=String(sessionStorage.getItem('currentUserRole')||localStorage.getItem('currentUserRole')||'').trim().toLowerCase();
@@ -553,32 +555,80 @@ function sanadTeacherDatabase(){
  try{app=firebase.app(name)}catch(e){app=firebase.initializeApp(RADED_FIREBASE_CONFIG,name)}
  return app.firestore();
 }
+function rasedTeacherOptions(teacherId){
+ const t=s.teachers.find(x=>x.id===teacherId);
+ if(!t)return '<option value="">لا يوجد معلم</option>';
+ const current=String(t.rasedTeacherId||'');
+ const sorted=sanadRasedTeachers.slice().sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+ return '<option value="">اختر المعلم المطابق من راصد</option>'+
+ sorted.map(x=>'<option value="'+esc(x.id)+'" '+(current===x.id?'selected':'')+'>'+esc(x.name)+(x.phone?' — '+esc('0'+x.phone.slice(3)):' — بدون رقم')+'</option>').join('');
+}
+function rasedTeacherPicker(teacherId){
+ const t=s.teachers.find(x=>x.id===teacherId);
+ if(!t)return toast('لم يتم العثور على المعلم');
+ if(!sanadRasedTeachers.length){
+  syncRasedTeacherPhones(true).then(()=>rasedTeacherPicker(teacherId)).catch(e=>alert('تعذر قراءة دليل راصد: '+(e.message||e)));
+  return;
+ }
+ const target=document.getElementById('rasedTeacherLinkBox');
+ if(!target)return toast('افتح دليل المعلمين للربط');
+ const row=Array.from(document.querySelectorAll('[data-rased-teacher-link]')).find(x=>x.dataset.rasedTeacherLink===teacherId);
+ target.style.display='block';
+ target.innerHTML='<h3>ربط المعلم بحسابه في راصد</h3><p>معلم بديل: <b>'+esc(t.name)+'</b></p>'+
+ '<p class="muted">اختر الحساب الصحيح من قائمة إدارة المعلمين. لا يتم إرسال أي رسالة أثناء الربط.</p>'+
+ '<select id="rasedLinkedTeacher">'+rasedTeacherOptions(teacherId)+'</select>'+
+ '<div class="actions"><button onclick="saveRasedTeacherLink(\''+esc(teacherId)+'\')">حفظ الربط</button><button class="alt" onclick="document.getElementById(\'rasedTeacherLinkBox\').style.display=\'none\'">إلغاء</button></div>';
+ target.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function saveRasedTeacherLink(teacherId){
+ const t=s.teachers.find(x=>x.id===teacherId);
+ const chosen=document.getElementById('rasedLinkedTeacher')?.value||'';
+ if(!t)return toast('المعلم غير موجود');
+ const item=sanadRasedTeachers.find(x=>x.id===chosen);
+ if(!item)return toast('اختر المعلم الصحيح من راصد');
+ // One Rased account must not be linked to several distinct local teachers.
+ const conflict=s.teachers.find(x=>x.id!==teacherId&&x.rasedTeacherId===chosen);
+ if(conflict)return alert('حساب راصد هذا مرتبط بالفعل بالمعلم '+conflict.name+' في بديل.');
+ t.rasedTeacherId=chosen;t.rasedPhone=item.phone||'';
+ t.rasedPhoneStatus=item.phone?'linked':'no-phone';
+ save();toast(item.phone?'تم ربط رقم المعلم من راصد':'تم الربط لكن لا يوجد رقم جوال صحيح في راصد');
+}
 async function syncRasedTeacherPhones(silent=false){
  if(sanadPhoneSyncPromise)return sanadPhoneSyncPromise;
  sanadPhoneSyncPromise=(async()=>{
-  const snapshot=await sanadTeacherDatabase().collection('teachers').get(),groups=new Map();
+  const snapshot=await sanadTeacherDatabase().collection('teachers').get(),records=[],byId=new Map(),byName=new Map();
   snapshot.forEach(doc=>{
-   const d=doc.data()||{},name=normalizedTeacherName(d.name);
-   if(!name)return;
-   const records=groups.get(name)||[];
-   records.push({email:String(d.email||doc.id).trim().toLowerCase(),phone:normalizeSaudiMobile(d.phone||d.mobile||'')});
-   groups.set(name,records);
+   const d=doc.data()||{};
+   const item={id:doc.id,name:String(d.name||'').trim(),email:String(d.email||doc.id).trim().toLowerCase(),phone:normalizeSaudiMobile(d.phone||d.mobile||'')};
+   if(!item.name)return;
+   records.push(item);byId.set(item.id,item);
+   const name=normalizedTeacherName(item.name),list=byName.get(name)||[];
+   list.push(item);byName.set(name,list);
   });
+  sanadRasedTeachers=records;
   let found=0,missing=0,ambiguous=0;
   for(const t of s.teachers){
-   const matches=groups.get(normalizedTeacherName(t.name))||[];
-   const email=String(t.email||t.username||'').trim().toLowerCase();
-   let matched=email?matches.find(x=>x.email===email):null;
-   if(!matched&&matches.length===1)matched=matches[0];
-   const phones=[...new Set(matches.map(x=>x.phone).filter(Boolean))];
-   if(!matched&&phones.length===1)matched=matches.find(x=>x.phone===phones[0]);
-   t.rasedPhone=matched?.phone||'';
-   t.rasedPhoneStatus=t.rasedPhone?'linked':matches.length>1?'ambiguous':'missing';
-   if(t.rasedPhone)found++;else if(matches.length>1)ambiguous++;else missing++;
+   let match=null;
+   if(t.rasedTeacherId){
+    match=byId.get(t.rasedTeacherId)||null;
+    if(!match){t.rasedPhone='';t.rasedPhoneStatus='missing';}
+   }else{
+    const candidates=byName.get(normalizedTeacherName(t.name))||[];
+    const email=String(t.email||t.username||'').trim().toLowerCase();
+    if(email)match=candidates.find(x=>x.email===email)||null;
+    if(!match&&candidates.length===1)match=candidates[0];
+    if(match)t.rasedTeacherId=match.id;
+    else t.rasedPhoneStatus=candidates.length>1?'ambiguous':'missing';
+   }
+   if(match){
+    t.rasedPhone=match.phone||'';
+    t.rasedPhoneStatus=match.phone?'linked':'no-phone';
+   }else t.rasedPhone='';
+   if(t.rasedPhone)found++;else if(t.rasedPhoneStatus==='ambiguous')ambiguous++;else missing++;
   }
   localStorage.setItem(KEY,JSON.stringify(s));
   if(page==='teachers'||page==='absence')render();
-  if(!silent)toast('تم ربط '+found+' رقم من راصد · غير مطابق: '+missing+' · مكرر: '+ambiguous);
+  if(!silent)toast('أرقام مرتبطة: '+found+' · تحتاج ربطًا: '+missing+' · أسماء متشابهة: '+ambiguous);
   return {found,missing,ambiguous};
  })().finally(()=>{sanadPhoneSyncPromise=null});
  return sanadPhoneSyncPromise;
@@ -586,6 +636,7 @@ async function syncRasedTeacherPhones(silent=false){
 function syncRasedTeacherPhonesClick(){
  syncRasedTeacherPhones().catch(e=>{console.error(e);alert('تعذر سحب أرقام المعلمين من راصد: '+(e.message||e))});
 }
+
 async function rasedTeacherPhone(teacher){
  const manual=normalizeSaudiMobile(teacher.whatsappPhone||'');
  if(manual)return manual;
@@ -594,8 +645,8 @@ async function rasedTeacherPhone(teacher){
  await syncRasedTeacherPhones(true);
  const resolved=normalizeSaudiMobile(teacher.rasedPhone||'');
  if(resolved)return resolved;
- if(teacher.rasedPhoneStatus==='ambiguous')throw Error('يوجد أكثر من معلم مطابق للاسم؛ تحقق من المعلم المقصود');
- throw Error('لم يُعثر على رقم مطابق لهذا المعلم في إدارة المعلمين براصد');
+ if(teacher.rasedPhoneStatus==='no-phone')throw Error('حساب المعلم مرتبط براصد لكنه لا يحتوي رقم جوال صحيحًا');
+ throw Error('يلزم ربط هذا المعلم بحسابه في راصد من صفحة «المعلمون والأقسام» ثم إعادة الإرسال');
 }
 
 async function openCoverageWhatsApp(cid){
