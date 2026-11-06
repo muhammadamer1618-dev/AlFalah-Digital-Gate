@@ -1462,7 +1462,7 @@ async function importMonitoringCSV(file){
 function monitoringTeachersPanel(){
  const selected=(s.monitoringEligibleByTrack||{})[monitoringTrack]||[];
  return box('المعلمون المسموح لهم بالمراقبة',
- '<p class="muted">حدد المعلمين المشاركين في التوزيع. التكليف الإضافي يمنع المراقبة في نفس اليوم والحصة فقط، أما باقي الحصص فيظل المعلم متاحًا فيها وفق نصابه والتعارضات.</p>'+
+ '<p class="muted">✅ الإصدار MONITOR-FIX-2 — يمكن اختيار المعلم حتى لو لديه تكليف إضافي؛ يمنع إسناده فقط في يوم وحصة التكليف. إذا لم تظهر هذه العبارة فنسخة الصفحة قديمة ويجب تحديثها.</p>'+
  '<div class="actions"><button class="alt" onclick="setMonitoringCheckAll(true)">تحديد الكل</button><button class="alt" onclick="setMonitoringCheckAll(false)">إلغاء تحديد الكل</button><button onclick="saveMonitoringEligible()">حفظ المعلمين المختارين</button></div>'+
  '<div class="field"><label>بحث داخل المعلمين</label><input type="search" oninput="filterMonitoringTeacherCards(this)" placeholder="اسم المعلم أو المادة"></div>'+
  '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'+s.teachers.map(t=>'<label class="monitorTeacherItem" style="display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #dce7e3;border-radius:10px;cursor:pointer"><input class="monitorTeacherCheck" type="checkbox" value="'+esc(t.id)+'" '+(selected.includes(t.id)?'checked':'')+' ><span>'+esc(t.name)+' <small>('+teachingLoad(t.id)+' حصص)</small>'+'</span></label>').join('')+'</div>'+
