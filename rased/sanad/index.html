@@ -47,12 +47,12 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
   font-family:Tahoma,Arial,sans-serif!important
  }
  body.printing-quick-monitor .quick-print-head{
-  display:grid!important;grid-template-columns:50px 1fr 65px!important;
+  display:grid!important;grid-template-columns:76px 1fr 76px!important;
   gap:8px!important;align-items:center!important;text-align:center!important;
   border-bottom:2px solid #20453a!important;padding:0 0 6px!important;margin:0 0 7px!important
  }
  body.printing-quick-monitor .quick-print-head img{
-  display:block!important;width:100%!important;height:49px!important;object-fit:contain!important
+  display:block!important;width:100%!important;height:67px!important;object-fit:contain!important
  }
  body.printing-quick-monitor .quick-print-head h2{
   font-size:15px!important;font-weight:900!important;margin:2px 0!important;color:#163d33!important
@@ -395,7 +395,6 @@ function quickPrint(){
  let printPageStyle=document.getElementById('quickMonitoringPortraitPage');
  if(!printPageStyle){printPageStyle=document.createElement('style');printPageStyle.id='quickMonitoringPortraitPage';document.head.appendChild(printPageStyle)}
  printPageStyle.textContent='@page{size:A4 landscape;margin:8mm}';
- const assigned=occupied.filter(n=>n.assignedTeacher).length;
  const periods=Array.from({length:lastPeriod},(_,i)=>i+1);
  const head='<thead><tr><th scope="col" style="width:9%">اليوم</th><th scope="col" style="width:12%">موقع المراقبة</th>'+
   periods.map(p=>'<th scope="col">الحصة '+p+'</th>').join('')+'</tr></thead>';
@@ -408,10 +407,10 @@ function quickPrint(){
     '</tr>';
  }).join('')).join('');
  sheet.innerHTML='<header class="quick-print-head">'+
- '<img src="/rased/alfalah-round-logo.png" alt="شعار المدرسة">'+
+ '<img src="/rased/moe-vision2030-logo.png" alt="شعار وزارة التعليم">'+
  '<div><p>المملكة العربية السعودية | وزارة التعليم</p><h2>مدارس الفلاح الأهلية</h2><h2>'+esc(title)+'</h2>'+
- '<p>الحصص من 1 إلى '+lastPeriod+' | المراقبات الموزعة: '+assigned+' من '+occupied.length+'</p></div>'+
- '<img src="/rased/moe-vision2030-logo.png" alt="شعار وزارة التعليم"></header>'+
+ '</div>'+
+ '<img src="/rased/alfalah-round-logo.png" alt="شعار المدرسة"></header>'+
  '<table class="quick-weekly-table">'+head+'<tbody>'+rows+'</tbody></table>'+
  '<div class="quick-print-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div>'+
  '<div class="quick-print-credit">تصميم محمد عامر أحمد</div>';
