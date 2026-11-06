@@ -739,10 +739,15 @@ function sanadCloudSettings(){
        [esc(names[d.key]||d.key),String(d.localOnly),String(d.cloudOnly),String(d.modified)]))+
        '<p class="muted">هذه مقارنة للقراءة فقط. لم تُدمج أو تُحذف أي سجلات.</p>':'')+
    '</div>':'')+
-  '<div class="actions"><button class="alt" onclick="sanadCloudDownloadBoth().catch(e=>alert(e.message))">⬇ تنزيل النسختين منفصلتين</button><button class="alt" onclick="sanadCloudMergeSafe()">🔒 دمج آمن عند عدم وجود تعارضات</button><button class="alt" onclick="sanadCloudReview()">🔍 مقارنة النسختين</button><button class="alt" onclick="sanadCloudAction(\'retry\')">↻ فحص الاتصال</button>'+
-  '<button class="alt" onclick="sanadCloudAction(\'download\')">↓ استعادة من السحابة</button>'+
-  '<button onclick="sanadCloudAction(\'upload\')">↑ رفع بيانات هذا الجهاز</button>'+
-  '<button class="alt" onclick="backup()">⬇ تنزيل نسخة JSON احتياطية</button></div>');
+  '<div class="actions"><button class="alt" onclick="sanadCloudAction(\'retry\')">↻ تحديث الاتصال</button>'+
+  '<button class="alt" onclick="backup()">⬇ نسخة JSON من البيانات السحابية الحالية</button>'+
+  (sanadCloudMode==='conflict'?
+   '<button class="alt" onclick="sanadCloudDownloadBoth().catch(e=>alert(e.message))">⬇ تنزيل نسختَي التعارض</button>'+
+   '<button class="alt" onclick="sanadCloudReview()">🔍 تفاصيل التعارض</button>'+
+   '<button class="alt" onclick="sanadCloudMergeSafe()">🔒 محاولة تسوية آمنة</button>'+
+   '<button class="alt" onclick="sanadCloudAction(\'download\')">↓ اعتماد نسخة Firebase</button>'+
+   '<button class="alt" onclick="sanadCloudAction(\'upload\')">↑ اعتماد بيانات الجهاز</button>':'')+
+  '</div>');
 }
 window.addEventListener('load',()=>sanadCloudConnect());
 
