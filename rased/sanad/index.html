@@ -35,47 +35,78 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-daily-cover .daily-print-credit{text-align:center;margin-top:25px;font-size:10px;color:#427367}
 }
 
-/* Direct A4 portrait printing for weekly monitoring only */
+/* Official multi-page A4 monitoring report: one table per day, full-width names */
 #quickMonitoringPrintSheet{display:none}
 @media print{
- body.printing-quick-monitor{background:#fff!important;color:#111!important;margin:0!important}
+ body.printing-quick-monitor{margin:0!important;background:white!important;color:#172c2b!important}
  body.printing-quick-monitor > :not(#quickMonitoringPrintSheet){display:none!important}
  body.printing-quick-monitor #quickMonitoringPrintSheet{
   display:block!important;position:static!important;width:100%!important;
-  margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;
-  direction:rtl!important;font-family:Tahoma,Arial,sans-serif!important;color:#111!important
+  padding:0!important;margin:0!important;border:0!important;
+  direction:rtl!important;color:#172c2b!important;font-family:Tahoma,Arial,sans-serif!important
  }
  body.printing-quick-monitor .quick-print-head{
-  display:grid!important;grid-template-columns:55px 1fr 65px;align-items:center;
-  gap:8px;border-bottom:1.5px solid #333;padding-bottom:6px;margin-bottom:8px;text-align:center
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:10px!important;padding:0 0 9px!important;margin-bottom:9px!important;
+  border-bottom:2px solid #193c38!important;text-align:center!important
  }
- body.printing-quick-monitor .quick-print-head img{display:block!important;max-width:100%;max-height:55px;object-fit:contain}
- body.printing-quick-monitor .quick-print-head h2{font-size:16px;margin:3px 0;color:#111!important}
- body.printing-quick-monitor .quick-print-head p{font-size:9px;margin:2px 0}
- body.printing-quick-monitor .quick-monitor-grid{overflow:visible!important;width:100%!important}
- body.printing-quick-monitor .quick-monitor-grid table{
-  direction:rtl!important;width:100%!important;min-width:0!important;max-width:100%!important;
-  table-layout:fixed!important;border-collapse:collapse!important;white-space:normal!important
+ body.printing-quick-monitor .quick-print-head img{display:block!important;width:62px!important;height:62px!important;object-fit:contain!important}
+ body.printing-quick-monitor .quick-print-head h2{font-size:17px!important;margin:3px 0!important;color:#163e38!important}
+ body.printing-quick-monitor .quick-print-head p{font-size:10px!important;margin:3px!important}
+ body.printing-quick-monitor .quick-day-report{
+  display:block!important;width:100%!important;margin:0 0 13px!important;
+  break-inside:avoid!important;page-break-inside:avoid!important
  }
- body.printing-quick-monitor .quick-monitor-grid tr{break-inside:avoid;page-break-inside:avoid}
- body.printing-quick-monitor .quick-monitor-grid th,
- body.printing-quick-monitor .quick-monitor-grid td{
-  border:1px solid #333!important;background:#fff!important;color:#111!important;
-  padding:5px 2px!important;font-size:8.3px!important;font-weight:600;
+ body.printing-quick-monitor .quick-day-heading{
+  display:block!important;background:#dce9e4!important;color:#103b36!important;
+  font-size:13px!important;font-weight:900!important;
+  text-align:center!important;padding:7px 4px!important;
+  border:2.4px solid #264941!important;border-bottom:0!important
+ }
+ body.printing-quick-monitor .quick-day-table{
+  border-collapse:collapse!important;width:100%!important;max-width:100%!important;
+  min-width:0!important;table-layout:fixed!important;white-space:normal!important
+ }
+ body.printing-quick-monitor .quick-day-table th,
+ body.printing-quick-monitor .quick-day-table td{
+  box-sizing:border-box!important;display:table-cell!important;
+  border:1px solid #8fa7a0!important;padding:6px 7px!important;
+  font-size:11.2px!important;line-height:1.55!important;
   text-align:center!important;vertical-align:middle!important;
-  white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;
-  line-height:1.45!important
+  white-space:normal!important;overflow-wrap:anywhere!important;
+  color:#142d29!important
  }
- body.printing-quick-monitor .quick-monitor-grid th:first-child{width:12%!important}
- body.printing-quick-monitor .quick-monitor-grid th:nth-child(2){width:15%!important}
- body.printing-quick-monitor .quick-monitor-grid .quick-site-names{font-size:7.8px!important}
+ body.printing-quick-monitor .quick-day-table thead th{
+  border-top:2.4px solid #264941!important;border-bottom:1.5px solid #264941!important;
+  background:#edf3f0!important;font-size:11.4px!important;font-weight:900!important
+ }
+ body.printing-quick-monitor .quick-day-table th:first-child,
+ body.printing-quick-monitor .quick-day-table td:first-child{
+  width:18%!important;font-weight:900!important;background:#f3f6f4!important
+ }
+ body.printing-quick-monitor .quick-day-table tbody tr{
+  break-inside:avoid!important;page-break-inside:avoid!important
+ }
+ body.printing-quick-monitor .quick-day-table tbody tr+tr td{
+  border-top:1.2px solid #829c93!important
+ }
+ body.printing-quick-monitor .quick-duty-name{
+  display:block!important;padding:1px 2px!important;font-weight:700!important
+ }
+ body.printing-quick-monitor .quick-duty-name+.quick-duty-name{
+  border-top:1px dashed #c0d0cb!important;margin-top:3px!important;padding-top:4px!important
+ }
+ body.printing-quick-monitor .quick-not-assigned{color:#8c5340!important;font-weight:500!important}
  body.printing-quick-monitor .quick-print-sign{
-  display:flex!important;justify-content:space-between;gap:12px;
-  margin-top:12px;font-size:10px;font-weight:bold
+  display:flex!important;justify-content:space-between!important;gap:12px!important;
+  margin-top:15px!important;font-size:11px!important;font-weight:700!important
  }
- body.printing-quick-monitor .quick-print-credit{display:block!important;text-align:center;font-size:9px;margin-top:9px}
+ body.printing-quick-monitor .quick-print-credit{
+  display:block!important;text-align:center!important;font-size:9px!important;margin-top:10px!important
+ }
  body.printing-quick-monitor #alfalah-designer-credit{display:none!important}
 }
+
 </style><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script></head><body><a class="rased-back" href="../admin.html" aria-label="العودة إلى لوحة إدارة راصد">↩ العودة إلى راصد</a><div class="layout"><aside><div class="school-brand"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الأهلية"><div><h1>بديل</h1><p>النظام الذكي لتأمين الحصص<br>مدارس الفلاح الأهلية</p></div></div><nav id="nav"></nav></aside><main><header><div><h2 id="title">لوحة التحكم</h2><small>مدارس الفلاح الأهلية · إدارة اليوم الدراسي</small></div><span class="tag">● حفظ محلي تلقائي</span></header><div class="container"><section class="hero"><h2>صباح الخير، أهلاً بك في بديل ✨</h2><p>نُبديل المعلم، ونضمن استمرار التعلّم — إدارة ذكية وعادلة للحصص.</p></section><div class="stats" id="stats"></div><div class="section-tools"><button class="alt" type="button" onclick="window.print()">🖨️ طباعة القسم الحالي</button><span class="muted">تُطبع البيانات الظاهرة في القسم المحدد</span></div><div id="view"></div><footer>بديل المطوّر © ٢٠٢٦ — مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</footer></div></main></div><div id="toast"></div><script>
 const KEY='sanad-falah-demo-1',days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],pages=[['home','⌂','لوحة التحكم'],['absence','◎','حصص الانتظار'],['swap','⇄','تبديل الحصص'],['teachers','♙','المعلمون والأقسام'],['schedule','▤','الجداول'],['monitoring','🛡','إدارة المراقبات'],['assignments','📚','التكليفات الإضافية'],['printing','🖨','مركز الطباعة'],['loads','◷','احتساب الحصص'],['charts','▥','رسوم بيانية'],['report','▣','التقرير الشهري'],['settings','⚙','الإعدادات']];let s=JSON.parse(localStorage.getItem(KEY)||'null')||{teachers:[],lessons:[],absences:[],covers:[],swaps:[],duties:[],monitoringNeeds:[],cap:4},page='home',selectedDate=new Date().toISOString().slice(0,10);
 s.duties ||= [];
@@ -268,30 +299,51 @@ function quickDeleteSchedule(){
  save();toast('تم حذف '+needs.length+' خانة من الجدول الأسبوعي');
 }
 
+function quickPrintablePeriods(sites){
+ const configured=Number(s.quickMonitoringPeriods[monitoringTrack])||7;
+ const largest=Math.max(0,...s.monitoringNeeds
+  .filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes))
+  .map(n=>Number(n.period)||0));
+ return Math.min(12,Math.max(configured,largest));
+}
+function quickPrintableCell(site,day,period){
+ const entries=quickNeeds(site,day,period);
+ if(!entries.length)return '<span class="quick-not-assigned">—</span>';
+ return entries.map(n=>'<span class="quick-duty-name'+(!n.assignedTeacher?' quick-not-assigned':'')+'">'+
+  esc(n.assignedTeacher?nm(n.assignedTeacher):'غير موزعة')+'</span>').join('');
+}
 function quickPrint(){
  const sites=quickSites();
  const occupied=s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&sites.includes(n.notes));
  if(!occupied.length)return toast('لا يوجد جدول مراقبات للطباعة. أنشئ الجدول أولًا.');
  const title='جدول مناوبة المراقبات - '+monitorTrackLabel(monitoringTrack);
- // Print from this tab: no extra popup or window is opened.
+ const lastPeriod=quickPrintablePeriods(sites);
  let sheet=document.getElementById('quickMonitoringPrintSheet');
  if(!sheet){sheet=document.createElement('section');sheet.id='quickMonitoringPrintSheet';document.body.appendChild(sheet)}
- let portraitStyle=document.getElementById('quickMonitoringPortraitPage');
- if(!portraitStyle){portraitStyle=document.createElement('style');portraitStyle.id='quickMonitoringPortraitPage';document.head.appendChild(portraitStyle)}
- portraitStyle.textContent='@page{size:A4 portrait;margin:9mm}';
- const signed=occupied.filter(n=>n.assignedTeacher).length;
+ let printPageStyle=document.getElementById('quickMonitoringPortraitPage');
+ if(!printPageStyle){printPageStyle=document.createElement('style');printPageStyle.id='quickMonitoringPortraitPage';document.head.appendChild(printPageStyle)}
+ printPageStyle.textContent='@page{size:A4 portrait;margin:10mm}';
+ const assigned=occupied.filter(n=>n.assignedTeacher).length;
+ const dailyHtml=days.map(day=>{
+  const head='<thead><tr><th scope="col">الحصة</th>'+sites.map(site=>'<th scope="col">'+esc(site)+'</th>').join('')+'</tr></thead>';
+  const rows=Array.from({length:lastPeriod},(_,i)=>{
+   const period=i+1;
+   return '<tr><td>الحصة '+period+'</td>'+sites.map(site=>'<td>'+quickPrintableCell(site,day,period)+'</td>').join('')+'</tr>';
+  }).join('');
+  return '<section class="quick-day-report"><div class="quick-day-heading">'+esc(day)+'</div>'+
+   '<table class="quick-day-table">'+head+'<tbody>'+rows+'</tbody></table></section>';
+ }).join('');
  sheet.innerHTML='<div class="quick-print-head">'+
  '<img src="../alfalah-round-logo.png" alt="شعار المدرسة">'+
  '<div><p>المملكة العربية السعودية | وزارة التعليم</p><h2>مدارس الفلاح الأهلية</h2><h2>'+esc(title)+'</h2>'+
- '<p>الموقعان: '+esc(sites.join(' و '))+' | الموزعة: '+signed+' من '+occupied.length+'</p></div>'+
- '<img src="../moe-vision2030-logo.png" alt="شعار وزارة التعليم">'+
- '</div>'+quickGrid(true)+
+ '<p>من الحصة الأولى حتى الحصة '+lastPeriod+' | الموزعة: '+assigned+' من '+occupied.length+'</p></div>'+
+ '<img src="../moe-vision2030-logo.png" alt="شعار وزارة التعليم"></div>'+
+ dailyHtml+
  '<div class="quick-print-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div>'+
  '<div class="quick-print-credit">تصميم محمد عامر أحمد</div>';
  const cleanup=()=>{
   document.body.classList.remove('printing-quick-monitor');
-  portraitStyle?.remove();
-  sheet?.remove();
+  printPageStyle?.remove();sheet?.remove();
   window.removeEventListener('afterprint',cleanup);
  };
  window.addEventListener('afterprint',cleanup);
