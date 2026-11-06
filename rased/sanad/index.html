@@ -231,6 +231,7 @@ function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,
 /* Cloud mirror: local state always remains intact; cloud writes use revisions and Firestore transactions.
    The named Rased Firebase app is configured in sanadTeacherDatabase() below. */
 let sanadCloudMode='connecting',sanadCloudRevision=0,sanadCloudDirty=false;
+let sanadCloudUnsubscribe=null,sanadCloudLiveRead=false,sanadCloudStartupPending=false;
 let sanadCloudTimer=null,sanadCloudSaving=false,sanadCloudLastError='',sanadCloudChangeSeq=0;
 const SANAD_CLOUD_COLLECTION='sanad_cloud_v1',SANAD_CLOUD_ID='alfalah_main';
 const SANAD_CLOUD_PARTS=['teachers','lessons','operations','monitoring','settings'];
@@ -406,7 +407,7 @@ function sanadCloudStatus(textValue){
  const el=document.getElementById('sanadCloudStatus');
  if(!el)return;
  const map={
-  connecting:'⏳ جارٍ الاتصال براصد',connected:'☁️ محفوظ سحابيًا',
+  connecting:'⏳ جارٍ الاتصال براصد',connected:'☁️ Firebase متصل — البيانات سحابية',
   saving:'☁️ جارٍ الحفظ السحابي',pending:'⚠️ محفوظ محليًا — بانتظار السحابة',
   conflict:'⚠️ اختلاف بيانات الجهاز والسحابة — لا يتم الاستبدال تلقائيًا',
   error:'⚠️ فشل الحفظ السحابي — النسخة المحلية محفوظة',
@@ -536,31 +537,83 @@ async function sanadCloudUploadLocal(){
  if(sanadCloudDirty)markSanadCloudDirty();
  toast('تم نقل البيانات الحالية إلى السحابة بنجاح');
 }
+
+/* Firebase is the authoritative copy after initialization. Local storage is only recovery cache. */
+function sanadCloudAdoptRemote(remote){
+ if(!remote?.data)return;
+ s=sanadCloudNormalized(remote.data);
+ localStorage.setItem(KEY,JSON.stringify(s));
+ sanadCloudRevision=remote.revision;
+ sanadCloudDirty=false;
+ sanadCloudConflictDetails=null;
+ sanadCloudMode='connected';sanadCloudLastError='';
+ render();sanadCloudStatus();
+}
+function sanadCloudStartRealtime(){
+ if(sanadCloudUnsubscribe)return;
+ const {root}=sanadCloudRefs();
+ sanadCloudUnsubscribe=root.onSnapshot(async snapshot=>{
+  if(!snapshot.exists||sanadCloudStartupPending||sanadCloudLiveRead||sanadCloudSaving)return;
+  const revision=Number(snapshot.data()?.revision||0);
+  if(revision<=sanadCloudRevision)return;
+  sanadCloudLiveRead=true;
+  try{
+   const remote=await sanadCloudRead();
+   if(remote.revision<=sanadCloudRevision)return;
+   if(sanadCloudDirty){
+    sanadCloudRevision=remote.revision;
+    sanadCloudMode='conflict';
+    sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data),
+     differences:sanadCloudDifferenceReport(s,remote.data)};
+    sanadCloudStatus();
+    return;
+   }
+   sanadCloudAdoptRemote(remote);
+  }catch(e){
+   sanadCloudLastError=e.message||String(e);sanadCloudMode='error';sanadCloudStatus();
+  }finally{sanadCloudLiveRead=false}
+ },e=>{
+  sanadCloudLastError=e.message||String(e);sanadCloudMode='error';sanadCloudStatus();
+ });
+}
 async function sanadCloudConnect(){
- if(sanadCloudSaving)return;
+ if(sanadCloudSaving||sanadCloudStartupPending)return;
+ sanadCloudStartupPending=true;
  sanadCloudMode='connecting';sanadCloudStatus();
  try{
   const remote=await sanadCloudRead();
   if(!remote.data){
    if(sanadCloudStateIsMeaningful(s)){
-    // First migration: back up the existing device before any cloud write.
-    await sanadCloudUploadLocal();
+    if(!sanadCloudBackup('قبل إنشاء نسخة Firebase الأساسية'))throw Error('تعذر تأمين بيانات الجهاز');
+    const sequence=sanadCloudChangeSeq;
+    const candidate=JSON.parse(JSON.stringify(s));
+    const newRevision=await sanadCloudCommit(candidate,0);
+    if(sanadCloudChangeSeq!==sequence)throw Error('تغيرت بيانات الجهاز أثناء التهيئة؛ تم إنشاء النسخة السحابية، يلزم إعادة فحص البيانات');
+    sanadCloudAdoptRemote({data:candidate,revision:newRevision});
    }else{
     sanadCloudRevision=0;sanadCloudMode='connected';sanadCloudStatus();
    }
    return;
   }
-  if(sanadCloudCanonical(remote.data)===sanadCloudCanonical(s)){
-   sanadCloudRevision=remote.revision;sanadCloudMode='connected';sanadCloudDirty=false;sanadCloudConflictDetails=null;sanadCloudStatus();return;
+  if(sanadCloudCanonical(remote.data)!==sanadCloudCanonical(s)&&sanadCloudStateIsMeaningful(s)){
+   // Never silently discard the pre-Firebase device data: preserve it before adopting cloud.
+   if(!sanadCloudBackup('بيانات هذا الجهاز قبل اعتماد Firebase كمصدر رئيسي'))
+    throw Error('لا يمكن اعتماد بيانات Firebase قبل إنشاء نسخة استرداد لبيانات الجهاز');
+   try{sessionStorage.setItem('sanad-primary-migration-backed-up','1')}catch(e){}
   }
-  if(!sanadCloudStateIsMeaningful(s)){
-   await sanadCloudUseRemote();
-   return;
-  }
-  sanadCloudRevision=remote.revision;sanadCloudMode='conflict';sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data),differences:sanadCloudDifferenceReport(s,remote.data)};sanadCloudStatus();
+  sanadCloudAdoptRemote(remote);
  }catch(e){
-  console.error('Sanad cloud startup failed',e);
-  sanadCloudLastError=e.message||String(e);sanadCloudMode='error';sanadCloudStatus();
+  console.error('Sanad Firebase-first initialization failed',e);
+  sanadCloudLastError=e.message||String(e);
+  sanadCloudMode='error';sanadCloudStatus();
+ }finally{
+  sanadCloudStartupPending=false;
+  if(sanadCloudMode==='connected'){
+   try{sanadCloudStartRealtime()}catch(e){
+    sanadCloudLastError=e.message||String(e);
+    sanadCloudMode='error';sanadCloudStatus();
+   }
+  }
  }
 }
 function sanadCloudAction(name){
@@ -588,7 +641,7 @@ function sanadCloudSettings(){
  const label=sanadCloudMode==='connected'?'☁️ الحفظ السحابي متصل':sanadCloudMode==='conflict'?'⚠️ بيانات هذا الجهاز تختلف عن السحابة':'⚠️ الحفظ السحابي يحتاج مراجعة';
  return box('☁️ حماية بيانات بديل والحفظ السحابي',
   '<p><b>'+label+'</b></p>'+
-  '<p class="muted">تُحفظ نسخة محلية فورًا، ويُرسل التعديل إلى Firebase في راصد. إذا انقطع الاتصال أو اختلفت النسخ، لا تُحذف بيانات الجهاز ولا تُستبدل النسخة السحابية تلقائيًا.</p>'+
+  '<p class="muted">Firebase الخاص براصد هو مصدر البيانات الأساسي. يعرض النظام أحدث نسخة سحابية، ويحتفظ بنسخة محلية للاسترداد عند الحاجة. عند أول انتقال تُحفَظ نسخة الجهاز القديمة قبل اعتماد البيانات السحابية.</p>'+
   (sanadCloudLastError?'<p class="notice">'+esc(sanadCloudLastError)+'</p>':'')+comparison+
   '<div class="actions"><button class="alt" onclick="sanadCloudDownloadBoth().catch(e=>alert(e.message))">⬇ تنزيل النسختين منفصلتين</button><button class="alt" onclick="sanadCloudMergeSafe()">🔒 دمج آمن عند عدم وجود تعارضات</button><button class="alt" onclick="sanadCloudReview()">🔍 مقارنة النسختين</button><button class="alt" onclick="sanadCloudAction(\'retry\')">↻ فحص الاتصال</button>'+
   '<button class="alt" onclick="sanadCloudAction(\'download\')">↓ استعادة من السحابة</button>'+
