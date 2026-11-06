@@ -474,6 +474,7 @@ function quickSites(){
 }
 function quickNeeds(site,day,p){return s.monitoringNeeds.filter(n=>n.track===monitoringTrack&&n.mode==='weekly'&&n.day===day&&Number(n.period)===p&&n.notes===site)}
 function quickAllowed(t,need){
+ if(need.assignedTeacher!==t.id&&monitoringTotalLoad(t.id)>=monitoringTarget())return false;
  if(hasExtraAssignment(t.id))return false;
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).includes(t.id))return false;
  if(s.lessons.some(l=>l.teacher===t.id&&l.day===need.day&&Number(l.period)===Number(need.period)))return false;
@@ -526,6 +527,7 @@ function quickGenerate(){
 function quickFill(){
  if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('اختر المعلمين المسموح لهم بالمراقبة أولًا');
  let assigned=0,unfilled=0;
+ s.monitoringTarget=monitoringTarget();
  const sites=quickSites(),periods=s.quickMonitoringPeriods[monitoringTrack]||7;
  // Cover different sites in the same period before placing second monitors.
  // Rotate the first site by day/period to avoid always preferring the eastern building.
@@ -537,7 +539,7 @@ function quickFill(){
   for(let level=0;level<maxDepth;level++)for(const needs of layers){
    const need=needs[level];if(!need)continue;
    const candidates=s.teachers.filter(t=>quickAllowed(t,need));
-   candidates.sort((a,b)=>monitoringCount(a.id)-monitoringCount(b.id)||teachingLoad(a.id)-teachingLoad(b.id)||count(a.id)-count(b.id)||a.name.localeCompare(b.name,'ar'));
+   candidates.sort(monitoringFairOrder);
    const teacher=candidates[0];
    if(!teacher){unfilled++;continue}
    need.assignedTeacher=teacher.id;
@@ -640,9 +642,10 @@ function quickMonitoringPanel(){
  const form='<div class="notice"><b>التوزيع السريع:</b> أدخل المواقع مرة واحدة ثم اضغط «إنشاء وتوزيع». ستظهر أمامك الأيام والحصص في جدول واحد مثل الصورة، ويمكن تغيير اسم أي مراقب من نفس الخانة. الحصص والتكليفات المتعارضة مستبعدة آليًا.</div>'+
  '<div class="fields">'+(monitoringTrack==='upper'?'<div class="notice"><b>الموقعان المطلوب تغطيتهما في كل حصة:</b> ثانوي شرقي + ثانوي غربي</div>':field('مواقع المراقبة (افصل بفاصلة)','<input id="quickSites" value="'+esc(sites.join('، '))+'" placeholder="حدد مواقع المرحلة">'))+
  field('عدد الحصص يوميًا','<input id="quickPeriods" type="number" min="1" max="12" value="'+periods+'">')+
- field('عدد المراقبين لكل موقع وحصة','<input id="quickQuantity" type="number" min="1" max="5" value="1">')+'</div>'+
- '<div class="actions"><button onclick="quickGenerate()">✨ إنشاء وتوزيع الجدول كاملًا</button><button class="alt" onclick="quickFill()">⚖ توزيع الخانات الفارغة</button><button class="alt" onclick="quickPrint()">🖨 طباعة الجدول</button><button class="alt" onclick="quickClearAssignments()">🧹 تفريغ التوزيع</button><button class="danger" onclick="quickDeleteSchedule()">🗑 حذف الجدول</button></div>'+
- '<p class="muted">المراقبات الموزعة: '+needs.filter(n=>n.assignedTeacher).length+' من '+needs.length+' · غير المغطاة: '+needs.filter(n=>!n.assignedTeacher).length+'. الأولوية لتغطية الموقعين في كل حصة، بدون تكليف المعلم مرتين في نفس الموعد. اختر المعلمين المسموح لهم بالمراقبة قبل إنشاء الجدول.</p>';
+ field('عدد المراقبين لكل موقع وحصة','<input id="quickQuantity" type="number" min="1" max="5" value="1">')+
+ field('المستهدف للنصاب + المراقبات','<input id="monitoringTarget" type="number" min="1" max="40" value="'+(s.monitoringTarget||26)+'">')+'</div>'+
+ '<div class="actions"><button onclick="saveMonitoringTarget()">💾 حفظ مستهدف الحصص</button><button onclick="rebalanceMonitoringToTarget()">⚖ إعادة التوزيع للوصول للمستهدف</button><button onclick="quickGenerate()">✨ إنشاء وتوزيع الجدول كاملًا</button><button class="alt" onclick="quickFill()">⚖ توزيع الخانات الفارغة</button><button class="alt" onclick="quickPrint()">🖨 طباعة الجدول</button><button class="alt" onclick="quickClearAssignments()">🧹 تفريغ التوزيع</button><button class="danger" onclick="quickDeleteSchedule()">🗑 حذف الجدول</button></div>'+
+ '<p class="muted">المراقبات الموزعة: '+needs.filter(n=>n.assignedTeacher).length+' من '+needs.length+' · غير المغطاة: '+needs.filter(n=>!n.assignedTeacher).length+'. تُعطى الأولوية للأقل في مجموع النصاب والمراقبات، ولا يتجاوز التوزيع التلقائي المستهدف المحدد، مع منع تعارض الحصص. اختر المعلمين المسموح لهم بالمراقبة قبل إنشاء الجدول.</p>';
  return box('⚡ التوزيع الأسبوعي السريع للمراقبات',form+quickGrid());
 }
 
@@ -784,7 +787,7 @@ function addMonitoringNeed(){
 function fairCandidate(need){
  const actualDay=need.mode==='weekly'?need.day:dt(need.date);
  const candidates=s.teachers.filter(t=>{
-  if(hasExtraAssignment(t.id))return false;
+  if(hasExtraAssignment(t.id)||monitoringTotalLoad(t.id)>=monitoringTarget())return false;
   if(!((s.monitoringEligibleByTrack||{})[need.track]||[]).includes(t.id))return false;
   if(s.lessons.some(l=>l.teacher===t.id&&l.day===actualDay&&l.period===need.period))return false;
   if((s.duties||[]).some(d=>d.teacher===t.id&&d.period===need.period&&(d.mode==='weekly'?d.day===actualDay:need.mode==='weekly'?dt(d.date)===actualDay:d.date===need.date)))return false;
@@ -792,10 +795,67 @@ function fairCandidate(need){
   if(need.mode==='dated'&&s.absences.some(x=>x.teacher===t.id&&x.date===need.date))return false;
   return true;
  });
- candidates.sort((a,b)=>monitoringCount(a.id)-monitoringCount(b.id)||teachingLoad(a.id)-teachingLoad(b.id)||count(a.id)-count(b.id)||a.name.localeCompare(b.name,'ar'));
+ candidates.sort(monitoringFairOrder);
  return candidates[0];
 }
 function monitoringCount(teacher){return (s.duties||[]).filter(x=>x.teacher===teacher&&x.kind==='monitoring').length}
+
+function monitoringTarget(){
+ const raw=document.getElementById('monitoringTarget')?.value;
+ const value=Number(raw??s.monitoringTarget??26);
+ return Number.isInteger(value)&&value>=1&&value<=40?value:26;
+}
+function monitoringTotalLoad(teacherId){return teachingLoad(teacherId)+monitoringCount(teacherId)}
+function monitoringFairOrder(a,b){
+ return monitoringTotalLoad(a.id)-monitoringTotalLoad(b.id)||
+ monitoringCount(a.id)-monitoringCount(b.id)||
+ a.name.localeCompare(b.name,'ar');
+}
+function saveMonitoringTarget(){
+ const raw=Number(document.getElementById('monitoringTarget')?.value);
+ if(!Number.isInteger(raw)||raw<1||raw>40)return toast('أدخل مستهدفًا من 1 إلى 40');
+ s.monitoringTarget=raw;save();toast('تم ضبط المستهدف عند '+raw+' حصة إجمالية');
+}
+function rebalanceMonitoringToTarget(){
+ const input=Number(document.getElementById('monitoringTarget')?.value);
+ if(!Number.isInteger(input)||input<1||input>40)return toast('أدخل مستهدفًا صحيحًا من 1 إلى 40');
+ const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack);
+ if(!needs.length)return toast('لا توجد مراقبات في المرحلة المختارة');
+ if(!((s.monitoringEligibleByTrack||{})[monitoringTrack]||[]).length)return toast('حدد المعلمين المسموح لهم بالمراقبة أولًا');
+ if(!confirm('إعادة توزيع مراقبات '+monitorTrackLabel(monitoringTrack)+' للوصول إلى '+input+' حصة إجمالية قدر الإمكان؟\\nسيُعاد إسناد المراقبات الموجودة في هذه المرحلة. لن تتغير الحصص الدراسية أو المراقبات المستقلة خارج جدول هذه المرحلة.'))return;
+ if(!quickBackupBeforeChange())return;
+ s.monitoringTarget=input;
+ const ids=new Set(needs.map(n=>n.id));
+ s.duties=s.duties.filter(d=>!ids.has(d.needId));
+ needs.forEach(n=>{n.assignedTeacher=''});
+ // Distribute the first slot per site before second slots in the same period.
+ const groups=new Map();
+ for(const n of needs){
+  const key=(n.mode==='weekly'?'W'+n.day:'D'+n.date)+'|'+n.period;
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(n);
+ }
+ let assigned=0,unfilled=0;
+ const entries=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0],'ar'));
+ for(const [,group] of entries){
+  const sites=new Map();
+  for(const need of group){const k=String(need.notes||'');if(!sites.has(k))sites.set(k,[]);sites.get(k).push(need)}
+  const keys=[...sites.keys()].sort((a,b)=>a.localeCompare(b,'ar'));
+  const depth=Math.max(...keys.map(k=>sites.get(k).length));
+  for(let layer=0;layer<depth;layer++)for(const key of keys){
+   const need=sites.get(key)[layer];if(!need)continue;
+   const teacher=fairCandidate(need);
+   if(!teacher){unfilled++;continue}
+   need.assignedTeacher=teacher.id;
+   s.duties.push({id:id(),needId:need.id,teacher:teacher.id,kind:'monitoring',
+    mode:need.mode,day:need.day||'',date:need.date||'',period:need.period,track:need.track,notes:need.notes});
+   assigned++;
+  }
+ }
+ save();
+ toast('تم توزيع '+assigned+' مراقبة. المتبقي '+unfilled+' دون مراقب بسبب المستهدف أو التعارض');
+}
+
 function distributeMonitoring(){
  if(!s.teachers.length)return toast('أضف المعلمين أولًا');
  let assigned=0,waiting=0;
