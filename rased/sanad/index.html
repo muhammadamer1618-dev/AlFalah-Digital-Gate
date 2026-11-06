@@ -509,6 +509,30 @@ async function sanadCloudFlush(){
   }
  }
 }
+let sanadCloudArchiveComparison=null;
+function sanadCloudArchivedDevice(){
+ try{
+  const records=JSON.parse(localStorage.getItem('sanad-falah-backups-v1')||'[]');
+  return Array.isArray(records)?records.find(b=>b.reason==='بيانات هذا الجهاز قبل اعتماد Firebase كمصدر رئيسي')||null:null;
+ }catch(e){return null}
+}
+function sanadCloudDownloadArchived(){
+ const item=sanadCloudArchivedDevice();
+ if(!item)return toast('لا توجد نسخة جهاز سابقة مؤرشفة');
+ dl('badeel-pre-firebase-device-'+item.at.slice(0,10)+'.json',JSON.stringify(item.data,null,2),'application/json');
+}
+async function sanadCloudCompareArchived(){
+ const item=sanadCloudArchivedDevice();
+ if(!item)return toast('لا توجد نسخة جهاز مؤرشفة');
+ try{
+  const remote=await sanadCloudRead();
+  if(!remote.data)return toast('لا توجد نسخة Firebase للمقارنة');
+  sanadCloudArchiveComparison=sanadCloudDifferenceReport(item.data,remote.data);
+  page='settings';
+  sanadCardStates.set(sanadCardKey('☁️ حماية بيانات بديل والحفظ السحابي'),true);
+  render();
+ }catch(e){alert('تعذر مقارنة النسخة المؤرشفة مع Firebase: '+(e.message||e))}
+}
 async function sanadCloudRestoreToFirebase(candidate,label){
  if(sanadCloudSaving||sanadCloudMode!=='connected')return alert('يلزم اتصال Firebase سليم قبل استعادة نسخة قديمة.');
  if(!candidate||!['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds']
@@ -649,6 +673,7 @@ function sanadCloudAction(name){
 }
 function sanadCloudSettings(){
  const details=sanadCloudConflictDetails;
+ const archived=sanadCloudArchivedDevice();
  const names={teachers:'المعلمون',lessons:'الحصص الدراسية',absences:'الغياب',covers:'الانتظار',swaps:'التبديلات',duties:'التكليفات والمراقبات',monitoringNeeds:'خانات المراقبة',fixedMonitors:'المراقبون الثابتون'};
  const comparison=(sanadCloudMode==='conflict'&&details?.remote)?
   '<p><b>مقارنة عدد السجلات بين النسختين</b></p>'+
@@ -661,6 +686,16 @@ function sanadCloudSettings(){
   '<p><b>'+label+'</b></p>'+
   '<p class="muted">Firebase الخاص براصد هو مصدر البيانات الأساسي. يعرض النظام أحدث نسخة سحابية، ويحتفظ بنسخة محلية للاسترداد عند الحاجة. عند أول انتقال تُحفَظ نسخة الجهاز القديمة قبل اعتماد البيانات السحابية.</p>'+
   (sanadCloudLastError?'<p class="notice">'+esc(sanadCloudLastError)+'</p>':'')+comparison+
+  (archived?'<div class="notice"><b>📦 نسخة الجهاز القديمة محفوظة قبل التحويل إلى Firebase</b>'+
+   '<p>تم الحفاظ عليها بتاريخ '+esc(new Date(archived.at).toLocaleString('ar-SA'))+
+   '. هي للاسترداد والمراجعة فقط، وليست مصدر بيانات النظام الحالي.</p>'+
+   '<div class="actions"><button class="alt" onclick="sanadCloudDownloadArchived()">⬇ تنزيل نسخة الجهاز القديمة</button>'+
+   '<button class="alt" onclick="sanadCloudCompareArchived()">🔎 مقارنة النسخة القديمة مع Firebase</button></div>'+
+   (sanadCloudArchiveComparison?
+     table(['القسم','على الجهاز القديم فقط','في Firebase فقط','مختلف'],sanadCloudArchiveComparison.map(d=>
+       [esc(names[d.key]||d.key),String(d.localOnly),String(d.cloudOnly),String(d.modified)]))+
+       '<p class="muted">هذه مقارنة للقراءة فقط. لم تُدمج أو تُحذف أي سجلات.</p>':'')+
+   '</div>':'')+
   '<div class="actions"><button class="alt" onclick="sanadCloudDownloadBoth().catch(e=>alert(e.message))">⬇ تنزيل النسختين منفصلتين</button><button class="alt" onclick="sanadCloudMergeSafe()">🔒 دمج آمن عند عدم وجود تعارضات</button><button class="alt" onclick="sanadCloudReview()">🔍 مقارنة النسختين</button><button class="alt" onclick="sanadCloudAction(\'retry\')">↻ فحص الاتصال</button>'+
   '<button class="alt" onclick="sanadCloudAction(\'download\')">↓ استعادة من السحابة</button>'+
   '<button onclick="sanadCloudAction(\'upload\')">↑ رفع بيانات هذا الجهاز</button>'+
