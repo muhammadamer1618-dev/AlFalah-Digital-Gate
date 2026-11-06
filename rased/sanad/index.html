@@ -254,11 +254,42 @@ function sanadCloudCounts(source){
  return Object.fromEntries(['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds','fixedMonitors']
   .map(key=>[key,Array.isArray(v[key])?v[key].length:0]));
 }
+function sanadCloudDifferenceReport(local,remote){
+ const sections=['teachers','lessons','absences','covers','swaps','duties','monitoringNeeds','fixedMonitors'];
+ const report=[];
+ const ordered=item=>Array.isArray(item)?item.map(ordered):
+  item&&typeof item==='object'?Object.fromEntries(Object.keys(item).sort().map(k=>[k,ordered(item[k])])):item;
+ const comparable=item=>JSON.stringify(ordered(item));
+ for(const field of sections){
+  const mine=(local?.[field]||[]),theirs=(remote?.[field]||[]);
+  const localItems=new Map(mine.map((item,i)=>[String(item.id??'index_'+i),item]));
+  const cloudItems=new Map(theirs.map((item,i)=>[String(item.id??'index_'+i),item]));
+  const localOnly=[...localItems.keys()].filter(key=>!cloudItems.has(key));
+  const cloudOnly=[...cloudItems.keys()].filter(key=>!localItems.has(key));
+  const modified=[...localItems.keys()].filter(key=>{
+   if(!cloudItems.has(key))return false;
+   const a=JSON.parse(JSON.stringify(localItems.get(key))),b=JSON.parse(JSON.stringify(cloudItems.get(key)));
+   if(field==='teachers')for(const v of [a,b]){delete v.rasedPhone;delete v.rasedPhoneStatus}
+   return comparable(a)!==comparable(b);
+  });
+  if(localOnly.length||cloudOnly.length||modified.length)
+   report.push({key:field,localOnly:localOnly.length,cloudOnly:cloudOnly.length,modified:modified.length,
+    samples:[...localOnly.slice(0,3).map(k=>'الجهاز: '+String(localItems.get(k).name||k)),
+             ...cloudOnly.slice(0,3).map(k=>'السحابة: '+String(cloudItems.get(k).name||k)),
+             ...modified.slice(0,3).map(k=>'مختلف: '+String(localItems.get(k).name||k))]});
+ }
+ const a=sanadCloudNormalized(local),b=sanadCloudNormalized(remote);
+ for(const key of [...new Set([...Object.keys(a),...Object.keys(b)])].filter(k=>!sections.includes(k))){
+  if(comparable(a[key])!==comparable(b[key]))
+   report.push({key,localOnly:0,cloudOnly:0,modified:1,samples:['اختلاف في إعداد أو بيانات إضافية']});
+ }
+ return report;
+}
 let sanadCloudConflictDetails=null;
 async function sanadCloudReview(){
  try{
   const remote=await sanadCloudRead();
-  sanadCloudConflictDetails=remote.data?{remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data)}:{remote:false};
+  sanadCloudConflictDetails=remote.data?{remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data),differences:sanadCloudDifferenceReport(s,remote.data)}:{remote:false};
   render();sanadCloudStatus();
  }catch(e){sanadCloudLastError=e.message||String(e);sanadCloudStatus();alert('تعذر فحص النسختين: '+sanadCloudLastError)}
 }
@@ -438,7 +469,7 @@ async function sanadCloudConnect(){
    await sanadCloudUseRemote();
    return;
   }
-  sanadCloudRevision=remote.revision;sanadCloudMode='conflict';sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data)};sanadCloudStatus();
+  sanadCloudRevision=remote.revision;sanadCloudMode='conflict';sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data),differences:sanadCloudDifferenceReport(s,remote.data)};sanadCloudStatus();
  }catch(e){
   console.error('Sanad cloud startup failed',e);
   sanadCloudLastError=e.message||String(e);sanadCloudMode='error';sanadCloudStatus();
@@ -464,7 +495,8 @@ function sanadCloudSettings(){
   '<p><b>مقارنة عدد السجلات بين النسختين</b></p>'+
   table(['البيانات','هذا الجهاز','السحابة'],Object.keys(names).map(k=>[
     names[k],String(details.local?.[k]||0),String(details.cloud?.[k]||0)]))+
-  '<p class="muted">تساوي الأعداد لا يعني تطابق البيانات. لن نكتب فوق أي نسخة تلقائيًا. نزّل نسخة احتياطية JSON أولًا قبل اختيار الرفع أو الاستعادة.</p>':'';
+  '<p class="muted">تساوي الأعداد لا يعني تطابق البيانات. لن نكتب فوق أي نسخة تلقائيًا. نزّل نسخة احتياطية JSON أولًا قبل اختيار الرفع أو الاستعادة.</p>'+
+  (details.differences?.length?table(['القسم أو الإعداد','على الجهاز فقط','في السحابة فقط','محتوى مختلف'],details.differences.map(d=>[esc(names[d.key]||d.key),String(d.localOnly),String(d.cloudOnly),String(d.modified)]))+'<p class="muted">أمثلة: '+esc(details.differences.flatMap(d=>d.samples).slice(0,8).join(' | '))+'</p>':'<p class="muted">لا توجد اختلافات جوهرية في الأقسام المفحوصة.</p>') :'';
  const label=sanadCloudMode==='connected'?'☁️ الحفظ السحابي متصل':sanadCloudMode==='conflict'?'⚠️ بيانات هذا الجهاز تختلف عن السحابة':'⚠️ الحفظ السحابي يحتاج مراجعة';
  return box('☁️ حماية بيانات بديل والحفظ السحابي',
   '<p><b>'+label+'</b></p>'+
