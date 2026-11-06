@@ -935,7 +935,7 @@ function saveDuty(){
 function editDuty(id){
  const duty=s.duties.find(x=>x.id===id);if(!duty)return;
  if(duty.fixedMonitorId&&fixedSiteRules(duty.track).some(x=>x.id===duty.fixedMonitorId))return toast('هذه مراقبة ثابتة؛ ألغِ التثبيت أولًا قبل تعديلها');
- editingDutyId=id;page='monitoring';render();
+ editingDutyId=id;page='monitoring';sanadCardStates.set(sanadCardKey('إضافة وإدارة المراقبات والحافلات'),true);render();
  document.getElementById('dteacher').value=duty.teacher;
  document.getElementById('dkind').value=duty.kind;
  document.getElementById('dmode').value=duty.mode;
