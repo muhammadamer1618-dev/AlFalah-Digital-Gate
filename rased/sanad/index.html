@@ -107,6 +107,50 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-quick-monitor #alfalah-designer-credit{display:none!important}
 }
 
+
+/* Printable teacher monitoring totals; isolated from other print modes. */
+#monitoringWorkloadPrintSheet{display:none}
+@media print{
+ body.printing-monitor-workload> :not(#monitoringWorkloadPrintSheet){display:none!important}
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet{
+  display:block!important;direction:rtl!important;background:white!important;
+  color:#142f29!important;font-family:Tahoma,Arial,sans-serif!important
+ }
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet .monitor-workload-head{
+  display:grid!important;grid-template-columns:65px 1fr 80px;align-items:center;
+  text-align:center;border-bottom:2px solid #204a3e;padding-bottom:9px;margin-bottom:12px;gap:10px
+ }
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet .monitor-workload-head img{
+  display:block!important;width:65px;height:65px;max-width:100%;object-fit:contain
+ }
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet h2{font-size:17px;margin:3px 0}
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet h3{font-size:14px;margin:3px 0}
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet .monitor-workload-summary{
+  text-align:center;font-size:11px;font-weight:bold;margin:10px 0
+ }
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet .scroll{overflow:visible!important}
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet table{
+  width:100%!important;table-layout:fixed;border-collapse:collapse;white-space:normal!important
+ }
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet th,
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet td{
+  border:1px solid #8daba1!important;padding:7px 5px!important;
+  font-size:11px!important;text-align:center!important;white-space:normal!important;
+  overflow-wrap:anywhere!important;color:#142f29!important
+ }
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet th{
+  background:#e5eee8!important;font-weight:900!important
+ }
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet tr{break-inside:avoid}
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet .monitor-workload-sign{
+  display:flex!important;justify-content:space-between;font-size:11px;font-weight:bold;margin-top:20px
+ }
+ body.printing-monitor-workload #monitoringWorkloadPrintSheet .monitor-workload-credit{
+  text-align:center;font-size:9px;margin-top:14px
+ }
+ body.printing-monitor-workload #alfalah-designer-credit{display:none!important}
+}
+
 </style><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script></head><body><a class="rased-back" href="../admin.html" aria-label="العودة إلى لوحة إدارة راصد">↩ العودة إلى راصد</a><div class="layout"><aside><div class="school-brand"><img src="../alfalah-round-logo.png" alt="شعار مدارس الفلاح الأهلية"><div><h1>بديل</h1><p>النظام الذكي لتأمين الحصص<br>مدارس الفلاح الأهلية</p></div></div><nav id="nav"></nav></aside><main><header><div><h2 id="title">لوحة التحكم</h2><small>مدارس الفلاح الأهلية · إدارة اليوم الدراسي</small></div><span class="tag">● حفظ محلي تلقائي</span></header><div class="container"><section class="hero"><h2>صباح الخير، أهلاً بك في بديل ✨</h2><p>نُبديل المعلم، ونضمن استمرار التعلّم — إدارة ذكية وعادلة للحصص.</p></section><div class="stats" id="stats"></div><div class="section-tools"><button class="alt" type="button" onclick="window.print()">🖨️ طباعة القسم الحالي</button><span class="muted">تُطبع البيانات الظاهرة في القسم المحدد</span></div><div id="view"></div><footer>بديل المطوّر © ٢٠٢٦ — مدارس الفلاح الأهلية · تصميم محمد عامر أحمد</footer></div></main></div><div id="toast"></div><script>
 const KEY='sanad-falah-demo-1',days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'],pages=[['home','⌂','لوحة التحكم'],['absence','◎','حصص الانتظار'],['swap','⇄','تبديل الحصص'],['teachers','♙','المعلمون والأقسام'],['schedule','▤','الجداول'],['monitoring','🛡','إدارة المراقبات'],['assignments','📚','التكليفات الإضافية'],['printing','🖨','مركز الطباعة'],['loads','◷','احتساب الحصص'],['charts','▥','رسوم بيانية'],['report','▣','التقرير الشهري'],['settings','⚙','الإعدادات']];let s=JSON.parse(localStorage.getItem(KEY)||'null')||{teachers:[],lessons:[],absences:[],covers:[],swaps:[],duties:[],monitoringNeeds:[],cap:4},page='home',selectedDate=new Date().toISOString().slice(0,10);
 s.duties ||= [];
@@ -362,6 +406,71 @@ function quickMonitoringPanel(){
  return box('⚡ التوزيع الأسبوعي السريع للمراقبات',form+quickGrid());
 }
 
+
+/* Monitoring workload summary counts only actual monitoring duties in the selected track. */
+function monitoringWorkloadData(){
+ const relevant=(s.duties||[]).filter(d=>d.kind==='monitoring'&&d.track===monitoringTrack);
+ const totals=new Map();
+ for(const duty of relevant){
+  const key=String(duty.teacher||'');
+  if(!key)continue;
+  const current=totals.get(key)||{weekly:0,dated:0};
+  if(duty.mode==='weekly')current.weekly++;
+  else current.dated++;
+  totals.set(key,current);
+ }
+ const rows=s.teachers.map(t=>{
+  const entry=totals.get(String(t.id))||{weekly:0,dated:0};
+  return {name:t.name,weekly:entry.weekly,dated:entry.dated,total:entry.weekly+entry.dated,teacherId:t.id};
+ }).sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name,'ar'));
+ const needs=s.monitoringNeeds.filter(n=>n.track===monitoringTrack);
+ const allocated=needs.filter(n=>n.assignedTeacher).length;
+ const assigned=relevant.length;
+ return {rows,assigned,unassigned:needs.length-allocated,needed:needs.length,weekly:relevant.filter(d=>d.mode==='weekly').length,dated:relevant.filter(d=>d.mode!=='weekly').length};
+}
+function monitoringWorkloadTable(print=false){
+ const data=monitoringWorkloadData();
+ if(!s.teachers.length)return empty('أضف المعلمين أولًا لعرض إحصائية المراقبات.');
+ const rows=data.rows.map((r,i)=>[
+  String(i+1),esc(r.name),String(r.weekly),String(r.dated),
+  '<strong>'+r.total+'</strong>'
+ ]);
+ const heading='<div class="notice">إجمالي المراقبات المسندة: <b>'+data.assigned+'</b> · المراقبات الأسبوعية: <b>'+data.weekly+'</b> · المراقبات المؤرخة: <b>'+data.dated+'</b> · خانات المراقبة غير الموزعة: <b>'+data.unassigned+'</b></div>';
+ return (print?'':heading)+table(['م','اسم المعلم','أسبوعية','بتاريخ محدد','الإجمالي'],rows);
+}
+function monitoringWorkloadPanel(){
+ return box('📊 عدد المراقبات لكل معلم — '+monitorTrackLabel(monitoringTrack),
+  '<p class="muted">الإحصائية تخص المرحلة المختارة، وتتحدث مباشرة بعد أي إسناد أو تغيير أو تفريغ. الأسبوعية والمراقبات المؤرخة تظهران منفصلتين، ولا تُحسب الحافلات أو حصص الانتظار ضمن المراقبات.</p>'+
+  '<div class="actions"><button class="alt" onclick="printMonitoringWorkload()">🖨 طباعة كشف عدد المراقبات</button></div>'+
+  monitoringWorkloadTable());
+}
+function printMonitoringWorkload(){
+ const data=monitoringWorkloadData();
+ if(!s.teachers.length)return toast('لا يوجد معلمون لإعداد الكشف');
+ let sheet=document.getElementById('monitoringWorkloadPrintSheet');
+ if(!sheet){sheet=document.createElement('section');sheet.id='monitoringWorkloadPrintSheet';document.body.appendChild(sheet)}
+ let pageStyle=document.getElementById('monitoringWorkloadPrintPageStyle');
+ if(!pageStyle){pageStyle=document.createElement('style');pageStyle.id='monitoringWorkloadPrintPageStyle';document.head.appendChild(pageStyle)}
+ pageStyle.textContent='@page{size:A4 portrait;margin:12mm}';
+ sheet.innerHTML='<header class="monitor-workload-head"><img src="../alfalah-round-logo.png" alt="شعار المدرسة">'+
+  '<div><small>المملكة العربية السعودية | وزارة التعليم</small><h2>مدارس الفلاح الأهلية</h2>'+
+  '<h3>كشف عدد المراقبات — '+esc(monitorTrackLabel(monitoringTrack))+'</h3></div>'+
+  '<img src="../moe-vision2030-logo.png" alt="شعار وزارة التعليم"></header>'+
+  '<p class="monitor-workload-summary">إجمالي المراقبات: '+data.assigned+' | أسبوعية: '+data.weekly+
+  ' | مؤرخة: '+data.dated+' | خانات غير موزعة: '+data.unassigned+'</p>'+
+  monitoringWorkloadTable(true)+
+  '<div class="monitor-workload-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div>'+
+  '<div class="monitor-workload-credit">تصميم محمد عامر أحمد</div>';
+ const cleanup=()=>{
+  document.body.classList.remove('printing-monitor-workload');
+  pageStyle.remove();sheet.remove();
+  window.removeEventListener('afterprint',cleanup);
+ };
+ window.addEventListener('afterprint',cleanup);
+ document.body.classList.add('printing-monitor-workload');
+ window.print();
+}
+
 function monitoring(){
  const form='<div class="fields">'+
  field('المعلم','<select id="dteacher">'+opts(s.teachers)+'</select>')+
@@ -373,7 +482,7 @@ function monitoring(){
  field('ملاحظة اختيارية','<input id="dnotes" placeholder="مراقبة فناء أو حافلة">')+
  '</div><div class="actions"><button onclick="saveDuty()">حفظ التكليف</button><button class="alt" onclick="editingDutyId=\'\';render()">إلغاء التعديل</button></div><p class="muted">اختر أسبوعية للمراقبات المتكررة في نفس اليوم والحصة، أو بتاريخ محدد للمراقبة الاستثنائية. لا يُرشح المعلم للتغطية أثناء أي مراقبة أو حافلة مسجلة.</p>';
  const rows=(s.duties||[]).filter(d=>d.track===monitoringTrack).map(d=>[esc(nm(d.teacher)),esc(dutyName(d)),d.mode==='weekly'?esc(d.day)+' (أسبوعيًا)':esc(d.date),d.period,esc(d.notes||'—'),'<button class="alt" onclick="editDuty(\''+d.id+'\')">تعديل</button> <button class="danger" onclick="deleteDuty(\''+d.id+'\')">حذف</button>']);
- return monitoringStageSelector()+quickMonitoringPanel()+legacyMonitoringPanel()+monitoringTeachersPanel()+weeklyMonitoringBlockPanel()+monitoringNeedsPanel()+box('إضافة وإدارة المراقبات والحافلات',form)+box('سجل المراقبات والحافلات',rows.length?table(['المعلم','التكليف','التوقيت','الحصة','ملاحظات','الإجراءات'],rows):empty('لا توجد مراقبات أو حافلات مسجلة'));
+ return monitoringStageSelector()+quickMonitoringPanel()+monitoringWorkloadPanel()+legacyMonitoringPanel()+monitoringTeachersPanel()+weeklyMonitoringBlockPanel()+monitoringNeedsPanel()+box('إضافة وإدارة المراقبات والحافلات',form)+box('سجل المراقبات والحافلات',rows.length?table(['المعلم','التكليف','التوقيت','الحصة','ملاحظات','الإجراءات'],rows):empty('لا توجد مراقبات أو حافلات مسجلة'));
 }
 function saveDuty(){
  const teacher=document.getElementById('dteacher')?.value,kind=document.getElementById('dkind')?.value,mode=document.getElementById('dmode')?.value,day=document.getElementById('dday')?.value,date=document.getElementById('ddate')?.value,period=Number(document.getElementById('dperiod')?.value),notes=document.getElementById('dnotes')?.value.trim()||'';
