@@ -41,7 +41,19 @@ button.secondary{background:#eaf4fc;color:#075c8e;box-shadow:none}
 @media(max-width:620px){main{padding:0 12px}.panel{padding:17px;border-radius:17px}#practice #cards{grid-template-columns:1fr}#practice #cards>.activity button{width:100%;margin:5px 0}}
 
 
-.teacher-studio{padding:30px!important}.studio-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:8px 0 24px;border-bottom:1px solid #e2ebf4}.studio-heading h2{font-size:32px;margin:5px 0}.eyebrow{color:#008eac;font-size:12px;font-weight:900;letter-spacing:2px}.studio-icon{font-size:48px;background:#e8f7fb;border-radius:22px;padding:15px}.studio-step{display:flex;align-items:center;gap:12px;margin:28px 0 18px;font-size:19px;color:#123b60}.studio-step span{background:#086caa;color:white;border-radius:12px;padding:5px 12px;font-size:15px}.studio-fields{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px}.studio-entry{display:flex;gap:10px;align-items:center}.studio-entry input{flex:1;min-width:0;font-size:17px}.studio-entry button{white-space:nowrap}.studio-bulk{margin:16px 0}.studio-bulk details{background:#f4f9fd;border:1px solid #dbe9f4;border-radius:14px;padding:15px}.studio-bulk summary{cursor:pointer;font-weight:700}.studio-bulk textarea{margin:12px 0}.studio-list-head{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px}.studio-list-head span{background:#e9f5fc;color:#075e94;border-radius:30px;padding:5px 13px;font-weight:800}.studio-items{display:grid;gap:9px}.studio-item{display:flex;align-items:center;gap:10px;background:#f8fbfe;border:1px solid #dfebf5;border-radius:13px;padding:9px}.studio-item input{flex:1;min-width:0;background:white;margin:0}.studio-number{font-weight:900;color:#0879ad;min-width:28px;text-align:center}.studio-item .studio-remove{background:#fff0f0;color:#bd2f3c;box-shadow:none;padding:11px 14px}.studio-empty{text-align:center;border:2px dashed #d5e5f1;padding:28px;border-radius:15px;color:#748aa1}.studio-actions{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0 36px}.studio-actions button{padding:15px 23px}#myActivities .activity{border-top:4px solid #0787ac}@media(max-width:750px){.teacher-studio{padding:17px!important}.studio-fields{grid-template-columns:1fr}.studio-entry{flex-direction:column;align-items:stretch}.studio-heading h2{font-size:25px}.studio-icon{font-size:28px}}
+.teacher-studio{padding:30px!important}.studio-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:8px 0 24px;border-bottom:1px solid #e2ebf4}.studio-heading h2{font-size:32px;margin:5px 0}.eyebrow{color:#008eac;font-size:12px;font-weight:900;letter-spacing:2px}.studio-icon{font-size:48px;background:#e8f7fb;border-radius:22px;padding:15px}.studio-step{display:flex;align-items:center;gap:12px;margin:28px 0 18px;font-size:19px;color:#123b60}.studio-step span{background:#086caa;color:white;border-radius:12px;padding:5px 12px;font-size:15px}.studio-fields{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px}.studio-entry{display:flex;gap:10px;align-items:center}.studio-entry input{flex:1;min-width:0;font-size:17px}.studio-entry button{white-space:nowrap}.studio-bulk{margin:16px 0}.studio-bulk details{background:#f4f9fd;border:1px solid #dbe9f4;border-radius:14px;padding:15px}.studio-bulk summary{cursor:pointer;font-weight:700}.studio-bulk textarea{margin:12px 0}.studio-list-head{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px}.studio-list-head span{background:#e9f5fc;color:#075e94;border-radius:30px;padding:5px 13px;font-weight:800}.studio-items{display:grid;gap:9px}
+.studio-item{flex-wrap:wrap}
+.studio-image-picker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;padding-inline-start:40px}
+.studio-image-picker label{cursor:pointer;background:#e7f3ff;color:#075a89;border:1px solid #b7d9f2;border-radius:10px;padding:8px 12px;font-weight:700;font-size:12px}
+.studio-image-picker input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.studio-image-picker img{max-width:105px;height:80px;object-fit:contain;background:#fff;border:1px solid #c7d9e8;border-radius:10px}
+.studio-image-picker button{width:auto;box-shadow:none;padding:7px 10px;background:#fff0f0;color:#a33140}
+#practice #cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:14px}
+#practice #cards .activity{margin:0!important;text-align:center;padding:18px}
+#practice #cards .activity strong{display:block;font-size:clamp(24px,4vw,35px);margin:10px 0;color:#084d7d;overflow-wrap:anywhere}
+.english-practice-picture{display:block;width:100%;height:210px;object-fit:contain;border:1px solid #d7e5f0;border-radius:16px;background:#fff;margin:10px auto}
+@media(max-width:650px){#practice #cards{grid-template-columns:1fr}.english-practice-picture{height:230px}.studio-image-picker{padding-inline-start:0}}
+.studio-item{display:flex;align-items:center;gap:10px;background:#f8fbfe;border:1px solid #dfebf5;border-radius:13px;padding:9px}.studio-item input{flex:1;min-width:0;background:white;margin:0}.studio-number{font-weight:900;color:#0879ad;min-width:28px;text-align:center}.studio-item .studio-remove{background:#fff0f0;color:#bd2f3c;box-shadow:none;padding:11px 14px}.studio-empty{text-align:center;border:2px dashed #d5e5f1;padding:28px;border-radius:15px;color:#748aa1}.studio-actions{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0 36px}.studio-actions button{padding:15px 23px}#myActivities .activity{border-top:4px solid #0787ac}@media(max-width:750px){.teacher-studio{padding:17px!important}.studio-fields{grid-template-columns:1fr}.studio-entry{flex-direction:column;align-items:stretch}.studio-heading h2{font-size:25px}.studio-icon{font-size:28px}}
 
 /* English-only left-to-right interface */
 html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#myActivities .activity strong{direction:ltr;text-align:left}#reportList .activity{border-right:1px solid #dce7f2;border-left:4px solid #0b9b9c}header,footer{text-align:center}
@@ -64,10 +76,10 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
 <div class="studio-step"><span>01</span><strong>Activity Details</strong></div>
 <div class="studio-fields"><div><label for="title">Activity Title</label><input id="title" placeholder="e.g. Unit 3 | Speaking Practice"></div><div><label for="subject">Subject</label><select id="subject"></select></div><div><label for="classroom">Publishing Scope / الفصول المستهدفة</label><select id="classroom"></select><p class="muted" style="margin:5px 0">Choose one class or all of your classes assigned to this English subject.</p></div></div>
 <div class="studio-attempt-setting"><label for="maxAttempts">Speaking Attempts per Word / Sentence</label><select id="maxAttempts"><option value="0" selected>Unlimited attempts</option><option value="1">1 attempt</option><option value="2">2 attempts</option><option value="3">3 attempts</option><option value="4">4 attempts</option><option value="5">5 attempts</option><option value="10">10 attempts</option></select><p class="muted">Each student can record their pronunciation up to this number of times for each item.</p></div><div class="studio-step"><span>02</span><strong>Add Words & Sentences</strong></div>
-<p class="muted">Add one word or sentence at a time, or paste a full list to import instantly.</p>
+<p class="muted">Add words and sentences, then optionally attach a picture to each one. Pictures make speaking practice easier for first-grade students.</p>
 <div class="studio-entry"><input id="newEnglishItem" dir="ltr" placeholder="Type a word or sentence..." aria-label="New word or sentence"><button type="button" onclick="addEnglishItem()">＋ Add</button></div>
 <div class="studio-bulk"><details><summary>📋 Bulk Add Words & Sentences</summary><textarea id="bulkEnglishItems" dir="ltr" placeholder="apple&#10;This is my book.&#10;Good morning."></textarea><button type="button" class="secondary" onclick="importEnglishItems()">Import List</button></details></div>
-<div class="studio-list-head"><strong>Activity Content</strong><span id="englishItemCount">0 / 80</span></div>
+<div class="studio-list-head"><strong>Activity Content</strong><span id="englishItemCount">0 / 80</span></div><p class="muted">🖼️ Add a picture for each word (JPG, PNG, WebP). Pictures are resized automatically. The total picture size must stay under 600 KB per activity.</p>
 <div id="englishItemsList" class="studio-items"><div class="studio-empty">No words or sentences added yet.</div></div>
 <textarea id="items" class="hidden" aria-hidden="true"></textarea>
 <div class="studio-actions"><button type="button" onclick="saveActivity()">🚀 Save & Publish</button><button type="button" class="secondary" onclick="clearForm()">＋ New Activity</button></div>
@@ -129,27 +141,94 @@ function renderStaffActivities(){const q=String($("staffSearch")?.value||"").toL
 async function printAllEnglishResults(id){await viewReports(id);setTimeout(()=>window.print(),250)}
 async function loadParentActivities(code){try{const normalized=String(code||"").trim();if(normalized.length<4||normalized.length>20||normalized.split("").some(ch=>ch<"0"||ch>"9"))throw Error("Invalid student ID");const student=await db.collection("students").doc(normalized).get();if(!student.exists)throw Error("Student record not found");const d=student.data()||{};const grade=String(d.grade||d.gradeName||d.className||"").trim(),section=String(d.section||d.classroom||d.class||"").trim();if(!grade||!section)throw Error("Your grade or section is missing from your student profile");let snap=await db.collection("englishActivities").where("published","==",true).get();const list=snap.docs.map(x=>({id:x.id,...x.data()})).filter(x=>(Array.isArray(x.targetClasses)&&x.targetClasses.length?x.targetClasses.some(c=>String(c.grade||"").trim()===grade&&String(c.section||"").trim()===section):String(x.grade||"").trim()===grade&&String(x.section||"").trim()===section));$("parentActivities").classList.remove("hidden");$("parentStudentLabel").textContent="Student: "+(d.name||"") +" — "+grade+" / "+section;$("parentActivityList").innerHTML=list.length?list.map(x=>'<div class="activity"><strong>'+esc(x.title)+'</strong><div class="muted">'+esc(x.subjectName||"اللغة الإنجليزية")+' · '+(x.items||[]).length+' words and sentences</div><button onclick="startActivityById('+esc(JSON.stringify(x.id))+')">Start Activity</button></div>').join(""):"No published activities are available for your class yet.";}catch(e){status("تعذر تحميل أنشطة Student: "+e.message,true)}}
 function startActivityById(id){$("activityCode").value=id;openActivity()}
+let englishItemImages=[];
+function englishLines(){return $("items").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)}
+function setEnglishLines(lines){$("items").value=lines.join("\n");englishItemImages.length=lines.length;renderEnglishItems()}
+async function uploadEnglishImage(input){
+ const index=Number(input.dataset.imageIndex),file=input.files?.[0];input.value="";
+ if(!Number.isInteger(index)||index<0||index>=englishLines().length||!file)return;
+ if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>8*1024*1024)
+  return status("Choose a JPG, PNG or WebP image smaller than 8 MB.",true);
+ try{
+  const picture=await new Promise((resolve,reject)=>{
+   const url=URL.createObjectURL(file),img=new Image();
+   img.onload=()=>{
+    URL.revokeObjectURL(url);
+    const scale=Math.min(1,480/Math.max(img.naturalWidth,img.naturalHeight));
+    const canvas=document.createElement("canvas");
+    canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+    canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+    const ctx=canvas.getContext("2d");
+    if(!ctx){reject(new Error("Image conversion unavailable"));return}
+    ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    for(const quality of [0.72,0.56,0.4,0.28]){
+     const data=canvas.toDataURL("image/jpeg",quality);
+     if(data.length<=65000){resolve(data);return}
+    }
+    reject(new Error("Picture too detailed. Please choose a simpler image."));
+   };
+   img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Unable to read picture"))};
+   img.src=url;
+  });
+  const copy=[...englishItemImages];copy[index]=picture;
+  if(copy.reduce((n,v)=>n+(v?.length||0),0)>600000)
+   return status("Pictures exceed the 600 KB activity limit. Remove a picture or choose simpler images.",true);
+  englishItemImages[index]=picture;renderEnglishItems();status("Picture added to item "+(index+1));
+ }catch(e){status(e.message||"Unable to add picture",true)}
+}
+function removeEnglishImage(index){
+ if(index<0||index>=englishLines().length)return;
+ englishItemImages[index]="";renderEnglishItems()
+}
 function renderEnglishItems(){
- const lines=$("items").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const lines=englishLines();
  $("englishItemCount").textContent=lines.length+" / 80";
- $("englishItemsList").innerHTML=lines.length?lines.map((line,i)=>'<div class="studio-item"><span class="studio-number">'+(i+1)+'</span><input dir="ltr" aria-label="Item '+(i+1)+'" data-item-index="'+i+'" value="'+esc(line)+'"><button type="button" class="studio-remove" data-remove-index="'+i+'" aria-label="Delete الitem">✕</button></div>').join(""):'<div class="studio-empty">No words or sentences added yet.</div>';
+ $("englishItemsList").innerHTML=lines.length?lines.map((line,i)=>{
+  const picture=englishItemImages[i]||"";
+  return '<div class="studio-item"><span class="studio-number">'+(i+1)+'</span>'+
+   '<input dir="ltr" aria-label="Item '+(i+1)+'" data-item-index="'+i+'" value="'+esc(line)+'">'+
+   '<button type="button" class="studio-remove" data-remove-index="'+i+'" aria-label="Remove item">✕</button>'+
+   '<div class="studio-image-picker">'+
+   (picture?'<img alt="Picture for '+esc(line)+'" src="'+picture+'">':'')+
+   '<label for="english-image-'+i+'">🖼️ '+(picture?'Change picture':'Add picture')+'</label>'+
+   '<input id="english-image-'+i+'" type="file" accept="image/jpeg,image/png,image/webp" data-image-index="'+i+'" onchange="uploadEnglishImage(this)">'+
+   (picture?'<button type="button" onclick="removeEnglishImage('+i+')">Remove picture</button>':'')+
+   '</div></div>';
+ }).join(""):'<div class="studio-empty">No words or sentences added yet.</div>';
 }
 function addEnglishItem(){
  const value=$("newEnglishItem").value.trim();if(!value)return $("newEnglishItem").focus();
- const lines=$("items").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const lines=englishLines();
  if(lines.length>=80||value.length>250)return status("Maximum 80 items, 250 characters each",true);
- lines.push(value);$("items").value=lines.join("\n");$("newEnglishItem").value="";renderEnglishItems();$("newEnglishItem").focus();
+ lines.push(value);englishItemImages.push("");setEnglishLines(lines);
+ $("newEnglishItem").value="";$("newEnglishItem").focus();
 }
 function importEnglishItems(){
  const additions=$("bulkEnglishItems").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
- const lines=$("items").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const lines=englishLines();
  if(lines.length+additions.length>80||additions.some(x=>x.length>250))return status("Maximum 80 items, 250 characters each",true);
- $("items").value=lines.concat(additions).join("\n");$("bulkEnglishItems").value="";renderEnglishItems();status("");
+ englishItemImages.push(...additions.map(()=>""));setEnglishLines(lines.concat(additions));
+ $("bulkEnglishItems").value="";status("");
 }
 $("newEnglishItem").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addEnglishItem()}});
-$("englishItemsList").addEventListener("click",e=>{const btn=e.target.closest("[data-remove-index]");if(!btn)return;const lines=$("items").value.split(/\r?\n/).filter(Boolean);lines.splice(Number(btn.dataset.removeIndex),1);$("items").value=lines.join("\n");renderEnglishItems()});
-$("englishItemsList").addEventListener("change",e=>{const input=e.target.closest("[data-item-index]");if(!input)return;const lines=$("items").value.split(/\r?\n/).filter(Boolean);lines[Number(input.dataset.itemIndex)]=input.value.trim();$("items").value=lines.filter(Boolean).join("\n");renderEnglishItems()});
-function clearForm(){editing=null;$("maxAttempts").value="0";$("title").value="";$("items").value="";$("bulkEnglishItems").value="";$("newEnglishItem").value="";renderEnglishItems()}
+$("englishItemsList").addEventListener("click",e=>{
+ const btn=e.target.closest("[data-remove-index]");if(!btn)return;
+ const index=Number(btn.dataset.removeIndex),lines=englishLines();
+ lines.splice(index,1);englishItemImages.splice(index,1);setEnglishLines(lines);
+});
+$("englishItemsList").addEventListener("change",e=>{
+ const input=e.target.closest("[data-item-index]");if(!input)return;
+ const lines=englishLines(),index=Number(input.dataset.itemIndex);
+ lines[index]=input.value.trim();
+ if(!lines[index]){lines.splice(index,1);englishItemImages.splice(index,1)}
+ setEnglishLines(lines);
+});
+function clearForm(){
+ editing=null;englishItemImages=[];$("maxAttempts").value="0";
+ $("title").value="";$("items").value="";$("bulkEnglishItems").value="";
+ $("newEnglishItem").value="";renderEnglishItems();
+}
 async function loadActivities(){const snap=await db.collection("englishActivities").where("teacherId","==",username()).get();activities=snap.docs.map(d=>({id:d.id,...d.data()}));$("myActivities").innerHTML=activities.length?activities.map(a=>'<div class="activity"><strong>'+esc(a.title)+'</strong><div class="muted">'+esc(Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses.map(c=>c.grade+' / '+c.section).join('، '):a.grade+' / '+a.section)+' · '+(a.items||[]).length+' item</div><button onclick="editActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Edit</button><button class="secondary" onclick="copyLink('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Copy Link</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Results</button><button style="background:#fde8e8;color:#9f2020" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></div>').join(""):'<p>No published activities yet.</p>'}
 async function deleteActivity(id){const r=role();const list=(r==="teacher"?activities:staffActivities);if(!["teacher","supervisor","admin","superadmin"].includes(r)||!confirm("هل تريد حذف النشاط؟ لن يظهر للطلاب بعد الحذف."))return;const a=list.find(x=>x.id===id);if(!a)return status("النشاط غير موجود",true);if(r==="teacher"&&a.teacherId!==username())return status("لا تملك صلاحية حذف هذا النشاط",true);try{await db.collection("englishActivities").doc(id).delete();if(editing===id)clearForm();status("تم حذف النشاط");if(r==="teacher")await loadActivities();else await loadStaffActivities()}catch(e){status("تعذر حذف النشاط: "+e.message,true)}}
 function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts===0?0:(a.maxAttempts||3));$("title").value=a.title;$("items").value=(a.items||[]).join("\n");$("subject").value=a.subjectId;updateClasses();const assigned=teacherAssignments().filter(x=>String(x.subjectId)===String(a.subjectId));
