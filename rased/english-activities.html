@@ -231,7 +231,7 @@ function clearForm(){
 }
 async function loadActivities(){const snap=await db.collection("englishActivities").where("teacherId","==",username()).get();activities=snap.docs.map(d=>({id:d.id,...d.data()}));$("myActivities").innerHTML=activities.length?activities.map(a=>'<div class="activity"><strong>'+esc(a.title)+'</strong><div class="muted">'+esc(Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses.map(c=>c.grade+' / '+c.section).join('، '):a.grade+' / '+a.section)+' · '+(a.items||[]).length+' item</div><button onclick="editActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Edit</button><button class="secondary" onclick="copyLink('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Copy Link</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Results</button><button style="background:#fde8e8;color:#9f2020" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></div>').join(""):'<p>No published activities yet.</p>'}
 async function deleteActivity(id){const r=role();const list=(r==="teacher"?activities:staffActivities);if(!["teacher","supervisor","admin","superadmin"].includes(r)||!confirm("هل تريد حذف النشاط؟ لن يظهر للطلاب بعد الحذف."))return;const a=list.find(x=>x.id===id);if(!a)return status("النشاط غير موجود",true);if(r==="teacher"&&a.teacherId!==username())return status("لا تملك صلاحية حذف هذا النشاط",true);try{await db.collection("englishActivities").doc(id).delete();if(editing===id)clearForm();status("تم حذف النشاط");if(r==="teacher")await loadActivities();else await loadStaffActivities()}catch(e){status("تعذر حذف النشاط: "+e.message,true)}}
-function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts===0?0:(a.maxAttempts||3));$("title").value=a.title;$("items").value=(a.items||[]).join("\n");$("subject").value=a.subjectId;updateClasses();const assigned=teacherAssignments().filter(x=>String(x.subjectId)===String(a.subjectId));
+function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts===0?0:(a.maxAttempts||3));$("title").value=a.title;$("items").value=(a.items||[]).join("\n");englishItemImages=(a.items||[]).map((_,i)=>a.itemImages?.[i]||"");$("subject").value=a.subjectId;updateClasses();const assigned=teacherAssignments().filter(x=>String(x.subjectId)===String(a.subjectId));
  const assignedKeys=new Set(assigned.map(x=>String(x.grade)+"||"+String(x.section)));
  const targets=Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses:[{grade:a.grade,section:a.section}];
  const targetsMatchAll=assignedKeys.size>1&&targets.length===assignedKeys.size&&targets.every(c=>assignedKeys.has(String(c.grade)+"||"+String(c.section)));
@@ -251,7 +251,10 @@ async function saveActivity(){
  const rawMaxAttempts=Number($("maxAttempts").value);
  const maxAttempts=Number.isInteger(rawMaxAttempts)&&rawMaxAttempts>=0&&rawMaxAttempts<=10?rawMaxAttempts:0;
  const primary=selected[0];
- const data={title:$("title").value.trim(),items,maxAttempts,teacherId:username(),
+ const itemImages=items.map((_,i)=>englishItemImages[i]||"");
+ if(itemImages.some(url=>url&&!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(url))||itemImages.join("").length>600000)
+  return status("Picture data is invalid or too large. Remove some pictures.",true);
+ const data={title:$("title").value.trim(),items,itemImages,maxAttempts,teacherId:username(),
   teacherName:currentTeacher.name||username(),subjectId,
   subjectName:primary.subjectName||primary.subject||primary.name||"English",
   grade:primary.grade,section:primary.section,
@@ -270,7 +273,32 @@ async function saveActivity(){
   clearForm();await loadActivities();
  }catch(e){status("Unable to save: "+e.message,true)}
 }
-async function openActivity(){const id=$("activityCode").value.trim();if(!/^[\w-]{8,100}$/.test(id))return status("Enter a valid activity code",true);try{const snap=await db.collection("englishActivities").doc(id).get();if(!snap.exists||snap.data().published!==true)throw Error("Activity is unavailable");selectedActivity={id,...snap.data()};attempts={};$("practice").classList.remove("hidden");$("activityTitle").textContent=selectedActivity.title;$("cards").innerHTML=selectedActivity.items.map((word,i)=>'<div class="activity" style="margin:12px 0"><div class="muted">Item '+(i+1)+' of '+selectedActivity.items.length+'</div><strong>'+esc(word)+'</strong><button onclick="speak('+i+')">🔊 Listen</button><button id="speak-button-'+i+'" onclick="listen('+i+')">🎙️ Speak ('+getMaxSpeakingAttempts()+' left)</button><div id="feedback-'+i+'" role="status" class="muted">Listen, then speak</div></div>').join("");$("overall").textContent="";$("practice").scrollIntoView({behavior:"smooth"});status("")}catch(e){status("تعذر Open Activity: "+e.message,true)}}
+async function openActivity(){
+ const id=$("activityCode").value.trim();
+ if(!/^[\w-]{8,100}$/.test(id))return status("Enter a valid activity code",true);
+ try{
+  const snap=await db.collection("englishActivities").doc(id).get();
+  if(!snap.exists||snap.data().published!==true)throw Error("Activity is unavailable");
+  selectedActivity={id,...snap.data()};attempts={};
+  $("practice").classList.remove("hidden");
+  $("activityTitle").textContent=selectedActivity.title;
+  $("cards").innerHTML=selectedActivity.items.map((word,i)=>{
+   const picture=selectedActivity.itemImages?.[i]||"";
+   const image=/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(picture)
+     ?'<img class="english-practice-picture" alt="Picture for '+esc(word)+'" src="'+picture+'">':'';
+   return '<div class="activity" style="margin:12px 0">'+
+    '<div class="muted">Item '+(i+1)+' of '+selectedActivity.items.length+'</div>'+
+    image+'<strong>'+esc(word)+'</strong>'+
+    '<button onclick="speak('+i+')">🔊 Listen</button>'+
+    '<button id="speak-button-'+i+'" onclick="listen('+i+')">🎙️ Speak ('+
+       (getMaxSpeakingAttempts()===Infinity?'unlimited':getMaxSpeakingAttempts()+' left')+')</button>'+
+    '<div id="feedback-'+i+'" role="status" class="muted">Listen, then speak</div></div>';
+  }).join("");
+  $("overall").textContent="";
+  $("practice").scrollIntoView({behavior:"smooth"});status("");
+ }catch(e){status("Unable to open activity: "+e.message,true)}
+}
+
 let englishVoice=null;
 function chooseEnglishVoice(){
  const voices=window.speechSynthesis?.getVoices()||[];
