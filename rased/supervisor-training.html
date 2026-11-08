@@ -17,6 +17,7 @@
 <main class="wrap">
 <section class="card"><div class="title">📚 إنشاء وتوثيق عمل إشرافي</div><div class="body">
 <div class="note">اختر نوع العمل الإشرافي، ودوّن بياناته ومحاوره، وحدّد المعلمين المستهدفين. تظهر التفاصيل في صفحة المعلم مع إقرار الاطلاع والتوقيع الإلكتروني، ويمكن طباعة شاهد التوثيق من المتابعة.</div>
+<div class="note" id="scopeWarning" style="display:none"></div>
 <div class="note" id="connectionStatus" role="status" style="display:none"><span id="connectionMessage"></span> <button type="button" class="light" id="retryLoadBtn" onclick="retryLoad()" style="margin-inline-start:8px">🔄 إعادة محاولة الاتصال</button></div>
 <input type="hidden" id="editId">
 <div class="fields">
@@ -49,7 +50,7 @@
 <script>
 const firebaseConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};firebase.initializeApp(firebaseConfig);const db=firebase.firestore();
 const SUPABASE_URL="https://xalqjwuewdgxrxuejqyg.supabase.co",SUPABASE_KEY="sb_publishable_BJozLqjByOtWcLi3Zb_MPg_pzNwV8jb",SUPABASE_BUCKET="rased-files";const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let teachers=[],events=[],progress=[],permissions={},currentUser="",currentSupervisorType="general_supervisor",assignedTeacherEmails=[],isSupervisorUser=false;
+let teachers=[],events=[],progress=[],permissions={},currentUser="",currentSupervisorType="general_supervisor",assignedTeacherEmails=[],isSupervisorUser=false,currentSupervisorName="",supervisorNameByLogin=new Map();
 const el=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])),has=k=>permissions[k]!==false;
 function eventKind(c){return String(c?.eventKind||"course").toLowerCase()==="meeting"?"meeting":"course"}
 function contentLabel(c){return String(c?.contentType||(eventKind(c)==="meeting"?"اجتماع":"دورات"))}
@@ -64,8 +65,63 @@ function formatDate(v){if(!v)return"—";try{return new Intl.DateTimeFormat("ar-
 function logout(){["currentUserRole","currentUser","currentUserName","currentUserEmail","currentUserType","currentUserPermissions"].forEach(k=>localStorage.removeItem(k));location.href="index.html"}
 function specialtyKey(a){if(a?.subjectId)return"id:"+String(a.subjectId);if(a?.subjectName)return"name:"+String(a.subjectName).trim();return""}
 function teacherKeys(t){const s=new Set((Array.isArray(t?.assignments)?t.assignments:[]).map(specialtyKey).filter(Boolean));if(t?.specialty)s.add("name:"+String(t.specialty).trim());return s}
-async function protect(){const role=(localStorage.getItem("currentUserRole")||"").toLowerCase();currentUser=(localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"").trim().toLowerCase();if(role==="manager"){currentSupervisorType="manager";isSupervisorUser=false;permissions={};return true}if(role!=="supervisor"){alert("هذه الصفحة لحسابات الإشراف.");location.href="index.html";return false}isSupervisorUser=true;const d=await db.collection("users").doc(currentUser).get();if(!d.exists){location.href="index.html";return false}const u=d.data()||{};permissions=u.permissions||{};currentSupervisorType=String(u.supervisorType||"general_supervisor").toLowerCase();assignedTeacherEmails=[...(Array.isArray(u.assignedTeacherEmails)?u.assignedTeacherEmails:[]),...(Array.isArray(u.assignedTeacherIds)?u.assignedTeacherIds:[]),...(Array.isArray(u.assignedTeachers)?u.assignedTeachers:[])].flatMap(x=>x&&typeof x==="object"?[x.email,x.teacherEmail,x.username,x.id,x.value]:[x]).map(x=>String(x||"").trim().toLowerCase()).filter(Boolean);if(!has("trainingManage")){alert("لا توجد لديك صلاحية إدارة الدورات والاجتماعات.");location.href="supervisor-dashboard.html";return false}return true}
-async function loadAll(){const [ts,us,cs,ps]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),db.collection("trainingProgress").get()]);const docs=[...ts.docs,...us.docs.filter(d=>String(d.data()?.role||"").toLowerCase()==="teacher")];teachers=docs.map(d=>{const x=d.data()||{};return {...x,id:d.id,email:String(x.email||x.username||d.id).trim().toLowerCase(),_keys:[d.id,x.email,x.username,x.teacherEmail,x.name].map(v=>String(v||"").trim().toLowerCase())}}).filter((t,i,a)=>a.findIndex(x=>x.email===t.email)===i);if(isSupervisorUser&&currentSupervisorType==="supervisor"){const allow=new Set(assignedTeacherEmails);teachers=teachers.filter(t=>t._keys.some(k=>allow.has(k)))}events=cs.docs.map(d=>({id:d.id,...d.data()}));if(isSupervisorUser)events=events.filter(c=>String(c.createdBy||c.updatedBy||"").trim().toLowerCase()===currentUser);events.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));const ids=new Set(events.map(x=>x.id));progress=ps.docs.map(d=>({id:d.id,...d.data()})).filter(p=>ids.has(p.courseId));renderTeacherChoices();updateTargetCount();renderEvents();renderStats()}
+async function protect(){const role=(localStorage.getItem("currentUserRole")||"").toLowerCase();currentUser=(sessionStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUser")||localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"").trim().toLowerCase();if(role==="manager"){currentSupervisorType="manager";isSupervisorUser=false;currentSupervisorName=String(sessionStorage.getItem("currentUserName")||localStorage.getItem("currentUserName")||currentUser).trim();permissions={};return true}if(role!=="supervisor"){alert("هذه الصفحة لحسابات الإشراف.");location.href="index.html";return false}isSupervisorUser=true;const d=await db.collection("users").doc(currentUser).get();if(!d.exists){location.href="index.html";return false}const u=d.data()||{};currentSupervisorName=String(u.name||sessionStorage.getItem("currentUserName")||currentUser).trim();permissions=u.permissions||{};currentSupervisorType=String(u.supervisorType||"general_supervisor").toLowerCase();assignedTeacherEmails=[...(Array.isArray(u.assignedTeacherEmails)?u.assignedTeacherEmails:[]),...(Array.isArray(u.assignedTeacherIds)?u.assignedTeacherIds:[]),...(Array.isArray(u.assignedTeachers)?u.assignedTeachers:[])].flatMap(x=>x&&typeof x==="object"?[x.email,x.teacherEmail,x.username,x.id,x.value]:[x]).map(x=>String(x||"").trim().toLowerCase()).filter(Boolean);if(!has("trainingManage")){alert("لا توجد لديك صلاحية إدارة الدورات والاجتماعات.");location.href="supervisor-dashboard.html";return false}return true}
+function teacherIdentityKeys(teacher){
+ return [teacher?.id,teacher?.email,teacher?.username,teacher?.teacherEmail,teacher?.code,
+  ...(Array.isArray(teacher?._keys)?teacher._keys:[])].map(x=>String(x||"").trim().toLowerCase()).filter(Boolean);
+}
+function allTeacherRecords(teacherDocs,userDocs){
+ const pool=[...teacherDocs,...userDocs.filter(d=>String(d.data()?.role||"").toLowerCase()==="teacher")];
+ const result=[],keyMap=new Map();
+ for(const doc of pool){
+  const x=doc.data()||{};
+  const aliases=[doc.id,x.email,x.username,x.teacherEmail,x.code].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean);
+  const email=String(x.email||x.username||doc.id).trim().toLowerCase();
+  let existing=aliases.map(k=>keyMap.get(k)).find(Boolean);
+  if(existing){
+   // Merge identifiers but never erase populated teacher details.
+   const combined=[...new Set([...(existing._keys||[]),...aliases])];
+   const update={...x};for(const [k,v] of Object.entries(update))if(v!==undefined&&v!==null&&v!=="")existing[k]=existing[k]||v;
+   existing._keys=combined;
+   for(const key of combined)keyMap.set(key,existing);
+  }else{
+   existing={...x,id:doc.id,email,_keys:aliases};
+   result.push(existing);
+   for(const key of aliases)keyMap.set(key,existing);
+  }
+ }
+ return result;
+}
+function supervisorScopedTeachers(list){
+ if(!isSupervisorUser||currentSupervisorType!=="supervisor")return list;
+ const map=new Map();
+ for(const teacher of list)for(const key of teacherIdentityKeys(teacher))if(!map.has(key))map.set(key,teacher);
+ const found=new Set(),result=[],missing=[];
+ for(const ref of assignedTeacherEmails){
+  const t=map.get(ref);
+  if(!t){missing.push(ref);continue}
+  if(found.has(t))continue;
+  result.push(t);found.add(t);
+ }
+ const warning=el("scopeWarning");
+ if(warning){
+  warning.style.display=missing.length?"block":"none";
+  warning.textContent=missing.length?"⚠️ يوجد "+missing.length+" معلم مسند لحسابك ولم يُعثر له على سجل معلم مطابق: "+missing.join("، ")+". يرجى مراجعة بيانات حساباتهم من الإدارة.":"";
+ }
+ return result;
+}
+async function loadAll(){
+ const [ts,us,cs,ps]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),db.collection("trainingProgress").get()]);
+ supervisorNameByLogin=new Map(us.docs.map(d=>[String(d.id||"").trim().toLowerCase(),String(d.data()?.name||"").trim()]));
+ if(!currentSupervisorName||currentSupervisorName===currentUser)currentSupervisorName=supervisorNameByLogin.get(currentUser)||currentSupervisorName||currentUser;
+ teachers=supervisorScopedTeachers(allTeacherRecords(ts.docs,us.docs));
+ events=cs.docs.map(d=>({id:d.id,...d.data()}));
+ if(isSupervisorUser)events=events.filter(c=>String(c.createdBy||c.updatedBy||"").trim().toLowerCase()===currentUser);
+ events.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+ const ids=new Set(events.map(x=>x.id));
+ progress=ps.docs.map(d=>({id:d.id,...d.data()})).filter(p=>ids.has(p.courseId));
+ renderTeacherChoices();updateTargetCount();renderEvents();renderStats();
+}
 function setConnectionStatus(message){
  const box=el("connectionStatus");box.style.display=message?"block":"none";
  el("connectionMessage").textContent=message||"";
@@ -93,7 +149,7 @@ function selectSpecialties(v){document.querySelectorAll(".target-specialty").for
 async function uploadMaterial(){const f=el("materialFile").files[0];if(!f){alert("اختر ملفًا أولًا.");return}if(f.size>100*1024*1024){alert("حجم الملف أكبر من 100 ميجابايت.");return}const box=el("uploadProgress"),btn=el("uploadBtn");box.style.display="block";box.textContent="جارٍ رفع الملف...";btn.disabled=true;try{const ext=(f.name.split(".").pop()||"file").replace(/[^a-zA-Z0-9]/g,"").toLowerCase();const path="training/materials/"+Date.now()+"_"+Math.random().toString(36).slice(2,10)+"."+ext;const out=await supabaseClient.storage.from(SUPABASE_BUCKET).upload(path,f,{cacheControl:"3600",upsert:false,contentType:f.type||"application/octet-stream"});if(out.error)throw out.error;const url=supabaseClient.storage.from(SUPABASE_BUCKET).getPublicUrl(out.data.path)?.data?.publicUrl||"";if(!url)throw Error("تعذر إنشاء رابط الملف.");el("materialUrl").value=url;box.textContent="✅ تم رفع الملف. سيُحفظ رابطه عند حفظ العنصر.";box.style.background="#e8f7ee"}catch(e){console.error(e);box.textContent="❌ تعذر رفع الملف: "+(e.message||e)}finally{btn.disabled=false}}
 async function saveEvent(){const id=el("editId").value,title=el("title").value.trim(),description=el("description").value.trim(),kind=el("eventKind").value,category=chosenCategory(),meeting=kind==="meeting";const effectiveTargets=selectedTeachers();if(!title||!description){alert("أدخل الاسم والوصف.");return}if(!effectiveTargets.length){alert("حدد معلمًا واحدًا على الأقل للنشر.");return}const available=new Set(teachers.map(t=>t.email));if(effectiveTargets.some(email=>!available.has(email))){alert("يوجد معلم خارج نطاق الإسناد.");return}const effectiveType="selected",effectiveSpecs=[];
 const materialUrl=el("materialUrl").value.trim();if(materialUrl&&!validUrl(materialUrl)){alert("رابط الملف غير صحيح.");return}if(!materialUrl&&kind==="course"&&!selectedDetailSections().some(x=>x.text)){alert("أدخل بيانات المحتوى أو أرفق ملفًا للدورة.");return}const agenda=el("meetingAgenda").value.trim();if(kind==="meeting"&&!materialUrl&&!agenda){alert("أضف رابطًا/ملفًا للاجتماع أو أضف بنود الاجتماع.");return}
-const ref=id?db.collection("trainingCourses").doc(id):db.collection("trainingCourses").doc();const current=events.find(x=>x.id===id)||{};const data={title,description,eventKind:meeting?"meeting":"course",contentType:category,courseType:"material",detailSections:meeting?[]:selectedDetailSections(),meetingNumber:kind==="meeting"?el("meetingNumber").value.trim():"",meetingAgendaText:kind==="meeting"?agenda:"",meetingRecommendationsText:kind==="meeting"?el("meetingRecommendations").value.trim():"",startDate:kind==="meeting"?el("meetingDate").value:el("startDate").value,endDate:kind==="course"?el("endDate").value:"",fileUrl:materialUrl,fileName:el("materialFile").files[0]?.name||current.fileName||"",materialUrl,published:el("published").value==="true",targetType:effectiveType,targetTeacherEmails:effectiveType==="selected"?effectiveTargets:[],targetSpecialties:effectiveType==="specialties"?effectiveSpecs:[],updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser};if(!id){data.createdAt=firebase.firestore.FieldValue.serverTimestamp();data.createdBy=currentUser}await ref.set(data,{merge:true});alert("تم حفظ "+category+" بنجاح ✅");resetForm();await loadAll()}
+const ref=id?db.collection("trainingCourses").doc(id):db.collection("trainingCourses").doc();const current=events.find(x=>x.id===id)||{};const data={title,description,eventKind:meeting?"meeting":"course",contentType:category,courseType:"material",detailSections:meeting?[]:selectedDetailSections(),meetingNumber:kind==="meeting"?el("meetingNumber").value.trim():"",meetingAgendaText:kind==="meeting"?agenda:"",meetingRecommendationsText:kind==="meeting"?el("meetingRecommendations").value.trim():"",startDate:kind==="meeting"?el("meetingDate").value:el("startDate").value,endDate:kind==="course"?el("endDate").value:"",fileUrl:materialUrl,fileName:el("materialFile").files[0]?.name||current.fileName||"",materialUrl,published:el("published").value==="true",targetType:effectiveType,targetTeacherEmails:effectiveType==="selected"?effectiveTargets:[],targetSpecialties:effectiveType==="specialties"?effectiveSpecs:[],updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser,supervisorName:currentSupervisorName};if(!id){data.createdAt=firebase.firestore.FieldValue.serverTimestamp();data.createdBy=currentUser}await ref.set(data,{merge:true});alert("تم حفظ "+category+" بنجاح ✅");resetForm();await loadAll()}
 function resetForm(){el("editId").value="";["title","description","meetingDate","meetingNumber","meetingAgenda","meetingRecommendations","startDate","endDate","materialUrl"].forEach(id=>el(id).value="");el("materialFile").value="";el("published").value="true";el("eventKind").value="meeting";el("targetType").value="selected";el("uploadProgress").style.display="none";selectTeachers(false);selectSpecialties(false);el("tailoredGrid").dataset.category="";toggleTargets();toggleKind()}
 function editEvent(id){const c=events.find(x=>x.id===id);if(!c)return;el("editId").value=id;el("title").value=c.title||"";el("description").value=c.description||"";const catOption=[...el("eventKind").options].find(o=>o.textContent===contentLabel(c));el("eventKind").value=catOption?catOption.value:eventKind(c);el("meetingDate").value=c.startDate||"";el("startDate").value=c.startDate||"";el("endDate").value=c.endDate||"";el("meetingNumber").value=c.meetingNumber||"";el("meetingAgenda").value=c.meetingAgendaText||"";el("meetingRecommendations").value=c.meetingRecommendationsText||"";el("materialUrl").value=resource(c);el("published").value=c.published===false?"false":"true";el("targetType").value="selected";selectTeachers(false);selectSpecialties(false);targetTeachers(c).forEach(t=>{const email=t.email;const box=[...document.querySelectorAll(".target-teacher")].find(x=>x.value===email);if(box)box.checked=true});(c.targetSpecialties||[]).forEach(k=>{const box=[...document.querySelectorAll(".target-specialty")].find(x=>x.value===k);if(box)box.checked=true});toggleTargets();toggleKind();el("tailoredGrid").querySelectorAll("[data-detail-index]").forEach((x,i)=>x.value=(Array.isArray(c.detailSections)?c.detailSections[i]?.text:"")||"");updateTargetCount();scrollTo({top:0,behavior:"smooth"})}
 async function deleteEvent(id){const c=events.find(x=>x.id===id);if(!c||!confirm("حذف "+(eventKind(c)==="meeting"?"الاجتماع":"الدورة")+"؟\n"+c.title+"\nسجلات الاطلاع والتوقيع التاريخية ستظل محفوظة."))return;await db.collection("trainingCourses").doc(id).delete();await loadAll()}
@@ -140,6 +196,11 @@ function printEvidence(id){
  const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة الشاهد.");return}w.document.write(html);w.document.close();
 }
 
+function supervisorNameForPrint(course){
+ const login=String(course?.createdBy||course?.updatedBy||currentUser).trim().toLowerCase();
+ return supervisorNameByLogin.get(login)||String(course?.supervisorName||"").trim()||
+  (login===currentUser?currentSupervisorName:login)||"—";
+}
 function printMinutes(id){
  const c=events.find(x=>x.id===id);
  if(!c||eventKind(c)!=="meeting")return;
@@ -166,7 +227,7 @@ function printMinutes(id){
  '<p class="closing">هذا وقد نوقشت بنود الاجتماع واتفق الحاضرون على تنفيذ ما جاء فيه، وعليه جرى التوقيع الإلكتروني عليه بتاريخه وساعته.</p>'+
  '<p class="closing">وفي ختام الاجتماع، نتقدم للحضور بخالص الشكر والتقدير على حضورهم ومشاركتهم، سائلين الله لهم التوفيق والسداد.</p>'+
  '<div class="sign-title">الحضور والتوقيع الإلكتروني</div><table class="signatures"><thead><tr><th>م</th><th>الاسم</th><th>الوظيفة</th><th>التوقيع</th></tr></thead><tbody>'+(signedRows||'<tr><td colspan="4">لا توجد سجلات حضور بعد.</td></tr>')+'</tbody></table>'+
- '<div class="roles"><div>المشرف التربوي<span>محمد عامر أحمد</span></div><div>المشرف العام<span>أحمد سمير</span></div><div>مدير المدرسة<span>عبد العزيز القحطاني</span></div></div>'+
+ '<div class="roles"><div>المشرف التربوي<span>'+esc(supervisorNameForPrint(c))+'</span></div><div>المشرف العام<span>أحمد سمير</span></div><div>مدير المدرسة<span>عبد العزيز القحطاني</span></div></div>'+
  '<div class="designer">تصميم محمد عامر أحمد</div></main><script>window.onload=()=>window.print()<\/script>\n</body></html>';
  const w=window.open("","_blank");
  if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة المحضر.");return}
