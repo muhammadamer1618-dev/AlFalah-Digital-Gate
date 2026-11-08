@@ -156,20 +156,40 @@ async function deleteEvent(id){const c=events.find(x=>x.id===id);if(!c||!confirm
 function targetTeachers(c){if(c.targetType==="selected"){const s=new Set((c.targetTeacherEmails||[]).map(x=>String(x).toLowerCase()));return teachers.filter(t=>s.has(String(t.email).toLowerCase()))}if(c.targetType==="specialties"){const wanted=new Set(c.targetSpecialties||[]);return teachers.filter(t=>[...teacherKeys(t)].some(k=>wanted.has(k)))}return teachers}
 function targetLabel(c){if(c.targetType==="selected")return (c.targetTeacherEmails||[]).length+" معلم";if(c.targetType==="specialties")return (c.targetSpecialties||[]).length+" تخصص";return"كل المعلمين"}
 function records(c){const map=new Map(progress.filter(p=>p.courseId===c.id).map(p=>[String(p.teacherEmail||"").toLowerCase(),p]));return targetTeachers(c).map(t=>({teacher:t,p:map.get(String(t.email).toLowerCase())||{}}))}
+function hasViewed(c,p){return eventKind(c)==="meeting"?(p.meetingMinutesViewed===true||p.meetingSigned===true):(Number(p.visitCount||0)>0||p.courseAcknowledged===true||p.activitySigned===true)}
 function isSigned(c,p){return eventKind(c)==="meeting"?p.meetingSigned===true:p.activitySigned===true}
 function signatureName(c,p){return isSigned(c,p)?(eventKind(c)==="meeting"?p.meetingSignatureName:p.activitySignatureName)||p.teacherName||"توقيع إلكتروني":"—"}
 function signedTimestamp(c,p){return eventKind(c)==="meeting"?p.meetingSignedAt:p.activitySignedAt}
 function signedDate(c,p){const stamp=signedTimestamp(c,p);return stamp?.toDate?new Intl.DateTimeFormat("ar-SA",{dateStyle:"short",timeStyle:"short"}).format(stamp.toDate()):"—"}
 function renderStats(){el("sAll").textContent=events.length;el("sCourses").textContent=events.filter(c=>eventKind(c)==="course").length;el("sMeetings").textContent=events.filter(c=>eventKind(c)==="meeting").length;el("sCompleted").textContent=events.filter(c=>eventKind(c)==="course").reduce((a,c)=>a+records(c).filter(x=>x.p.courseAcknowledged===true||x.p.completed===true).length,0);el("sSigned").textContent=events.reduce((a,c)=>a+records(c).filter(x=>isSigned(c,x.p)).length,0)}
-function renderEvents(){el("eventsBody").innerHTML=events.map((c,i)=>{const rows=records(c),meeting=eventKind(c)==="meeting",opened=rows.filter(x=>meeting?x.p.meetingMinutesViewed===true:Number(x.p.visitCount||0)>0).length,done=rows.filter(x=>isSigned(c,x.p)).length;return '<tr><td>'+(i+1)+'</td><td><b>'+esc(c.title||"")+'</b></td><td>'+esc(contentLabel(c))+'</td><td>'+esc(formatDate(c.startDate))+'</td><td>'+esc(targetLabel(c))+'</td><td>'+opened+'</td><td>'+done+' / '+rows.length+'</td><td><span class="badge '+(c.published===false?"off":"on")+'">'+(c.published===false?"مسودة":"منشور")+'</span></td><td><button class="primary" data-action="report" data-id="'+esc(c.id)+'">📊 متابعة</button> <button class="light" data-action="print-evidence" data-id="'+esc(c.id)+'">🖨️ طباعة الشاهد</button> <button class="gold" data-action="edit" data-id="'+esc(c.id)+'">تعديل</button> <button class="red" data-action="delete" data-id="'+esc(c.id)+'">حذف</button></td></tr>'}).join("")||'<tr><td colspan="9">لا توجد مواد أو اجتماعات.</td></tr>'}
-function showReport(id){const c=events.find(x=>x.id===id);if(!c)return;const meeting=eventKind(c)==="meeting",rows=records(c);el("reportTitle").textContent="متابعة "+contentLabel(c)+": "+(c.title||"");el("reportBody").innerHTML='<div class="actions"><button class="primary" data-action="print-report" data-id="'+esc(id)+'">🖨️ طباعة التقرير</button>'+'<button class="light" data-action="print-evidence" data-id="'+esc(id)+'">📄 طباعة شاهد التوثيق</button>'+(meeting?'<button class="light" data-action="print-minutes" data-id="'+esc(id)+'">📋 محضر الاجتماع الأصلي</button>':"")+'<button class="light" onclick="closeReport()">إغلاق</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>الاسم</th><th>الوظيفة</th><th>الاطلاع</th><th>الإقرار / التوقيع</th><th>التاريخ</th></tr></thead><tbody>'+rows.map((x,i)=>{const seen=meeting?x.p.meetingMinutesViewed===true:Number(x.p.visitCount||0)>0,done=isSigned(c,x.p),stamp=signedTimestamp(c,x.p);return '<tr><td>'+(i+1)+'</td><td>'+esc(x.teacher.name||"—")+'</td><td>'+esc(displayRole(x.teacher))+'</td><td>'+ (seen?"✅ اطلع":"لم يطلع")+'</td><td>'+(done?"✅ وقّع إلكترونيًا":"لم يوقّع")+'</td><td>'+esc(stamp?.toDate?new Intl.DateTimeFormat("ar-SA",{dateStyle:"short",timeStyle:"short"}).format(stamp.toDate()):"—")+'</td></tr>'}).join("")+'</tbody></table></div>';el("reportModal").classList.add("show")}
+function renderEvents(){el("eventsBody").innerHTML=events.map((c,i)=>{const rows=records(c),meeting=eventKind(c)==="meeting",opened=rows.filter(x=>hasViewed(c,x.p)).length,done=rows.filter(x=>isSigned(c,x.p)).length;return '<tr><td>'+(i+1)+'</td><td><b>'+esc(c.title||"")+'</b></td><td>'+esc(contentLabel(c))+'</td><td>'+esc(formatDate(c.startDate))+'</td><td>'+esc(targetLabel(c))+'</td><td>'+opened+'</td><td>'+done+' / '+rows.length+'</td><td><span class="badge '+(c.published===false?"off":"on")+'">'+(c.published===false?"مسودة":"منشور")+'</span></td><td><button class="primary" data-action="report" data-id="'+esc(c.id)+'">📊 متابعة</button> <button class="light" data-action="print-evidence" data-id="'+esc(c.id)+'">🖨️ طباعة الشاهد</button> <button class="gold" data-action="edit" data-id="'+esc(c.id)+'">تعديل</button> <button class="red" data-action="delete" data-id="'+esc(c.id)+'">حذف</button></td></tr>'}).join("")||'<tr><td colspan="9">لا توجد مواد أو اجتماعات.</td></tr>'}
+function showReport(id){
+ const c=events.find(x=>x.id===id);if(!c)return;
+ const rows=records(c),meeting=eventKind(c)==="meeting";
+ el("reportTitle").textContent="متابعة "+contentLabel(c)+": "+(c.title||"");
+ el("reportBody").innerHTML='<div class="actions"><button class="primary" data-action="print-report" data-id="'+esc(id)+'">🖨️ طباعة التقرير</button>'+
+ '<button class="light" data-action="print-evidence" data-id="'+esc(id)+'">📄 طباعة شاهد التوثيق</button>'+
+ (meeting?'<button class="light" data-action="print-minutes" data-id="'+esc(id)+'">📋 محضر الاجتماع الأصلي</button>':"")+
+ '<button class="light" onclick="closeReport()">إغلاق</button></div>'+
+ '<div class="table-wrap"><table><thead><tr><th>#</th><th>الاسم</th><th>الوظيفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th></tr></thead><tbody>'+
+ rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.teacher.name||"—")+'</td><td>'+esc(displayRole(x.teacher))+
+ '</td><td>'+(hasViewed(c,x.p)?"✅ اطّلع":"لم يطّلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td></tr>').join("")+
+ '</tbody></table></div>';el("reportModal").classList.add("show")
+}
 function closeReport(){el("reportModal").classList.remove("show")}
 document.addEventListener("click",event=>{const button=event.target.closest("[data-action]");if(!button)return;const id=button.dataset.id;switch(button.dataset.action){case"report":showReport(id);break;case"edit":editEvent(id);break;case"delete":deleteEvent(id);break;case"print-report":printReport(id);break;case"print-minutes":printMinutes(id);break;case"print-evidence":printEvidence(id);break}});
 function printReport(id){
  const c=events.find(x=>x.id===id);if(!c)return;
  const rows=records(c);
- const html='<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>'+esc(contentLabel(c))+'</title><style>body{font-family:Tahoma,Arial;padding:24px;color:#163e36}h1{text-align:center}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #888;padding:8px;text-align:center}th{background:#e9f3ef}</style><h1>مدارس الفلاح الأهلية</h1><h2>'+esc(contentLabel(c))+'</h2><p>التاريخ: '+esc(formatDate(c.startDate))+'</p><table><thead><tr><th>الاسم</th><th>الوظيفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th><th>تاريخ ووقت التوقيع</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+'</td><td>'+(Number(x.p.visitCount||0)>0||x.p.meetingMinutesViewed===true?"اطلع":"لم يطلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td><td>'+esc(signedDate(c,x.p))+'</td></tr>').join("")+'</tbody></table><script>window.onload=()=>window.print()<\/script></html>';
- const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة التقرير.");return}w.document.write(html);w.document.close();
+ const html='<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>'+esc(contentLabel(c))+'</title>'+
+ '<style>body{font-family:Tahoma,Arial;padding:24px;color:#163e36}h1{text-align:center}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #888;padding:8px;text-align:center}</style>'+
+ '<h1>مدارس الفلاح الأهلية</h1><h2>'+esc(contentLabel(c))+'</h2><p>تاريخ العمل: '+esc(formatDate(c.startDate))+'</p>'+
+ '<table><thead><tr><th>الاسم</th><th>الوظيفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th></tr></thead><tbody>'+
+ rows.map(x=>'<tr><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+
+ '</td><td>'+(hasViewed(c,x.p)?"اطّلع":"لم يطّلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td></tr>').join("")+
+ '</tbody></table><script>window.onload=()=>window.print()<\/script></html>';
+ const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة التقرير.");return}
+ w.document.write(html);w.document.close();
 }
 function printEvidence(id){
  const c=events.find(x=>x.id===id);if(!c)return;
@@ -190,8 +210,8 @@ function printEvidence(id){
  (sections||'<section class="detail"><h3>التفاصيل</h3><div>لم تسجل محاور لهذا المحتوى.</div></section>')+
  (resource(c)?'<p><b>المرفق:</b> '+esc(resource(c))+'</p>':"")+
  '<div class="sign-title">سجل الاطلاع والتوقيعات الإلكترونية ('+signed+' من '+rows.length+')</div>'+
- '<table><thead><tr><th>م</th><th>اسم المعلم</th><th>الصفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th><th>وقت التوقيع</th></tr></thead><tbody>'+
- (rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+'</td><td>'+(Number(x.p.visitCount||0)>0||x.p.meetingMinutesViewed===true?"تم الاطلاع":"لم يطلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td><td>'+esc(signedDate(c,x.p))+'</td></tr>').join("")||'<tr><td colspan="6">لا يوجد معلمون مستهدفون.</td></tr>')+
+ '<table><thead><tr><th>م</th><th>اسم المعلم</th><th>الصفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th></tr></thead><tbody>'+
+ (rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+'</td><td>'+(hasViewed(c,x.p)?"اطّلع":"لم يطّلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td></tr>').join("")||'<tr><td colspan="5">لا يوجد معلمون مستهدفون.</td></tr>')+
  '</tbody></table><div class="foot">مدارس الفلاح الأهلية | تصميم محمد عامر أحمد</div></main><script>window.onload=()=>window.print()<\/script></body></html>';
  const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة الشاهد.");return}w.document.write(html);w.document.close();
 }
@@ -210,8 +230,7 @@ function printMinutes(id){
  const date=formatDate(c.startDate);
  const signedRows=rows.map((x,i)=>{
   const signed=x.p.meetingSigned===true;
-  const stamp=x.p.meetingSignedAt?.toDate?new Intl.DateTimeFormat("ar-SA",{dateStyle:"short",timeStyle:"short"}).format(x.p.meetingSignedAt.toDate()):"—";
-  return "<tr><td>"+(i+1)+"</td><td>"+esc(x.teacher.name||x.teacher.email)+"</td><td>"+esc(displayRole(x.teacher))+"</td><td>"+esc(signed?(x.p.meetingSignatureName||"توقيع إلكتروني"):"—")+(signed?"<br><small>"+esc(stamp)+"</small>":"")+"</td></tr>";
+  return "<tr><td>"+(i+1)+"</td><td>"+esc(x.teacher.name||x.teacher.email)+"</td><td>"+esc(displayRole(x.teacher))+"</td><td>"+esc(signed?(x.p.meetingSignatureName||"توقيع إلكتروني"):"—")+"</td></tr>";
  }).join("");
  const agenda=lines(c.meetingAgendaText).map(x=>"<li>"+esc(x)+"</li>").join("");
  const recommendations=lines(c.meetingRecommendationsText).map((x,i)=>"<li>"+esc(x)+"</li>").join("");
@@ -224,7 +243,7 @@ function printMinutes(id){
  '<p class="intro">إنه في يوم '+esc(date)+' تم عقد الاجتماع التربوي '+(c.title?'بعنوان: '+esc(c.title):"للمعلمين")+'، لمناقشة البنود الآتية:</p>'+
  '<div class="section-title">بنود الاجتماع:</div><ol class="agenda">'+(agenda||"<li>لا توجد بنود مسجلة.</li>")+'</ol>'+
  '<div class="section-title">التوصيات:</div><ol class="recommendations">'+(recommendations||"<li>لا توجد توصيات مسجلة.</li>")+'</ol>'+
- '<p class="closing">هذا وقد نوقشت بنود الاجتماع واتفق الحاضرون على تنفيذ ما جاء فيه، وعليه جرى التوقيع الإلكتروني عليه بتاريخه وساعته.</p>'+
+ '<p class="closing">هذا وقد نوقشت بنود الاجتماع واتفق الحاضرون على تنفيذ ما جاء فيه، وعليه جرى إثبات الاطلاع والتوقيع الإلكتروني عليه.</p>'+
  '<p class="closing">وفي ختام الاجتماع، نتقدم للحضور بخالص الشكر والتقدير على حضورهم ومشاركتهم، سائلين الله لهم التوفيق والسداد.</p>'+
  '<div class="sign-title">الحضور والتوقيع الإلكتروني</div><table class="signatures"><thead><tr><th>م</th><th>الاسم</th><th>الوظيفة</th><th>التوقيع</th></tr></thead><tbody>'+(signedRows||'<tr><td colspan="4">لا توجد سجلات حضور بعد.</td></tr>')+'</tbody></table>'+
  '<div class="roles"><div>المشرف التربوي<span>'+esc(supervisorNameForPrint(c))+'</span></div><div>المشرف العام<span>أحمد سمير</span></div><div>مدير المدرسة<span>عبد العزيز القحطاني</span></div></div>'+
