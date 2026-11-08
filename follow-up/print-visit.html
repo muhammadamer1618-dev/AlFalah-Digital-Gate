@@ -2171,7 +2171,8 @@ function renderVisit(v){
     v.planMatchStatus === "not_matched" ? "غير مطابقة" : "غير محدد";
   el("bookCorrectionStatus").textContent =
     v.bookCorrectionStatus === "corrected" ? "مصحح" :
-    v.bookCorrectionStatus === "not_corrected" ? "غير مصحح" : "غير محدد";
+    v.bookCorrectionStatus === "not_corrected" ? "غير مصحح" :
+    v.bookCorrectionStatus === "incomplete" ? "ناقص" : "غير محدد";
   el("followUpRegisterStatus").textContent =
     v.followUpRegisterStatus === "enabled" ? "مفعل" :
     v.followUpRegisterStatus === "not_enabled" ? "غير مفعل" : "غير محدد";
