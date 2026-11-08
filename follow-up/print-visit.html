@@ -1216,6 +1216,24 @@ body{
   }
 }
 
+/* Technical-visit print: single white page, no obsolete students sheet */
+.page2{display:none!important}
+.page1{break-after:auto!important;page-break-after:auto!important}
+@media print{
+ @page{size:A4 portrait;margin:5mm}
+ html,body{background:#fff!important;color:#111!important;padding:0!important;margin:0!important}
+ .toolbar,.loading,#page2,.page2{display:none!important}
+ .sheet,.page1{display:block!important;background:#fff!important;box-shadow:none!important;border:0!important;margin:0 auto!important;
+  width:200mm!important;min-height:0!important;max-width:200mm!important;padding:3mm 4mm!important;overflow:hidden!important;
+  page-break-after:auto!important;break-after:auto!important}
+ .sheet *:not(img):not(svg){background-color:transparent!important;background-image:none!important;box-shadow:none!important;text-shadow:none!important}
+ .sheet th,.sheet td,.sheet .section-heading,.sheet .header,.sheet .school-name,.sheet .note-title,
+ .sheet .ack,.sheet .visit-check,.sheet .score-cell,.sheet .rubric-table *{
+   color:#151515!important;border-color:#aaa!important}
+ .sheet .rubric-table .selected,.sheet .rubric-table .active,
+ .sheet .rubric-table [aria-checked="true"]{background:#eee!important}
+}
+
 </style>
 
   <link rel="stylesheet" href="mobile.css?v=20261012-4">
@@ -2169,9 +2187,7 @@ function renderVisit(v){
   );
 
 
-  renderWork(
-    v
-  );
+  // Historical work data is preserved in Firestore but omitted from this form.
 
 
   el("loading")
@@ -2189,9 +2205,8 @@ function renderVisit(v){
     "block";
 
 
-  el("page2")
-    .style.display =
-    "block";
+  // Obsolete student-work sheet is intentionally removed from printed visits.
+  el("page2").style.display="none";
 
 }
 
