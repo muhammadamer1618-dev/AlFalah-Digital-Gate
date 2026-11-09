@@ -74,6 +74,34 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
 .studio-class-checks span{overflow-wrap:anywhere}
 @media(max-width:480px){.studio-class-checks{grid-template-columns:1fr 1fr}}
 </style>
+<style id="staffActivityPreviewDesign">
+.staff-activity-viewer{max-width:1100px;margin:22px auto!important;padding:clamp(16px,3vw,30px)!important;border:1px solid #d4e5dd!important;border-radius:24px!important;background:#f7faf8!important;box-shadow:0 16px 45px rgba(12,66,54,.08)!important}
+.staff-viewer-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.staff-viewer-readonly{font-size:12px;font-weight:800;color:#0e6c52;background:#e4f5eb;padding:9px 13px;border-radius:30px}
+.staff-preview-hero{position:relative;overflow:hidden;border-radius:21px;background:linear-gradient(125deg,#064638,#08745a 72%,#139477);padding:clamp(22px,4vw,36px);color:white;box-shadow:0 14px 28px rgba(3,61,44,.16)}
+.staff-preview-hero:after{content:"";position:absolute;width:240px;height:240px;left:-95px;top:-100px;border:40px solid rgba(255,255,255,.08);border-radius:50%;pointer-events:none}
+.staff-preview-kicker{font-size:12px;letter-spacing:1.4px;font-weight:900;color:#f8d57e}
+.staff-preview-hero h2{font-size:clamp(23px,3.5vw,35px)!important;color:#fff!important;line-height:1.4;margin:9px 0 13px;overflow-wrap:anywhere}
+.staff-preview-hero p{margin:0;color:#e3f5ee;font-weight:700}
+.staff-preview-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+.staff-preview-meta>div{border:1px solid #dfebe4;background:white;border-radius:15px;padding:14px;min-width:0}
+.staff-preview-meta span{display:block;color:#6b7b77;font-size:12px;margin-bottom:7px;font-weight:700}
+.staff-preview-meta strong{display:block;color:#123f34;font-size:15px;overflow-wrap:anywhere}
+.staff-preview-title{font-size:20px;margin:26px 0 12px;color:#075442;font-weight:900}
+.staff-preview-chips{display:flex;gap:9px;flex-wrap:wrap}
+.staff-preview-chip{background:#e9f5ee;color:#0e6349;border:1px solid #cae4d3;padding:8px 14px;border-radius:30px;font-weight:800;font-size:13px}
+.staff-preview-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:15px}
+.staff-preview-item{background:white;border:1px solid #dce9e3;border-radius:17px;overflow:hidden;box-shadow:0 6px 18px rgba(0,44,33,.04)}
+.staff-preview-item-media{aspect-ratio:4/3;background:linear-gradient(140deg,#ecf8f2,#d7eee3);display:grid;place-items:center;overflow:hidden}
+.staff-preview-item-media img{width:100%;height:100%;object-fit:contain}
+.staff-preview-item-fallback{font-size:48px;color:#368467}
+.staff-preview-item-body{padding:15px}
+.staff-preview-item-number{font-size:11px;font-weight:900;color:#12876e}
+.staff-preview-item-word{font-size:18px;color:#153f34;font-weight:800;line-height:1.5;margin-top:7px;direction:ltr;text-align:left;overflow-wrap:anywhere}
+.staff-preview-end{text-align:center;font-size:12px;color:#688078;margin-top:24px}
+@media(max-width:720px){.staff-preview-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.staff-preview-items{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:410px){.staff-preview-meta,.staff-preview-items{grid-template-columns:1fr}}
+</style>
 </head><body>
 <header><img src="logo.jpeg" class="school-brand-logo" alt="Al-Falah Schools Logo" onerror="this.style.display='none'"><h1>🎧 English Activities</h1><div>Al-Falah Schools — Rased System</div></header>
 <main><div id="status" role="status"></div>
@@ -81,7 +109,7 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
 <div id="adminGrant" class="hidden"><label>English Supervisor Username</label><input id="supervisorUsername" placeholder="Rased username"><button onclick="grantEnglishSupervisor()">Grant Management Access</button></div>
 <div id="teacherGrant" class="hidden"><label>Assigned English Teachers</label><div id="grantTeachers" class="grid"></div><button onclick="saveTeacherGrants()">Save Teacher Permissions</button></div>
 <div id="accessStatus" class="muted"></div></section>
-<section id="staffManager" class="panel hidden"><h2>📊 English Activities Monitoring</h2><p class="muted" id="staffScopeLabel"></p><div class="grid"><div><label>Search teacher or activity</label><input id="staffSearch" placeholder="Type to filter..." oninput="renderStaffActivities()"></div><div><label>Filter</label><select id="staffTeacherFilter" onchange="renderStaffActivities()"><option value="">All teachers</option></select></div></div><div id="staffSummary" class="muted" style="margin:14px 0"></div><div id="staffActivityList" class="grid"></div></section><section id="manager" class="panel hidden teacher-studio">
+<section id="staffManager" class="panel hidden"><h2>📊 English Activities Monitoring</h2><p class="muted" id="staffScopeLabel"></p><div class="grid"><div><label>Search teacher or activity</label><input id="staffSearch" placeholder="Type to filter..." oninput="renderStaffActivities()"></div><div><label>Filter</label><select id="staffTeacherFilter" onchange="renderStaffActivities()"><option value="">All teachers</option></select></div></div><div id="staffSummary" class="muted" style="margin:14px 0"></div><div id="staffActivityList" class="grid"></div></section><section id="staffActivityViewer" class="staff-activity-viewer panel hidden" dir="rtl" aria-label="تفاصيل النشاط المنشور"><div class="staff-viewer-top"><button type="button" class="secondary" onclick="closeStaffActivityPreview()">↩ العودة لقائمة الأنشطة</button><span class="staff-viewer-readonly">👁️ عرض فقط — بدون تعديل</span></div><div id="staffActivityViewerContent"></div></section><section id="manager" class="panel hidden teacher-studio">
 <div class="studio-heading"><div><span class="eyebrow">ENGLISH LEARNING STUDIO</span><h2>Create Speaking Activities</h2><p class="muted">Build your word and sentence list, select a class, and publish directly to students.</p></div><div class="studio-icon">🎙️</div></div>
 <div class="studio-step"><span>01</span><strong>Activity Details</strong></div>
 <div class="studio-fields"><div><label for="title">Activity Title</label><input id="title" placeholder="e.g. Unit 3 | Speaking Practice"></div><div><label for="activityDate">تاريخ النشاط / Activity Date</label><input id="activityDate" type="date" required><p class="muted" style="margin:5px 0">اليوم: <strong id="activityWeekday">—</strong></p></div><div><label for="subject">Subject</label><select id="subject"></select></div><div class="studio-class-picker"><label id="classroomLabel">Publishing Scope / الفصول المستهدفة</label><div class="studio-class-select-all"><label><input type="checkbox" id="classSelectAll"> <span>تحديد الكل / Select all</span></label></div><div id="classroomChecks" class="studio-class-checks" role="group" aria-labelledby="classroomLabel"></div><p class="muted" style="margin:5px 0">حدد فصلًا واحدًا أو عدة فصول؛ سيُنشر النشاط مرة واحدة للفصول المحددة فقط.</p></div></div>
@@ -218,7 +246,44 @@ function renderStaffActivities(){
   return (!filter||id===filter)&&(!q||[a.title,staffTeacherName(a),a.subjectName].some(v=>String(v||"").toLowerCase().includes(q)));
  });
  $("staffSummary").textContent="Activities: "+staffActivities.length+" · Teachers: "+new Set(staffActivities.map(a=>a.teacherId)).size+" · Results: "+Object.values(staffResultsCount).reduce((x,y)=>x+y,0);
- $("staffActivityList").innerHTML=list.length?list.map(a=>'<article class="activity"><strong>'+esc(a.title||"Untitled activity")+'</strong><div class="muted">المعلم الناشر: '+esc(staffTeacherName(a))+' · Items: '+(a.items||[]).length+' · التاريخ: '+esc(activityDateLabel(a))+' · Results: '+(staffResultsCount[a.id]||0)+'</div><button onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">View results</button><button class="secondary" onclick="printAllEnglishResults('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Print results</button><button class="danger-button" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></article>').join(""):'<p class="studio-empty">No matching activities.</p>';
+ $("staffActivityList").innerHTML=list.length?list.map(a=>'<article class="activity"><strong>'+esc(a.title||"Untitled activity")+'</strong><div class="muted">المعلم الناشر: '+esc(staffTeacherName(a))+' · Items: '+(a.items||[]).length+' · التاريخ: '+esc(activityDateLabel(a))+' · Results: '+(staffResultsCount[a.id]||0)+'</div><button onclick="showStaffActivityPreview('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">👁️ عرض النشاط كاملًا</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">View results</button><button class="secondary" onclick="printAllEnglishResults('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Print results</button><button class="danger-button" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></article>').join(""):'<p class="studio-empty">No matching activities.</p>';
+}
+function showStaffActivityPreview(id){
+ const r=role();
+ if(!["admin","superadmin","supervisor"].includes(r))return status("غير مصرح لك بعرض هذا النشاط.",true);
+ const activity=staffActivities.find(a=>a.id===id);
+ if(!activity||(r==="supervisor"&&!staffTeacherIds.has(String(activity.teacherId||"").toLowerCase())))return status("النشاط غير متاح ضمن صلاحياتك.",true);
+ const classes=Array.isArray(activity.targetClasses)&&activity.targetClasses.length?activity.targetClasses:[{grade:activity.grade,section:activity.section}];
+ const items=Array.isArray(activity.items)?activity.items:[];
+ const maxAttempts=Number(activity.maxAttempts)===0?"غير محدود":String(activity.maxAttempts??"غير محدد");
+ const published=activity.published===true?"منشور للطلاب":"غير منشور";
+ const chips=classes.map(c=>'<span class="staff-preview-chip">'+esc([c.grade,c.section].filter(Boolean).join(" — ")||"فصل غير محدد")+'</span>').join("");
+ const cards=items.map((item,i)=>{
+  const photo=String(activity.itemImages?.[i]||"");
+  const allowed=/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photo);
+  const media=allowed?'<img src="'+photo+'" alt="صورة العنصر '+(i+1)+'">':'<div class="staff-preview-item-fallback" aria-hidden="true">🔤</div>';
+  return '<article class="staff-preview-item"><div class="staff-preview-item-media">'+media+'</div><div class="staff-preview-item-body"><span class="staff-preview-item-number">ITEM '+String(i+1).padStart(2,"0")+'</span><div class="staff-preview-item-word">'+esc(item)+'</div></div></article>';
+ }).join("");
+ $("staffActivityViewerContent").innerHTML='<div class="staff-preview-hero"><div class="staff-preview-kicker">ENGLISH ACTIVITIES · RASED</div><h2>'+esc(activity.title||"نشاط بدون عنوان")+'</h2><p>اسم المعلم الناشر: '+esc(staffTeacherName(activity))+'</p></div>'+
+ '<div class="staff-preview-meta"><div><span>📅 اليوم والتاريخ</span><strong>'+esc(activityDateLabel(activity))+'</strong></div>'+
+ '<div><span>📘 المادة</span><strong>'+esc(activity.subjectName||"اللغة الإنجليزية")+'</strong></div>'+
+ '<div><span>🎯 عدد محاولات النطق</span><strong>'+esc(maxAttempts)+'</strong></div>'+
+ '<div><span>📢 حالة النشر</span><strong>'+esc(published)+'</strong></div>'+
+ '<div><span>🏫 عدد الفصول</span><strong>'+classes.length+'</strong></div>'+
+ '<div><span>📝 عدد الكلمات والجمل</span><strong>'+items.length+'</strong></div>'+
+ '<div><span>🖼️ الصور المرفقة</span><strong>'+items.filter((_,i)=>/^data:image\\/jpeg;base64,/.test(String(activity.itemImages?.[i]||""))).length+'</strong></div>'+
+ '<div><span>👥 عدد نتائج الطلاب</span><strong>'+(staffResultsCount[activity.id]||0)+'</strong></div></div>'+
+ '<h3 class="staff-preview-title">🏫 الفصول المستهدفة</h3><div class="staff-preview-chips">'+(chips||"لم تُحدد فصول")+'</div>'+
+ '<h3 class="staff-preview-title">📚 محتوى النشاط — الكلمات والجمل والصور</h3><div class="staff-preview-items">'+(cards||'<p>لا توجد كلمات أو جمل.</p>')+'</div>'+
+ '<div class="staff-preview-end">عرض النشاط كما أنشأه المعلم — للمتابعة الإشرافية فقط</div>';
+ $("staffManager").classList.add("hidden");
+ $("staffActivityViewer").classList.remove("hidden");
+ $("staffActivityViewer").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeStaffActivityPreview(){
+ $("staffActivityViewer").classList.add("hidden");
+ $("staffManager").classList.remove("hidden");
+ $("staffManager").scrollIntoView({behavior:"smooth",block:"start"});
 }
 async function printAllEnglishResults(id){await viewReports(id);setTimeout(()=>window.print(),250)}
 async function loadParentActivities(code){try{const normalized=String(code||"").trim();if(normalized.length<4||normalized.length>20||normalized.split("").some(ch=>ch<"0"||ch>"9"))throw Error("Invalid student ID");const student=await db.collection("students").doc(normalized).get();if(!student.exists)throw Error("Student record not found");const d=student.data()||{};const grade=String(d.grade||d.gradeName||d.className||"").trim(),section=String(d.section||d.classroom||d.class||"").trim();if(!grade||!section)throw Error("Your grade or section is missing from your student profile");let snap=await db.collection("englishActivities").where("published","==",true).get();const list=snap.docs.map(x=>({id:x.id,...x.data()})).filter(x=>(Array.isArray(x.targetClasses)&&x.targetClasses.length?x.targetClasses.some(c=>String(c.grade||"").trim()===grade&&String(c.section||"").trim()===section):String(x.grade||"").trim()===grade&&String(x.section||"").trim()===section));$("parentActivities").classList.remove("hidden");$("parentStudentLabel").textContent="Student: "+(d.name||"") +" — "+grade+" / "+section;$("parentActivityList").innerHTML=list.length?list.map(x=>'<div class="activity"><strong>'+esc(x.title)+'</strong><div class="muted">'+esc(x.subjectName||"اللغة الإنجليزية")+' · '+(x.items||[]).length+' words and sentences</div><button onclick="startActivityById('+esc(JSON.stringify(x.id))+')">Start Activity</button></div>').join(""):"No published activities are available for your class yet.";}catch(e){status("تعذر تحميل أنشطة Student: "+e.message,true)}}
