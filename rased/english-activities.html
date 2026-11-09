@@ -115,12 +115,39 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
  body.printing-english-staff-activity .staff-preview-item{break-inside:avoid;box-shadow:none!important}
 }
 </style>
+<style id="englishPermissionCheckboxDesign">
+.english-permission-panel{margin:18px 0;padding:18px;border:1px solid #d7e7df;border-radius:16px;background:linear-gradient(160deg,#f8fcf9,#fff)}
+.english-permission-panel h3{margin:0 0 8px;color:#075b47;font-size:19px}
+.english-permission-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.english-permission-toolbar>input{flex:1 1 220px;width:auto!important;margin:0}
+.english-permission-all,.english-permission-entry{display:flex!important;align-items:center;gap:10px;cursor:pointer;font-weight:750}
+.english-permission-all{background:#e7f6eb;padding:12px 15px;border-radius:11px;margin:0!important;white-space:nowrap}
+.english-permission-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;max-height:330px;overflow:auto;padding:8px;border:1px solid #dce9df;border-radius:12px;background:#f4faf6}
+.english-permission-entry{padding:13px;border:1px solid #dae6dd;border-radius:12px;background:white;margin:0!important;min-width:0}
+.english-permission-entry:has(input:checked){background:#e9f6ed;border-color:#64a885}
+.english-permission-entry input,.english-permission-all input{width:19px!important;height:19px!important;min-width:19px!important;flex:0 0 19px;margin:0!important;padding:0!important;accent-color:#08735a}
+.english-permission-entry span{min-width:0;overflow-wrap:anywhere}
+.english-permission-entry small{display:block;font-size:11px;color:#71837a;font-weight:400}
+@media(max-width:540px){.english-permission-list{grid-template-columns:1fr}.english-permission-toolbar{align-items:stretch}.english-permission-all{justify-content:center}}
+</style>
 </head><body>
 <header><img src="logo.jpeg" class="school-brand-logo" alt="Al-Falah Schools Logo" onerror="this.style.display='none'"><h1>🎧 English Activities</h1><div>Al-Falah Schools — Rased System</div></header>
 <main><div id="status" role="status"></div>
 <section id="accessManager" class="panel hidden"><h2>English Activities Permissions</h2><p class="muted">Admins authorize the English supervisor, who can grant access to English teachers.</p>
-<div id="adminGrant" class="hidden"><label>English Supervisor Username</label><input id="supervisorUsername" placeholder="Rased username"><button onclick="grantEnglishSupervisor()">Grant Management Access</button></div>
-<div id="teacherGrant" class="hidden"><label>Assigned English Teachers</label><div id="grantTeachers" class="grid"></div><button onclick="saveTeacherGrants()">Save Teacher Permissions</button></div>
+<div id="adminGrant" class="hidden english-permission-panel" dir="rtl">
+ <h3>صلاحيات مشرف أنشطة اللغة الإنجليزية</h3>
+ <p class="muted">اختر المشرفين بالاسم من القائمة. علامة الصح تعني أن المشرف لديه صلاحية الإدارة.</p>
+ <div class="english-permission-toolbar"><input id="englishSupervisorSearch" type="search" placeholder="🔎 ابحث عن اسم المشرف" oninput="filterEnglishPermissionList('supervisor')"><label class="english-permission-all"><input id="englishSupervisorsAll" type="checkbox" onchange="toggleEnglishPermissionAll('supervisor',this.checked)"> تحديد الكل الظاهر</label></div>
+ <div id="englishSupervisorChecks" class="english-permission-list"></div>
+ <button type="button" onclick="grantEnglishSupervisor()">💾 حفظ صلاحيات المشرفين</button>
+</div>
+<div id="teacherGrant" class="hidden english-permission-panel" dir="rtl">
+ <h3>صلاحيات معلمي اللغة الإنجليزية</h3>
+ <p class="muted">اختر المعلمين بالاسم. يمكنك اختيار معلم واحد أو عدة معلمين أو تحديد الجميع.</p>
+ <div class="english-permission-toolbar"><input id="englishTeacherSearch" type="search" placeholder="🔎 ابحث عن اسم المعلم" oninput="filterEnglishPermissionList('teacher')"><label class="english-permission-all"><input id="englishTeachersAll" type="checkbox" onchange="toggleEnglishPermissionAll('teacher',this.checked)"> تحديد الكل الظاهر</label></div>
+ <div id="grantTeachers" class="english-permission-list"></div>
+ <button type="button" onclick="saveTeacherGrants()">💾 حفظ صلاحيات المعلمين</button>
+</div>
 <div id="accessStatus" class="muted"></div></section>
 <section id="staffManager" class="panel hidden"><h2>📊 English Activities Monitoring</h2><p class="muted" id="staffScopeLabel"></p><div class="grid"><div><label>Search teacher or activity</label><input id="staffSearch" placeholder="Type to filter..." oninput="renderStaffActivities()"></div><div><label>Filter</label><select id="staffTeacherFilter" onchange="renderStaffActivities()"><option value="">All teachers</option></select></div></div><div id="staffSummary" class="muted" style="margin:14px 0"></div><div id="staffActivityList" class="grid"></div></section><section id="staffActivityViewer" class="staff-activity-viewer panel hidden" dir="rtl" aria-label="تفاصيل النشاط المنشور"><div class="staff-viewer-top"><button type="button" class="secondary" onclick="closeStaffActivityPreview()">↩ العودة لقائمة الأنشطة</button><button type="button" onclick="openStaffActivityResults()">📊 نتائج الطلاب</button><button type="button" class="secondary" onclick="printStaffActivity()">🖨️ طباعة النشاط</button><span class="staff-viewer-readonly">👁️ عرض فقط — بدون تعديل</span></div><div id="staffActivityViewerContent"></div></section><section id="manager" class="panel hidden teacher-studio">
 <div class="studio-heading"><div><span class="eyebrow">ENGLISH LEARNING STUDIO</span><h2>Create Speaking Activities</h2><p class="muted">Build your word and sentence list, select a class, and publish directly to students.</p></div><div class="studio-icon">🎙️</div></div>
@@ -193,17 +220,108 @@ if(params.get("studentCode")){await loadParentActivities(params.get("studentCode
 if(isStudentPortal())return;
 const r=role(),u=username();if(!u)return;
 try{
-if(r==="admin"||r==="superadmin"){ $("accessManager").classList.remove("hidden");$("adminGrant").classList.remove("hidden");$("staffManager").classList.remove("hidden");$("staffScopeLabel").textContent="Full access: all English teachers, supervisors, activities, and results.";await loadGrantedTeachers();await loadStaffActivities();return; }
+if(r==="admin"||r==="superadmin"){ $("accessManager").classList.remove("hidden");$("adminGrant").classList.remove("hidden");$("staffManager").classList.remove("hidden");$("staffScopeLabel").textContent="Full access: all English teachers, supervisors, activities, and results.";await loadEnglishSupervisors();await loadGrantedTeachers();await loadStaffActivities();return; }
 if(r==="supervisor"){const us=await db.collection("users").doc(u).get();const p=us.exists?(us.data().permissions||{}):{};if(p.englishActivitiesManage!==true){status("ليس لديك صلاحية إدارة English Activities. اطلب of الأدمن تفعيلها.",true);return}
 $("accessManager").classList.remove("hidden");$("teacherGrant").classList.remove("hidden");$("staffManager").classList.remove("hidden");$("staffScopeLabel").textContent="Supervisor view: activities from teachers granted through this supervisor.";await loadEnglishTeachers();await loadGrantedTeachers();await loadStaffActivities();return}
 if(r==="teacher"){const gate=await db.collection("englishActivityAccess").doc(u).get();if(!gate.exists||gate.data().enabled!==true){status("Your English supervisor has not enabled activity access yet.",true);return}
 const snap=await db.collection("teachers").doc(u).get();if(!snap.exists)throw Error("Teacher account not found");currentTeacher=snap.data();if(!teacherAssignments().length){status("No English classes are assigned to this teacher.");return}selectOptions();$("manager").classList.remove("hidden");await loadActivities();return}
 status("This account cannot manage English activities."); 
 }catch(e){status("Unable to load permissions or account: "+e.message,true)}}
-async function grantEnglishSupervisor(){if(!["admin","superadmin"].includes(role()))return;const id=$("supervisorUsername").value.trim().toLowerCase();if(!id)return $("accessStatus").textContent="Enter the supervisor username.";try{const snap=await db.collection("users").doc(id).get();if(!snap.exists||String(snap.data().role||"").toLowerCase()!=="supervisor")throw Error("حساب Supervisor غير موجود");await db.collection("users").doc(id).set({permissions:{...(snap.data().permissions||{}),englishActivitiesManage:true}}, {merge:true});$("accessStatus").textContent="تم منح الصلاحية للمشرف "+id; }catch(e){$("accessStatus").textContent="تعذر منح الصلاحية: "+e.message}}
-async function loadEnglishTeachers(){const snap=await db.collection("teachers").get();accessTeachers=snap.docs.map(d=>({id:d.id,...d.data()})).filter(t=>(t.assignments||[]).some(a=>a.subjectId&&a.grade&&a.section&&/english|إنجليزي|اللغة الإنجليزية/i.test(a.subjectName||a.subject||a.name||a.subjectId||"")));const granted=await db.collection("englishActivityAccess").get();const ids=new Set(granted.docs.filter(d=>d.data().enabled===true).map(d=>d.id));$("grantTeachers").innerHTML=accessTeachers.map(t=>'<label class="activity"><input type="checkbox" class="teacher-grant-check" value="'+esc(String(t.email||t.id).trim().toLowerCase())+'" '+(ids.has(String(t.email||t.id).trim().toLowerCase())?"checked":"")+'><b>'+esc(t.name||t.email||t.id)+'</b><div class="muted">'+esc(t.email||t.id)+'</div></label>').join("")||"<p>لم يتم العثور على معلمين لديهم إسناد لغة إنجليزية.</p>"}
-async function loadGrantedTeachers(){try{const snap=await db.collection("englishActivityAccess").get();$("accessStatus").textContent="Enabled teacher accounts: "+snap.docs.filter(d=>d.data().enabled===true).length}catch(e){}}
-async function saveTeacherGrants(){if(role()!=="supervisor"||!accessTeachers.length)return;const chosen=new Set([...document.querySelectorAll(".teacher-grant-check:checked")].map(x=>x.value));try{const batch=db.batch();accessTeachers.forEach(t=>{const id=String(t.email||t.id).trim().toLowerCase();batch.set(db.collection("englishActivityAccess").doc(id),{enabled:chosen.has(id),teacherId:id,grantedBy:username(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})});await batch.commit();$("accessStatus").textContent="تم Save Teacher Permissions."}catch(e){$("accessStatus").textContent="تعذر حفظ الصلاحيات: "+e.message}}
+let accessTeachers=[],accessSupervisors=[];
+function permissionListControls(type){
+ const teacher=type==="teacher";
+ return {container:$(teacher?"grantTeachers":"englishSupervisorChecks"),search:$(teacher?"englishTeacherSearch":"englishSupervisorSearch"),all:$(teacher?"englishTeachersAll":"englishSupervisorsAll"),selector:teacher?".teacher-grant-check":".supervisor-grant-check"};
+}
+function filterEnglishPermissionList(type){
+ const controls=permissionListControls(type);
+ const q=String(controls.search.value||"").trim().toLowerCase();
+ controls.container.querySelectorAll(".english-permission-entry").forEach(label=>{
+  label.hidden=!label.textContent.toLowerCase().includes(q);
+  label.style.display=label.hidden?"none":"";
+ });
+ updateEnglishPermissionAll(type);
+}
+function updateEnglishPermissionAll(type){
+ const c=permissionListControls(type);
+ const visible=[...c.container.querySelectorAll(c.selector)].filter(x=>!x.closest(".english-permission-entry").hidden);
+ const checked=visible.filter(x=>x.checked).length;
+ c.all.checked=visible.length>0&&checked===visible.length;
+ c.all.indeterminate=checked>0&&checked<visible.length;
+ c.all.disabled=visible.length===0;
+}
+function toggleEnglishPermissionAll(type,on){
+ const c=permissionListControls(type);
+ c.container.querySelectorAll(c.selector).forEach(input=>{
+  if(!input.closest(".english-permission-entry").hidden)input.checked=!!on;
+ });
+ updateEnglishPermissionAll(type);
+}
+async function loadEnglishSupervisors(){
+ const snap=await db.collection("users").get();
+ accessSupervisors=snap.docs.filter(d=>String(d.data().role||"").toLowerCase()==="supervisor").map(d=>({id:d.id,...d.data()}));
+ accessSupervisors.sort((a,b)=>String(a.name||a.fullName||a.id).localeCompare(String(b.name||b.fullName||b.id),"ar"));
+ $("englishSupervisorChecks").innerHTML=accessSupervisors.map(t=>{
+  const granted=t.permissions?.englishActivitiesManage===true;
+  return '<label class="english-permission-entry"><input type="checkbox" class="supervisor-grant-check" value="'+esc(t.id)+'" '+(granted?"checked":"")+'><span><b>'+esc(t.name||t.fullName||t.id)+'</b><small>'+esc(t.id)+'</small></span></label>';
+ }).join("")||'<p class="muted">لا توجد حسابات مشرفين مسجلة.</p>';
+ $("englishSupervisorChecks").addEventListener("change",()=>updateEnglishPermissionAll("supervisor"));
+ updateEnglishPermissionAll("supervisor");
+}
+async function grantEnglishSupervisor(){
+ if(!["admin","superadmin"].includes(role()))return;
+ const checks=[...document.querySelectorAll(".supervisor-grant-check")];
+ if(!checks.length)return $("accessStatus").textContent="لا توجد حسابات مشرفين للاختيار.";
+ const changed=checks.filter(x=>{
+  const supervisor=accessSupervisors.find(t=>t.id===x.value);
+  return supervisor&&((supervisor.permissions?.englishActivitiesManage===true)!==x.checked);
+ });
+ if(!changed.length)return $("accessStatus").textContent="لا توجد تغييرات جديدة للحفظ.";
+ try{
+  const updates=await Promise.all(changed.map(async input=>{
+   const snap=await db.collection("users").doc(input.value).get();
+   if(!snap.exists||String(snap.data().role||"").toLowerCase()!=="supervisor")throw Error("حساب المشرف غير متاح: "+input.value);
+   return {id:input.value,enabled:input.checked,permissions:snap.data().permissions||{}};
+  }));
+  const batch=db.batch();
+  updates.forEach(x=>batch.set(db.collection("users").doc(x.id),{permissions:{...x.permissions,englishActivitiesManage:x.enabled}},{merge:true}));
+  await batch.commit();
+  await loadEnglishSupervisors();
+  $("accessStatus").textContent="تم حفظ صلاحيات "+updates.length+" من المشرفين بنجاح.";
+ }catch(e){$("accessStatus").textContent="تعذر حفظ صلاحيات المشرفين: "+e.message}
+}
+async function loadEnglishTeachers(){
+ const [snap,granted]=await Promise.all([db.collection("teachers").get(),db.collection("englishActivityAccess").get()]);
+ accessTeachers=snap.docs.map(d=>({id:d.id,...d.data()})).filter(t=>(t.assignments||[]).some(a=>a.subjectId&&a.grade&&a.section&&/english|إنجليزي|اللغة الإنجليزية/i.test(a.subjectName||a.subject||a.name||a.subjectId||"")));
+ accessTeachers.sort((a,b)=>String(a.name||a.fullName||a.id).localeCompare(String(b.name||b.fullName||b.id),"ar"));
+ const ids=new Set(granted.docs.filter(d=>d.data().enabled===true).map(d=>d.id.toLowerCase()));
+ $("grantTeachers").innerHTML=accessTeachers.map(t=>{
+  const id=String(t.email||t.id).trim().toLowerCase();
+  const name=String(t.name||t.fullName||"").trim()||id;
+  return '<label class="english-permission-entry"><input type="checkbox" class="teacher-grant-check" value="'+esc(id)+'" '+(ids.has(id)?"checked":"")+'><span><b>'+esc(name)+'</b><small>'+esc(id)+'</small></span></label>';
+ }).join("")||'<p class="muted">لا يوجد معلمون لديهم إسناد لغة إنجليزية.</p>';
+ $("grantTeachers").addEventListener("change",()=>updateEnglishPermissionAll("teacher"));
+ updateEnglishPermissionAll("teacher");
+}
+async function loadGrantedTeachers(){
+ try{
+  const snap=await db.collection("englishActivityAccess").get();
+  $("accessStatus").textContent="المعلمون المصرح لهم: "+snap.docs.filter(d=>d.data().enabled===true).length;
+ }catch(e){}
+}
+async function saveTeacherGrants(){
+ if(role()!=="supervisor"||!accessTeachers.length)return;
+ const chosen=new Set([...document.querySelectorAll(".teacher-grant-check:checked")].map(x=>x.value));
+ try{
+  const batch=db.batch();
+  accessTeachers.forEach(t=>{
+   const id=String(t.email||t.id).trim().toLowerCase();
+   batch.set(db.collection("englishActivityAccess").doc(id),{enabled:chosen.has(id),teacherId:id,grantedBy:username(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  });
+  await batch.commit();
+  $("accessStatus").textContent="تم حفظ صلاحيات المعلمين بنجاح.";
+  await loadEnglishTeachers();
+ }catch(e){$("accessStatus").textContent="تعذر حفظ صلاحيات المعلمين: "+e.message}
+}
 let staffActivities=[],staffTeacherIds=new Set(),staffResultsCount={},staffTeacherNames=new Map();
 function staffTeacherName(activity){
  const id=String(activity.teacherId||"").trim().toLowerCase();
