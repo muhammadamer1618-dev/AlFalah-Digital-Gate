@@ -84,7 +84,7 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
 <section id="staffManager" class="panel hidden"><h2>📊 English Activities Monitoring</h2><p class="muted" id="staffScopeLabel"></p><div class="grid"><div><label>Search teacher or activity</label><input id="staffSearch" placeholder="Type to filter..." oninput="renderStaffActivities()"></div><div><label>Filter</label><select id="staffTeacherFilter" onchange="renderStaffActivities()"><option value="">All teachers</option></select></div></div><div id="staffSummary" class="muted" style="margin:14px 0"></div><div id="staffActivityList" class="grid"></div></section><section id="manager" class="panel hidden teacher-studio">
 <div class="studio-heading"><div><span class="eyebrow">ENGLISH LEARNING STUDIO</span><h2>Create Speaking Activities</h2><p class="muted">Build your word and sentence list, select a class, and publish directly to students.</p></div><div class="studio-icon">🎙️</div></div>
 <div class="studio-step"><span>01</span><strong>Activity Details</strong></div>
-<div class="studio-fields"><div><label for="title">Activity Title</label><input id="title" placeholder="e.g. Unit 3 | Speaking Practice"></div><div><label for="subject">Subject</label><select id="subject"></select></div><div class="studio-class-picker"><label id="classroomLabel">Publishing Scope / الفصول المستهدفة</label><div class="studio-class-select-all"><label><input type="checkbox" id="classSelectAll"> <span>تحديد الكل / Select all</span></label></div><div id="classroomChecks" class="studio-class-checks" role="group" aria-labelledby="classroomLabel"></div><p class="muted" style="margin:5px 0">حدد فصلًا واحدًا أو عدة فصول؛ سيُنشر النشاط مرة واحدة للفصول المحددة فقط.</p></div></div>
+<div class="studio-fields"><div><label for="title">Activity Title</label><input id="title" placeholder="e.g. Unit 3 | Speaking Practice"></div><div><label for="activityDate">تاريخ النشاط / Activity Date</label><input id="activityDate" type="date" required><p class="muted" style="margin:5px 0">اليوم: <strong id="activityWeekday">—</strong></p></div><div><label for="subject">Subject</label><select id="subject"></select></div><div class="studio-class-picker"><label id="classroomLabel">Publishing Scope / الفصول المستهدفة</label><div class="studio-class-select-all"><label><input type="checkbox" id="classSelectAll"> <span>تحديد الكل / Select all</span></label></div><div id="classroomChecks" class="studio-class-checks" role="group" aria-labelledby="classroomLabel"></div><p class="muted" style="margin:5px 0">حدد فصلًا واحدًا أو عدة فصول؛ سيُنشر النشاط مرة واحدة للفصول المحددة فقط.</p></div></div>
 <div class="studio-attempt-setting"><label for="maxAttempts">Speaking Attempts per Word / Sentence</label><select id="maxAttempts"><option value="0" selected>Unlimited attempts</option><option value="1">1 attempt</option><option value="2">2 attempts</option><option value="3">3 attempts</option><option value="4">4 attempts</option><option value="5">5 attempts</option><option value="10">10 attempts</option></select><p class="muted">Each student can record their pronunciation up to this number of times for each item.</p></div><div class="studio-step"><span>02</span><strong>Add Words & Sentences</strong></div>
 <p class="muted">Add words and sentences, then optionally attach a picture to each one. Pictures make speaking practice easier for first-grade students.</p>
 <div class="studio-entry"><input id="newEnglishItem" dir="ltr" placeholder="Type a word or sentence..." aria-label="New word or sentence"><button type="button" onclick="addEnglishItem()">＋ Add</button></div>
@@ -218,7 +218,7 @@ function renderStaffActivities(){
   return (!filter||id===filter)&&(!q||[a.title,staffTeacherName(a),a.subjectName].some(v=>String(v||"").toLowerCase().includes(q)));
  });
  $("staffSummary").textContent="Activities: "+staffActivities.length+" · Teachers: "+new Set(staffActivities.map(a=>a.teacherId)).size+" · Results: "+Object.values(staffResultsCount).reduce((x,y)=>x+y,0);
- $("staffActivityList").innerHTML=list.length?list.map(a=>'<article class="activity"><strong>'+esc(a.title||"Untitled activity")+'</strong><div class="muted">المعلم الناشر: '+esc(staffTeacherName(a))+' · Items: '+(a.items||[]).length+' · Results: '+(staffResultsCount[a.id]||0)+'</div><button onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">View results</button><button class="secondary" onclick="printAllEnglishResults('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Print results</button><button class="danger-button" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></article>').join(""):'<p class="studio-empty">No matching activities.</p>';
+ $("staffActivityList").innerHTML=list.length?list.map(a=>'<article class="activity"><strong>'+esc(a.title||"Untitled activity")+'</strong><div class="muted">المعلم الناشر: '+esc(staffTeacherName(a))+' · Items: '+(a.items||[]).length+' · التاريخ: '+esc(activityDateLabel(a))+' · Results: '+(staffResultsCount[a.id]||0)+'</div><button onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">View results</button><button class="secondary" onclick="printAllEnglishResults('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Print results</button><button class="danger-button" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></article>').join(""):'<p class="studio-empty">No matching activities.</p>';
 }
 async function printAllEnglishResults(id){await viewReports(id);setTimeout(()=>window.print(),250)}
 async function loadParentActivities(code){try{const normalized=String(code||"").trim();if(normalized.length<4||normalized.length>20||normalized.split("").some(ch=>ch<"0"||ch>"9"))throw Error("Invalid student ID");const student=await db.collection("students").doc(normalized).get();if(!student.exists)throw Error("Student record not found");const d=student.data()||{};const grade=String(d.grade||d.gradeName||d.className||"").trim(),section=String(d.section||d.classroom||d.class||"").trim();if(!grade||!section)throw Error("Your grade or section is missing from your student profile");let snap=await db.collection("englishActivities").where("published","==",true).get();const list=snap.docs.map(x=>({id:x.id,...x.data()})).filter(x=>(Array.isArray(x.targetClasses)&&x.targetClasses.length?x.targetClasses.some(c=>String(c.grade||"").trim()===grade&&String(c.section||"").trim()===section):String(x.grade||"").trim()===grade&&String(x.section||"").trim()===section));$("parentActivities").classList.remove("hidden");$("parentStudentLabel").textContent="Student: "+(d.name||"") +" — "+grade+" / "+section;$("parentActivityList").innerHTML=list.length?list.map(x=>'<div class="activity"><strong>'+esc(x.title)+'</strong><div class="muted">'+esc(x.subjectName||"اللغة الإنجليزية")+' · '+(x.items||[]).length+' words and sentences</div><button onclick="startActivityById('+esc(JSON.stringify(x.id))+')">Start Activity</button></div>').join(""):"No published activities are available for your class yet.";}catch(e){status("تعذر تحميل أنشطة Student: "+e.message,true)}}
@@ -306,20 +306,43 @@ $("englishItemsList").addEventListener("change",e=>{
  if(!lines[index]){lines.splice(index,1);englishItemImages.splice(index,1)}
  setEnglishLines(lines);
 });
+function activityLocalToday(){
+ const d=new Date();
+ return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+}
+function activityDayName(value){
+ if(!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(String(value||"")))return "";
+ const d=new Date(value+"T12:00:00");
+ const parsed=[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+ if(Number.isNaN(d.getTime())||parsed!==value)return "";
+ return new Intl.DateTimeFormat("ar-SA",{weekday:"long"}).format(d);
+}
+function showActivityDay(){
+ $("activityWeekday").textContent=activityDayName($("activityDate").value)||"اختر تاريخًا صحيحًا";
+}
+function activityDateLabel(a){
+ const value=String(a.activityDate||"");
+ return activityDayName(value)?(activityDayName(value)+" - "+value):"لم يُحدد التاريخ";
+}
+$("activityDate").value=activityLocalToday();
+$("activityDate").addEventListener("change",showActivityDay);
+showActivityDay();
 function clearForm(){
- editing=null;updateClasses();englishItemImages=[];$("maxAttempts").value="0";
+ editing=null;updateClasses();$("activityDate").value=activityLocalToday();showActivityDay();englishItemImages=[];$("maxAttempts").value="0";
  $("title").value="";$("items").value="";$("bulkEnglishItems").value="";
  $("newEnglishItem").value="";renderEnglishItems();
 }
-async function loadActivities(){const snap=await db.collection("englishActivities").where("teacherId","==",username()).get();activities=snap.docs.map(d=>({id:d.id,...d.data()}));$("myActivities").innerHTML=activities.length?activities.map(a=>'<div class="activity"><strong>'+esc(a.title)+'</strong><div class="muted">'+esc(Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses.map(c=>c.grade+' / '+c.section).join('، '):a.grade+' / '+a.section)+' · '+(a.items||[]).length+' item</div><button onclick="editActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Edit</button><button class="secondary" onclick="copyLink('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Copy Link</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Results</button><button style="background:#fde8e8;color:#9f2020" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></div>').join(""):'<p>No published activities yet.</p>'}
+async function loadActivities(){const snap=await db.collection("englishActivities").where("teacherId","==",username()).get();activities=snap.docs.map(d=>({id:d.id,...d.data()}));$("myActivities").innerHTML=activities.length?activities.map(a=>'<div class="activity"><strong>'+esc(a.title)+'</strong><div class="muted">'+esc(Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses.map(c=>c.grade+' / '+c.section).join('، '):a.grade+' / '+a.section)+' · '+esc(activityDateLabel(a))+' · '+(a.items||[]).length+' item</div><button onclick="editActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Edit</button><button class="secondary" onclick="copyLink('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Copy Link</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Results</button><button style="background:#fde8e8;color:#9f2020" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></div>').join(""):'<p>No published activities yet.</p>'}
 async function deleteActivity(id){const r=role();const list=(r==="teacher"?activities:staffActivities);if(!["teacher","supervisor","admin","superadmin"].includes(r)||!confirm("هل تريد حذف النشاط؟ لن يظهر للطلاب بعد الحذف."))return;const a=list.find(x=>x.id===id);if(!a)return status("النشاط غير موجود",true);if(r==="teacher"&&a.teacherId!==username())return status("لا تملك صلاحية حذف هذا النشاط",true);try{await db.collection("englishActivities").doc(id).delete();if(editing===id)clearForm();status("تم حذف النشاط");if(r==="teacher")await loadActivities();else await loadStaffActivities()}catch(e){status("تعذر حذف النشاط: "+e.message,true)}}
-function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts===0?0:(a.maxAttempts||3));$("title").value=a.title;$("items").value=(a.items||[]).join("\n");englishItemImages=(a.items||[]).map((_,i)=>a.itemImages?.[i]||"");$("subject").value=a.subjectId;updateClasses();const targets=Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses:[{grade:a.grade,section:a.section}];
+function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts===0?0:(a.maxAttempts||3));$("title").value=a.title;$("activityDate").value=activityDayName(String(a.activityDate||""))?String(a.activityDate):activityLocalToday();showActivityDay();$("items").value=(a.items||[]).join("\n");englishItemImages=(a.items||[]).map((_,i)=>a.itemImages?.[i]||"");$("subject").value=a.subjectId;updateClasses();const targets=Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses:[{grade:a.grade,section:a.section}];
  updateClasses(new Set(targets.map(c=>String(c.grade)+"||"+String(c.section))));
  renderEnglishItems();scrollTo({top:0,behavior:"smooth"})}
 function copyLink(id){status("Published activities appear automatically in the Student Portal.")}
 async function saveActivity(){
  if(role()!=="teacher"||!currentTeacher)return status("Access denied",true);
  const subjectId=$("subject").value;
+ const activityDate=$("activityDate").value,activityDay=activityDayName(activityDate);
+ if(!activityDay)return status("يرجى اختيار تاريخ صحيح للنشاط.",true);
  const selected=selectedEnglishClasses();
  if(!selected.length)return status("حدد فصلًا واحدًا على الأقل قبل نشر النشاط.",true);
  const items=$("items").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
@@ -331,7 +354,7 @@ async function saveActivity(){
  const itemImages=items.map((_,i)=>englishItemImages[i]||"");
  if(itemImages.some(url=>url&&!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(url))||itemImages.join("").length>600000)
   return status("Picture data is invalid or too large. Remove some pictures.",true);
- const data={title:$("title").value.trim(),items,itemImages,maxAttempts,teacherId:username(),
+ const data={title:$("title").value.trim(),activityDate,activityDay,items,itemImages,maxAttempts,teacherId:username(),
   teacherName:String(currentTeacher.name||currentTeacher.fullName||"").trim()||username(),subjectId,
   subjectName:primary.subjectName||primary.subject||primary.name||"English",
   grade:primary.grade,section:primary.section,
