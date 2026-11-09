@@ -260,7 +260,7 @@ function showStaffActivityPreview(id){
  const chips=classes.map(c=>'<span class="staff-preview-chip">'+esc([c.grade,c.section].filter(Boolean).join(" — ")||"فصل غير محدد")+'</span>').join("");
  const cards=items.map((item,i)=>{
   const photo=String(activity.itemImages?.[i]||"");
-  const allowed=/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photo);
+  const allowed=new RegExp("^data:image/jpeg;base64,[A-Za-z0-9+/=]+$").test(photo);
   const media=allowed?'<img src="'+photo+'" alt="صورة العنصر '+(i+1)+'">':'<div class="staff-preview-item-fallback" aria-hidden="true">🔤</div>';
   return '<article class="staff-preview-item"><div class="staff-preview-item-media">'+media+'</div><div class="staff-preview-item-body"><span class="staff-preview-item-number">ITEM '+String(i+1).padStart(2,"0")+'</span><div class="staff-preview-item-word">'+esc(item)+'</div></div></article>';
  }).join("");
@@ -271,7 +271,7 @@ function showStaffActivityPreview(id){
  '<div><span>📢 حالة النشر</span><strong>'+esc(published)+'</strong></div>'+
  '<div><span>🏫 عدد الفصول</span><strong>'+classes.length+'</strong></div>'+
  '<div><span>📝 عدد الكلمات والجمل</span><strong>'+items.length+'</strong></div>'+
- '<div><span>🖼️ الصور المرفقة</span><strong>'+items.filter((_,i)=>/^data:image\\/jpeg;base64,/.test(String(activity.itemImages?.[i]||""))).length+'</strong></div>'+
+ '<div><span>🖼️ الصور المرفقة</span><strong>'+items.filter((_,i)=>String(activity.itemImages?.[i]||"").startsWith("data:image/jpeg;base64,")).length+'</strong></div>'+
  '<div><span>👥 عدد نتائج الطلاب</span><strong>'+(staffResultsCount[activity.id]||0)+'</strong></div></div>'+
  '<h3 class="staff-preview-title">🏫 الفصول المستهدفة</h3><div class="staff-preview-chips">'+(chips||"لم تُحدد فصول")+'</div>'+
  '<h3 class="staff-preview-title">📚 محتوى النشاط — الكلمات والجمل والصور</h3><div class="staff-preview-items">'+(cards||'<p>لا توجد كلمات أو جمل.</p>')+'</div>'+
