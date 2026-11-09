@@ -227,7 +227,7 @@ if(r==="teacher"){const gate=await db.collection("englishActivityAccess").doc(u)
 const snap=await db.collection("teachers").doc(u).get();if(!snap.exists)throw Error("Teacher account not found");currentTeacher=snap.data();if(!teacherAssignments().length){status("No English classes are assigned to this teacher.");return}selectOptions();$("manager").classList.remove("hidden");await loadActivities();return}
 status("This account cannot manage English activities."); 
 }catch(e){status("Unable to load permissions or account: "+e.message,true)}}
-let accessTeachers=[],accessSupervisors=[];
+let accessSupervisors=[];
 function permissionListControls(type){
  const teacher=type==="teacher";
  return {container:$(teacher?"grantTeachers":"englishSupervisorChecks"),search:$(teacher?"englishTeacherSearch":"englishSupervisorSearch"),all:$(teacher?"englishTeachersAll":"englishSupervisorsAll"),selector:teacher?".teacher-grant-check":".supervisor-grant-check"};
