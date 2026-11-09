@@ -64,6 +64,16 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
 .result-print-brand{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #e1eaf3}.result-print-brand img{width:62px;height:62px;object-fit:contain}.result-print-brand span{font-size:12px;font-weight:900;letter-spacing:1px;color:#175274}@media print{.result-print-brand{display:flex!important}header{display:none!important}body>*:not(main){display:none!important}}
 </style>
 <link rel="stylesheet" href="rased-theme.css">
+<style id="englishClassCheckboxStyle">
+.studio-class-checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;max-height:205px;overflow:auto;padding:8px;border:1px solid #d4e1ee;border-radius:11px;background:#f8fbff}
+.studio-class-select-all{padding:8px 11px;margin-top:6px;border:1px solid #b8d7c6;border-radius:10px;background:#edf8f0}
+.studio-class-select-all label,.studio-class-checks label{display:flex!important;align-items:center;gap:9px;margin:0!important;cursor:pointer;font-weight:700}
+.studio-class-checks label{padding:9px 11px;border:1px solid #d9e7f1;border-radius:9px;background:white;min-width:0}
+.studio-class-checks label:has(input:checked){background:#e8f5ee;border-color:#4a9972}
+.studio-class-checks input[type="checkbox"],.studio-class-select-all input[type="checkbox"]{width:19px!important;height:19px!important;min-width:19px;flex:0 0 19px;margin:0!important;accent-color:#087457;cursor:pointer}
+.studio-class-checks span{overflow-wrap:anywhere}
+@media(max-width:480px){.studio-class-checks{grid-template-columns:1fr 1fr}}
+</style>
 </head><body>
 <header><img src="logo.jpeg" class="school-brand-logo" alt="Al-Falah Schools Logo" onerror="this.style.display='none'"><h1>🎧 English Activities</h1><div>Al-Falah Schools — Rased System</div></header>
 <main><div id="status" role="status"></div>
@@ -74,7 +84,7 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
 <section id="staffManager" class="panel hidden"><h2>📊 English Activities Monitoring</h2><p class="muted" id="staffScopeLabel"></p><div class="grid"><div><label>Search teacher or activity</label><input id="staffSearch" placeholder="Type to filter..." oninput="renderStaffActivities()"></div><div><label>Filter</label><select id="staffTeacherFilter" onchange="renderStaffActivities()"><option value="">All teachers</option></select></div></div><div id="staffSummary" class="muted" style="margin:14px 0"></div><div id="staffActivityList" class="grid"></div></section><section id="manager" class="panel hidden teacher-studio">
 <div class="studio-heading"><div><span class="eyebrow">ENGLISH LEARNING STUDIO</span><h2>Create Speaking Activities</h2><p class="muted">Build your word and sentence list, select a class, and publish directly to students.</p></div><div class="studio-icon">🎙️</div></div>
 <div class="studio-step"><span>01</span><strong>Activity Details</strong></div>
-<div class="studio-fields"><div><label for="title">Activity Title</label><input id="title" placeholder="e.g. Unit 3 | Speaking Practice"></div><div><label for="subject">Subject</label><select id="subject"></select></div><div><label for="classroom">Publishing Scope / الفصول المستهدفة</label><select id="classroom"></select><p class="muted" style="margin:5px 0">Choose one class or all of your classes assigned to this English subject.</p></div></div>
+<div class="studio-fields"><div><label for="title">Activity Title</label><input id="title" placeholder="e.g. Unit 3 | Speaking Practice"></div><div><label for="subject">Subject</label><select id="subject"></select></div><div class="studio-class-picker"><label id="classroomLabel">Publishing Scope / الفصول المستهدفة</label><div class="studio-class-select-all"><label><input type="checkbox" id="classSelectAll"> <span>تحديد الكل / Select all</span></label></div><div id="classroomChecks" class="studio-class-checks" role="group" aria-labelledby="classroomLabel"></div><p class="muted" style="margin:5px 0">حدد فصلًا واحدًا أو عدة فصول؛ سيُنشر النشاط مرة واحدة للفصول المحددة فقط.</p></div></div>
 <div class="studio-attempt-setting"><label for="maxAttempts">Speaking Attempts per Word / Sentence</label><select id="maxAttempts"><option value="0" selected>Unlimited attempts</option><option value="1">1 attempt</option><option value="2">2 attempts</option><option value="3">3 attempts</option><option value="4">4 attempts</option><option value="5">5 attempts</option><option value="10">10 attempts</option></select><p class="muted">Each student can record their pronunciation up to this number of times for each item.</p></div><div class="studio-step"><span>02</span><strong>Add Words & Sentences</strong></div>
 <p class="muted">Add words and sentences, then optionally attach a picture to each one. Pictures make speaking practice easier for first-grade students.</p>
 <div class="studio-entry"><input id="newEnglishItem" dir="ltr" placeholder="Type a word or sentence..." aria-label="New word or sentence"><button type="button" onclick="addEnglishItem()">＋ Add</button></div>
@@ -105,13 +115,31 @@ function safeId(s){return String(s||"").replace(/[^a-z0-9_-]/gi,"_")}
 function allowedAssignment(a){return a&&a.subjectId&&a.grade&&a.section}
 function teacherAssignments(){return (currentTeacher?.assignments||[]).filter(allowedAssignment).filter(a=>/english|إنجليزي|اللغة الإنجليزية/i.test(a.subjectName||a.subject||a.name||a.subjectId||""))}
 function selectOptions(){const ass=teacherAssignments(),subs=[...new Map(ass.map(a=>[String(a.subjectId),a.subjectName||a.subjectId])).entries()];$("subject").innerHTML=subs.map(([id,name])=>'<option value="'+esc(id)+'">'+esc(name)+'</option>').join("");updateClasses()}
-function updateClasses(){
+function updateClassSelectAll(){
+ const inputs=[...document.querySelectorAll(".english-class-check")],checked=inputs.filter(x=>x.checked).length;
+ const all=$("classSelectAll");all.checked=!!inputs.length&&checked===inputs.length;all.indeterminate=checked>0&&checked<inputs.length;
+}
+function selectedEnglishClasses(){
+ const selected=new Set([...document.querySelectorAll(".english-class-check:checked")].map(x=>x.value));
+ const ass=teacherAssignments().filter(a=>String(a.subjectId)===$("subject").value);
+ return [...new Map(ass.map(a=>[String(a.grade)+"||"+String(a.section),a])).values()].filter(a=>selected.has(String(a.grade)+"||"+String(a.section)));
+}
+function updateClasses(selectedKeys){
  const ass=teacherAssignments().filter(a=>String(a.subjectId)===$("subject").value);
  const unique=[...new Map(ass.map(a=>[String(a.grade)+"||"+String(a.section),a])).values()];
- const allOption=unique.length>1?'<option value="__all__">📚 All my classes / كل فصولي ('+unique.length+')</option>':"";
- $("classroom").innerHTML=allOption+unique.map(a=>'<option value="'+esc(a.grade+'||'+a.section)+'">'+esc(a.grade+' — '+a.section)+'</option>').join("");
+ const chosen=selectedKeys instanceof Set?selectedKeys:new Set();
+ $("classroomChecks").innerHTML=unique.map(a=>{
+  const key=String(a.grade)+"||"+String(a.section);
+  return '<label><input type="checkbox" class="english-class-check" value="'+esc(key)+'" '+(chosen.has(key)?"checked":"")+'><span>'+esc(a.grade+" — "+a.section)+'</span></label>';
+ }).join("")||'<p class="muted">لا توجد فصول مسندة لهذه المادة.</p>';
+ updateClassSelectAll();
 }
-$("subject").addEventListener("change",updateClasses);
+$("subject").addEventListener("change",()=>updateClasses());
+$("classroomChecks").addEventListener("change",updateClassSelectAll);
+$("classSelectAll").addEventListener("change",function(){
+ document.querySelectorAll(".english-class-check").forEach(input=>{input.checked=this.checked});
+ updateClassSelectAll();
+});
 const isStudentPortal=()=>{const p=new URLSearchParams(location.search);return p.get("portal")==="student"||p.has("studentCode")||p.get("view")==="practice"};
 if(isStudentPortal()){
  document.getElementById("accessManager").remove();
@@ -225,26 +253,21 @@ $("englishItemsList").addEventListener("change",e=>{
  setEnglishLines(lines);
 });
 function clearForm(){
- editing=null;englishItemImages=[];$("maxAttempts").value="0";
+ editing=null;updateClasses();englishItemImages=[];$("maxAttempts").value="0";
  $("title").value="";$("items").value="";$("bulkEnglishItems").value="";
  $("newEnglishItem").value="";renderEnglishItems();
 }
 async function loadActivities(){const snap=await db.collection("englishActivities").where("teacherId","==",username()).get();activities=snap.docs.map(d=>({id:d.id,...d.data()}));$("myActivities").innerHTML=activities.length?activities.map(a=>'<div class="activity"><strong>'+esc(a.title)+'</strong><div class="muted">'+esc(Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses.map(c=>c.grade+' / '+c.section).join('، '):a.grade+' / '+a.section)+' · '+(a.items||[]).length+' item</div><button onclick="editActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Edit</button><button class="secondary" onclick="copyLink('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Copy Link</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Results</button><button style="background:#fde8e8;color:#9f2020" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></div>').join(""):'<p>No published activities yet.</p>'}
 async function deleteActivity(id){const r=role();const list=(r==="teacher"?activities:staffActivities);if(!["teacher","supervisor","admin","superadmin"].includes(r)||!confirm("هل تريد حذف النشاط؟ لن يظهر للطلاب بعد الحذف."))return;const a=list.find(x=>x.id===id);if(!a)return status("النشاط غير موجود",true);if(r==="teacher"&&a.teacherId!==username())return status("لا تملك صلاحية حذف هذا النشاط",true);try{await db.collection("englishActivities").doc(id).delete();if(editing===id)clearForm();status("تم حذف النشاط");if(r==="teacher")await loadActivities();else await loadStaffActivities()}catch(e){status("تعذر حذف النشاط: "+e.message,true)}}
-function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts===0?0:(a.maxAttempts||3));$("title").value=a.title;$("items").value=(a.items||[]).join("\n");englishItemImages=(a.items||[]).map((_,i)=>a.itemImages?.[i]||"");$("subject").value=a.subjectId;updateClasses();const assigned=teacherAssignments().filter(x=>String(x.subjectId)===String(a.subjectId));
- const assignedKeys=new Set(assigned.map(x=>String(x.grade)+"||"+String(x.section)));
- const targets=Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses:[{grade:a.grade,section:a.section}];
- const targetsMatchAll=assignedKeys.size>1&&targets.length===assignedKeys.size&&targets.every(c=>assignedKeys.has(String(c.grade)+"||"+String(c.section)));
- $("classroom").value=targetsMatchAll?"__all__":String(targets[0].grade)+"||"+String(targets[0].section);
+function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts===0?0:(a.maxAttempts||3));$("title").value=a.title;$("items").value=(a.items||[]).join("\n");englishItemImages=(a.items||[]).map((_,i)=>a.itemImages?.[i]||"");$("subject").value=a.subjectId;updateClasses();const targets=Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses:[{grade:a.grade,section:a.section}];
+ updateClasses(new Set(targets.map(c=>String(c.grade)+"||"+String(c.section))));
  renderEnglishItems();scrollTo({top:0,behavior:"smooth"})}
 function copyLink(id){status("Published activities appear automatically in the Student Portal.")}
 async function saveActivity(){
  if(role()!=="teacher"||!currentTeacher)return status("Access denied",true);
- const subjectId=$("subject").value,scope=$("classroom").value;
- const assignments=teacherAssignments().filter(x=>String(x.subjectId)===String(subjectId));
- const unique=[...new Map(assignments.map(x=>[String(x.grade)+"||"+String(x.section),x])).values()];
- const selected=scope==="__all__"?unique:unique.filter(x=>String(x.grade)+"||"+String(x.section)===scope);
- if(!selected.length)return status("Choose one of your assigned classes, or all your classes.",true);
+ const subjectId=$("subject").value;
+ const selected=selectedEnglishClasses();
+ if(!selected.length)return status("حدد فصلًا واحدًا على الأقل قبل نشر النشاط.",true);
  const items=$("items").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
  if(!$("title").value.trim()||!items.length||items.length>80||items.some(x=>x.length>250))
   return status("Enter a title and 1–80 words or sentences (up to 250 characters each)",true);
