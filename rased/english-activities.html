@@ -168,26 +168,34 @@ function staffTeacherName(activity){
  const id=String(activity.teacherId||"").trim().toLowerCase();
  const registered=String(staffTeacherNames.get(id)||"").trim();
  const saved=String(activity.teacherName||"").trim();
- const isPhone=v=>/^\\+?[0-9\\s()-]{8,20}$/.test(v);
- return registered||(!isPhone(saved)?saved:"")||"معلم غير محدد";
+ const looksLikePhone=v=>/^[+0-9() -]{8,20}$/.test(v);
+ return registered||(!looksLikePhone(saved)&&saved.toLowerCase()!==id?saved:"")||"معلم غير محدد";
 }
 async function loadStaffActivities(){
  try{
   const r=role();
-  const [access,snap,rs,teacherSnap]=await Promise.all([
+  const [access,snap,rs]=await Promise.all([
    db.collection("englishActivityAccess").get(),
    db.collection("englishActivities").get(),
-   db.collection("englishActivityResults").get(),
-   db.collection("teachers").get()
+   db.collection("englishActivityResults").get()
   ]);
   staffTeacherNames=new Map();
-  teacherSnap.docs.forEach(d=>{
-   const t=d.data()||{},name=String(t.name||t.fullName||"").trim();
-   if(!name)return;
-   [d.id,t.email,t.username,t.phone,t.mobile,t.phoneNumber].forEach(key=>{
+  const [teacherLookup,userLookup]=await Promise.allSettled([
+   db.collection("teachers").get(),
+   db.collection("users").get()
+  ]);
+  function registerName(id,record){
+   const t=record||{};
+   const name=String(t.name||t.fullName||t.teacherName||"").trim();
+   if(!name||/^[+0-9() -]{8,20}$/.test(name))return;
+   [id,t.email,t.username,t.phone,t.mobile,t.phoneNumber,t.userId,t.teacherId].forEach(key=>{
     const normalized=String(key||"").trim().toLowerCase();
-    if(normalized)staffTeacherNames.set(normalized,name);
+    if(normalized&&!staffTeacherNames.has(normalized))staffTeacherNames.set(normalized,name);
    });
+  }
+  if(teacherLookup.status==="fulfilled")teacherLookup.value.docs.forEach(d=>registerName(d.id,d.data()));
+  if(userLookup.status==="fulfilled")userLookup.value.docs.forEach(d=>{
+   if(String(d.data()?.role||"").toLowerCase()==="teacher")registerName(d.id,d.data());
   });
   staffTeacherIds=new Set(access.docs.filter(d=>d.data().enabled===true&&(r!=="supervisor"||String(d.data().grantedBy||"").toLowerCase()===username())).map(d=>String(d.id).toLowerCase()));
   staffActivities=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>r!=="supervisor"||staffTeacherIds.has(String(a.teacherId||"").toLowerCase()));
@@ -324,7 +332,7 @@ async function saveActivity(){
  if(itemImages.some(url=>url&&!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(url))||itemImages.join("").length>600000)
   return status("Picture data is invalid or too large. Remove some pictures.",true);
  const data={title:$("title").value.trim(),items,itemImages,maxAttempts,teacherId:username(),
-  teacherName:currentTeacher.name||username(),subjectId,
+  teacherName:String(currentTeacher.name||currentTeacher.fullName||"").trim()||username(),subjectId,
   subjectName:primary.subjectName||primary.subject||primary.name||"English",
   grade:primary.grade,section:primary.section,
   targetClasses:selected.map(x=>({grade:String(x.grade),section:String(x.section)})),
