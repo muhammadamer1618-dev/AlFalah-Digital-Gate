@@ -102,6 +102,19 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
 @media(max-width:720px){.staff-preview-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.staff-preview-items{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:410px){.staff-preview-meta,.staff-preview-items{grid-template-columns:1fr}}
 </style>
+<style id="englishStaffPrintRefinement">
+@media print{
+ body.printing-english-staff-activity header,body.printing-english-staff-activity footer,
+ body.printing-english-staff-activity main>section:not(#staffActivityViewer),
+ body.printing-english-staff-activity main>#status,
+ body.printing-english-staff-activity .staff-viewer-top,
+ body.printing-english-staff-activity #rasedPortalBackHome{display:none!important}
+ body.printing-english-staff-activity main{max-width:none!important;padding:0!important;margin:0!important}
+ body.printing-english-staff-activity #staffActivityViewer{display:block!important;border:0!important;box-shadow:none!important;margin:0!important;padding:0!important;background:#fff!important}
+ body.printing-english-staff-activity .staff-preview-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ body.printing-english-staff-activity .staff-preview-item{break-inside:avoid;box-shadow:none!important}
+}
+</style>
 </head><body>
 <header><img src="logo.jpeg" class="school-brand-logo" alt="Al-Falah Schools Logo" onerror="this.style.display='none'"><h1>🎧 English Activities</h1><div>Al-Falah Schools — Rased System</div></header>
 <main><div id="status" role="status"></div>
@@ -109,7 +122,7 @@ html,body{direction:ltr;text-align:left}#parentActivityList .activity strong,#my
 <div id="adminGrant" class="hidden"><label>English Supervisor Username</label><input id="supervisorUsername" placeholder="Rased username"><button onclick="grantEnglishSupervisor()">Grant Management Access</button></div>
 <div id="teacherGrant" class="hidden"><label>Assigned English Teachers</label><div id="grantTeachers" class="grid"></div><button onclick="saveTeacherGrants()">Save Teacher Permissions</button></div>
 <div id="accessStatus" class="muted"></div></section>
-<section id="staffManager" class="panel hidden"><h2>📊 English Activities Monitoring</h2><p class="muted" id="staffScopeLabel"></p><div class="grid"><div><label>Search teacher or activity</label><input id="staffSearch" placeholder="Type to filter..." oninput="renderStaffActivities()"></div><div><label>Filter</label><select id="staffTeacherFilter" onchange="renderStaffActivities()"><option value="">All teachers</option></select></div></div><div id="staffSummary" class="muted" style="margin:14px 0"></div><div id="staffActivityList" class="grid"></div></section><section id="staffActivityViewer" class="staff-activity-viewer panel hidden" dir="rtl" aria-label="تفاصيل النشاط المنشور"><div class="staff-viewer-top"><button type="button" class="secondary" onclick="closeStaffActivityPreview()">↩ العودة لقائمة الأنشطة</button><span class="staff-viewer-readonly">👁️ عرض فقط — بدون تعديل</span></div><div id="staffActivityViewerContent"></div></section><section id="manager" class="panel hidden teacher-studio">
+<section id="staffManager" class="panel hidden"><h2>📊 English Activities Monitoring</h2><p class="muted" id="staffScopeLabel"></p><div class="grid"><div><label>Search teacher or activity</label><input id="staffSearch" placeholder="Type to filter..." oninput="renderStaffActivities()"></div><div><label>Filter</label><select id="staffTeacherFilter" onchange="renderStaffActivities()"><option value="">All teachers</option></select></div></div><div id="staffSummary" class="muted" style="margin:14px 0"></div><div id="staffActivityList" class="grid"></div></section><section id="staffActivityViewer" class="staff-activity-viewer panel hidden" dir="rtl" aria-label="تفاصيل النشاط المنشور"><div class="staff-viewer-top"><button type="button" class="secondary" onclick="closeStaffActivityPreview()">↩ العودة لقائمة الأنشطة</button><button type="button" onclick="openStaffActivityResults()">📊 نتائج الطلاب</button><button type="button" class="secondary" onclick="printStaffActivity()">🖨️ طباعة النشاط</button><span class="staff-viewer-readonly">👁️ عرض فقط — بدون تعديل</span></div><div id="staffActivityViewerContent"></div></section><section id="manager" class="panel hidden teacher-studio">
 <div class="studio-heading"><div><span class="eyebrow">ENGLISH LEARNING STUDIO</span><h2>Create Speaking Activities</h2><p class="muted">Build your word and sentence list, select a class, and publish directly to students.</p></div><div class="studio-icon">🎙️</div></div>
 <div class="studio-step"><span>01</span><strong>Activity Details</strong></div>
 <div class="studio-fields"><div><label for="title">Activity Title</label><input id="title" placeholder="e.g. Unit 3 | Speaking Practice"></div><div><label for="activityDate">تاريخ النشاط / Activity Date</label><input id="activityDate" type="date" required><p class="muted" style="margin:5px 0">اليوم: <strong id="activityWeekday">—</strong></p></div><div><label for="subject">Subject</label><select id="subject"></select></div><div class="studio-class-picker"><label id="classroomLabel">Publishing Scope / الفصول المستهدفة</label><div class="studio-class-select-all"><label><input type="checkbox" id="classSelectAll"> <span>تحديد الكل / Select all</span></label></div><div id="classroomChecks" class="studio-class-checks" role="group" aria-labelledby="classroomLabel"></div><p class="muted" style="margin:5px 0">حدد فصلًا واحدًا أو عدة فصول؛ سيُنشر النشاط مرة واحدة للفصول المحددة فقط.</p></div></div>
@@ -253,6 +266,7 @@ function showStaffActivityPreview(id){
  if(!["admin","superadmin","supervisor"].includes(r))return status("غير مصرح لك بعرض هذا النشاط.",true);
  const activity=staffActivities.find(a=>a.id===id);
  if(!activity||(r==="supervisor"&&!staffTeacherIds.has(String(activity.teacherId||"").toLowerCase())))return status("النشاط غير متاح ضمن صلاحياتك.",true);
+ currentStaffActivityId=id;
  const classes=Array.isArray(activity.targetClasses)&&activity.targetClasses.length?activity.targetClasses:[{grade:activity.grade,section:activity.section}];
  const items=Array.isArray(activity.items)?activity.items:[];
  const maxAttempts=Number(activity.maxAttempts)===0?"غير محدود":String(activity.maxAttempts??"غير محدد");
@@ -279,6 +293,19 @@ function showStaffActivityPreview(id){
  $("staffManager").classList.add("hidden");
  $("staffActivityViewer").classList.remove("hidden");
  $("staffActivityViewer").scrollIntoView({behavior:"smooth",block:"start"});
+}
+let currentStaffActivityId="";
+function openStaffActivityResults(){
+ if(!currentStaffActivityId)return;
+ viewReports(currentStaffActivityId);
+}
+function printStaffActivity(){
+ if(!currentStaffActivityId)return;
+ document.body.classList.add("printing-english-staff-activity");
+ const restore=()=>{document.body.classList.remove("printing-english-staff-activity");window.removeEventListener("afterprint",restore)};
+ window.addEventListener("afterprint",restore,{once:true});
+ window.print();
+ setTimeout(restore,1800);
 }
 function closeStaffActivityPreview(){
  $("staffActivityViewer").classList.add("hidden");
