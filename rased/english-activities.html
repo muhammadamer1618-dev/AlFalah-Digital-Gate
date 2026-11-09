@@ -218,15 +218,43 @@ let accessTeachers=[];
 async function init(){const params=new URLSearchParams(location.search);if(params.get("activity")){$("activityCode").value=params.get("activity");await openActivity()}
 if(params.get("studentCode")){await loadParentActivities(params.get("studentCode"))}
 if(isStudentPortal())return;
-const r=role(),u=username();if(!u)return;
+let r=role(),u=username();
+// Recover the existing Rased Gate session when a dashboard was opened in a new tab.
+if((!r||!u)&&sessionStorage.getItem("rasedTabAuthReady")!=="1"){
+ try{
+  const gate=JSON.parse(localStorage.getItem("alfalah.gate.session.v1")||"null");
+  const gateRole=String(gate?.rasedRole||gate?.sourceRole||"").toLowerCase();
+  const valid=gate&&gate.username&&(!gate.expiresAt||Number(gate.expiresAt)>Date.now());
+  if(valid&&["teacher","supervisor","admin","superadmin"].includes(gateRole)){
+   if(!r)r=gateRole;
+   if(!u)u=String(gate.username).trim().toLowerCase();
+   sessionStorage.setItem("currentUserRole",r);
+   sessionStorage.setItem("currentUserEmail",u);
+   sessionStorage.setItem("currentUser",u);
+   sessionStorage.setItem("rasedTabAuthReady","1");
+  }
+ }catch(e){console.warn("English activities session recovery",e)}
+}
+if(!u||!["admin","superadmin","teacher","supervisor"].includes(r)){
+ const intended=new URLSearchParams(location.search).get("from");
+ const dest=intended==="admin"?"admin-login.html":intended==="supervisor"?"supervisor-dashboard.html":"index.html";
+ const message=document.createElement("section");
+ message.className="panel";
+ message.setAttribute("dir","rtl");
+ message.style.cssText="background:#fff9ed;border:1px solid #eacb87;max-width:760px;margin:20px auto;text-align:center";
+ message.innerHTML='<h2 style="color:#815314">⚠️ تعذر التحقق من جلسة الدخول</h2><p>لم يتم العثور على بيانات الحساب المصرح به في هذا التبويب. لم تُحذف الأنشطة أو الصلاحيات.</p><a href="'+dest+'" class="btn" style="display:inline-block;text-decoration:none">العودة لتسجيل الدخول أو بوابتك</a><p class="muted">بعد الدخول افتح أنشطة اللغة الإنجليزية مجددًا من البطاقة.</p>';
+ $("status").after(message);
+ status("تعذر تحميل الأنشطة لأن جلسة الدخول غير متاحة في هذا التبويب.",true);
+ return;
+}
 try{
 if(r==="admin"||r==="superadmin"){ $("accessManager").classList.remove("hidden");$("adminGrant").classList.remove("hidden");$("staffManager").classList.remove("hidden");$("staffScopeLabel").textContent="Full access: all English teachers, supervisors, activities, and results.";await loadEnglishSupervisors();await loadGrantedTeachers();await loadStaffActivities();return; }
 if(r==="supervisor"){const us=await db.collection("users").doc(u).get();const p=us.exists?(us.data().permissions||{}):{};if(p.englishActivitiesManage!==true){status("ليس لديك صلاحية إدارة English Activities. اطلب of الأدمن تفعيلها.",true);return}
 $("accessManager").classList.remove("hidden");$("teacherGrant").classList.remove("hidden");$("staffManager").classList.remove("hidden");$("staffScopeLabel").textContent="Supervisor view: activities from teachers granted through this supervisor.";await loadEnglishTeachers();await loadGrantedTeachers();await loadStaffActivities();return}
 if(r==="teacher"){const gate=await db.collection("englishActivityAccess").doc(u).get();if(!gate.exists||gate.data().enabled!==true){status("Your English supervisor has not enabled activity access yet.",true);return}
 const snap=await db.collection("teachers").doc(u).get();if(!snap.exists)throw Error("Teacher account not found");currentTeacher=snap.data();if(!teacherAssignments().length){status("No English classes are assigned to this teacher.");return}selectOptions();$("manager").classList.remove("hidden");await loadActivities();return}
-status("This account cannot manage English activities."); 
-}catch(e){status("Unable to load permissions or account: "+e.message,true)}}
+status("هذا الحساب لا يملك صلاحية عرض أنشطة اللغة الإنجليزية.",true); 
+}catch(e){console.error("English activities initialization failed",e);status("تعذر تحميل بيانات الأنشطة: "+(e?.message||String(e)),true)}}
 let accessSupervisors=[];
 function permissionListControls(type){
  const teacher=type==="teacher";
