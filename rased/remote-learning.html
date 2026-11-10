@@ -11,7 +11,7 @@ async function saveSettings(){try{settings={enabled:$("enabled").value==="true",
 async function loadTeacher(){const d=await db.collection("teachers").doc(email).get();if(!d.exists)throw Error("لم يتم العثور على ملف المعلم");teacher=d.data();const gs=[...new Set((teacher.assignments||[]).map(a=>String(a.grade||"")).filter(Boolean))];$("grade").innerHTML=gs.map(g=>'<option>'+esc(g)+'</option>').join("");fillSections();$("grade").onchange=fillSections;await loadSessions()}
 async function fillSections(){const g=$("grade").value,ss=[...new Set((teacher?.assignments||[]).filter(a=>String(a.grade)===g).map(a=>String(a.section||"")).filter(Boolean))];$("section").innerHTML=ss.map(x=>'<option>'+esc(x)+'</option>').join("")}
 async function createSession(){if(!settings.enabled)return msg("المنصة متوقفة حاليًا من الإدارة.","bad");const grade=$("grade").value,section=$("section").value,subject=$("subject").value.trim(),topic=$("topic").value.trim(),date=$("date").value,start=$("start").value,end=$("end").value,meeting=$("meeting").value.trim();if(!grade||!section||!subject||!date||!start||!end||!meeting)return msg("أكمل بيانات الحصة والرابط.","bad");if(!/^https:\/\/meet\.google\.com\//i.test(meeting))return msg("يرجى إدخال رابط Google Meet صحيح.","bad");const norm=v=>String(v??"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/\s+/g," ").trim();const assigned=(teacher.assignments||[]).some(a=>norm(a.grade)===norm(grade)&&norm(a.section)===norm(section));if(!assigned)return msg("الصف أو الفصل المختار غير موجود ضمن إسناداتك. راجع الصف والفصل في قائمة الاختيار.","bad");try{await db.collection("remoteSessions").add({grade,section,subject,topic,date,start,end,meeting,teacherEmail:email,teacherName:teacher.name||auth("currentUserName")||email,createdAt:firebase.firestore.FieldValue.serverTimestamp(),status:"published"});msg("تم نشر الحصة.","ok");await loadSessions()}catch(e){msg("فشل نشر الحصة: "+e.message,"bad")}}
-async function loadSessions(){const snap=await db.collection("remoteSessions").where("teacherEmail","==",email).get();allSessions=snap.docs.map(d=>({id:d.id,...d.data()}));$("teacherSessions").innerHTML=allSessions.sort((a,b)=>(a.date||"").localeCompare(b.date||"")).map(x=>'<div class="session"><h3>'+esc(x.subject)+' · '+esc(x.grade)+' / '+esc(x.section)+'</h3><p>'+esc(x.topic||"")+' · '+esc(x.date)+' · '+esc(x.start)+'–'+esc(x.end)+'</p><button class="light" onclick="showRoster(\''+x.id+'\')">كشف الحضور</button></div>').join("")||'<p class="muted">لا توجد حصص منشورة.</p>'}
+async function loadSessions(){const snap=await db.collection("remoteSessions").where("teacherEmail","==",email).get();allSessions=snap.docs.map(d=>({id:d.id,...d.data()}));$("teacherSessions").innerHTML=allSessions.sort((a,b)=>(a.date||"").localeCompare(b.date||"")).map(x=>'<div class="session"><h3>'+esc(x.subject)+' · '+esc(x.grade)+' / '+esc(x.section)+'</h3><p>'+esc(x.topic||"")+' · '+esc(x.date)+' · '+esc(x.start)+'–'+esc(x.end)+'</p><div class="row"><a class="btn" href="'+esc(x.meeting||"#")+'" target="_blank" rel="noopener">دخول الحصة مباشرة</a><button class="light" onclick="showRoster(\''+x.id+'\')">كشف الحضور</button></div></div>').join("")||'<p class="muted">لا توجد حصص منشورة.</p>'}
 let attendanceUnsubscribe=null;let latestAttendanceRows=[];
 function normRoster(v){return String(v??"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/\s+/g," ").trim().toLowerCase()}
 async function showRoster(id){
@@ -42,7 +42,7 @@ async function showRoster(id){
     const group=[x.grade,x.section].filter(Boolean).join(" / ")||(x.notInRoster?"غير مطابق لسجل الفصل":"—");
     return '<tr><td>'+esc(x.studentName)+(x.notInRoster?' <span class="pill">طلب وارد خارج قائمة الفصل</span>':'')+'</td><td>'+esc(group)+'</td><td>'+esc(a?.timeText||"-")+'</td><td>'+esc(status)+'</td><td>'+action+'</td></tr>';
    }).join("")+'</table><p class="muted">عدد الطلاب في الفصل: '+rows.length+' · طلبات الحضور الواردة: '+attendanceRows.length+'</p>';
-  },error=>{console.error("Teacher attendance listener failed",error);$("liveRosterTable_"+id).innerHTML='<div class="msg bad">تعذر تحميل طلبات الحضور من قاعدة البيانات: '+esc((error.code?error.code+": ":"")+error.message)+'</div>';msg("فشل جلب طلبات الحضور: "+(error.code?error.code+": ":"")+error.message,"bad")});
+  },error=>msg("فشل جلب طلبات الحضور من Firebase: "+error.message,"bad"));
  }catch(e){msg("تعذر تحميل كشف الحضور: "+e.message,"bad")}
 }
 
@@ -68,28 +68,7 @@ async function printAttendance(id){
 
 async function approveAttendance(sessionId,studentCode){try{const ref=db.collection("remoteAttendance").doc(sessionId+"_"+studentCode);const d=await ref.get();if(!d.exists||d.data().status!=="بانتظار موافقة المعلم")return msg("لا يوجد طلب حضور معلق لهذا الطالب.","bad");await ref.set({status:"حاضر",approvedAt:firebase.firestore.FieldValue.serverTimestamp(),approvedBy:email},{merge:true});msg("تم قبول الحضور واعتماده.","ok");await showRoster(sessionId)}catch(e){msg("تعذر اعتماد الحضور: "+e.message,"bad")}}
 async function studentLookup(){const id=$("identity").value.replace(/\D/g,"");if(!id)return msg("أدخل رقم الهوية.","bad");try{let d=await db.collection("students").doc(id).get();if(!d.exists){const q=await db.collection("students").where("code","==",id).limit(1).get();if(q.empty)return msg("لم يتم العثور على الطالب.","bad");d=q.docs[0]}await loadStudentByCode(d.id)}catch(e){msg("تعذر التحقق من الطالب: "+e.message,"bad")}}
-async function loadStudentByCode(code){
- let d=await db.collection("students").doc(String(code)).get();
- if(!d.exists){const q=await db.collection("students").where("code","==",String(code)).limit(1).get();if(q.empty)throw Error("الطالب غير موجود");d=q.docs[0]}
- student={...d.data(),code:String(d.data().code||d.id),_docId:d.id};
- show("studentGate",false);show("studentPanel");
- $("who").textContent=student.name+" · "+student.grade+" / "+student.section;
- if(!settings.enabled){$("studentSessions").innerHTML='<p class="msg">التعلم عن بُعد غير مفعل حاليًا.</p>';return}
- const snap=await db.collection("remoteSessions").where("date","==",day()).get();
- const list=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>normRoster(x.grade)===normRoster(student.grade)&&normRoster(x.section)===normRoster(student.section)&&x.status==="published");
- const cards=await Promise.all(list.map(async x=>{
-  let attendance=null,readError="";
-  try{const a=await db.collection("remoteAttendance").doc(x.id+"_"+student.code).get();if(a.exists)attendance=a.data()}
-  catch(e){readError=e.message||String(e);console.error("Attendance status read failed",e)}
-  const status=attendance?.status||"";
-  let action="";
-  if(status==="حاضر")action='<button class="light" disabled>تم اعتماد حضورك</button>';
-  else if(status==="بانتظار موافقة المعلم")action='<button class="light" disabled>طلب الحضور قيد مراجعة المعلم</button>';
-  else action='<button onclick="joinSession(\''+x.id+'\')">طلب تسجيل الحضور ودخول الحصة</button>';
-  return '<div class="session"><h3>'+esc(x.subject)+' · '+esc(x.topic||"")+'</h3><p>'+esc(x.start)+'–'+esc(x.end)+' · '+esc(x.teacherName||"")+'</p>'+(status?'<p class="pill">حالة الحضور: '+esc(status)+'</p>':"")+(readError?'<p class="msg bad">تعذر قراءة حالة الطلب: '+esc(readError)+'</p>':"")+action+'</div>';
- }));
- $("studentSessions").innerHTML=(settings.notice?'<p class="msg">'+esc(settings.notice)+'</p>':"")+cards.join("")||'<p class="muted">لا توجد حصص منشورة لفصلك اليوم.</p>';
-}
+async function loadStudentByCode(code){let d=await db.collection("students").doc(String(code)).get();if(!d.exists){const q=await db.collection("students").where("code","==",String(code)).limit(1).get();if(q.empty)throw Error("الطالب غير موجود");d=q.docs[0]}student={...d.data(),code:d.data().code||d.id};show("studentGate",false);show("studentPanel");$("who").textContent=student.name+" · "+student.grade+" / "+student.section;if(!settings.enabled){$("studentSessions").innerHTML='<p class="msg">التعلم عن بُعد غير مفعل حاليًا.</p>';return}const snap=await db.collection("remoteSessions").where("date","==",day()).get();const list=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>String(x.grade)===String(student.grade)&&String(x.section)===String(student.section)&&x.status==="published");$("studentSessions").innerHTML=(settings.notice?'<p class="msg">'+esc(settings.notice)+'</p>':"")+list.map(x=>'<div class="session"><h3>'+esc(x.subject)+' · '+esc(x.topic||"")+'</h3><p>'+esc(x.start)+'–'+esc(x.end)+' · '+esc(x.teacherName||"")+'</p><button onclick="joinSession(\''+x.id+'\')">طلب تسجيل الحضور ودخول الحصة</button></div>').join("")||'<p class="muted">لا توجد حصص منشورة لفصلك اليوم.</p>'}
 async function joinSession(id){
  let meetingTab=null;
  try{
@@ -98,24 +77,30 @@ async function joinSession(id){
   const d=await db.collection("remoteSessions").doc(id).get();
   if(!d.exists)throw Error("الحصة غير موجودة في قاعدة البيانات.");
   const x=d.data();
-  if(normRoster(x.grade)!==normRoster(student.grade)||normRoster(x.section)!==normRoster(student.section))throw Error("بيانات الصف أو الفصل في حساب الطالب لا تطابق هذه الحصة.");
+  if(String(x.grade)!==String(student.grade)||String(x.section)!==String(student.section))throw Error("بيانات الصف أو الفصل في حساب الطالب لا تطابق هذه الحصة.");
   const ref=db.collection("remoteAttendance").doc(id+"_"+student.code);
   const old=await ref.get();
-  if(old.exists&&["حاضر","بانتظار موافقة المعلم"].includes(old.data().status)){
-   if(meetingTab){meetingTab.opener=null;meetingTab.location.href=x.meeting}
-   return msg(old.data().status==="حاضر"?"حضورك معتمد بالفعل.":"طلب حضورك مسجل بالفعل وينتظر موافقة المعلم.","ok");
-  }
-  const payload={sessionId:id,studentCode:String(student.code),studentDocId:String(student._docId||student.code),studentName:student.name||student.fullName||"طالب",grade:student.grade,section:student.section,subject:x.subject,teacherEmail:x.teacherEmail||"",teacherName:x.teacherName||"",status:"بانتظار موافقة المعلم",requestedAt:firebase.firestore.FieldValue.serverTimestamp(),timeText:new Date().toLocaleTimeString("ar-SA"),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
-  await ref.set(payload,{merge:true});
-  const verify=await ref.get();
-  if(!verify.exists||verify.data().status!=="بانتظار موافقة المعلم")throw Error("تم إرسال الكتابة لكن تعذر التحقق من حفظ طلب الحضور. أعد المحاولة أو تواصل مع الإدارة.");
+  if(old.exists&&old.data().status==="حاضر"){if(meetingTab)meetingTab.close();return msg("تم اعتماد حضورك بالفعل.","ok")}
+  await ref.set({sessionId:id,studentCode:String(student.code),studentName:student.name||student.fullName||"طالب",grade:student.grade,section:student.section,subject:x.subject,status:"بانتظار موافقة المعلم",requestedAt:firebase.firestore.FieldValue.serverTimestamp(),timeText:new Date().toLocaleTimeString("ar-SA")},{merge:true});
   if(meetingTab){meetingTab.opener=null;meetingTab.location.href=x.meeting}
-  msg("تم حفظ طلب الحضور والتحقق منه في قاعدة البيانات. ينتظر الآن موافقة المعلم.","ok");
-  await loadStudentByCode(student._docId||student.code);
+  msg("تم حفظ طلب الحضور في قاعدة البيانات بنجاح، وهو الآن بانتظار موافقة المعلم.","ok");await loadStudentByCode(student.code);
  }catch(e){
   if(meetingTab)meetingTab.close();
   console.error("Remote attendance request failed",e);
-  const detail=e.code?e.code+": ":"";
-  msg("فشل تسجيل الحضور: "+detail+(e.message||String(e)),"bad");
+  msg("لم يتم تسجيل طلب الحضور: "+(e.message||String(e)),"bad");
  }
-}>
+}
+async function loadSupervisor(){const gate=await db.collection("users").doc(email).get();if(!gate.exists)throw Error("لم يتم العثور على ملف المشرف");const assigned=new Set((gate.data().assignedTeacherEmails||[]).map(x=>String(x).toLowerCase()));const snap=await db.collection("remoteSessions").get();const sessions=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>assigned.has(String(x.teacherEmail||"").toLowerCase()));const a=await db.collection("remoteAttendance").get();const visibleIds=new Set(sessions.map(x=>x.id));const attendance=a.docs.filter(d=>visibleIds.has(d.data().sessionId));$("supervisorStats").innerHTML='<div class="stat"><b>'+sessions.length+'</b>حصة منشورة</div><div class="stat"><b>'+attendance.length+'</b>تسجيل حضور</div>'; $("supervisorTable").innerHTML='<table><tr><th>التاريخ</th><th>المادة</th><th>الصف والفصل</th><th>المعلم</th><th>الرابط</th></tr>'+sessions.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.subject)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.teacherName)+'</td><td><a href="'+esc(x.meeting)+'" target="_blank">فتح</a></td></tr>').join("")+'</table>'}
+async function loadAdminReports(){const [s,a]=await Promise.all([db.collection("remoteSessions").get(),db.collection("remoteAttendance").get()]);$("adminStats").innerHTML='<div class="stat"><b>'+s.size+'</b>حصة منشورة</div><div class="stat"><b>'+a.size+'</b>تسجيل حضور</div>';const rows=s.docs.map(d=>({id:d.id,...d.data()}));$("adminTable").innerHTML='<table><tr><th>التاريخ</th><th>المادة</th><th>الصف والفصل</th><th>المعلم</th><th>الوقت</th></tr>'+rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.subject)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.teacherName)+'</td><td>'+esc(x.start)+'–'+esc(x.end)+'</td></tr>').join("")+'</table>'}
+init().catch(e=>msg("خطأ في تشغيل المنصة: "+e.message,"bad"));
+</script>
+<!-- alfalah-designer-credit:start -->
+<style id="alfalah-designer-credit-style">
+#alfalah-designer-credit{display:block;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
+@media print {
+ #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
+}
+</style>
+<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
+<!-- alfalah-designer-credit:end -->
+</body></html>
