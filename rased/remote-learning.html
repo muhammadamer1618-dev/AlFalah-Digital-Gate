@@ -19,4 +19,14 @@ async function joinSession(id){const s=allSessions.find(x=>x.id===id);let d=awai
 async function loadSupervisor(){const snap=await db.collection("remoteSessions").get();const sessions=snap.docs.map(d=>({id:d.id,...d.data()}));const a=await db.collection("remoteAttendance").get();$("supervisorStats").innerHTML='<div class="stat"><b>'+sessions.length+'</b>حصة منشورة</div><div class="stat"><b>'+a.size+'</b>تسجيل حضور</div>'; $("supervisorTable").innerHTML='<table><tr><th>التاريخ</th><th>المادة</th><th>الصف والفصل</th><th>المعلم</th><th>الرابط</th></tr>'+sessions.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.subject)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.teacherName)+'</td><td><a href="'+esc(x.meeting)+'" target="_blank">فتح</a></td></tr>').join("")+'</table>'}
 async function loadAdminReports(){const [s,a]=await Promise.all([db.collection("remoteSessions").get(),db.collection("remoteAttendance").get()]);$("adminStats").innerHTML='<div class="stat"><b>'+s.size+'</b>حصة منشورة</div><div class="stat"><b>'+a.size+'</b>تسجيل حضور</div>';const rows=s.docs.map(d=>({id:d.id,...d.data()}));$("adminTable").innerHTML='<table><tr><th>التاريخ</th><th>المادة</th><th>الصف والفصل</th><th>المعلم</th><th>الوقت</th></tr>'+rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.subject)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.teacherName)+'</td><td>'+esc(x.start)+'–'+esc(x.end)+'</td></tr>').join("")+'</table>'}
 init().catch(e=>msg("خطأ في تشغيل المنصة: "+e.message,"bad"));
-</script></body></html>
+</script>
+<!-- alfalah-designer-credit:start -->
+<style id="alfalah-designer-credit-style">
+#alfalah-designer-credit{display:block;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
+@media print {
+ #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
+}
+</style>
+<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
+<!-- alfalah-designer-credit:end -->
+</body></html>
