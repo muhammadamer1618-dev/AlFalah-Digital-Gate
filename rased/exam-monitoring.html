@@ -45,6 +45,7 @@ button{border:0;border-radius:7px;padding:8px 11px;font:inherit;font-weight:bold
 <div class="card">
 <div class="card-title">🔎 اختيار المعلم والمتابعة</div>
 <div class="card-body">
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button class="primary" type="button" onclick="buildExamTeacherCount()">📊 حصر الاختبارات حسب المعلم</button><button class="light" type="button" onclick="printExamTeacherCount()">🖨️ طباعة الحصر</button></div><div id="examTeacherCountReport" class="card hidden" style="margin-bottom:14px"><div class="card-body"></div></div>
 <div class="filters">
 <div><label>المعلم</label><select id="teacherFilter" onchange="teacherChanged()"><option value="">اختر المعلم</option></select></div>
 <div><label>الصف</label><select id="gradeFilter" onchange="renderAll()"><option value="">كل الصفوف</option></select></div>
@@ -99,11 +100,11 @@ button{border:0;border-radius:7px;padding:8px 11px;font:inherit;font-weight:bold
 const firebaseConfig={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};
 firebase.initializeApp(firebaseConfig);const db=firebase.firestore();
 const gradesOrder=["1 ابتدائي","2 ابتدائي","3 ابتدائي","4 ابتدائي","5 ابتدائي","6 ابتدائي","1 متوسط","2 متوسط","3 متوسط","1 ثانوي","2 ثانوي","3 ثانوي"];
-let teachers=[],subjects=[],exams=[],attempts=[],questionCounts={};
+let teachers=[],subjects=[],exams=[],attempts=[],questionCounts={},currentRole="",currentUser="",currentSupervisorType="",assignedTeacherEmails=[];
 function el(id){return document.getElementById(id)}
 function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function protect(){
- const r=String(localStorage.getItem("currentUserRole")||"").toLowerCase();
+ const r=String(localStorage.getItem("currentUserRole")||"").toLowerCase();currentRole=r;currentUser=localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"";
  if(!["admin","superadmin","manager","supervisor"].includes(r)){
   alert("هذه الصفحة مخصصة للإدارة والمشرف العام.");
   location.href="index.html";
@@ -121,18 +122,48 @@ async function start(){
  try{
   const [ts,ss,es,as]=await Promise.all([db.collection("teachers").get(),db.collection("subjects").get(),db.collection("onlineExams").get(),db.collection("examAttempts").get()]);
   teachers=ts.docs.map(d=>({id:d.id,...d.data()}));subjects=ss.docs.map(d=>({id:d.id,...d.data()}));exams=es.docs.map(d=>({id:d.id,...d.data()}));attempts=as.docs.map(d=>({id:d.id,...d.data()}));
+  if(currentRole==="supervisor"){
+   const username=String(currentUser||"").trim().toLowerCase();
+   const userDoc=await db.collection("users").doc(username).get();
+   if(!userDoc.exists||String(userDoc.data()?.role||"").toLowerCase()!=="supervisor")throw new Error("حساب المشرف غير موجود.");
+   const userData=userDoc.data()||{};currentSupervisorType=String(userData.supervisorType||"general_supervisor").toLowerCase();
+   assignedTeacherEmails=Array.isArray(userData.assignedTeacherEmails)?userData.assignedTeacherEmails.map(v=>String(v||"").trim().toLowerCase()).filter(Boolean):[];
+   const allowed=new Set(assignedTeacherEmails);
+   const scopedTeachers=teachers.filter(t=>allowed.has(String(t.id||"").trim().toLowerCase())||allowed.has(String(t.email||"").trim().toLowerCase()));
+   teachers=scopedTeachers;
+   const ownerKeys=new Set(scopedTeachers.flatMap(t=>[t.id,t.email].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean)));
+   exams=exams.filter(e=>[e.teacherEmail,e.teacherId,e.teacherUsername,e.createdBy,e.username].some(v=>ownerKeys.has(String(v||"").trim().toLowerCase())));
+  }
   teachers.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
   teachers.forEach(t=>teacherFilter.insertAdjacentHTML("beforeend",`<option value="${esc(t.id)}">${esc(t.name||t.id)}</option>`));
   gradesOrder.forEach(g=>gradeFilter.insertAdjacentHTML("beforeend",`<option>${esc(g)}</option>`));
   subjects.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar")).forEach(s=>subjectFilter.insertAdjacentHTML("beforeend",`<option value="${esc(s.id)}">${esc(s.name)}</option>`));
  }catch(e){console.error(e);alert("تعذر تحميل بيانات المتابعة: "+e.message)}
 }
+function buildExamTeacherCount(){
+ const grouped=new Map();
+ exams.forEach(e=>{
+  const candidates=[e.teacherEmail,e.teacherId,e.teacherUsername,e.createdBy,e.username].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean);
+  const t=teachers.find(x=>candidates.includes(String(x.id||"").trim().toLowerCase())||candidates.includes(String(x.email||"").trim().toLowerCase()));
+  const key=t?String(t.id||t.email).toLowerCase():(candidates[0]||"unknown");
+  if(!grouped.has(key))grouped.set(key,{name:t?.name||e.teacherName||e.createdByName||"معلم غير محدد",count:0});
+  grouped.get(key).count++;
+ });
+ const rows=[...grouped.values()].sort((a,b)=>a.name.localeCompare(b.name,"ar")),total=rows.reduce((n,x)=>n+x.count,0),host=el("examTeacherCountReport");
+ host.classList.remove("hidden");host.querySelector(".card-body").innerHTML='<h3 style="margin-top:0">حصر الاختبارات الإلكترونية حسب المعلم</h3><p>إجمالي الاختبارات: <b>'+total+'</b> · عدد المعلمين: <b>'+rows.length+'</b></p><div class="table-wrap"><table style="min-width:400px"><thead><tr><th>م</th><th>اسم المعلم</th><th>عدد الاختبارات</th></tr></thead><tbody>'+rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.name)+'</td><td><b>'+x.count+'</b></td></tr>').join("")+'</tbody><tfoot><tr><th colspan="2">الإجمالي</th><th>'+total+'</th></tr></tfoot></table></div>';
+}
+function printExamTeacherCount(){
+ if(el("examTeacherCountReport").classList.contains("hidden"))buildExamTeacherCount();
+ const content=el("examTeacherCountReport").querySelector(".card-body").innerHTML,w=window.open("","_blank","width=900,height=700");
+ if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة الحصر.");return}
+ w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>حصر الاختبارات الإلكترونية</title><style>@page{size:A4 portrait;margin:15mm}body{font-family:Tahoma,Arial;color:#1f2937}h2,h3,p{text-align:center}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #9aa;padding:10px;text-align:center}th{background:#eef4fa}</style></head><body><h2>مدارس الفلاح الأهلية</h2>'+content+'<p>تصميم محمد عامر أحمد - نظام راصد</p><script>window.onload=()=>window.print();<\/script></body></html>');w.document.close();
+}
 function teacherChanged(){examDetailsCard.classList.add("hidden");attemptCard.classList.add("hidden");renderAll()}
 function selectedTeacher(){return teachers.find(t=>t.id===teacherFilter.value||t.email===teacherFilter.value)}
 function teacherExams(){
  const t=selectedTeacher();if(!t)return[];
  const keys=new Set([t.id,t.email].filter(Boolean).map(x=>String(x).trim().toLowerCase()));
- return exams.filter(e=>keys.has(String(e.teacherEmail||"").trim().toLowerCase()));
+ return exams.filter(e=>[e.teacherEmail,e.teacherId,e.teacherUsername,e.createdBy,e.username].some(v=>keys.has(String(v||"").trim().toLowerCase())));
 }
 function filteredExams(){
  let arr=teacherExams(),g=gradeFilter.value,s=subjectFilter.value;
