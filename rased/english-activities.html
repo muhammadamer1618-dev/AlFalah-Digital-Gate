@@ -459,7 +459,37 @@ function closeStaffActivityPreview(){
  $("staffManager").scrollIntoView({behavior:"smooth",block:"start"});
 }
 async function printAllEnglishResults(id){await viewReports(id);setTimeout(()=>window.print(),250)}
-async function loadParentActivities(code){try{const normalized=String(code||"").trim();if(normalized.length<4||normalized.length>20||normalized.split("").some(ch=>ch<"0"||ch>"9"))throw Error("Invalid student ID");const student=await db.collection("students").doc(normalized).get();if(!student.exists)throw Error("Student record not found");const d=student.data()||{};const grade=String(d.grade||d.gradeName||d.className||"").trim(),section=String(d.section||d.classroom||d.class||"").trim();if(!grade||!section)throw Error("Your grade or section is missing from your student profile");let snap=await db.collection("englishActivities").where("published","==",true).get();const list=snap.docs.map(x=>({id:x.id,...x.data()})).filter(x=>(Array.isArray(x.targetClasses)&&x.targetClasses.length?x.targetClasses.some(c=>String(c.grade||"").trim()===grade&&String(c.section||"").trim()===section):String(x.grade||"").trim()===grade&&String(x.section||"").trim()===section)).sort((a,b)=>{const dateValue=x=>{const v=x.activityDate||x.date||x.createdAt; if(v&&typeof v.toDate==="function")return v.toDate().getTime();if(v&&typeof v.toMillis==="function")return v.toMillis();const n=Date.parse(String(v||""));return Number.isFinite(n)?n:0};return dateValue(a)-dateValue(b)});$("parentActivities").classList.remove("hidden");$("parentStudentLabel").textContent="Student: "+(d.name||"") +" — "+grade+" / "+section;$("parentActivityList").innerHTML=list.length?list.map(x=>'<div class="activity"><strong>'+esc(x.title)+'</strong><div class="muted">'+esc(x.subjectName||"اللغة الإنجليزية")+' · '+(x.items||[]).length+' words and sentences</div><button onclick="startActivityById('+esc(JSON.stringify(x.id))+')">Start Activity</button></div>').join(""):"No published activities are available for your class yet.";}catch(e){status("تعذر تحميل أنشطة Student: "+e.message,true)}}
+async function loadParentActivities(code){
+ try{
+  const normalized=String(code||"").trim();
+  if(normalized.length<4||normalized.length>20||normalized.split("").some(ch=>ch<"0"||ch>"9"))throw Error("Invalid student ID");
+  const student=await db.collection("students").doc(normalized).get();
+  if(!student.exists)throw Error("Student record not found");
+  const d=student.data()||{},grade=String(d.grade||d.gradeName||d.className||"").trim(),section=String(d.section||d.classroom||d.class||"").trim();
+  if(!grade||!section)throw Error("Your grade or section is missing from your student profile");
+  const snap=await db.collection("englishActivities").where("published","==",true).get();
+  const dateValue=x=>{
+   const v=x.activityDate||x.date||x.createdAt;
+   if(v&&typeof v.toDate==="function")return v.toDate().getTime();
+   if(v&&typeof v.toMillis==="function")return v.toMillis();
+   const raw=String(v||"").trim();
+   if(/^\d{4}-\d{2}-\d{2}$/.test(raw)){const [y,m,day]=raw.split("-").map(Number);return Date.UTC(y,m-1,day)}
+   const n=Date.parse(raw);return Number.isFinite(n)?n:null;
+  };
+  const dateLabel=x=>{
+   const raw=String(x.activityDate||x.date||"").trim();
+   if(/^\d{4}-\d{2}-\d{2}$/.test(raw)){const [y,m,day]=raw.split("-").map(Number);return new Date(Date.UTC(y,m-1,day)).toLocaleDateString("ar-SA",{year:"numeric",month:"long",day:"numeric",timeZone:"UTC"})}
+   const v=x.activityDate||x.date||x.createdAt,dt=v&&typeof v.toDate==="function"?v.toDate():v&&typeof v.toMillis==="function"?v.toDate():new Date(v);
+   return v&&Number.isFinite(dt.getTime())?dt.toLocaleDateString("ar-SA"):"التاريخ غير محدد";
+  };
+  const list=snap.docs.map(x=>({id:x.id,...x.data()}))
+   .filter(x=>(Array.isArray(x.targetClasses)&&x.targetClasses.length?x.targetClasses.some(c=>String(c.grade||"").trim()===grade&&String(c.section||"").trim()===section):String(x.grade||"").trim()===grade&&String(x.section||"").trim()===section))
+   .sort((a,b)=>{const da=dateValue(a),db=dateValue(b);if(da===null&&db===null)return 0;if(da===null)return 1;if(db===null)return -1;return da-db});
+  $("parentActivities").classList.remove("hidden");
+  $("parentStudentLabel").textContent="Student: "+(d.name||"")+" — "+grade+" / "+section;
+  $("parentActivityList").innerHTML=list.length?list.map(x=>'<div class="activity"><strong>'+esc(x.title)+'</strong><div class="muted">📅 '+esc(dateLabel(x))+' · '+esc(x.subjectName||"اللغة الإنجليزية")+' · '+(x.items||[]).length+' words and sentences</div><button onclick="startActivityById('+esc(JSON.stringify(x.id))+')">Start Activity</button></div>').join(""):"No published activities are available for your class yet.";
+ }catch(e){status("تعذر تحميل أنشطة Student: "+e.message,true)}
+}
 function startActivityById(id){$("activityCode").value=id;openActivity()}
 let englishItemImages=[];
 function englishLines(){return $("items").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)}
