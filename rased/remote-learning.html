@@ -3,12 +3,67 @@
 
 @media print{ @page{size:A4 portrait;margin:10mm} body{background:#fff!important} body *{visibility:hidden!important} #attendancePrintRoot,#attendancePrintRoot *{visibility:visible!important} #attendancePrintRoot{display:block!important;position:absolute;inset:0;width:100%;margin:0;padding:0} .no-print{display:none!important} }</style></head><body><header class="top"><div><h1>منصة الفلاح للتعلّم عن بُعد</h1><p>مدارس الفلاح الأهلية · بيئة تعليمية موحدة أثناء تعليق الدراسة</p></div><a class="btn light" id="portalReturnButton" href="index.html">العودة للبوابة</a></header><main class="wrap"><div class="bar"><div><b id="roleTitle">بوابة التعلم عن بُعد</b><div class="muted" id="who">جارٍ التحقق من الحساب...</div></div><span class="pill" id="platformState">...</span></div><div id="message" class="msg hidden"></div><section id="studentGate" class="card hidden"><h2>الدخول إلى حصصك</h2><p class="muted">للدخول المباشر، افتح هذه الصفحة من بطاقة «التعلّم عن بُعد» داخل بوابة الطالب الرقمية بعد تسجيل الدخول المعتاد.</p><a class="btn" href="https://student.rasededu.online/">العودة إلى بوابة الطالب الرقمية</a></section><section id="adminPanel" class="card hidden"><h2>إعدادات تشغيل المنصة</h2><div class="row"><div><label>حالة المنصة</label><select id="enabled"><option value="false">متوقفة</option><option value="true">مفعلة</option></select></div><div><label>رسالة للطلاب وأولياء الأمور</label><input id="notice" placeholder="مثال: الدراسة عن بُعد اليوم"></div></div><button onclick="saveSettings()">حفظ إعدادات المنصة</button><p class="muted">إيقاف المنصة يخفي الحصص عن الطلاب ولا يحذف أي بيانات أو سجلات حضور.</p></section><section id="teacherPanel" class="card hidden"><h2>إضافة حصة افتراضية</h2><div class="grid"><div><label>الصف</label><select id="grade"></select></div><div><label>الفصل</label><select id="section"></select></div><div><label>المادة</label><input id="subject" placeholder="اسم المادة"></div><div><label>عنوان الدرس</label><input id="topic" placeholder="عنوان الدرس"></div><div><label>تاريخ الحصة</label><input id="date" type="date"></div><div><label>وقت البداية</label><input id="start" type="time"></div><div><label>وقت النهاية</label><input id="end" type="time"></div><div><label>رابط Google Meet</label><input id="meeting" type="url" placeholder="https://meet.google.com/..."></div></div><button onclick="createSession()">نشر الحصة</button></section><section id="studentPanel" class="card hidden"><h2>حصصي التعليمية</h2><div id="studentSessions"></div></section><section id="teacherRoster" class="card hidden"><h2>الحصص وكشوف الحضور</h2><div id="teacherSessions"></div></section><section id="supervisorPanel" class="card hidden"><h2>متابعة التعليم عن بُعد</h2><div class="grid" id="supervisorStats"></div><div class="scroll" id="supervisorTable"></div></section><section id="adminReports" class="card hidden"><h2>تقارير المنصة</h2><div class="grid" id="adminStats"></div><div class="scroll" id="adminTable"></div></section></main><footer class="foot">منصة الفلاح للتعلّم عن بُعد · مرتبطة ببيانات راصد</footer>
 <script>
+window.addEventListener("error",function(e){const box=document.getElementById("message");if(box){box.textContent="حدث خطأ في تشغيل الصفحة: "+(e.message||"خطأ JavaScript غير معروف");box.className="msg bad";}});
+window.addEventListener("unhandledrejection",function(e){const box=document.getElementById("message");if(box){const r=e.reason;box.textContent="تعذر إكمال العملية: "+(r&&r.code?r.code+" — ":"")+(r&&r.message?r.message:String(r));box.className="msg bad";}});
 const cfg={apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"};firebase.initializeApp(cfg);const db=firebase.firestore(),$=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));let role="",email="",teacher=null,student=null,settings={enabled:false,notice:""},allSessions=[];
 function auth(k){return sessionStorage.getItem(k)||localStorage.getItem(k)||""}function show(id,on=true){$(id).classList.toggle("hidden",!on)}function msg(t,type=""){const x=$("message");x.textContent=t;x.className="msg "+type}
 function day(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function getStudentSession(){try{return JSON.parse(localStorage.getItem("rased.student.session.v1")||"null")||{}}catch(e){return {}}}
 function setPortalReturn(studentCode){const a=$("portalReturnButton");if(!a)return;a.textContent="العودة للبوابة";if(role==="teacher"){a.href="teacher.html";a.title="العودة إلى بوابة المعلم"}else if(role==="supervisor"||role==="manager"){a.href="supervisor-dashboard.html";a.title="العودة إلى بوابة المشرف"}else if(role==="admin"||role==="superadmin"){a.href="admin.html";a.title="العودة إلى بوابة الإدارة"}else if(studentCode||role==="student"||role==="parent"){a.href="https://student.rasededu.online/";a.title="العودة إلى بوابة الطالب"}else{a.href="index.html";a.title="العودة إلى بوابة راصد"}}
-async function init(){role=String(auth("currentUserRole")).toLowerCase().trim();email=String(auth("currentUserEmail")||auth("currentUser")).trim().toLowerCase();$("date").value=day();const studentSession=getStudentSession();const hp=new URLSearchParams(location.hash.replace(/^#/,""));const studentDocId=hp.get("studentDocId")||studentSession.docId||"";const studentCode=hp.get("studentCode")||studentSession.code||"";const studentLoginCode=hp.get("studentLoginCode")||studentSession.loginCode||"";const studentKey=studentDocId||studentCode||studentLoginCode;setPortalReturn(studentKey);$("who").textContent=auth("currentUserName")||studentSession.name||email||"بوابة الطالب";try{const d=await db.collection("remoteSettings").doc("main").get();if(d.exists)settings={...settings,...d.data()};$("platformState").textContent=settings.enabled?"المنصة مفعلة":"المنصة متوقفة";if(role==="admin"||role==="superadmin"){show("adminPanel");show("adminReports");$("enabled").value=String(!!settings.enabled);$("notice").value=settings.notice||"";await loadAdminReports()}else if(role==="teacher"){show("teacherPanel");show("teacherRoster");await loadTeacher()}else if(role==="supervisor"||role==="manager"){show("supervisorPanel");await loadSupervisor()}else if(studentKey){await loadStudentByCode(studentCode||studentLoginCode,studentDocId,studentLoginCode)}else{show("studentGate");$("who").textContent="لم تصل بيانات دخول الطالب. ارجع إلى بوابة الطالب وافتح التعلّم عن بُعد من داخل حسابك."}}catch(e){console.error("Remote learning initialization failed",e);msg("تعذر تحميل المنصة: "+(e.message||String(e)),"bad")}}
+async function init(){
+ const hp=new URLSearchParams(location.hash.replace(/^#/,""));
+ const studentSession=getStudentSession();
+ const studentDocId=hp.get("studentDocId")||"";
+ const studentCode=hp.get("studentCode")||"";
+ const studentLoginCode=hp.get("studentLoginCode")||"";
+ const hasStudentHandoff=!!(studentDocId||studentCode||studentLoginCode);
+ role=String(auth("currentUserRole")).toLowerCase().trim();
+ email=String(auth("currentUserEmail")||auth("currentUser")).trim().toLowerCase();
+ $("date").value=day();
+ const studentKey=studentDocId||studentCode||studentLoginCode;
+ setPortalReturn(studentKey);
+ $("who").textContent=hasStudentHandoff?"جارٍ فتح حساب الطالب...":(auth("currentUserName")||email||"بوابة التعلم عن بُعد");
+ if(hasStudentHandoff){
+  try{
+   $("who").textContent="تم استلام بيانات الطالب، جارٍ تحميل سجله...";
+   await loadStudentByCode(studentCode||studentLoginCode,studentDocId,studentLoginCode);
+   try{
+    const settingDoc=await db.collection("remoteSettings").doc("main").get();
+    if(settingDoc.exists)settings={...settings,...settingDoc.data()};
+    $("platformState").textContent=settings.enabled?"المنصة مفعلة":"المنصة متوقفة";
+    if(!settings.enabled)$("studentSessions").innerHTML='<p class="msg">التعلم عن بُعد غير مفعل حاليًا. تم التعرف على حساب الطالب بنجاح.</p>';
+   }catch(settingsError){
+    console.error("Remote settings read failed",settingsError);
+    msg("تم التعرف على الطالب، لكن تعذر قراءة إعدادات المنصة: "+(settingsError.code||"")+ " "+settingsError.message,"bad");
+   }
+   return;
+  }catch(studentError){
+   console.error("Student handoff failed",studentError);
+   show("studentGate");
+   $("who").textContent="تعذر فتح حساب الطالب";
+   msg("فشل فتح حساب الطالب: "+(studentError.code?studentError.code+" — ":"")+(studentError.message||String(studentError)),"bad");
+   return;
+  }
+ }
+ try{
+  const settingDoc=await db.collection("remoteSettings").doc("main").get();
+  if(settingDoc.exists)settings={...settings,...settingDoc.data()};
+  $("platformState").textContent=settings.enabled?"المنصة مفعلة":"المنصة متوقفة";
+  if(role==="admin"||role==="superadmin"){
+   show("adminPanel");show("adminReports");$("enabled").value=String(!!settings.enabled);$("notice").value=settings.notice||"";await loadAdminReports();
+  }else if(role==="teacher"){
+   show("teacherPanel");show("teacherRoster");await loadTeacher();
+  }else if(role==="supervisor"||role==="manager"){
+   show("supervisorPanel");await loadSupervisor();
+  }else{
+   show("studentGate");
+   $("who").textContent="يلزم الدخول من بوابة الطالب الرقمية";
+  }
+ }catch(e){
+  console.error("Remote learning initialization failed",e);
+  msg("تعذر تحميل المنصة: "+(e.code?e.code+" — ":"")+(e.message||String(e)),"bad");
+ }
+}
 async function saveSettings(){try{settings={enabled:$("enabled").value==="true",notice:$("notice").value.trim(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:email};await db.collection("remoteSettings").doc("main").set(settings,{merge:true});$("platformState").textContent=settings.enabled?"المنصة مفعلة":"المنصة متوقفة";msg("تم حفظ إعدادات المنصة في Firebase.","ok")}catch(e){msg("تعذر الحفظ: "+e.message,"bad")}}
 async function loadTeacher(){const d=await db.collection("teachers").doc(email).get();if(!d.exists)throw Error("لم يتم العثور على ملف المعلم");teacher=d.data();const gs=[...new Set((teacher.assignments||[]).map(a=>String(a.grade||"")).filter(Boolean))];$("grade").innerHTML=gs.map(g=>'<option>'+esc(g)+'</option>').join("");fillSections();$("grade").onchange=fillSections;await loadSessions()}
 async function fillSections(){const g=$("grade").value,ss=[...new Set((teacher?.assignments||[]).filter(a=>String(a.grade)===g).map(a=>String(a.section||"")).filter(Boolean))];$("section").innerHTML=ss.map(x=>'<option>'+esc(x)+'</option>').join("")}
