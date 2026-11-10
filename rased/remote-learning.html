@@ -24,18 +24,19 @@ async function init(){
  setPortalReturn(studentKey);
  $("who").textContent=hasStudentHandoff?"جارٍ فتح حساب الطالب...":(auth("currentUserName")||email||"بوابة التعلم عن بُعد");
  if(hasStudentHandoff){
+  let settingsError=null;
+  try{
+   const settingDoc=await db.collection("remoteSettings").doc("main").get();
+   if(settingDoc.exists)settings={...settings,...settingDoc.data()};
+   $("platformState").textContent=settings.enabled?"المنصة مفعلة":"المنصة متوقفة";
+  }catch(e){
+   settingsError=e;
+   console.error("Remote settings read failed",e);
+  }
   try{
    $("who").textContent="تم استلام بيانات الطالب، جارٍ تحميل سجله...";
    await loadStudentByCode(studentCode||studentLoginCode,studentDocId,studentLoginCode);
-   try{
-    const settingDoc=await db.collection("remoteSettings").doc("main").get();
-    if(settingDoc.exists)settings={...settings,...settingDoc.data()};
-    $("platformState").textContent=settings.enabled?"المنصة مفعلة":"المنصة متوقفة";
-    if(!settings.enabled)$("studentSessions").innerHTML='<p class="msg">التعلم عن بُعد غير مفعل حاليًا. تم التعرف على حساب الطالب بنجاح.</p>';
-   }catch(settingsError){
-    console.error("Remote settings read failed",settingsError);
-    msg("تم التعرف على الطالب، لكن تعذر قراءة إعدادات المنصة: "+(settingsError.code||"")+ " "+settingsError.message,"bad");
-   }
+   if(settingsError)msg("تم التعرف على الطالب، لكن تعذر قراءة إعدادات المنصة: "+(settingsError.code||"")+" "+settingsError.message,"bad");
    return;
   }catch(studentError){
    console.error("Student handoff failed",studentError);
