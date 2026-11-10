@@ -103,9 +103,24 @@ const gradesOrder=["1 ابتدائي","2 ابتدائي","3 ابتدائي","4 �
 let teachers=[],subjects=[],exams=[],attempts=[],questionCounts={},currentRole="",currentUser="",currentSupervisorType="",assignedTeacherEmails=[];
 function el(id){return document.getElementById(id)}
 function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function authValue(key){
+ try{if(typeof rasedAuthGet==="function"){const v=rasedAuthGet(key);if(v)return v}}catch(e){}
+ return sessionStorage.getItem(key)||localStorage.getItem(key)||"";
+}
+function hydrateExamMonitoringSession(){
+ try{
+  const gate=JSON.parse(localStorage.getItem("alfalah.gate.session.v1")||"null");
+  const role=authValue("currentUserRole")||gate?.rasedRole||gate?.sourceRole||(gate?.type==="supervision"?"supervisor":"");
+  const username=authValue("currentUserEmail")||authValue("currentUser")||gate?.username||"";
+  if(role&&!sessionStorage.getItem("currentUserRole"))sessionStorage.setItem("currentUserRole",String(role));
+  if(username&&!sessionStorage.getItem("currentUserEmail"))sessionStorage.setItem("currentUserEmail",String(username));
+  if(username&&!sessionStorage.getItem("currentUser"))sessionStorage.setItem("currentUser",String(username));
+  currentRole=String(role).toLowerCase();currentUser=String(username).trim().toLowerCase();
+ }catch(e){}
+}
 function protect(){
- const r=String(localStorage.getItem("currentUserRole")||"").toLowerCase();currentRole=r;currentUser=localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"";
- if(!["admin","superadmin","manager","supervisor"].includes(r)){
+ hydrateExamMonitoringSession();
+ if(!["admin","superadmin","manager","supervisor"].includes(currentRole)){
   alert("هذه الصفحة مخصصة للإدارة والمشرف العام.");
   location.href="index.html";
   return false;
@@ -114,7 +129,7 @@ function protect(){
 }
 
 function goBack(){
- const r=String(localStorage.getItem("currentUserRole")||"").toLowerCase();
+ const r=currentRole||String(sessionStorage.getItem("currentUserRole")||localStorage.getItem("currentUserRole")||"").toLowerCase();
  location.href=(r==="manager"?"manager.html":(r==="supervisor"?"supervisor-dashboard.html":"admin.html"));
 }
 async function start(){
@@ -124,15 +139,19 @@ async function start(){
   teachers=ts.docs.map(d=>({id:d.id,...d.data()}));subjects=ss.docs.map(d=>({id:d.id,...d.data()}));exams=es.docs.map(d=>({id:d.id,...d.data()}));attempts=as.docs.map(d=>({id:d.id,...d.data()}));
   if(currentRole==="supervisor"){
    const username=String(currentUser||"").trim().toLowerCase();
+   if(!username)throw new Error("تعذر تحديد حساب المشرف الحالي.");
    const userDoc=await db.collection("users").doc(username).get();
-   if(!userDoc.exists||String(userDoc.data()?.role||"").toLowerCase()!=="supervisor")throw new Error("حساب المشرف غير موجود.");
+   if(!userDoc.exists||String(userDoc.data()?.role||"").toLowerCase()!=="supervisor")throw new Error("تعذر التحقق من حساب المشرف: "+username);
    const userData=userDoc.data()||{};currentSupervisorType=String(userData.supervisorType||"general_supervisor").toLowerCase();
    assignedTeacherEmails=Array.isArray(userData.assignedTeacherEmails)?userData.assignedTeacherEmails.map(v=>String(v||"").trim().toLowerCase()).filter(Boolean):[];
+   if(!assignedTeacherEmails.length)throw new Error("لا توجد معلمون مسندون لهذا المشرف في إعدادات حسابه.");
+   const norm=v=>String(v||"").trim().toLowerCase();
    const allowed=new Set(assignedTeacherEmails);
-   const scopedTeachers=teachers.filter(t=>allowed.has(String(t.id||"").trim().toLowerCase())||allowed.has(String(t.email||"").trim().toLowerCase()));
+   const scopedTeachers=teachers.filter(t=>allowed.has(norm(t.id))||allowed.has(norm(t.email))||allowed.has(norm(t.username)));
+   const ownerKeys=new Set(scopedTeachers.flatMap(t=>[t.id,t.email,t.username].map(norm).filter(Boolean)));
+   assignedTeacherEmails.forEach(v=>ownerKeys.add(norm(v)));
    teachers=scopedTeachers;
-   const ownerKeys=new Set(scopedTeachers.flatMap(t=>[t.id,t.email].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean)));
-   exams=exams.filter(e=>[e.teacherEmail,e.teacherId,e.teacherUsername,e.createdBy,e.username].some(v=>ownerKeys.has(String(v||"").trim().toLowerCase())));
+   exams=exams.filter(e=>[e.teacherEmail,e.teacherId,e.teacherUsername,e.createdBy,e.username].some(v=>ownerKeys.has(norm(v))));
   }
   teachers.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
   teachers.forEach(t=>teacherFilter.insertAdjacentHTML("beforeend",`<option value="${esc(t.id)}">${esc(t.name||t.id)}</option>`));
