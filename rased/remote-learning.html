@@ -106,7 +106,7 @@ async function showRoster(id){
   const snapStudents=await db.collection("students").get();
   const allStudents=snapStudents.docs.map(d=>({...d.data(),code:String(d.data().code||d.id),_docId:d.id}));
   const rows=allStudents.filter(x=>normRoster(x.grade)===normRoster(session.grade)&&normRoster(x.section)===normRoster(session.section));
-  const host=$("teacherSessions")||$("supervisorTable")||$("adminTable");
+  const host=role==="supervisor"||role==="manager"?$("supervisorTable"):role==="admin"||role==="superadmin"?$("adminTable"):$("teacherSessions");
   let panel=document.getElementById("liveRoster_"+id);
   if(!panel){panel=document.createElement("div");panel.id="liveRoster_"+id;host.appendChild(panel)}
   panel.innerHTML='<div class="row no-print" style="justify-content:space-between;align-items:center"><div><h3>كشف حضور '+esc(session.subject)+' — '+esc(session.grade)+' / '+esc(session.section)+'</h3><p class="muted">يظهر طلب الطالب فور وصوله، حتى إذا لم يطابق سجل الفصل، مع توضيح بياناته المسجلة.</p></div><button type="button" onclick="printAttendance(\''+id+'\')">🖨️ طباعة كشف الحضور A4</button></div><div class="scroll" id="liveRosterTable_'+id+'">جارٍ تحميل كشف الحضور...</div>';
