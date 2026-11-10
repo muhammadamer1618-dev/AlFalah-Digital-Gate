@@ -496,22 +496,23 @@ async function sanadCloudCommit(snapshot,revision){
 }
 function markSanadCloudDirty(){
  sanadCloudDirty=true;sanadCloudChangeSeq++;
- if(sanadCloudMode==='connected'||sanadCloudMode==='saving'){
-  sanadCloudStatus('☁️ تغييرات محلية بانتظار مزامنة السحابة');
+ if(['connected','saving','pending'].includes(sanadCloudMode)){
+  sanadCloudMode='pending';
+  sanadCloudStatus('⏳ الحفظ في Firebase لم يتأكد بعد — لا تغلق الصفحة');
   clearTimeout(sanadCloudTimer);
-  sanadCloudTimer=setTimeout(sanadCloudFlush,650);
- }else sanadCloudStatus();
+  sanadCloudTimer=setTimeout(sanadCloudFlush,200);
+ }else sanadCloudStatus('⚠️ البيانات لم تُحفظ في Firebase؛ افتح إعدادات المزامنة');
 }
 async function sanadCloudFlush(){
- if(sanadCloudSaving||!sanadCloudDirty||!['connected','saving'].includes(sanadCloudMode))return;
+ if(sanadCloudSaving||!sanadCloudDirty||!['connected','saving','pending'].includes(sanadCloudMode))return;
  sanadCloudSaving=true;sanadCloudMode='saving';sanadCloudStatus();
  const seq=sanadCloudChangeSeq,snapshot=JSON.parse(JSON.stringify(s));
  sanadCloudDirty=false;
  try{
   sanadCloudRevision=await sanadCloudCommit(snapshot,sanadCloudRevision);
-  sanadCloudMode='connected';sanadCloudLastError='';
   if(sanadCloudChangeSeq!==seq)sanadCloudDirty=true;
-  sanadCloudStatus(sanadCloudDirty?'☁️ جارٍ حفظ أحدث التعديلات':null);
+  sanadCloudMode=sanadCloudDirty?'pending':'connected';sanadCloudLastError='';
+  sanadCloudStatus(sanadCloudDirty?'⏳ جارٍ تأكيد أحدث التعديلات في Firebase':null);
  }catch(e){
   console.error('Sanad cloud save failed',e);
   sanadCloudDirty=true;
@@ -527,9 +528,9 @@ async function sanadCloudFlush(){
   sanadCloudStatus();
  }finally{
   sanadCloudSaving=false;
-  if(sanadCloudDirty&&sanadCloudMode==='connected'){
+  if(sanadCloudDirty&&['connected','pending'].includes(sanadCloudMode)){
    clearTimeout(sanadCloudTimer);
-   sanadCloudTimer=setTimeout(sanadCloudFlush,350);
+   sanadCloudTimer=setTimeout(sanadCloudFlush,200);
   }
   if(sanadCloudPendingRemoteRevision>sanadCloudRevision){
    const noticed=sanadCloudPendingRemoteRevision;
@@ -537,7 +538,7 @@ async function sanadCloudFlush(){
    try{
     const remote=await sanadCloudRead();
     if(remote.revision>=noticed&&remote.revision>sanadCloudRevision){
-     if(sanadCloudDirty){
+     if(sanadCloudDirty||sanadCloudCanonical(remote.data)!==sanadCloudCanonical(s)){
       sanadCloudMode='conflict';sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),
        cloud:sanadCloudCounts(remote.data),differences:sanadCloudDifferenceReport(s,remote.data)};
       sanadCloudStatus();
@@ -635,13 +636,13 @@ function sanadCloudStartRealtime(){
  sanadCloudUnsubscribe=root.onSnapshot(async snapshot=>{
   if(!snapshot.exists||sanadCloudStartupPending)return;
   const revision=Number(snapshot.data()?.revision||0);
-  if(sanadCloudSaving||sanadCloudLiveRead){sanadCloudPendingRemoteRevision=Math.max(sanadCloudPendingRemoteRevision,revision);return}
+  if(sanadCloudSaving||sanadCloudLiveRead||sanadCloudMode==='conflict'){sanadCloudPendingRemoteRevision=Math.max(sanadCloudPendingRemoteRevision,revision);return}
   if(revision<=sanadCloudRevision)return;
   sanadCloudLiveRead=true;
   try{
    const remote=await sanadCloudRead();
    if(remote.revision<=sanadCloudRevision)return;
-   if(sanadCloudDirty){
+   if(sanadCloudDirty||sanadCloudCanonical(remote.data)!==sanadCloudCanonical(s)){
     sanadCloudRevision=remote.revision;
     sanadCloudMode='conflict';
     sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data),
@@ -660,7 +661,7 @@ function sanadCloudStartRealtime(){
     try{
      const latest=await sanadCloudRead();
      if(latest.revision>=pending&&latest.revision>sanadCloudRevision){
-      if(sanadCloudDirty){
+      if(sanadCloudDirty||sanadCloudCanonical(latest.data)!==sanadCloudCanonical(s)){
        sanadCloudMode='conflict';sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),
         cloud:sanadCloudCounts(latest.data),differences:sanadCloudDifferenceReport(s,latest.data)};
        sanadCloudStatus();
@@ -676,6 +677,7 @@ function sanadCloudStartRealtime(){
 async function sanadCloudConnect(){
  if(sanadCloudSaving||sanadCloudStartupPending)return;
  sanadCloudStartupPending=true;
+ const initialSeq=sanadCloudChangeSeq;
  sanadCloudMode='connecting';sanadCloudStatus();
  try{
   const remote=await sanadCloudRead();
@@ -692,11 +694,15 @@ async function sanadCloudConnect(){
    }
    return;
   }
-  if(sanadCloudCanonical(remote.data)!==sanadCloudCanonical(s)&&sanadCloudStateIsMeaningful(s)){
-   // Never silently discard the pre-Firebase device data: preserve it before adopting cloud.
-   if(!sanadCloudBackup('بيانات هذا الجهاز قبل اعتماد Firebase كمصدر رئيسي'))
-    throw Error('لا يمكن اعتماد بيانات Firebase قبل إنشاء نسخة استرداد لبيانات الجهاز');
-   try{sessionStorage.setItem('sanad-primary-migration-backed-up','1')}catch(e){}
+  if(sanadCloudChangeSeq!==initialSeq||
+     (sanadCloudCanonical(remote.data)!==sanadCloudCanonical(s)&&sanadCloudStateIsMeaningful(s))){
+   if(!sanadCloudBackup('نسخة استرداد قبل مراجعة اختلاف Firebase'))throw Error('تعذر حفظ نسخة استرداد من الجهاز');
+   sanadCloudRevision=remote.revision;
+   sanadCloudMode='conflict';
+   sanadCloudLastError='بيانات Firebase مختلفة عن نسخة الاسترداد على هذا الجهاز. لم يتم استبدال أي نسخة. نزّل النسختين من الإعدادات ثم راجع توزيعاتك.';
+   sanadCloudConflictDetails={remote:true,local:sanadCloudCounts(s),cloud:sanadCloudCounts(remote.data),
+    differences:sanadCloudDifferenceReport(s,remote.data)};
+   render();sanadCloudStatus();return;
   }
   sanadCloudAdoptRemote(remote);
  }catch(e){
@@ -762,6 +768,11 @@ function sanadCloudSettings(){
   '</div>');
 }
 window.addEventListener('load',()=>sanadCloudConnect());
+window.addEventListener('beforeunload',event=>{
+ if(sanadCloudDirty||sanadCloudSaving||sanadCloudMode==='pending'){
+  event.preventDefault();event.returnValue='';
+ }
+});
 
 function dutyName(x){return x.kind==='bus'?'حافلة':x.kind==='assignment'?'تكليف إضافي':'مراقبة'}
 function hasExtraAssignment(teacherId){return (s.duties||[]).some(d=>d.teacher===teacherId&&d.kind==='assignment')}
@@ -1478,7 +1489,7 @@ function distributeMonitoring(){
   const duty={id:id(),needId:need.id,teacher:teacher.id,kind:'monitoring',mode:need.mode,day:need.day,date:need.date,period:need.period,notes:need.notes};
   duty.track=need.track;s.duties.push(duty);need.assignedTeacher=teacher.id;assigned++;
  }
- save();toast('تم توزيع '+assigned+' مراقبة، والمتبقي '+waiting);
+ save();toast('تم توزيع '+assigned+' مراقبة، والمتبقي '+waiting+' — انتظر تأكيد Firebase');
 }
 function deleteMonitoringNeed(id){
  const item=s.monitoringNeeds.find(x=>x.id===id);
@@ -1602,7 +1613,7 @@ function addLesson(){
    return toast('الحصة مرتبطة بحصة انتظار؛ ألغِ التغطية أولًا قبل تغيير الموعد أو الفصل');
   Object.assign(record,fields);editingLessonId='';
  }else s.lessons.push({id:id(),...fields});
- save();toast('تم حفظ الحصة');
+ save();toast('تم تسجيل الحصة؛ انتظر تأكيد حفظ Firebase');
 }
 function delLesson(i){
  if(!s.lessons.some(l=>l.id===i))return;
