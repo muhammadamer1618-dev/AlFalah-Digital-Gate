@@ -1711,8 +1711,22 @@ function coverageDetail(cover){
  const lesson=s.lessons.find(l=>l.id===cover.lesson),absence=s.absences.find(a=>a.id===cover.absence);
  return {cover,lesson,absence,teacher:nm(cover.to),absent:absence?nm(absence.teacher):'غير محدد',subject:lesson?.subject||'غير محددة',className:cover.className||lesson?.className||'غير محدد'};
 }
-function dailyCoverageItems(date=selectedDate){
- return s.covers.filter(c=>c.date===date&&s.lessons.some(l=>l.id===c.lesson&&lessonStage(l)===absenceStage)).slice().sort((a,b)=>a.period-b.period||nm(a.to).localeCompare(nm(b.to),'ar')).map(coverageDetail);
+function dailyCoverageItems(date=selectedDate,allStages=false){
+ const lessonMap=new Map(s.lessons.map(l=>[String(l.id),l]));
+ const seen=new Set();
+ return s.covers.filter(c=>{
+  const lesson=lessonMap.get(String(c.lesson));
+  if(c.date!==date||!lesson||(!allStages&&lessonStage(lesson)!==absenceStage))return false;
+  const key=String(c.id||c.lesson+'|'+c.date+'|'+c.to);
+  if(seen.has(key))return false;
+  seen.add(key);return true;
+ }).slice().sort((a,b)=>Number(a.period)-Number(b.period)||
+  ['ابتدائي','متوسط','ثانوي'].indexOf(lessonStage(lessonMap.get(String(a.lesson))))-
+  ['ابتدائي','متوسط','ثانوي'].indexOf(lessonStage(lessonMap.get(String(b.lesson))))||
+  nm(a.to).localeCompare(nm(b.to),'ar')).map(c=>{
+   const detail=coverageDetail(c);
+   return {...detail,stage:lessonStage(lessonMap.get(String(c.lesson)))};
+  });
 }
 function coverageWhatsAppText(cid){
  const c=s.covers.find(x=>x.id===cid);if(!c)return '';
@@ -1894,21 +1908,21 @@ function copyCoverageWhatsApp(cid){
  else prompt('انسخ الرسالة',message);
 }
 function printDailyCoverage(){
- if(!dailyCoverageItems().length)return toast('لا توجد تغطيات مسجلة في هذا اليوم للطباعة');
+ if(!dailyCoverageItems(selectedDate,true).length)return toast('لا توجد تغطيات مسجلة في هذا اليوم للطباعة');
  document.body.classList.add('printing-daily-cover');
  const after=()=>{document.body.classList.remove('printing-daily-cover');window.removeEventListener('afterprint',after)};
  window.addEventListener('afterprint',after);
  window.print();
 }
 function dailyCoveragePanel(){
- const entries=dailyCoverageItems(),head=['م','المعلم الغائب','الحصة','الفصل / المادة','المعلم المكلف','التوقيع'];
- const printable=entries.map((d,i)=>[i+1,esc(d.absent),d.cover.period,esc(d.className)+'<small>'+esc(d.subject)+'</small>',esc(d.teacher),'ـــــــــــــــــ']);
+ const entries=dailyCoverageItems(),allEntries=dailyCoverageItems(selectedDate,true),head=['م','المرحلة','المعلم الغائب','الحصة','الفصل / المادة','المعلم المكلف','التوقيع'];
+ const printable=allEntries.map((d,i)=>[i+1,esc(d.stage),esc(d.absent),d.cover.period,esc(d.className)+'<small>'+esc(d.subject)+'</small>',esc(d.teacher),'ـــــــــــــــــ']);
  const rows=entries.map(d=>[esc(nm(d.cover.to)),esc(d.absent),d.cover.period,esc(d.className),esc(d.subject),'<button class="alt" onclick="openCoverageWhatsApp(\''+d.cover.id+'\')">📲 إرسال حصة الانتظار</button> <button class="alt" onclick="copyCoverageWhatsApp(\''+d.cover.id+'\')">نسخ الرسالة</button>']);
  const control=box('📄 كشف حصص الانتظار اليومي — '+absenceStage+' — '+esc(selectedDate),
-  '<div class="actions"><button onclick="printDailyCoverage()">🖨️ طباعة كشف حصص الانتظار اليومية</button></div>'+
-  '<p class="muted">تُطبع حصص الانتظار لليوم المحدد فقط، مع خانة توقيع لكل معلم. زر واتساب يفتح رسالة جاهزة لتختار المستلم وتراجعها قبل إرسالها.</p>'+
+  '<div class="actions"><button onclick="printDailyCoverage()">🖨️ طباعة كشف الانتظار اليومي — جميع المراحل ('+allEntries.length+')</button></div>'+
+  '<p class="muted">الجدول الظاهر يخص المرحلة المختارة، لكن الطباعة تجمع تكليفات الابتدائي والمتوسط والثانوي للتاريخ المحدد في كشف واحد، مع خانة توقيع لكل تكليف. زر واتساب يتيح إرسال التكليف.</p>'+
   (rows.length?table(['المعلم المكلف','المعلم الغائب','الحصة','الفصل','المادة','الإرسال'],rows):empty('لم تُسند أي حصص انتظار في هذا اليوم بعد')));
- const paper='<section class="daily-cover-sheet"><div class="daily-print-head"><img src="../alfalah-round-logo.png" alt="شعار المدرسة الدائري"><div><p>المملكة العربية السعودية</p><p>وزارة التعليم</p><p>الإدارة العامة للتعليم بالمنطقة الشرقية</p><p>مدارس الفلاح الأهلية</p><h2>كشف تكليفات حصص الانتظار اليومي — '+absenceStage+'</h2><p>اليوم: '+esc(dt(selectedDate))+' — التاريخ: '+esc(selectedDate)+'</p></div></div>'+
+ const paper='<section class="daily-cover-sheet"><div class="daily-print-head"><img src="../alfalah-round-logo.png" alt="شعار المدرسة الدائري"><div><p>المملكة العربية السعودية</p><p>وزارة التعليم</p><p>الإدارة العامة للتعليم بالمنطقة الشرقية</p><p>مدارس الفلاح الأهلية</p><h2>كشف تكليفات حصص الانتظار اليومي — جميع المراحل</h2><p>اليوم: '+esc(dt(selectedDate))+' — التاريخ: '+esc(selectedDate)+' — إجمالي التكليفات: '+allEntries.length+'</p></div></div>'+
  (printable.length?table(head,printable):'<p>لا توجد تغطيات مسجلة.</p>')+
  '<div class="daily-print-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div><div class="daily-print-credit">تصميم محمد عامر أحمد</div></section>';
  return control+paper;
