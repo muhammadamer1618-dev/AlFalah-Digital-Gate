@@ -11466,7 +11466,7 @@ window.addEventListener("load",loadPortfolioParentEnabled);
 <div style="margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><button type="button" class="btn-primary" onclick="saveStudentPortalControls()">💾 حفظ إعدادات البوابة</button><span id="studentPortalControlStatus" role="status"></span></div>
 </section>
 <script>
-const studentPortalCards=[["exams","الاختبارات الإلكترونية"],["results","نتائج الاختبارات"],["plan","الخطة الأسبوعية"],["schedule","جدول الحصص"],["examSchedule","جدول الاختبارات"],["activities","الأنشطة الطلابية"],["interactive","الأنشطة التفاعلية"],["questionBanks","بنوك الأسئلة"],["english","أنشطة اللغة الإنجليزية"],["teacherNotes","ملاحظات المعلمين"],["guidance","التوجيه الطلابي"]];
+const studentPortalCards=[["exams","الاختبارات الإلكترونية"],["results","نتائج الاختبارات"],["plan","الخطة الأسبوعية"],["schedule","جدول الحصص"],["examSchedule","جدول الاختبارات"],["activities","الأنشطة الطلابية"],["interactive","الأنشطة التفاعلية"],["questionBanks","بنوك الأسئلة"],["english","أنشطة اللغة الإنجليزية"],["teacherNotes","ملاحظات المعلمين"],["guidance","التوجيه الطلابي"],["remoteLearning","التعلم عن بُعد"]];
 function renderStudentPortalControls(flags={}){
  document.getElementById("studentPortalToggles").innerHTML=studentPortalCards.map(([id,name])=>'<label style="display:flex;align-items:center;gap:10px;padding:14px;border:1px solid #d7e5dc;border-radius:12px;background:#f7faf8;cursor:pointer"><input type="checkbox" data-portal-card="'+id+'" '+(flags[id]!==false?'checked':'')+' style="width:20px;height:20px"><span>'+name+'</span></label>').join("");
 }
@@ -11499,17 +11499,18 @@ const rolePortalNames={"teacher":["إصدار كشف درجات فارغ","تح�
 function renderRolePortal(role,flags={}){
  const box=document.getElementById(role+"PortalToggles");
  box.innerHTML=rolePortalNames[role].map((name,i)=>name?'<label style="display:flex;gap:10px;align-items:center;padding:12px;border:1px solid #d7e5dc;border-radius:12px;background:#f7faf8"><input type="checkbox" data-role="'+role+'" data-card="card'+i+'" '+(flags["card"+i]!==false?"checked":"")+' style="width:20px;height:20px"><span>'+name+'</span></label>':"").join("");
+ const remoteAllowed=flags.remoteLearning!==false;box.insertAdjacentHTML("beforeend",'<label style="display:flex;gap:10px;align-items:center;padding:12px;border:1px solid #b8d8c7;border-radius:12px;background:#edf7f1"><input type="checkbox" data-role="'+role+'" data-card="remoteLearning" '+(remoteAllowed?"checked":"")+' style="width:20px;height:20px"><span><strong>🎓 التعلم عن بُعد</strong><small style="display:block;color:#60776b">إظهار أو إخفاء بطاقة التعلم عن بُعد لهذه البوابة</small></span></label>');
 }
 async function loadRolePortal(role){
  renderRolePortal(role);const status=document.getElementById(role+"PortalStatus");
- try{const d=await db.collection("systemSettings").doc(role+"PortalCards").get();renderRolePortal(role,d.exists?(d.data().visibility||{}):{});status.textContent="تم تحميل الإعدادات"}
+ try{const [d,r]=await Promise.all([db.collection("systemSettings").doc(role+"PortalCards").get(),db.collection("systemSettings").doc("remoteLearningAccess").get()]);const flags=d.exists?(d.data().visibility||{}):{};flags.remoteLearning=!r.exists||r.data()[role]!==false;renderRolePortal(role,flags);status.textContent="تم تحميل الإعدادات"}
  catch(e){status.textContent="تعذر التحميل: "+e.message}
 }
 async function saveRolePortal(role){
  const visibility={},status=document.getElementById(role+"PortalStatus");
  document.querySelectorAll('[data-role="'+role+'"]').forEach(x=>visibility[x.dataset.card]=x.checked);
  status.textContent="جارٍ الحفظ...";
- try{await db.collection("systemSettings").doc(role+"PortalCards").set({visibility,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});status.textContent="✅ تم الحفظ"}
+ try{await db.collection("systemSettings").doc(role+"PortalCards").set({visibility,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await db.collection("systemSettings").doc("remoteLearningAccess").set({[role]:visibility.remoteLearning!==false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});status.textContent="✅ تم الحفظ"}
  catch(e){status.textContent="❌ تعذر الحفظ: "+e.message}
 }
 window.addEventListener("load",()=>{loadRolePortal("teacher");loadRolePortal("supervisor")});
