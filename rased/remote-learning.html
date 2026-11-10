@@ -81,9 +81,10 @@ async function loadTeacherWeeklySchedule(){
   if(!mine.length){host.innerHTML='<p class="muted">لم يتم العثور على حصص باسمك في آخر جدول منشور. راجع تطابق اسم المعلم في الجدول الذكي وراصد.</p>';return}
   const order={};timetableDays.forEach((d,i)=>order[d]=i);
   mine.sort((a,b)=>(order[a.day]??9)-(order[b.day]??9)||Number(a.period)-Number(b.period));
-  host.innerHTML='<p class="muted">آخر نشر: '+(data.publishedAt?.toDate?data.publishedAt.toDate().toLocaleString("ar-SA"):"تم النشر")+' · '+mine.length+' حصة أسبوعيًا</p><div class="scroll"><table><thead><tr><th>اليوم</th><th>الحصة</th><th>الوقت</th><th>المرحلة / الصف</th><th>المادة</th><th>الإجراء</th></tr></thead><tbody>'+mine.map(x=>'<tr><td>'+esc(x.day)+'</td><td>'+esc(x.period)+'</td><td>'+esc(x.start)+'–'+esc(x.end)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.subject)+'</td><td><button class="light" onclick="prefillSessionFromSchedule('+JSON.stringify(x).replace(/</g,"\\u003c")+')">إعداد حصة</button></td></tr>').join("")+'</tbody></table></div>';
+  window.teacherPublishedLessons=mine;host.innerHTML='<p class="muted">آخر نشر: '+(data.publishedAt?.toDate?data.publishedAt.toDate().toLocaleString("ar-SA"):"تم النشر")+' · '+mine.length+' حصة أسبوعيًا</p><div class="scroll"><table><thead><tr><th>اليوم</th><th>الحصة</th><th>الوقت</th><th>المرحلة / الصف</th><th>المادة</th><th>الإجراء</th></tr></thead><tbody>'+mine.map((x,i)=>'<tr><td>'+esc(x.day)+'</td><td>'+esc(x.period)+'</td><td>'+esc(x.start)+'–'+esc(x.end)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.subject)+'</td><td><button class="light" data-schedule-index="'+i+'">إعداد حصة</button></td></tr>').join("")+'</tbody></table></div>';
  }catch(e){console.error(e);host.innerHTML='<p class="msg bad">تعذر تحميل الجدول المنشور: '+esc(e.message)+'</p>'}
 }
+document.addEventListener("click",function(e){const b=e.target.closest("[data-schedule-index]");if(!b)return;const x=window.teacherPublishedLessons?.[Number(b.dataset.scheduleIndex)];if(x)prefillSessionFromSchedule(x)});
 function prefillSessionFromSchedule(x){
  $("grade").value=x.grade;fillSections();$("section").value=x.section;$("subject").value=x.subject;
  $("date").value=nextDateForDay(x.day);$("start").value=x.start;$("end").value=x.end;
