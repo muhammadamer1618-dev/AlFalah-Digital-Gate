@@ -97,10 +97,35 @@ async function loadTeacherWeeklySchedule(){
 }
 document.addEventListener("click",function(e){const b=e.target.closest("[data-schedule-index]");if(!b)return;const x=window.teacherPublishedLessons?.[Number(b.dataset.scheduleIndex)];if(x)prefillSessionFromSchedule(x)});
 function prefillSessionFromSchedule(x){
- $("grade").value=x.grade;fillSections();$("section").value=x.section;$("subject").value=x.subject;
+ const norm=v=>normalizeScheduleText(v);
+ const assignments=teacher?.assignments||[];
+ const classText=String(x.section||"");
+ const match=classText.match(/^\s*(\d+)\s*([اأإآء-ي])\s*$/);
+ let assignment=null;
+ if(match){
+  const number=match[1],letter=norm(match[2]);
+  assignment=assignments.find(a=>{
+   const ag=norm(a.grade),as=norm(a.section);
+   const gradeHasNumber=new RegExp("(^| )"+number+"( |$)").test(ag);
+   const gradeHasStage=ag.includes(norm(x.grade))||norm(x.grade).includes(ag);
+   return (gradeHasNumber||gradeHasStage)&&(!as||as===letter||as.includes(letter));
+  });
+ }
+ if(!assignment){
+  assignment=assignments.find(a=>{
+   const ag=norm(a.grade),as=norm(a.section),full=norm(ag+" "+as);
+   return full===norm(x.grade+" "+x.section)||full.includes(norm(x.section))||norm(x.section).includes(as)&&ag.includes(norm(x.grade));
+  });
+ }
+ if(!assignment){
+  msg("تم العثور على الحصة في الجدول، لكن الصف والفصل غير مطابقين لإسنادات حسابك في راصد. راجع إسنادات المعلم قبل النشر.","bad");
+  $("teacherPanel").scrollIntoView({behavior:"smooth",block:"start"});return;
+ }
+ $("grade").value=assignment.grade;fillSections();$("section").value=assignment.section;
+ $("subject").value=x.subject||"";
  $("date").value=nextDateForDay(x.day);$("start").value=x.start;$("end").value=x.end;
  $("topic").value="";$("meeting").focus();
- msg("تم تعبئة بيانات الحصة من جدولك الدراسي. أضف عنوان الدرس ورابط Google Meet ثم انشر الحصة.","ok");
+ msg("تمت مطابقة الصف والفصل مع إسناداتك في راصد وتعبئة بيانات الحصة. أضف عنوان الدرس ورابط Google Meet ثم انشر الحصة.","ok");
  $("teacherPanel").scrollIntoView({behavior:"smooth",block:"start"});
 }
 async function loadTeacher(){const d=await db.collection("teachers").doc(email).get();if(!d.exists)throw Error("لم يتم العثور على ملف المعلم");teacher=d.data();const gs=[...new Set((teacher.assignments||[]).map(a=>String(a.grade||"")).filter(Boolean))];$("grade").innerHTML=gs.map(g=>'<option>'+esc(g)+'</option>').join("");fillSections();$("grade").onchange=fillSections;await loadTeacherWeeklySchedule();await loadSessions()}
