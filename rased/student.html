@@ -1056,6 +1056,15 @@ body{background:radial-gradient(circle at 5% 45%,#e4f0e9,transparent 35%),radial
 @media(max-width:650px){.page{background-position:center!important}.main{width:100%!important;padding-inline:12px!important}.portal{max-width:100%!important}.portal-body{padding:20px 14px!important}#identityInput{min-width:0!important;width:100%!important}}
 
 </style>
+
+<style id="parentTeacherNotesPro">
+.parent-notes{--pn-green:#075b49;--pn-soft:#edf6f1;--pn-line:#dce9e2;background:linear-gradient(145deg,#fff,#f9fcfa);border:1px solid var(--pn-line);border-radius:20px;padding:clamp(15px,2.5vw,24px);box-shadow:0 12px 30px rgba(20,65,48,.07);margin-top:22px;color:#203b32}
+.pn-head{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:17px}.pn-icon{width:48px;height:48px;flex:0 0 48px;border-radius:15px;background:linear-gradient(145deg,#0a7258,#064b3d);color:white;display:grid;place-items:center;font-size:23px;box-shadow:0 5px 13px #075b4928}.pn-heading{flex:1;min-width:180px}.pn-head h3{font-size:19px;margin:0 0 4px;color:#124b3d}.pn-head p{margin:0;color:#71847a;font-size:12px;line-height:1.7}.pn-count{background:#e9f4ee;color:#0a654d;border:1px solid #d7e9df;border-radius:30px;padding:7px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+.pn-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 16px}.pn-stats>div{background:#f4f8f5;border:1px solid #e5eee8;border-radius:13px;padding:11px 13px;min-width:0}.pn-stats span{display:block;color:#788980;font-size:11px;margin-bottom:5px}.pn-stats strong{display:block;color:#155b47;font-size:20px;overflow-wrap:anywhere}.pn-stats .pn-latest{font-size:13px;padding-top:3px}
+.pn-list{display:grid;gap:10px}.pn-note{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid #e5ece7;border-radius:14px;background:#fff;transition:box-shadow .2s,border-color .2s}.pn-note:hover{border-color:#cbded2;box-shadow:0 5px 15px #173d2b0b}.pn-note-mark{width:30px;height:30px;flex:0 0 30px;border-radius:10px;background:#edf5f0;color:#17654e;display:grid;place-items:center;font-weight:700;font-size:12px}.pn-note-body{min-width:0;flex:1}.pn-note-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.pn-category{font-weight:700;color:#244a3c;font-size:14px}.pn-note time{font-size:11px;color:#78877f;background:#f5f7f5;padding:4px 8px;border-radius:20px}.pn-meta{display:flex;flex-wrap:wrap;gap:7px 15px;margin-top:8px;color:#59776a;font-size:12px}.pn-details{margin:10px 0 0;padding:10px 12px;background:#f7faf8;border-right:3px solid #8ab9a0;border-radius:7px 10px 10px 7px;color:#405c50;font-size:13px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}.pn-no-details{color:#89968f;font-size:12px}.pn-foot{margin-top:14px;padding-top:12px;border-top:1px solid #edf1ee;color:#819087;font-size:11px;text-align:center}
+.pn-empty{padding:25px 12px;text-align:center;border:1px dashed #d8e8de;background:#f7fbf8;border-radius:15px}.pn-empty>span{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;background:#e4f3e9;color:#16734f;font-size:23px;margin:0 auto 10px}.pn-empty strong{display:block;color:#245542;font-size:15px}.pn-empty p{margin:6px 0 0;color:#7b8b82;font-size:12px}
+@media(max-width:560px){.pn-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.pn-stats>div:last-child{grid-column:1/-1}.pn-note{padding:11px;gap:9px}.pn-head h3{font-size:17px}.pn-count{margin-right:auto}}
+</style>
 </head>
 
 <body>
@@ -1644,10 +1653,24 @@ async function loadParentTeacherNotes(){
   const setting=await db.collection("parentDisplaySettings").doc("teacherNotes").get();
   if(!setting.exists||setting.data().enabled!==true)return;
   const snap=await db.collection("studentFollowupEvents").where("studentCode","==",String(currentStudent.code)).get();
-  const notes=snap.docs.map(d=>({id:d.id,...d.data()})).filter(n=>String(n.kind||"").includes("سلوكي")||String(n.category||"").includes("مخالفة")||String(n.category||"").includes("سلوك")).sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
-  if(!notes.length){area.innerHTML='<section style="background:#fff;border:1px solid #dce7f0;border-radius:16px;padding:18px"><h3 style="margin:0;color:#14547c">📝 ملاحظات المعلمين</h3><p style="color:#687b8c;margin-bottom:0">لا توجد ملاحظات سلوكية مسجلة للطالب حاليًا.</p></section>';return;}
-  const escNote=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  area.innerHTML='<section style="background:#fff;border:1px solid #dce7f0;border-radius:16px;padding:18px"><h3 style="margin:0 0 12px;color:#14547c">📝 ملاحظات المعلمين</h3><div style="display:grid;gap:10px">'+notes.map(n=>'<article style="background:#f7faff;border:1px solid #e0eaf4;border-radius:12px;padding:13px"><div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between"><strong>'+escNote(n.category||n.kind||"ملاحظة")+'</strong><span style="color:#6c7e8e;font-size:13px">'+escNote(n.date||"")+'</span></div>'+(n.subjectName?'<div style="color:#326b91;margin-top:5px">المادة: '+escNote(n.subjectName)+'</div>':'')+(n.details?'<p style="margin:8px 0 0;white-space:pre-wrap">'+escNote(n.details)+'</p>':'')+'<div style="font-size:12px;color:#718196;margin-top:8px">المعلم: '+escNote(n.teacherName||"")+'</div></article>').join("")+'</div></section>';
+  const notes=snap.docs.map(d=>({id:d.id,...d.data()}))
+   .filter(n=>String(n.kind||"").includes("سلوكي")||String(n.category||"").includes("مخالفة")||String(n.category||"").includes("سلوك"))
+   .sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+  const escNote=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const subject=n=>n.subjectName||"ملاحظة عامة";
+  if(!notes.length){
+   area.innerHTML='<section class="parent-notes"><div class="pn-head"><div class="pn-icon">✦</div><div><h3>ملاحظات المعلمين</h3><p>متابعة تربوية وسلوكية للطالب</p></div></div><div class="pn-empty"><span>✓</span><strong>لا توجد ملاحظات مسجلة</strong><p>أحسنت! لا توجد ملاحظات سلوكية مسجلة للطالب حاليًا.</p></div></section>';
+   return;
+  }
+  const uniqueSubjects=new Set(notes.map(subject));
+  const latest=notes[0].date||"";
+  area.innerHTML='<section class="parent-notes">'+
+   '<div class="pn-head"><div class="pn-icon">✦</div><div class="pn-heading"><h3>ملاحظات المعلمين</h3><p>متابعة تربوية وسلوكية تساعد الأسرة على متابعة تقدم الطالب</p></div><span class="pn-count">'+notes.length+' ملاحظة</span></div>'+
+   '<div class="pn-stats"><div><span>إجمالي الملاحظات</span><strong>'+notes.length+'</strong></div><div><span>المواد المرتبطة</span><strong>'+uniqueSubjects.size+'</strong></div><div><span>أحدث تسجيل</span><strong class="pn-latest">'+escNote(latest||"—")+'</strong></div></div>'+
+   '<div class="pn-list">'+notes.map((n,i)=>{
+    const category=n.category||n.kind||"ملاحظة تربوية",teacher=n.teacherName||"فريق التدريس";
+    return '<article class="pn-note"><div class="pn-note-mark">'+(i+1)+'</div><div class="pn-note-body"><div class="pn-note-top"><span class="pn-category">'+escNote(category)+'</span><time>'+escNote(n.date||"تاريخ غير محدد")+'</time></div><div class="pn-meta"><span>📘 '+escNote(subject(n))+'</span><span>👨‍🏫 '+escNote(teacher)+'</span></div>'+(n.details?'<p class="pn-details">'+escNote(n.details)+'</p>':'<p class="pn-details pn-no-details">لم تُضف تفاصيل إضافية لهذه الملاحظة.</p>')+'</div></article>';
+   }).join("")+'</div><div class="pn-foot">يرجى التواصل مع المدرسة عند الحاجة إلى مزيد من التوضيح.</div></section>';
  }catch(e){console.warn("parent teacher notes unavailable",e);area.innerHTML="";}
 }
 
