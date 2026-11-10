@@ -115,6 +115,30 @@ a.rased-back{position:fixed;bottom:18px;right:18px;z-index:100;display:inline-fl
  body.printing-quick-monitor #alfalah-designer-credit{display:none!important}
 }
 
+/* Print-only unified totals for all waiting-cover teachers */
+#allWaitingTotalsPrintSheet{display:none}
+@media print{
+ body.printing-all-waiting-totals> :not(#allWaitingTotalsPrintSheet){display:none!important}
+ body.printing-all-waiting-totals #allWaitingTotalsPrintSheet{display:block!important;direction:rtl!important;background:#fff!important;color:#172e29!important;width:100%!important;font-family:Tahoma,Arial,sans-serif!important}
+ body.printing-all-waiting-totals .waiting-totals-head{display:grid!important;grid-template-columns:54px 1fr 54px!important;align-items:center!important;gap:9px!important;text-align:center!important;border-bottom:2px solid #315b4e!important;padding-bottom:5px!important;margin-bottom:7px!important}
+ body.printing-all-waiting-totals .waiting-totals-head img{display:block!important;width:51px!important;height:51px!important;object-fit:contain!important}
+ body.printing-all-waiting-totals .waiting-totals-head h2{font-size:13px!important;margin:2px 0!important}
+ body.printing-all-waiting-totals .waiting-totals-head h3{font-size:12px!important;margin:2px 0!important}
+ body.printing-all-waiting-totals .waiting-totals-head div{font-size:10px!important}
+ body.printing-all-waiting-totals .waiting-totals-table{width:100%!important;table-layout:fixed!important;white-space:normal!important;border-collapse:collapse!important}
+ body.printing-all-waiting-totals .waiting-totals-table th,body.printing-all-waiting-totals .waiting-totals-table td{border:1px solid #789389!important;font-size:9px!important;padding:2px 3px!important;line-height:1.15!important;text-align:center!important;overflow-wrap:anywhere!important;height:var(--waiting-row-height,6mm)!important}
+ body.printing-all-waiting-totals .waiting-totals-table th{background:#e9f0ed!important;font-weight:800!important}
+ body.printing-all-waiting-totals .waiting-totals-table th:first-child{width:7%!important}
+ body.printing-all-waiting-totals .waiting-totals-table th:nth-child(2){width:34%!important}
+ body.printing-all-waiting-totals .waiting-totals-table th:nth-child(3){width:26%!important}
+ body.printing-all-waiting-totals .waiting-totals-table .waiting-print-name{text-align:right!important}
+ body.printing-all-waiting-totals .waiting-totals-final{background:#e8efea!important;font-weight:900!important}
+ body.printing-all-waiting-totals .waiting-totals-table tr{break-inside:avoid!important;page-break-inside:avoid!important}
+ body.printing-all-waiting-totals .waiting-totals-sign{display:flex!important;justify-content:space-between!important;margin-top:9px!important;font-size:10px!important;font-weight:bold!important}
+ body.printing-all-waiting-totals .waiting-totals-credit{text-align:center!important;font-size:8px!important;margin-top:6px!important}
+ body.printing-all-waiting-totals #alfalah-designer-credit{display:none!important}
+}
+
 /* Printable teacher monitoring totals; isolated from other print modes. */
 #monitoringWorkloadPrintSheet{display:none}
 @media print{
@@ -1891,7 +1915,36 @@ function dailyCoveragePanel(){
 }
 function addAbs(){const t=document.getElementById('ateacher')?.value;if(!t||!teacherCoverageStages(t).has(absenceStage))return toast('اختر معلمًا من مرحلة '+absenceStage);if(s.absences.some(a=>a.teacher===t&&a.date===selectedDate))return toast('الغياب مسجل لهذا المعلم بالفعل في جميع المراحل');s.absences.push({id:id(),date:selectedDate,teacher:t,reason:document.getElementById('reason').value});save()}function delAbs(i){s.absences=s.absences.filter(a=>a.id!==i);s.covers=s.covers.filter(c=>c.absence!==i);save()}function cover(a,l){const x=s.lessons.find(q=>q.id===l),abs=s.absences.find(q=>q.id===a),t=document.getElementById('candidate-'+l)?.value;if(!x||!abs||abs.teacher!==x.teacher||abs.date!==selectedDate)return toast('الحصة والغياب غير متطابقين');if(lessonStage(x)!==absenceStage||!teacherCoverageStages(t).has(lessonStage(x)))return toast('المعلم البديل يجب أن يكون من نفس المرحلة');if(!isFree(t,selectedDate,x.period))return toast('المعلم غير متاح');if(s.covers.some(c=>c.lesson===l&&c.date===selectedDate))return toast('تم إسناد هذه الحصة بالفعل');s.covers.push({id:id(),absence:a,lesson:l,date:selectedDate,to:t,period:x.period,className:x.className});save()}function undoCover(i){s.covers=s.covers.filter(x=>x.id!==i);save()}
 function swap(){return '<div class="two">'+box('تسجيل تبديل', '<div class="fields">'+field('التاريخ','<input type="date" id="sdate" value="'+selectedDate+'">')+field('المعلم صاحب الحصة','<select id="sfrom">'+opts(s.teachers)+'</select>')+field('المعلم البديل','<select id="sto">'+opts(s.teachers)+'</select>')+field('الحصة','<input type="number" id="speriod" value="1" min="1" max="12">')+'</div><div class="actions"><button onclick="addSwap()">حفظ التبديل</button></div><div class="notice">يتحقق النظام من وجود درس للمعلم الأصلي وتفرغ البديل.</div>')+box('سجل التبديلات',cardPrintButton('سجل التبديلات')+(s.swaps.length?table(['التاريخ','الحصة','من','إلى'],s.swaps.map(x=>[x.date,x.period,esc(nm(x.from)),esc(nm(x.to))])):empty('لا توجد تبديلات بعد')))+'</div>'}function addSwap(){let d=document.getElementById('sdate').value,from=document.getElementById('sfrom').value,to=document.getElementById('sto').value,p=+document.getElementById('speriod').value;if(!from||!to||from===to)return toast('اختر معلمين مختلفين');if(!s.lessons.some(l=>l.teacher===from&&l.day===dt(d)&&l.period===p))return toast('لا يوجد درس للمعلم الأصلي بهذا الموعد');if(!isFree(to,d,p))return toast('المعلم البديل مشغول');s.swaps.push({id:id(),date:d,from,to,period:p});save()}
-function loads(){return box('توزيع النصاب وحصص الانتظار',cardPrintButton('توزيع النصاب وحصص الانتظار')+(s.teachers.length?table(['المعلم','القسم','حصص التدريس','حصص الانتظار','الإجمالي','الحالة'],s.teachers.map(t=>{let l=s.lessons.filter(x=>x.teacher===t.id).length,c=count(t.id);return [esc(t.name),esc(specialtyDisplayForTeacher(t,s.lessons.some(l=>l.teacher===t.id&&lessonStage(l)!=='ابتدائي'))),l,c,l+c,c>=s.cap?'<span class="tag">بلغ حد التنبيه</span>':'طبيعي']})):empty('لا يوجد معلمون')))}
+function printAllWaitingTotals(){
+ if(!s.teachers.length)return toast('لا يوجد معلمون لطباعة الإجمالي');
+ const teachers=[...s.teachers].sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ar'));
+ let teachingSum=0,waitingSum=0;
+ const rows=teachers.map((t,i)=>{
+  const teaching=s.lessons.filter(l=>l.teacher===t.id&&!isBusClass(l.className)).length;
+  const waiting=s.covers.filter(c=>c.to===t.id).length;
+  teachingSum+=teaching;waitingSum+=waiting;
+  return '<tr><td>'+(i+1)+'</td><td class="waiting-print-name">'+esc(t.name)+'</td><td>'+esc(specialtyDisplayForTeacher(t,s.lessons.some(l=>l.teacher===t.id&&lessonStage(l)!=='ابتدائي')))+'</td><td>'+teaching+'</td><td>'+waiting+'</td><td><strong>'+(teaching+waiting)+'</strong></td></tr>';
+ }).join('');
+ const sheet=document.getElementById('allWaitingTotalsPrintSheet')||document.createElement('section');
+ sheet.id='allWaitingTotalsPrintSheet';
+ sheet.innerHTML='<div class="waiting-totals-head"><img src="../moe-vision2030-logo.png" alt="وزارة التعليم"><div><div>المملكة العربية السعودية — وزارة التعليم</div><h2>مدارس الفلاح الأهلية</h2><h3>الكشف الإجمالي للنصاب وحصص الانتظار — جميع المعلمين</h3></div><img src="../alfalah-round-logo.png" alt="شعار المدرسة"></div>'+
+  '<table class="waiting-totals-table"><thead><tr><th>م</th><th>المعلم</th><th>التخصص / القسم</th><th>نصاب التدريس</th><th>حصص الانتظار</th><th>الإجمالي</th></tr></thead><tbody>'+rows+
+  '<tr class="waiting-totals-final"><td colspan="3">الإجمالي العام لجميع المعلمين ('+teachers.length+')</td><td>'+teachingSum+'</td><td>'+waitingSum+'</td><td>'+(teachingSum+waitingSum)+'</td></tr></tbody></table>'+
+  '<div class="waiting-totals-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div><div class="waiting-totals-credit">تصميم محمد عامر أحمد</div>';
+ document.body.appendChild(sheet);
+ document.documentElement.style.setProperty('--waiting-row-height',teachers.length>36?'4.2mm':teachers.length>28?'5mm':'6mm');
+ let style=document.getElementById('allWaitingTotalsPageStyle')||document.createElement('style');
+ style.id='allWaitingTotalsPageStyle';style.textContent='@page{size:A4 portrait;margin:6mm}';
+ document.head.appendChild(style);
+ const cleanup=()=>{document.body.classList.remove('printing-all-waiting-totals');sheet.remove();style.remove();window.removeEventListener('afterprint',cleanup)};
+ window.addEventListener('afterprint',cleanup);
+ document.body.classList.add('printing-all-waiting-totals');
+ const images=[...sheet.querySelectorAll('img')];
+ Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}))).then(()=>window.print());
+}
+function loads(){return box('توزيع النصاب وحصص الانتظار',
+ '<div class="actions"><button class="alt" onclick="printAllWaitingTotals()">🖨 طباعة الإجمالي لجميع المعلمين — جدول واحد</button></div>'+
+ (s.teachers.length?table(['المعلم','القسم','حصص التدريس','حصص الانتظار','الإجمالي','الحالة'],s.teachers.map(t=>{let l=s.lessons.filter(x=>x.teacher===t.id&&!isBusClass(x.className)).length,c=count(t.id);return [esc(t.name),esc(specialtyDisplayForTeacher(t,s.lessons.some(l=>l.teacher===t.id&&lessonStage(l)!=='ابتدائي'))),l,c,l+c,c>=s.cap?'<span class="tag">بلغ حد التنبيه</span>':'طبيعي']})):empty('لا يوجد معلمون')))}
 function charts(){let max=Math.max(1,...s.teachers.map(t=>count(t.id)));return box('توزيع حصص الانتظار بين المعلمين',s.teachers.length?'<div class="bars">'+s.teachers.map(t=>'<div><div class="row"><span>'+esc(t.name)+'</span><b>'+count(t.id)+' تكليف</b></div><div class="bar"><div style="width:'+(count(t.id)/max*100)+'%"></div></div></div>').join('')+'</div>':empty('ستظهر الرسوم بعد إضافة بيانات'))}
 function report(){return box('التقرير الشهري','<div class="fields">'+field('الشهر','<input id="month" type="month" value="'+new Date().toISOString().slice(0,7)+'" onchange="showReport()">')+'</div><div class="actions"><button onclick="exportReport()">تنزيل التقرير CSV</button></div><div id="reportData"></div>')}function showReport(){let m=document.getElementById('month').value,a=s.absences.filter(x=>x.date.startsWith(m)),c=s.covers.filter(x=>x.date.startsWith(m));document.getElementById('reportData').innerHTML='<div class="notice">حالات الغياب: '+a.length+' | حصص الانتظار: '+c.length+' | التبديلات: '+s.swaps.filter(x=>x.date.startsWith(m)).length+'</div>'+(c.length?table(['التاريخ','الحصة','الصف','المعلم المكلف'],c.map(x=>[x.date,x.period,esc(x.className),esc(nm(x.to))])):empty('لا توجد تغطيات في هذا الشهر'))}
 
