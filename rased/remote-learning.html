@@ -68,7 +68,14 @@ async function init(){
 async function saveSettings(){try{settings={enabled:$("enabled").value==="true",notice:$("notice").value.trim(),updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:email};await db.collection("remoteSettings").doc("main").set(settings,{merge:true});$("platformState").textContent=settings.enabled?"المنصة مفعلة":"المنصة متوقفة";msg("تم حفظ إعدادات المنصة في Firebase.","ok")}catch(e){msg("تعذر الحفظ: "+e.message,"bad")}}
 
 const timetableDays=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"];
-function normalizeScheduleText(v){return String(v??"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/\s+/g," ").trim().toLowerCase()}
+function normalizeScheduleText(v){return String(v??"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/[ـًٌٍَُِّْٰ]/g,"").replace(/[^a-zA-Z0-9ء-ي٠-٩۰-۹]+/g," ").replace(/\s+/g," ").trim().toLowerCase()}
+function scheduleNameScore(a,b){
+ const x=normalizeScheduleText(a),y=normalizeScheduleText(b);if(!x||!y)return 0;if(x===y)return 1;
+ const compact=v=>v.replace(/\s/g,"");if(compact(x)===compact(y))return .99;
+ const A=[...new Set(x.split(" ").filter(Boolean))],B=[...new Set(y.split(" ").filter(Boolean))],overlap=A.filter(v=>B.includes(v)).length,ratio=overlap/Math.max(A.length,B.length);
+ if(compact(x).includes(compact(y))||compact(y).includes(compact(x)))return Math.max(.86,ratio);
+ return ratio;
+}
 function nextDateForDay(dayName){const idx=timetableDays.indexOf(dayName);if(idx<0)return day();const now=new Date(),delta=(idx-now.getDay()+7)%7;now.setDate(now.getDate()+delta);return [now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-")}
 async function loadTeacherWeeklySchedule(){
  const host=$("teacherWeeklySchedule");if(!host)return;
@@ -76,9 +83,13 @@ async function loadTeacherWeeklySchedule(){
   const doc=await db.collection("rasedTimetables").doc("current").get();
   if(!doc.exists){host.innerHTML='<p class="muted">لم ينشر الأدمن الجدول الدراسي الذكي إلى راصد بعد. يرجى نشره من تبويب النسخ الاحتياطي في الجدول الذكي.</p>';return}
   const data=doc.data(),all=data.lessons||[];
-  const teacherName=teacher.name||auth("currentUserName")||"";
-  const mine=all.filter(x=>normalizeScheduleText(x.teacherName)===normalizeScheduleText(teacherName));
-  if(!mine.length){host.innerHTML='<p class="muted">لم يتم العثور على حصص باسمك في آخر جدول منشور. راجع تطابق اسم المعلم في الجدول الذكي وراصد.</p>';return}
+  const teacherNames=[teacher.name,teacher.fullName,teacher.teacherName,teacher.displayName,auth("currentUserName"),auth("currentUserDisplayName")].filter(Boolean);
+  let mine=all.filter(x=>teacherNames.some(n=>scheduleNameScore(x.teacherName,n)>=.85));
+  if(!mine.length){
+   const scored=all.map(x=>({x,score:Math.max(...teacherNames.map(n=>scheduleNameScore(x.teacherName,n)),0)})).filter(v=>v.score>=.72).sort((a,b)=>b.score-a.score);
+   if(scored.length&&(!scored[1]||scored[0].score-scored[1].score>=.12))mine=scored.filter(v=>v.score===scored[0].score).map(v=>v.x);
+  }
+  if(!mine.length){const names=[...new Set(all.map(x=>x.teacherName).filter(Boolean))];host.innerHTML='<p class="muted">لم يتم العثور على حصص مرتبطة باسم حسابك. اسم المعلم في ملف راصد: <b>'+esc(teacherNames[0]||"غير محدد")+'</b>. أمثلة الأسماء المنشورة: '+esc(names.slice(0,8).join("، "))+'</p>';return}
   const order={};timetableDays.forEach((d,i)=>order[d]=i);
   mine.sort((a,b)=>(order[a.day]??9)-(order[b.day]??9)||Number(a.period)-Number(b.period));
   window.teacherPublishedLessons=mine;host.innerHTML='<p class="muted">آخر نشر: '+(data.publishedAt?.toDate?data.publishedAt.toDate().toLocaleString("ar-SA"):"تم النشر")+' · '+mine.length+' حصة أسبوعيًا</p><div class="scroll"><table><thead><tr><th>اليوم</th><th>الحصة</th><th>الوقت</th><th>المرحلة / الصف</th><th>المادة</th><th>الإجراء</th></tr></thead><tbody>'+mine.map((x,i)=>'<tr><td>'+esc(x.day)+'</td><td>'+esc(x.period)+'</td><td>'+esc(x.start)+'–'+esc(x.end)+'</td><td>'+esc(x.grade)+' / '+esc(x.section)+'</td><td>'+esc(x.subject)+'</td><td><button class="light" data-schedule-index="'+i+'">إعداد حصة</button></td></tr>').join("")+'</tbody></table></div>';
