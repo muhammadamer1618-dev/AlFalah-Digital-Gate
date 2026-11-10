@@ -385,7 +385,7 @@ async function loadStaffActivities(){
    if(String(d.data()?.role||"").toLowerCase()==="teacher")registerName(d.id,d.data());
   });
   staffTeacherIds=new Set(access.docs.filter(d=>d.data().enabled===true&&(r!=="supervisor"||String(d.data().grantedBy||"").toLowerCase()===username())).map(d=>String(d.id).toLowerCase()));
-  staffActivities=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>r!=="supervisor"||staffTeacherIds.has(String(a.teacherId||"").toLowerCase()));
+  staffActivities=sortActivitiesOldestFirst(snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>r!=="supervisor"||staffTeacherIds.has(String(a.teacherId||"").toLowerCase())));
   staffResultsCount={};
   rs.docs.forEach(d=>{const a=d.data()||{};staffResultsCount[a.activityId]=(staffResultsCount[a.activityId]||0)+1});
   const teachers=[...new Set(staffActivities.map(a=>String(a.teacherId||"").toLowerCase()))].filter(Boolean);
@@ -592,6 +592,28 @@ function activityDateLabel(a){
  const value=String(a.activityDate||"");
  return activityDayName(value)?(activityDayName(value)+" - "+value):"لم يُحدد التاريخ";
 }
+function activityDateSortValue(a){
+ const value=String(a.activityDate||"").trim();
+ if(/^\d{4}-\d{2}-\d{2}$/.test(value)){
+  const [y,m,d]=value.split("-").map(Number);
+  const time=Date.UTC(y,m-1,d);
+  return Number.isFinite(time)?time:null;
+ }
+ const stamp=a.createdAt||a.updatedAt;
+ if(stamp&&typeof stamp.toMillis==="function")return stamp.toMillis();
+ if(stamp&&typeof stamp.toDate==="function")return stamp.toDate().getTime();
+ const parsed=Date.parse(String(stamp||""));
+ return Number.isFinite(parsed)?parsed:null;
+}
+function sortActivitiesOldestFirst(list){
+ return list.sort((a,b)=>{
+  const da=activityDateSortValue(a),db=activityDateSortValue(b);
+  if(da===null&&db===null)return 0;
+  if(da===null)return 1;
+  if(db===null)return -1;
+  return da-db;
+ });
+}
 $("activityDate").value=activityLocalToday();
 $("activityDate").addEventListener("change",showActivityDay);
 showActivityDay();
@@ -600,7 +622,7 @@ function clearForm(){
  $("title").value="";$("items").value="";$("bulkEnglishItems").value="";
  $("newEnglishItem").value="";renderEnglishItems();
 }
-async function loadActivities(){const snap=await db.collection("englishActivities").where("teacherId","==",username()).get();activities=snap.docs.map(d=>({id:d.id,...d.data()}));$("myActivities").innerHTML=activities.length?activities.map(a=>'<div class="activity"><strong>'+esc(a.title)+'</strong><div class="muted">'+esc(Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses.map(c=>c.grade+' / '+c.section).join('، '):a.grade+' / '+a.section)+' · '+esc(activityDateLabel(a))+' · '+(a.items||[]).length+' item</div><button onclick="editActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Edit</button><button class="secondary" onclick="copyLink('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Copy Link</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Results</button><button style="background:#fde8e8;color:#9f2020" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></div>').join(""):'<p>No published activities yet.</p>'}
+async function loadActivities(){const snap=await db.collection("englishActivities").where("teacherId","==",username()).get();activities=sortActivitiesOldestFirst(snap.docs.map(d=>({id:d.id,...d.data()})));$("myActivities").innerHTML=activities.length?activities.map(a=>'<div class="activity"><strong>'+esc(a.title)+'</strong><div class="muted">'+esc(Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses.map(c=>c.grade+' / '+c.section).join('، '):a.grade+' / '+a.section)+' · '+esc(activityDateLabel(a))+' · '+(a.items||[]).length+' item</div><button onclick="editActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Edit</button><button class="secondary" onclick="copyLink('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Copy Link</button><button class="secondary" onclick="viewReports('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Results</button><button style="background:#fde8e8;color:#9f2020" onclick="deleteActivity('+JSON.stringify(a.id).replace(/"/g,"&quot;")+')">Delete</button></div>').join(""):'<p>No published activities yet.</p>'}
 async function deleteActivity(id){const r=role();const list=(r==="teacher"?activities:staffActivities);if(!["teacher","supervisor","admin","superadmin"].includes(r)||!confirm("هل تريد حذف النشاط؟ لن يظهر للطلاب بعد الحذف."))return;const a=list.find(x=>x.id===id);if(!a)return status("النشاط غير موجود",true);if(r==="teacher"&&a.teacherId!==username())return status("لا تملك صلاحية حذف هذا النشاط",true);try{await db.collection("englishActivities").doc(id).delete();if(editing===id)clearForm();status("تم حذف النشاط");if(r==="teacher")await loadActivities();else await loadStaffActivities()}catch(e){status("تعذر حذف النشاط: "+e.message,true)}}
 function editActivity(id){const a=activities.find(x=>x.id===id);if(!a)return;editing=id;$("maxAttempts").value=String(a.maxAttempts===0?0:(a.maxAttempts||3));$("title").value=a.title;$("activityDate").value=activityDayName(String(a.activityDate||""))?String(a.activityDate):activityLocalToday();showActivityDay();$("items").value=(a.items||[]).join("\n");englishItemImages=(a.items||[]).map((_,i)=>a.itemImages?.[i]||"");$("subject").value=a.subjectId;updateClasses();const targets=Array.isArray(a.targetClasses)&&a.targetClasses.length?a.targetClasses:[{grade:a.grade,section:a.section}];
  updateClasses(new Set(targets.map(c=>String(c.grade)+"||"+String(c.section))));
