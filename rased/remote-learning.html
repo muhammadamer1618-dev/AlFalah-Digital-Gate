@@ -83,7 +83,7 @@ async function joinSession(id){
   if(old.exists&&old.data().status==="حاضر"){if(meetingTab)meetingTab.close();return msg("تم اعتماد حضورك بالفعل.","ok")}
   await ref.set({sessionId:id,studentCode:String(student.code),studentName:student.name||student.fullName||"طالب",grade:student.grade,section:student.section,subject:x.subject,status:"بانتظار موافقة المعلم",requestedAt:firebase.firestore.FieldValue.serverTimestamp(),timeText:new Date().toLocaleTimeString("ar-SA")},{merge:true});
   if(meetingTab){meetingTab.opener=null;meetingTab.location.href=x.meeting}
-  msg("تم إرسال طلب الحضور بنجاح، وهو الآن بانتظار موافقة المعلم.","ok");
+  msg("تم حفظ طلب الحضور في قاعدة البيانات بنجاح، وهو الآن بانتظار موافقة المعلم.","ok");await loadStudentByCode(student.code);
  }catch(e){
   if(meetingTab)meetingTab.close();
   console.error("Remote attendance request failed",e);
