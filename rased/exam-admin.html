@@ -321,8 +321,6 @@ table{max-width:100%;}
 </div></div></div>
 
 <div class="card">
-<div class="card-title">📋 حصر الاختبارات الإلكترونية حسب المعلم</div><div class="card-body"><div class="actions"><button class="green" onclick="buildTeacherExamCount()">📊 حصر اختبارات المعلمين</button><button class="light" onclick="printTeacherExamCount()">🖨️ طباعة الحصر</button></div><div id="teacherExamCountReport" class="hidden" style="margin-top:14px"></div></div></div>
-<div class="card">
 <div class="card-title">📋 الاختبارات الموجودة</div>
 <div class="card-body">
 <div class="table-wrap"><table><thead><tr><th>م</th><th>الاختبار</th><th>المادة</th><th>المستهدفون</th><th>الدرجة</th><th>المدة</th><th>موعد النشر</th><th>آخر موعد</th><th>الحالة</th><th>الأسئلة</th><th>الإجراءات</th></tr></thead><tbody id="examRows"></tbody></table></div>
@@ -988,40 +986,6 @@ function examAdminStatus(e){
  return "منشور";
 }
 
-function examTeacherName(e){
- const candidates=[e.teacherEmail,e.teacherId,e.teacherUsername,e.createdBy,e.username].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean);
- const t=teachers.find(x=>candidates.includes(String(x.id||"").toLowerCase())||candidates.includes(String(x.email||"").toLowerCase()));
- return t?.name||e.teacherName||e.createdByName||candidates[0]||"معلم غير محدد";
-}
-function examsVisibleForCount(){
- let list=examsData.slice();
- if(role==="supervisor"&&currentSupervisorType==="supervisor"){
-  const allowed=new Set(assignedTeacherEmails.map(x=>String(x).trim().toLowerCase()));
-  const allowedTeachers=teachers.filter(t=>allowed.has(String(t.id||"").toLowerCase())||allowed.has(String(t.email||"").toLowerCase()));
-  allowedTeachers.forEach(t=>{allowed.add(String(t.id||"").toLowerCase());allowed.add(String(t.email||"").toLowerCase())});
-  list=list.filter(e=>[e.teacherEmail,e.teacherId,e.teacherUsername,e.createdBy,e.username].some(v=>allowed.has(String(v||"").trim().toLowerCase())));
- }
- return list;
-}
-function buildTeacherExamCount(){
- const grouped=new Map();
- examsVisibleForCount().forEach(e=>{
-  const candidates=[e.teacherEmail,e.teacherId,e.teacherUsername,e.createdBy,e.username].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean);
-  const t=teachers.find(x=>candidates.includes(String(x.id||"").toLowerCase())||candidates.includes(String(x.email||"").toLowerCase()));
-  const key=t?(String(t.id||t.email).toLowerCase()):(candidates[0]||"unknown");
-  if(!grouped.has(key))grouped.set(key,{name:t?.name||e.teacherName||e.createdByName||key,count:0,exams:[]});
-  const row=grouped.get(key);row.count++;row.exams.push(e);
- });
- const rows=[...grouped.values()].sort((a,b)=>a.name.localeCompare(b.name,"ar")),total=rows.reduce((n,x)=>n+x.count,0);
- const host=document.getElementById("teacherExamCountReport");host.classList.remove("hidden");
- host.innerHTML='<div style="border:1px solid #d8e5df;border-radius:14px;padding:16px;background:#fff"><h3 style="margin:0 0 8px">حصر الاختبارات الإلكترونية حسب المعلم</h3><p>إجمالي الاختبارات: <b>'+total+'</b> · عدد المعلمين: <b>'+rows.length+'</b></p><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;text-align:right"><thead><tr style="background:#eef5f1"><th style="padding:10px;border:1px solid #d8e5df">م</th><th style="padding:10px;border:1px solid #d8e5df">اسم المعلم</th><th style="padding:10px;border:1px solid #d8e5df">عدد الاختبارات</th></tr></thead><tbody>'+rows.map((x,i)=>'<tr><td style="padding:9px;border:1px solid #d8e5df">'+(i+1)+'</td><td style="padding:9px;border:1px solid #d8e5df">'+esc(x.name)+'</td><td style="padding:9px;border:1px solid #d8e5df;font-weight:bold">'+x.count+'</td></tr>').join("")+'</tbody><tfoot><tr style="font-weight:bold;background:#f5f8f6"><td colspan="2" style="padding:10px;border:1px solid #d8e5df">الإجمالي</td><td style="padding:10px;border:1px solid #d8e5df">'+total+'</td></tr></tfoot></table></div></div>';
-}
-function printTeacherExamCount(){
- const host=document.getElementById("teacherExamCountReport");
- if(host.classList.contains("hidden"))buildTeacherExamCount();
- const w=window.open("","_blank","width=900,height=700");if(!w){alert("اسمح بالنوافذ المنبثقة لطباعة الحصر.");return}
- w.document.open();w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>حصر الاختبارات الإلكترونية</title><style>@page{size:A4 portrait;margin:15mm}body{font-family:Arial,Tahoma,sans-serif;color:#18352d;padding:10px}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #899b92;padding:10px;text-align:right}th{background:#eaf2ee}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><header style="text-align:center;border-bottom:3px solid #075b49;padding-bottom:12px"><h2>مدارس الفلاح الأهلية</h2><h3>حصر الاختبارات الإلكترونية حسب المعلمين</h3></header>'+host.innerHTML+'<footer style="text-align:center;margin-top:30px">منصة راصد</footer><script>window.onload=()=>window.print();<\/script></body></html>');w.document.close();
-}
 async function loadExams(){
  let s=await db.collection("onlineExams").get();examsData=s.docs.map(d=>({id:d.id,...d.data()}));
  if(["teacher","supervisor"].includes(role)){
