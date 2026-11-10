@@ -801,6 +801,7 @@ window.addEventListener('beforeunload',event=>{
 function dutyName(x){return x.kind==='bus'?'حافلة':x.kind==='assignment'?'تكليف إضافي':'مراقبة'}
 function hasExtraAssignment(teacherId){return (s.duties||[]).some(d=>d.teacher===teacherId&&d.kind==='assignment')}
 function availabilityReason(i,d,p){
+ if(isWaitingSupervisor(i))return 'مشرف مستثنى من حصص الانتظار';
  if(s.absences.some(a=>a.teacher===i&&a.date===d))return 'غائب';
  const lesson=s.lessons.find(l=>l.teacher===i&&l.day===dt(d)&&l.period===p);if(lesson)return isBusClass(lesson.className)?'لديه حافلة':'لديه حصة';
  const duty=dutyAt(i,d,p)[0];if(duty)return 'لديه '+dutyName(duty);
@@ -1649,6 +1650,25 @@ function delLesson(i){
 }
 
 let absenceStage='ابتدائي';
+/* Supervisors are not eligible for waiting coverage. Keep their records/history intact. */
+const WAITING_SUPERVISOR_NAMES=['حسين يوسف','محمد عامر','محمد أبو بكر','أيمن القزاز','محمد وجيه'];
+function normalizeWaitingTeacherName(value){
+ return String(value||'').normalize('NFKC').replace(/[\u064B-\u065F\u0670\u0640]/g,'')
+  .replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/\s+/g,' ').trim();
+}
+function isWaitingSupervisor(teacherOrId){
+ const item=typeof teacherOrId==='object'&&teacherOrId?teacherOrId:s.teachers.find(t=>t.id===teacherOrId);
+ if(!item)return false;
+ const name=normalizeWaitingTeacherName(item.name);
+ return WAITING_SUPERVISOR_NAMES.some(raw=>{
+  const target=normalizeWaitingTeacherName(raw);
+  return name===target||name.startsWith(target+' ');
+ });
+}
+function waitingCoverageTeachers(stage=absenceStage){
+ return stageCoverageTeachers(stage).filter(t=>!isWaitingSupervisor(t));
+}
+
 function setAbsenceStage(stage){
  if(!['ابتدائي','متوسط','ثانوي'].includes(stage))return;
  absenceStage=stage;editingAbsenceId='';render();
@@ -1671,13 +1691,13 @@ function absence(){
   '<div class="actions">'+['ابتدائي','متوسط','ثانوي'].map(stage=>
    '<button type="button" class="'+(stage===absenceStage?'':'alt')+'" onclick="setAbsenceStage(\''+stage+'\')">'+stage+'</button>').join('')+'</div>'+
   '<p class="muted">كل مرحلة تعرض معلميها فقط؛ المعلم المشترك يظهر في جميع المراحل التي يدرس فيها. التعارضات محسوبة على جدول المعلم كاملًا بجميع المراحل.</p>');
- const teachers=stageCoverageTeachers();
+ const teachers=waitingCoverageTeachers();
  const form='<div class="fields">'+
   field('التاريخ','<input id="adate" type="date" value="'+selectedDate+'" onchange="selectedDate=this.value;render()">')+
   field('المعلم الغائب — '+absenceStage,'<select id="ateacher">'+(teachers.length?opts(teachers):'<option value="">لا يوجد معلمون لهذه المرحلة</option>')+'</select>')+
   field('سبب الغياب','<select id="reason"><option>مرضية</option><option>مهمة رسمية</option><option>ورشة</option><option>إجازة تعويضية</option><option>أخرى</option></select>')+
   '</div><div class="actions"><button onclick="addAbs()">تسجيل الغياب</button></div>'+
-  '<div class="notice">البدلاء من مرحلة '+absenceStage+' فقط، ويُستبعد المشغولون في أي مرحلة، مع مراعاة النصاب وحصص الانتظار السابقة.</div>';
+  '<div class="notice">البدلاء من مرحلة '+absenceStage+' فقط، مع استبعاد المشرفين المذكورين من الاختيار والتكليف، والمشغولين في أي مرحلة.</div>';
  const matches=s.absences.filter(x=>x.date===selectedDate&&stageCoverageLessons(x.teacher,x.date).length);
  const list=matches.map(x=>{
   const lessons=stageCoverageLessons(x.teacher,x.date);
@@ -1927,7 +1947,7 @@ function dailyCoveragePanel(){
  '<div class="daily-print-sign"><span>المشرف العام: أحمد سمير</span><span>مدير المدرسة: عبد العزيز القحطاني</span></div><div class="daily-print-credit">تصميم محمد عامر أحمد</div></section>';
  return control+paper;
 }
-function addAbs(){const t=document.getElementById('ateacher')?.value;if(!t||!teacherCoverageStages(t).has(absenceStage))return toast('اختر معلمًا من مرحلة '+absenceStage);if(s.absences.some(a=>a.teacher===t&&a.date===selectedDate))return toast('الغياب مسجل لهذا المعلم بالفعل في جميع المراحل');s.absences.push({id:id(),date:selectedDate,teacher:t,reason:document.getElementById('reason').value});save()}function delAbs(i){s.absences=s.absences.filter(a=>a.id!==i);s.covers=s.covers.filter(c=>c.absence!==i);save()}function cover(a,l){const x=s.lessons.find(q=>q.id===l),abs=s.absences.find(q=>q.id===a),t=document.getElementById('candidate-'+l)?.value;if(!x||!abs||abs.teacher!==x.teacher||abs.date!==selectedDate)return toast('الحصة والغياب غير متطابقين');if(lessonStage(x)!==absenceStage||!teacherCoverageStages(t).has(lessonStage(x)))return toast('المعلم البديل يجب أن يكون من نفس المرحلة');if(!isFree(t,selectedDate,x.period))return toast('المعلم غير متاح');if(s.covers.some(c=>c.lesson===l&&c.date===selectedDate))return toast('تم إسناد هذه الحصة بالفعل');s.covers.push({id:id(),absence:a,lesson:l,date:selectedDate,to:t,period:x.period,className:x.className});save()}function undoCover(i){s.covers=s.covers.filter(x=>x.id!==i);save()}
+function addAbs(){const t=document.getElementById('ateacher')?.value;if(!t||!teacherCoverageStages(t).has(absenceStage))return toast('اختر معلمًا من مرحلة '+absenceStage);if(s.absences.some(a=>a.teacher===t&&a.date===selectedDate))return toast('الغياب مسجل لهذا المعلم بالفعل في جميع المراحل');s.absences.push({id:id(),date:selectedDate,teacher:t,reason:document.getElementById('reason').value});save()}function delAbs(i){s.absences=s.absences.filter(a=>a.id!==i);s.covers=s.covers.filter(c=>c.absence!==i);save()}function cover(a,l){const x=s.lessons.find(q=>q.id===l),abs=s.absences.find(q=>q.id===a),t=document.getElementById('candidate-'+l)?.value;if(!x||!abs||abs.teacher!==x.teacher||abs.date!==selectedDate)return toast('الحصة والغياب غير متطابقين');if(isWaitingSupervisor(t))return toast('هذا المشرف مستثنى من تكليفات حصص الانتظار');if(lessonStage(x)!==absenceStage||!teacherCoverageStages(t).has(lessonStage(x)))return toast('المعلم البديل يجب أن يكون من نفس المرحلة');if(!isFree(t,selectedDate,x.period))return toast('المعلم غير متاح');if(s.covers.some(c=>c.lesson===l&&c.date===selectedDate))return toast('تم إسناد هذه الحصة بالفعل');s.covers.push({id:id(),absence:a,lesson:l,date:selectedDate,to:t,period:x.period,className:x.className});save()}function undoCover(i){s.covers=s.covers.filter(x=>x.id!==i);save()}
 function swap(){return '<div class="two">'+box('تسجيل تبديل', '<div class="fields">'+field('التاريخ','<input type="date" id="sdate" value="'+selectedDate+'">')+field('المعلم صاحب الحصة','<select id="sfrom">'+opts(s.teachers)+'</select>')+field('المعلم البديل','<select id="sto">'+opts(s.teachers)+'</select>')+field('الحصة','<input type="number" id="speriod" value="1" min="1" max="12">')+'</div><div class="actions"><button onclick="addSwap()">حفظ التبديل</button></div><div class="notice">يتحقق النظام من وجود درس للمعلم الأصلي وتفرغ البديل.</div>')+box('سجل التبديلات',cardPrintButton('سجل التبديلات')+(s.swaps.length?table(['التاريخ','الحصة','من','إلى'],s.swaps.map(x=>[x.date,x.period,esc(nm(x.from)),esc(nm(x.to))])):empty('لا توجد تبديلات بعد')))+'</div>'}function addSwap(){let d=document.getElementById('sdate').value,from=document.getElementById('sfrom').value,to=document.getElementById('sto').value,p=+document.getElementById('speriod').value;if(!from||!to||from===to)return toast('اختر معلمين مختلفين');if(!s.lessons.some(l=>l.teacher===from&&l.day===dt(d)&&l.period===p))return toast('لا يوجد درس للمعلم الأصلي بهذا الموعد');if(!isFree(to,d,p))return toast('المعلم البديل مشغول');s.swaps.push({id:id(),date:d,from,to,period:p});save()}
 function printAllWaitingTotals(){
  if(!s.teachers.length)return toast('لا يوجد معلمون لطباعة الإجمالي');
@@ -2129,6 +2149,7 @@ s.lessons.push({id:id(),teacher:t.id,day:o['اليوم'],period:p,className:norm
     const c=s.covers.find(x=>x.id===i);if(!c)return;
     const candidate=ask('اكتب اسم المعلم البديل الجديد',nm(c.to));if(candidate===null)return;
     const t=s.teachers.find(x=>x.name===candidate);if(!t)return msg('المعلم غير موجود');
+    if(isWaitingSupervisor(t))return msg('هذا المشرف مستثنى من تكليفات حصص الانتظار');
     const a=s.absences.find(x=>x.id===c.absence);if(a?.teacher===t.id)return msg('المعلم الغائب لا يمكنه تولي حصة الانتظار');
     if(c.to!==t.id&&!isFree(t.id,c.date,c.period))return msg('المعلم الجديد غير متاح');
     c.to=t.id;sync();msg('تم تعديل حصة الانتظار');
