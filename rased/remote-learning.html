@@ -12,25 +12,37 @@ async function fillSections(){const g=$("grade").value,ss=[...new Set((teacher?.
 async function createSession(){if(!settings.enabled)return msg("المنصة متوقفة حاليًا من الإدارة.","bad");const grade=$("grade").value,section=$("section").value,subject=$("subject").value.trim(),topic=$("topic").value.trim(),date=$("date").value,start=$("start").value,end=$("end").value,meeting=$("meeting").value.trim();if(!grade||!section||!subject||!date||!start||!end||!meeting)return msg("أكمل بيانات الحصة والرابط.","bad");if(!/^https:\/\/meet\.google\.com\//i.test(meeting))return msg("يرجى إدخال رابط Google Meet صحيح.","bad");const norm=v=>String(v??"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/\s+/g," ").trim();const assigned=(teacher.assignments||[]).some(a=>norm(a.grade)===norm(grade)&&norm(a.section)===norm(section));if(!assigned)return msg("الصف أو الفصل المختار غير موجود ضمن إسناداتك. راجع الصف والفصل في قائمة الاختيار.","bad");try{await db.collection("remoteSessions").add({grade,section,subject,topic,date,start,end,meeting,teacherEmail:email,teacherName:teacher.name||auth("currentUserName")||email,createdAt:firebase.firestore.FieldValue.serverTimestamp(),status:"published"});msg("تم نشر الحصة.","ok");await loadSessions()}catch(e){msg("فشل نشر الحصة: "+e.message,"bad")}}
 async function loadSessions(){const snap=await db.collection("remoteSessions").where("teacherEmail","==",email).get();allSessions=snap.docs.map(d=>({id:d.id,...d.data()}));$("teacherSessions").innerHTML=allSessions.sort((a,b)=>(a.date||"").localeCompare(b.date||"")).map(x=>'<div class="session"><h3>'+esc(x.subject)+' · '+esc(x.grade)+' / '+esc(x.section)+'</h3><p>'+esc(x.topic||"")+' · '+esc(x.date)+' · '+esc(x.start)+'–'+esc(x.end)+'</p><button class="light" onclick="showRoster(\''+x.id+'\')">كشف الحضور</button></div>').join("")||'<p class="muted">لا توجد حصص منشورة.</p>'}
 let attendanceUnsubscribe=null;
+function normRoster(v){return String(v??"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/\s+/g," ").trim().toLowerCase()}
 async function showRoster(id){
  const session=allSessions.find(x=>x.id===id);if(!session)return;
  try{
   if(attendanceUnsubscribe){attendanceUnsubscribe();attendanceUnsubscribe=null}
-  const students=await db.collection("students").where("grade","==",session.grade).get();
-  const rows=students.docs.map(d=>({...d.data(),code:d.data().code||d.id})).filter(x=>String(x.section)===String(session.section));
+  const snapStudents=await db.collection("students").get();
+  const allStudents=snapStudents.docs.map(d=>({...d.data(),code:String(d.data().code||d.id),_docId:d.id}));
+  const rows=allStudents.filter(x=>normRoster(x.grade)===normRoster(session.grade)&&normRoster(x.section)===normRoster(session.section));
   const host=$("teacherSessions");
   let panel=document.getElementById("liveRoster_"+id);
   if(!panel){panel=document.createElement("div");panel.id="liveRoster_"+id;host.appendChild(panel)}
-  panel.innerHTML='<h3>كشف حضور '+esc(session.subject)+' — '+esc(session.grade)+' / '+esc(session.section)+'</h3><p class="muted">يتحدث الكشف تلقائيًا عند إرسال الطالب طلب الحضور أو اعتماد المعلم له.</p><div class="scroll" id="liveRosterTable_'+id+'">جارٍ تحميل كشف الحضور...</div>';
+  panel.innerHTML='<h3>كشف حضور '+esc(session.subject)+' — '+esc(session.grade)+' / '+esc(session.section)+'</h3><p class="muted">يظهر طلب الطالب فور وصوله، حتى إذا لم يطابق سجل الفصل، مع توضيح بياناته المسجلة.</p><div class="scroll" id="liveRosterTable_'+id+'">جارٍ تحميل كشف الحضور...</div>';
   attendanceUnsubscribe=db.collection("remoteAttendance").where("sessionId","==",id).onSnapshot(snapshot=>{
-   const seen=new Map(snapshot.docs.map(d=>[String(d.data().studentCode),d.data()]));
-   $("liveRosterTable_"+id).innerHTML='<table><tr><th>الطالب</th><th>وقت الطلب</th><th>الحالة</th><th>الإجراء</th></tr>'+rows.map(x=>{
-    const a=seen.get(String(x.code));const status=a?.status||"لم يسجل";
-    const action=a?.status==="بانتظار موافقة المعلم"?'<button class="gold" data-session="'+esc(id)+'" data-student="'+esc(x.code)+'" onclick="approveAttendance(this.dataset.session,this.dataset.student)">قبول الحضور</button>':a?.status==="حاضر"?'<span class="pill">تم الاعتماد</span>':'<span class="muted">—</span>';
-    return '<tr><td>'+esc(x.name)+'</td><td>'+esc(a?.timeText||"-")+'</td><td>'+esc(status)+'</td><td>'+action+'</td></tr>';
-   }).join("")+'</table>';
-  },error=>msg("تعذر تحديث كشف الحضور: "+error.message,"bad"));
- }catch(e){msg("تعذر تحميل الكشف: "+e.message,"bad")}
+   const attendanceRows=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+   const byCode=new Map(attendanceRows.map(a=>[String(a.studentCode||""),a]));
+   const displayed=new Map();
+   rows.forEach(x=>displayed.set(String(x.code),{studentName:x.name||x.studentName||"طالب غير معروف",studentCode:String(x.code),grade:x.grade,section:x.section,attendance:byCode.get(String(x.code))||null}));
+   attendanceRows.forEach(a=>{
+    const code=String(a.studentCode||"");
+    if(!displayed.has(code))displayed.set(code,{studentName:a.studentName||"طالب غير موجود في قائمة الطلاب",studentCode:code,grade:a.grade,section:a.section,attendance:a,notInRoster:true});
+    else displayed.get(code).attendance=a;
+   });
+   const list=Array.from(displayed.values());
+   $("liveRosterTable_"+id).innerHTML='<table><tr><th>الطالب</th><th>الصف / الفصل</th><th>وقت الطلب</th><th>الحالة</th><th>الإجراء</th></tr>'+list.map(x=>{
+    const a=x.attendance;const status=a?.status||"لم يسجل";
+    const action=a?.status==="بانتظار موافقة المعلم"?'<button class="gold" data-session="'+esc(id)+'" data-student="'+esc(x.studentCode)+'" onclick="approveAttendance(this.dataset.session,this.dataset.student)">قبول الحضور</button>':a?.status==="حاضر"?'<span class="pill">تم الاعتماد</span>':'<span class="muted">—</span>';
+    const group=[x.grade,x.section].filter(Boolean).join(" / ")||(x.notInRoster?"غير مطابق لسجل الفصل":"—");
+    return '<tr><td>'+esc(x.studentName)+(x.notInRoster?' <span class="pill">طلب وارد خارج قائمة الفصل</span>':'')+'</td><td>'+esc(group)+'</td><td>'+esc(a?.timeText||"-")+'</td><td>'+esc(status)+'</td><td>'+action+'</td></tr>';
+   }).join("")+'</table><p class="muted">عدد الطلاب في الفصل: '+rows.length+' · طلبات الحضور الواردة: '+attendanceRows.length+'</p>';
+  },error=>msg("فشل جلب طلبات الحضور من Firebase: "+error.message,"bad"));
+ }catch(e){msg("تعذر تحميل كشف الحضور: "+e.message,"bad")}
 }
 async function approveAttendance(sessionId,studentCode){try{const ref=db.collection("remoteAttendance").doc(sessionId+"_"+studentCode);const d=await ref.get();if(!d.exists||d.data().status!=="بانتظار موافقة المعلم")return msg("لا يوجد طلب حضور معلق لهذا الطالب.","bad");await ref.set({status:"حاضر",approvedAt:firebase.firestore.FieldValue.serverTimestamp(),approvedBy:email},{merge:true});msg("تم قبول الحضور واعتماده.","ok");await showRoster(sessionId)}catch(e){msg("تعذر اعتماد الحضور: "+e.message,"bad")}}
 async function studentLookup(){const id=$("identity").value.replace(/\D/g,"");if(!id)return msg("أدخل رقم الهوية.","bad");try{let d=await db.collection("students").doc(id).get();if(!d.exists){const q=await db.collection("students").where("code","==",id).limit(1).get();if(q.empty)return msg("لم يتم العثور على الطالب.","bad");d=q.docs[0]}await loadStudentByCode(d.id)}catch(e){msg("تعذر التحقق من الطالب: "+e.message,"bad")}}
