@@ -2403,6 +2403,9 @@ if(parentPlanWeekSelect)parentPlanWeekSelect.addEventListener("change",()=>rende
 <a id="parentEnglishActivitiesLink" href="english-activities.html" style="display:none;position:fixed;bottom:16px;left:16px;z-index:99;align-items:center;gap:8px;padding:13px 18px;background:#e8f1ff;color:#075eaa;border:1px solid #bfd8fa;border-radius:13px;text-decoration:none;font-weight:800;box-shadow:0 5px 18px #1232">🎧 أنشطة اللغة الإنجليزية</a>
 
 <script src="rased-maintenance.js?v=20261031-mobile-refresh2"></script>
+<script>
+(async()=>{try{const d=await firebase.firestore().collection("systemSettings").doc("remoteLearningAccess").get();if(d.exists&&d.data().student===false){const x=document.getElementById("studentRemoteLearningLink");if(x)x.remove()}}catch(e){console.warn("remote learning access setting",e)}})();
+</script>
 
 <!-- alfalah-designer-credit:start -->
 <style id="alfalah-designer-credit-style">
@@ -2413,8 +2416,5 @@ if(parentPlanWeekSelect)parentPlanWeekSelect.addEventListener("change",()=>rende
 </style>
 <div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
 <!-- alfalah-designer-credit:end -->
-<script>
-(async()=>{try{const d=await firebase.firestore().collection("systemSettings").doc("remoteLearningAccess").get();if(d.exists&&d.data().student===false){const x=document.getElementById("studentRemoteLearningLink");if(x)x.remove()}}catch(e){console.warn("remote learning access setting",e)}})();
-</script>
 </body>
 </html>
