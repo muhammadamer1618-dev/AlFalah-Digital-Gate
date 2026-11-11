@@ -52,6 +52,25 @@ body.printing-coverage .coverage-table tr{break-inside:avoid}
 body.printing-coverage .coverage-pill{font-size:8px;padding:2px}
 body.printing-coverage #coverageNote{font-size:9px}
 }
+#finalAttendanceCard{padding:0;overflow:hidden}
+.final-attendance-toggle{display:flex;align-items:center;gap:12px;padding:20px 21px;cursor:pointer;list-style:none;user-select:none;background:#f3f9f5;border-radius:14px}
+.final-attendance-toggle::-webkit-details-marker{display:none}
+.final-attendance-title{font-size:19px;font-weight:800;color:#17543d;flex:1}
+.final-attendance-hint{font-size:12px;color:#637e6e;font-weight:normal}
+.final-attendance-chevron{display:grid;place-items:center;background:#dceee3;border-radius:50%;width:32px;height:32px;font-size:21px;color:#186044;transition:transform .2s}
+#finalAttendanceDetails[open] .final-attendance-chevron{transform:rotate(180deg)}
+#finalAttendanceDetails[open] .final-attendance-toggle{border-bottom:1px solid #dce7df;border-radius:14px 14px 0 0}
+.final-attendance-content{padding:18px}
+@media(max-width:600px){.final-attendance-toggle{padding:15px;flex-wrap:wrap}.final-attendance-title{font-size:16px}.final-attendance-hint{order:3;flex-basis:100%}.final-attendance-content{padding:10px}}
+@media print{
+body.printing-final-attendance main>.card{display:none!important}
+body.printing-final-attendance #finalAttendanceCard{display:block!important;border:0!important}
+body.printing-final-attendance #finalAttendanceDetails{display:block!important}
+body.printing-final-attendance .final-attendance-toggle{padding:5px 0!important;background:white!important}
+body.printing-final-attendance .final-attendance-hint,body.printing-final-attendance .final-attendance-chevron{display:none!important}
+body.printing-final-attendance .final-attendance-content{display:block!important;padding:0!important}
+body.printing-final-attendance .report thead{display:table-header-group}
+}
 @media(max-width:800px){.toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.toolbar{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @page{size:A4 portrait;margin:10mm}
@@ -77,11 +96,11 @@ main{width:100%;margin:4px auto}.no-print{display:none!important}.card{border:0;
 </div><div class="actions"><button type="button" onclick="render()">عرض الكشف</button><button type="button" class="secondary" onclick="printReport()">🖨️ طباعة الكشف</button><button type="button" class="secondary" onclick="reloadData()">↻ تحديث بيانات المعلمين</button></div>
 <div id="message" class="muted">جارٍ التحميل...</div>
 </section>
-<section class="card"><h2>كشف الحضور والغياب النهائي</h2>
+<section class="card" id="finalAttendanceCard"><details id="finalAttendanceDetails"><summary class="final-attendance-toggle"><span class="final-attendance-title">📋 كشف الحضور والغياب النهائي</span><span class="final-attendance-hint">اضغط لعرض أو إخفاء كشف الطلاب</span><span class="final-attendance-chevron" aria-hidden="true">⌄</span></summary><div class="final-attendance-content">
 <table class="print-meta"><tbody><tr><th>التاريخ</th><td id="metaDate">—</td><th>الصف والفصل</th><td id="metaClass">—</td></tr><tr><th>نوع الكشف</th><td id="metaStatus">جميع الحالات</td><th>الحصص المرصودة</th><td id="metaLessons">—</td></tr></tbody></table>
 <div class="stats"><div class="stat"><span>إجمالي الطلاب</span><b id="nAll">0</b></div><div class="stat"><span>حاضر نهائيًا</span><b id="nPresent">0</b></div><div class="stat"><span>غائب نهائيًا</span><b id="nAbsent">0</b></div><div class="stat"><span>متأخر / مستأذن</span><b id="nOther">0</b></div><div class="stat"><span>لم يُرصد</span><b id="nUnknown">0</b></div></div>
 <p class="muted" id="summary"></p>
-<div class="scroll"><table class="report"><thead><tr><th>م</th><th>اسم الطالب</th><th>الحصص المسجلة</th><th>الحصة</th><th>المادة</th><th>المعلم</th><th>الحالة النهائية</th></tr></thead><tbody id="rows"><tr><td colspan="7" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+<div class="scroll"><table class="report"><thead><tr><th>م</th><th>اسم الطالب</th><th>الحصص المسجلة</th><th>الحصة</th><th>المادة</th><th>المعلم</th><th>الحالة النهائية</th></tr></thead><tbody id="rows"><tr><td colspan="7" class="empty">جارٍ التحميل...</td></tr></tbody></table></div></div></details>
 </section>
 <section class="card" id="classCoverageCard">
  <div class="coverage-heading"><div><h2>🏫 حصر رصد الحضور حسب الفصول</h2><p class="muted">حالة كل فصل في التاريخ المحدد وفق كشوف الحصص المحفوظة من المعلمين</p></div>
@@ -213,7 +232,7 @@ async function reloadData(){
   ready=true;classOptions();el("message").textContent="تم تحديث البيانات: "+attendanceSessions.length+" كشف حصة محفوظ.";
  }catch(e){el("message").textContent="تعذر تحميل البيانات: "+e.message;el("rows").innerHTML='<tr><td colspan="7">تعذر جلب بيانات الحضور</td></tr>'}
 }
-function printReport(){if(!ready){alert("انتظر اكتمال تحميل البيانات أولًا.");return}render();window.print()}
+function printReport(){if(!ready){alert("انتظر اكتمال تحميل البيانات أولًا.");return}render();const details=el("finalAttendanceDetails"),wasOpen=details.open;details.open=true;document.body.classList.add("printing-final-attendance");let restored=false;const restore=()=>{if(restored)return;restored=true;document.body.classList.remove("printing-final-attendance");details.open=wasOpen};window.addEventListener("afterprint",restore,{once:true});window.print();setTimeout(restore,2500)}
 el("day").value=dateLocal();
 el("day").addEventListener("change",render);el("grade").addEventListener("change",updateSections);el("section").addEventListener("change",render);el("status").addEventListener("change",render);el("classCoverageFilter").addEventListener("change",renderClassCoverage);
 reloadData();
