@@ -41,8 +41,8 @@ main{width:100%;margin:4px auto}.no-print{display:none!important}.card{border:0;
 .print-meta th,.print-meta td,.report th,.report td{font-size:9px;padding:5px}
 .report thead{display:table-header-group}.report tr{break-inside:avoid}
 .scroll{overflow:visible}footer{font-size:9px}
-}}
-</style></head>
+}
+</style></head>d>
 <body><header><img src="logo.jpeg" alt="شعار مدارس الفلاح"><h1>الحضور والغياب النهائي للطلاب</h1><p>مدارس الفلاح الأهلية — نظام راصد</p></header>
 <main><div class="no-print actions"><a class="btn secondary" href="admin.html">↩ العودة إلى الإدارة</a></div>
 <section class="card no-print"><h2>📅 حصر الغياب النهائي لليوم</h2>
@@ -117,7 +117,7 @@ function render(){
  el("rows").innerHTML=visible.length?visible.map((r,i)=>{
   const cls=r.status==="حاضر"?"present":r.status==="غائب"?"absent":r.status==="متأخر"?"late":r.status==="لم يُرصد"?"unrecorded":"";
   const present=r.items.filter(x=>norm(x.status)==="حاضر").length;
-  const info=r.items.length?("حاضر في "+present+" من "+r.items.length+" حصة مسجلة"):"لا توجد بيانات حضور لهذا اليوم";
+  const attended=r.items.filter(x=>norm(x.status)==="حاضر").map(x=>"الحصة "+(x.period||"—")+" ("+(x.subject||"—")+")");const info=attended.length?"حضر: "+attended.join("، "):r.items.length?"لم يحضر في أي حصة مسجلة":"لا توجد بيانات حضور لهذا اليوم";
   return '<tr><td>'+(i+1)+'</td><td>'+esc(r.student.name||"—")+'</td><td><span class="status '+cls+'">'+esc(r.status)+'</span></td><td>'+r.items.length+'</td><td>'+esc(info)+'</td></tr>';
  }).join(""):'<tr><td colspan="5" class="empty">لا يوجد طلاب مطابقون للفلاتر الحالية.</td></tr>';
 }
