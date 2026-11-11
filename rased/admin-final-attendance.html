@@ -31,6 +31,27 @@ h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;color:#145a44}
 .muted{font-size:12px;color:#6e8075}.empty{padding:20px;text-align:center;color:#6e8075}
 footer{text-align:center;color:#738a7c;padding:14px;font-size:11px}
 .lesson-detail{min-height:22px;padding:3px 0;border-bottom:1px dotted #e3eae6;white-space:normal;overflow-wrap:anywhere}.lesson-detail:last-child{border:0}.report td:nth-child(2){min-width:140px}.report td:nth-child(6){min-width:110px}
+
+.coverage-heading{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:5px}.coverage-heading h2{margin:0 0 5px}
+.coverage-heading .actions{margin:0}.coverage-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:15px 0}
+.coverage-control{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:15px}.coverage-control label{flex:0 0 255px}.coverage-control p{flex:1;line-height:1.8}
+.coverage-table th,.coverage-table td{font-size:12px}.coverage-table th:nth-child(1),.coverage-table td:nth-child(1){width:36px}
+.coverage-table th:nth-child(4),.coverage-table td:nth-child(4),.coverage-table th:nth-child(5),.coverage-table td:nth-child(5),.coverage-table th:nth-child(6),.coverage-table td:nth-child(6){text-align:center}
+.coverage-table td:nth-child(7){min-width:130px}.coverage-table td:last-child{text-align:center}
+.coverage-pill{display:inline-block;border-radius:7px;font-size:11px;font-weight:700;padding:6px 9px;white-space:nowrap}.coverage-pill.complete{color:#16633e;background:#e0f3e7}.coverage-pill.partial{color:#946219;background:#fff2d9}.coverage-pill.missing{color:#9d312b;background:#ffebea}
+@media(max-width:800px){.coverage-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{body.printing-coverage main>.card{display:none!important}body.printing-coverage #classCoverageCard{display:block!important}
+body.printing-coverage header{background:#fff!important;color:#17523b!important;border-bottom:2px solid #b39b68!important}
+body.printing-coverage header p{color:#506f5b!important}body.printing-coverage .coverage-summary{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:8px 0}
+body.printing-coverage .coverage-heading{margin-bottom:6px}body.printing-coverage .coverage-table th,body.printing-coverage .coverage-table td{font-size:9px;padding:5px}
+body.printing-coverage .coverage-table td:nth-child(7){min-width:0}
+body.printing-coverage .coverage-table{width:100%;table-layout:fixed}
+body.printing-coverage .coverage-table th:nth-child(1),body.printing-coverage .coverage-table td:nth-child(1){width:25px}
+body.printing-coverage .coverage-table thead{display:table-header-group}
+body.printing-coverage .coverage-table tr{break-inside:avoid}
+body.printing-coverage .coverage-pill{font-size:8px;padding:2px}
+body.printing-coverage #coverageNote{font-size:9px}
+}
 @media(max-width:800px){.toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.toolbar{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @page{size:A4 portrait;margin:10mm}
@@ -61,6 +82,15 @@ main{width:100%;margin:4px auto}.no-print{display:none!important}.card{border:0;
 <div class="stats"><div class="stat"><span>إجمالي الطلاب</span><b id="nAll">0</b></div><div class="stat"><span>حاضر نهائيًا</span><b id="nPresent">0</b></div><div class="stat"><span>غائب نهائيًا</span><b id="nAbsent">0</b></div><div class="stat"><span>متأخر / مستأذن</span><b id="nOther">0</b></div><div class="stat"><span>لم يُرصد</span><b id="nUnknown">0</b></div></div>
 <p class="muted" id="summary"></p>
 <div class="scroll"><table class="report"><thead><tr><th>م</th><th>اسم الطالب</th><th>الحصص المسجلة</th><th>الحصة</th><th>المادة</th><th>المعلم</th><th>الحالة النهائية</th></tr></thead><tbody id="rows"><tr><td colspan="7" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+</section>
+<section class="card" id="classCoverageCard">
+ <div class="coverage-heading"><div><h2>🏫 حصر رصد الحضور حسب الفصول</h2><p class="muted">حالة كل فصل في التاريخ المحدد وفق كشوف الحصص المحفوظة من المعلمين</p></div>
+ <div class="actions no-print"><button type="button" class="secondary" onclick="printClassCoverage()">🖨️ طباعة حصر الفصول</button></div></div>
+ <div class="coverage-summary"><div class="stat"><span>الفصول المستهدفة</span><b id="classTotal">0</b></div><div class="stat"><span>تم رصد كل الطلاب</span><b id="classComplete">0</b></div><div class="stat"><span>رصد جزئي</span><b id="classPartial">0</b></div><div class="stat"><span>لم يُرصد</span><b id="classMissing">0</b></div></div>
+ <div class="coverage-control no-print"><label for="classCoverageFilter">عرض الفصول<select id="classCoverageFilter"><option value="">جميع الفصول</option><option value="complete">المرصودة لجميع الطلاب</option><option value="partial">الرصد الجزئي</option><option value="missing">لم تُرصد</option></select></label><p class="muted">الحصر مرتبط بتاريخ الكشف والصف والفصل المختارين بالأعلى، وليس بفلتر حالة الطالب.</p></div>
+ <table class="print-meta"><tbody><tr><th>تاريخ الحصر</th><td id="coverageDate">—</td><th>نطاق الحصر</th><td id="coverageScope">كل الصفوف والفصول</td></tr></tbody></table>
+ <p class="muted" id="coverageNote">المقصود باكتمال الرصد: وجود حالة حضور محفوظة لكل طالب في الفصل مرة واحدة على الأقل. لا يعني رصد جميع حصص اليوم.</p>
+ <div class="scroll"><table class="report coverage-table"><thead><tr><th>م</th><th>الصف</th><th>الفصل</th><th>الطلاب</th><th>طلاب لهم تسجيل</th><th>كشوف الحصص</th><th>المعلمون الذين رصدوا</th><th>حالة الرصد</th></tr></thead><tbody id="coverageRows"><tr><td colspan="8" class="empty">جارٍ تحميل حصر الفصول...</td></tr></tbody></table></div>
 </section></main><footer>تصميم محمد عامر أحمد — نظام راصد 2026</footer>
 <script>
 firebase.initializeApp({apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"});
@@ -106,6 +136,56 @@ function compute(){
  const rows=roster.map(s=>{const items=log.get(norm(s.code))||[];return {student:s,items,status:finalState(items)}});
  return {rows,sessions};
 }
+function classCoverage(){
+ const date=el("day").value,grade=el("grade").value,section=el("section").value;
+ const roster=new Map();
+ students.forEach(st=>{
+  const g=norm(st.grade),c=norm(st.section),code=norm(st.code);
+  if(!g||!c||!code||(grade&&g!==grade)||(section&&c!==section))return;
+  const key=JSON.stringify([g,c]);
+  if(!roster.has(key))roster.set(key,{grade:g,section:c,studentCodes:new Set(),recordedCodes:new Set(),lessons:[],teachers:new Set()});
+  roster.get(key).studentCodes.add(code);
+ });
+ attendanceSessions.forEach(session=>{
+  if(norm(session.date)!==date)return;
+  const key=JSON.stringify([norm(session.grade),norm(session.section)]),row=roster.get(key);
+  if(!row)return;
+  row.lessons.push(session);
+  if(session.teacherName)row.teachers.add(norm(session.teacherName));
+  (session.entries||[]).forEach(entry=>{
+   const code=norm(entry.code);
+   if(row.studentCodes.has(code)&&["حاضر","غائب","متأخر","مستأذن"].includes(norm(entry.status)))row.recordedCodes.add(code);
+  });
+ });
+ return [...roster.values()].map(row=>{
+  const total=row.studentCodes.size,recorded=row.recordedCodes.size;
+  return {...row,total,recorded,state:recorded===0?"missing":recorded===total?"complete":"partial"};
+ }).sort((a,b)=>a.grade.localeCompare(b.grade,"ar",{numeric:true})||a.section.localeCompare(b.section,"ar",{numeric:true}));
+}
+function renderClassCoverage(){
+ if(!ready)return;
+ const classes=classCoverage(),state=el("classCoverageFilter").value;
+ const visible=state?classes.filter(x=>x.state===state):classes;
+ el("classTotal").textContent=classes.length;
+ el("classComplete").textContent=classes.filter(x=>x.state==="complete").length;
+ el("classPartial").textContent=classes.filter(x=>x.state==="partial").length;
+ el("classMissing").textContent=classes.filter(x=>x.state==="missing").length;
+ el("coverageDate").textContent=el("day").value||"—";
+ el("coverageScope").textContent=[el("grade").value||"جميع الصفوف",el("section").value||"جميع الفصول"].join(" / ");
+ el("coverageRows").innerHTML=visible.length?visible.map((x,i)=>{
+  const name=x.state==="complete"?"تم رصد كل الطلاب":x.state==="partial"?"رصد جزئي":"لم يُرصد";
+  const teachers=[...x.teachers].sort((a,b)=>a.localeCompare(b,"ar"));
+  return '<tr><td>'+(i+1)+'</td><td>'+esc(x.grade)+'</td><td>'+esc(x.section)+'</td><td>'+x.total+'</td><td>'+x.recorded+' / '+x.total+'</td><td>'+x.lessons.length+'</td><td>'+esc(teachers.join("، ")||"—")+'</td><td><span class="coverage-pill '+x.state+'">'+name+'</span></td></tr>';
+ }).join(""):'<tr><td colspan="8" class="empty">لا توجد فصول مطابقة للاختيار الحالي.</td></tr>';
+}
+function printClassCoverage(){
+ if(!ready){alert("لم ينتهِ تحميل البيانات بعد.");return}
+ renderClassCoverage();
+ document.body.classList.add("printing-coverage");
+ window.addEventListener("afterprint",()=>document.body.classList.remove("printing-coverage"),{once:true});
+ window.print();
+ setTimeout(()=>document.body.classList.remove("printing-coverage"),1800);
+}
 function render(){
  if(!ready)return;
  const {rows,sessions}=compute(),filter=el("status").value,visible=filter?rows.filter(x=>x.status===filter):rows;
@@ -121,6 +201,7 @@ function render(){
   const list=(get)=>lessons.length?lessons.map(x=>'<div class="lesson-detail">'+esc(get(x))+'</div>').join(""):'—';
   return '<tr><td>'+(i+1)+'</td><td>'+esc(r.student.name||"—")+'</td><td>'+r.items.length+'</td><td>'+list(x=>x.period||"—")+'</td><td>'+list(x=>x.subject||"—")+'</td><td>'+list(x=>x.teacher||"—")+'</td><td><span class="status '+cls+'">'+esc(r.status)+'</span></td></tr>';
  }).join(""):'<tr><td colspan="7" class="empty">لا يوجد طلاب مطابقون للفلاتر الحالية.</td></tr>';
+ renderClassCoverage();
 }
 async function reloadData(){
  if(!secureAdmin())return;
@@ -134,7 +215,7 @@ async function reloadData(){
 }
 function printReport(){if(!ready){alert("انتظر اكتمال تحميل البيانات أولًا.");return}render();window.print()}
 el("day").value=dateLocal();
-el("day").addEventListener("change",render);el("grade").addEventListener("change",updateSections);el("section").addEventListener("change",render);el("status").addEventListener("change",render);
+el("day").addEventListener("change",render);el("grade").addEventListener("change",updateSections);el("section").addEventListener("change",render);el("status").addEventListener("change",render);el("classCoverageFilter").addEventListener("change",renderClassCoverage);
 reloadData();
 </script>
 <!-- alfalah-designer-credit:start -->
