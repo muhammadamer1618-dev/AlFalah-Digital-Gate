@@ -42,6 +42,59 @@ body.printing-attendance #attStats{margin:8px 0}
  body.printing-attendance .attendance-history-table{min-width:0!important}
 }
 </style>
+
+<style id="rased-student-report-redesign">
+#studentReport{border-radius:16px}
+.student-report-shell{margin-top:14px}
+.student-report-heading{color:#155641;font-size:18px;font-weight:800;margin:0 0 9px}
+.student-report-meta{width:100%;table-layout:fixed;border-collapse:collapse;margin:0 0 16px;direction:rtl}
+.student-report-meta th,.student-report-meta td{border:1px solid #cddfd4;padding:12px 13px;text-align:right;vertical-align:middle;overflow-wrap:anywhere;line-height:1.6}
+.student-report-meta th{width:16%;background:#eaf4ef;color:#185841;font-weight:800}
+.student-report-meta td{width:34%;background:#fff;color:#193c30;font-weight:700}
+.student-report-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:12px 0 22px}
+.student-report-stat{background:#f1f8f3;border:1px solid #deebe2;border-radius:12px;padding:13px 9px;text-align:center}
+.student-report-stat span{display:block;color:#416557;font-size:12px;font-weight:700;margin-bottom:7px}
+.student-report-stat strong{display:block;color:#135b42;font-size:23px;font-weight:800}
+.student-report-section{margin:20px 0 25px}
+.student-report-section h3{color:#145641;font-size:18px;margin:0 0 10px;padding-bottom:8px;border-bottom:2px solid #dceade}
+.student-report-table{width:100%;border-collapse:collapse;table-layout:auto;margin:0}
+.student-report-table th,.student-report-table td{border:1px solid #d8e5dd;padding:9px 10px;text-align:right;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.student-report-table th{background:#eaf3ee;color:#1b503e;font-weight:800}
+.student-report-table th:first-child,.student-report-table td:first-child{width:38px;text-align:center}
+.student-report-table .numeric-cell{text-align:center;font-weight:800}
+.student-report-empty{text-align:center!important;color:#75877c;padding:16px!important}
+.student-report-status{display:inline-block;border-radius:7px;padding:3px 9px;font-weight:bold;background:#edf2f0;color:#315c4c}
+.student-report-status.absent{background:#fff0ee;color:#a2312b}
+.student-report-status.present{background:#e8f6ed;color:#17683b}
+.student-report-status.late{background:#fff5df;color:#996917}
+@media(max-width:700px){.student-report-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.student-report-stats .student-report-stat:last-child{grid-column:1/-1}.student-report-meta th,.student-report-meta td{padding:7px;font-size:11px}.student-report-table th,.student-report-table td{font-size:11px;padding:7px}}
+@media print{
+@page{size:A4 portrait;margin:9mm}
+body.printing-report header{background:white!important;color:#175040!important;box-shadow:none!important;border-bottom:2px solid #b79b61!important;padding:4px!important}
+body.printing-report header img{width:48px!important;height:48px!important;object-fit:contain}
+body.printing-report header h1{font-size:18px!important;color:#145540!important}
+body.printing-report header div{color:#386453!important}
+body.printing-report #studentReport{padding:0!important;border:0!important;box-shadow:none!important}
+body.printing-report #studentReport h2{font-size:15px!important;margin:7px 0!important}
+body.printing-report #studentReport #reportHint{font-size:10px!important;margin:2px 0 8px!important}
+body.printing-report .student-report-shell{margin-top:4px}
+body.printing-report .student-report-heading{font-size:13px;margin:0 0 5px}
+body.printing-report .student-report-meta{margin-bottom:7px}
+body.printing-report .student-report-meta th,body.printing-report .student-report-meta td{font-size:10px!important;padding:5px 7px!important}
+body.printing-report .student-report-stats{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:5px!important;margin:6px 0 11px!important}
+body.printing-report .student-report-stat{padding:6px 4px!important;break-inside:avoid}
+body.printing-report .student-report-stat span{font-size:9px!important;margin:0!important}
+body.printing-report .student-report-stat strong{font-size:15px!important}
+body.printing-report .student-report-section{margin:9px 0 13px!important;break-inside:auto}
+body.printing-report .student-report-section h3{font-size:12px!important;margin:5px 0!important;padding-bottom:4px!important;break-after:avoid}
+body.printing-report #reportContent .student-report-table{margin:0!important;min-width:0!important}
+body.printing-report #reportContent .student-report-table th,body.printing-report #reportContent .student-report-table td{font-size:9px!important;padding:4px 5px!important}
+body.printing-report .student-report-table thead{display:table-header-group}
+body.printing-report .student-report-table tr{break-inside:avoid}
+body.printing-report .student-report-status{padding:1px 5px}
+body.printing-report .scroll{overflow:visible!important}
+}
+</style>
 </head><body><header><img src="logo.jpeg" alt="شعار المدرسة"><h1>منظومة متابعة الطالب</h1><div>مدارس الفلاح الأهلية — راصد</div></header><main><a class="btn no-print" id="back" href="teacher.html">العودة</a><section class="card"><h2 id="heading">متابعة الطالب</h2><div class="msg" id="msg">جارٍ تحميل الصلاحيات والبيانات…</div><div class="grid"><label>الصف<select id="grade"><option value="">اختر الصف</option></select></label><label>الفصل<select id="section"><option value="">اختر الفصل</option></select></label><label>الطالب<select id="student"><option value="">جميع الطلاب</option></select></label></div></section><section class="card no-print hidden" id="editor"><h2>تسجيل ملاحظة جديدة</h2><div class="grid"><label>تصنيف الملاحظة<select id="kind"><option value="غير سلوكية">غير سلوكية</option><option value="سلوكية">سلوكية</option></select></label><label>نوع الملاحظة<select id="category"></select></label><label>المادة<select id="noteSubject"><option value="">اختر المادة</option></select></label><label>التاريخ<input id="date" type="date"></label></div><label>تفاصيل إضافية (اختياري)<textarea id="details" placeholder="تفاصيل الموقف أو الإجراء المتخذ"></textarea></label><button id="save">تسجيل الملاحظة</button><button id="cancelEdit" class="hidden" onclick="cancelEdit()">إلغاء التعديل</button></section><section class="card" id="attendance"><h2>📅 حضور وغياب الحصة</h2><div class="grid"><label>المادة<select id="attSubject"><option value="">اختر المادة</option></select></label><label>تاريخ الحصة<input type="date" id="attDate"></label><label>رقم الحصة<select id="attPeriod"><option value="1">الحصة 1</option><option value="2">الحصة 2</option><option value="3">الحصة 3</option><option value="4">الحصة 4</option><option value="5">الحصة 5</option><option value="6">الحصة 6</option><option value="7">الحصة 7</option><option value="8">الحصة 8</option></select></label></div><div class="no-print" id="attEditor"><button onclick="loadAttendance()">فتح كشف الحصة</button><button id="attSave" onclick="saveAttendance()" disabled>حفظ الحضور والغياب</button><button onclick="printAttendance()">🖨️ طباعة الغياب والحضور</button></div><p id="attMsg" class="msg">اختر الصف والفصل لعرض الحضور.</p>
 <div class="attendance-history-panel">
  <div class="attendance-history-heading"><div><strong>📚 سجل الحضور والغياب المحفوظ</strong><small>اختر تاريخًا محددًا لعرض غياب اليوم فقط، أو اعرض جميع التواريخ.</small></div></div>
@@ -147,7 +200,28 @@ function sessionKey(){return [account,el("grade").value,el("section").value,el("
 function loadAttendance(){if(role!=="teacher")return;const g=el("grade").value,c=el("section").value,subjectId=el("attSubject").value,date=el("attDate").value,period=el("attPeriod").value;if(!g||!c||!subjectId||!date||!scope.some(x=>String(x.grade)===g&&String(x.section)===c&&String(x.subjectId)===subjectId)){el("attMsg").textContent="اختر الصف والفصل والمادة والتاريخ أولًا.";return}const id=sessionKey(),previous=attendanceSessions.find(x=>x.id===id);const previousEntries=new Map((previous?.entries||[]).map(x=>[String(x.code),x.status]));const roster=students.filter(x=>String(x.grade)===g&&String(x.section)===c).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ar"));const opt=[...el("attSubject").options].find(x=>x.value===subjectId);currentAttendance={id,grade:g,section:c,subjectId,subjectName:opt?.text||subjectId,date,period,entries:roster.map(x=>({code:x.code,name:x.name,status:previousEntries.get(x.code)||"حاضر"}))};el("attRows").innerHTML=currentAttendance.entries.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.name)+'</td><td><select class="attStatus" data-index="'+i+'">'+statuses.map(v=>'<option '+(x.status===v?'selected':'')+'>'+v+'</option>').join("")+'</select></td></tr>').join("");el("attPrintHeading").innerHTML='<table class="attendance-meta-table"><tbody><tr><th>التاريخ</th><td>'+esc(date)+'</td><th>الصف والفصل</th><td>'+esc(g+" / "+c)+'</td></tr><tr><th>اسم المعلم</th><td>'+esc(teacherName)+'</td><th>المادة</th><td>'+esc(currentAttendance.subjectName)+'</td></tr><tr><th>رقم الحصة</th><td>الحصة '+esc(period)+'</td><th>نوع الكشف</th><td>تسجيل الحضور</td></tr></tbody></table>';el("attSave").disabled=!roster.length;el("attMsg").textContent=previous?"تم فتح الحضور المحفوظ لهذه الحصة للتعديل.":"جميع الطلاب حاضرون افتراضيًا. عدّل الحالات ثم اضغط حفظ الحضور والغياب."}
 async function saveAttendance(){if(role!=="teacher"||!currentAttendance)return;const a=currentAttendance;if(a.id!==sessionKey()){el("attMsg").textContent="تغير اختيار الحصة، افتح الكشف مرة أخرى قبل الحفظ.";return}const items=[...document.querySelectorAll(".attStatus")];if(items.length!==a.entries.length)return;items.forEach((node,i)=>{a.entries[i].status=node.value});el("attSave").disabled=true;try{const doc={...a,teacherEmail:account,teacherName,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};delete doc.id;await db.collection("studentClassAttendance").doc(a.id).set(doc);const i=attendanceSessions.findIndex(x=>x.id===a.id);if(i>=0)attendanceSessions[i]={...a,teacherEmail:account,teacherName};else attendanceSessions.push({...a,teacherEmail:account,teacherName});el("attMsg").textContent="✓ تم حفظ حضور وغياب الحصة بنجاح";currentAttendance=null;el("attSave").disabled=true;el("attHistoryDate").value=a.date;showAttendanceSummary();buildStudentReport()}catch(e){el("attMsg").textContent="تعذر حفظ الحضور: "+e.message;el("attSave").disabled=false}}
 
-function buildStudentReport(){const code=el("student").value,st=students.find(x=>x.code===code);el("printReport").disabled=!st;if(!st){el("reportHint").textContent="اختر طالبًا لعرض تقريره الكامل.";el("reportContent").innerHTML="";return}const notes=records.filter(x=>x.studentCode===code),counts=new Map();notes.forEach(x=>counts.set(x.category,(counts.get(x.category)||0)+1));const entries=[];attendanceSessions.forEach(a=>(a.entries||[]).forEach(e=>{if(String(e.code)===code)entries.push({...e,subject:a.subjectName,date:a.date,period:a.period})}));const count=state=>entries.filter(x=>x.status===state).length;el("reportHint").textContent="تقرير فردي شامل للملاحظات والحضور المسجل";el("reportContent").innerHTML='<h3>الطالب: '+esc(st.name)+' — الصف: '+esc(st.grade)+' — الفصل: '+esc(st.section)+'</h3><div class="stats"><div class="stat">الملاحظات: '+notes.length+'</div>'+statuses.map(x=>'<div class="stat">'+x+': '+count(x)+'</div>').join("")+'</div><h3>تكرار الملاحظات</h3><div class="scroll"><table><thead><tr><th>الملاحظة</th><th>مرات التكرار</th></tr></thead><tbody>'+([...counts].map(([k,v])=>'<tr><td>'+esc(k)+'</td><td>'+v+'</td></tr>').join("")||'<tr><td colspan="2">لا توجد ملاحظات</td></tr>')+'</tbody></table></div><h3>سجل الملاحظات</h3><div class="scroll"><table><thead><tr><th>التاريخ</th><th>الملاحظة</th><th>النوع</th><th>المعلم</th><th>التفاصيل</th></tr></thead><tbody>'+(notes.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.category)+'</td><td>'+esc(x.kind)+'</td><td>'+esc(x.teacherName)+'</td><td>'+esc(x.details||"—")+'</td></tr>').join("")||'<tr><td colspan="5">لا توجد ملاحظات</td></tr>')+'</tbody></table></div><h3>سجل الحضور والغياب</h3><div class="scroll"><table><thead><tr><th>التاريخ</th><th>الحصة</th><th>المادة</th><th>الحالة</th></tr></thead><tbody>'+(entries.sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.period)+'</td><td>'+esc(x.subject)+'</td><td>'+esc(x.status)+'</td></tr>').join("")||'<tr><td colspan="4">لا توجد حصص محفوظة</td></tr>')+'</tbody></table></div>'}
+function buildStudentReport(){
+ const code=el("student").value,st=students.find(x=>x.code===code);
+ el("printReport").disabled=!st;
+ if(!st){el("reportHint").textContent="اختر طالبًا لعرض تقريره الكامل.";el("reportContent").innerHTML="";return}
+ const notes=records.filter(x=>String(x.studentCode)===code).sort((x,y)=>String(y.date||"").localeCompare(String(x.date||"")));
+ const counts=new Map();notes.forEach(x=>counts.set(x.category||"غير محدد",(counts.get(x.category||"غير محدد")||0)+1));
+ const entries=[];attendanceSessions.forEach(a=>(a.entries||[]).forEach(e=>{if(String(e.code)===code)entries.push({...e,subject:a.subjectName,date:a.date,period:a.period})}));
+ entries.sort((x,y)=>String(y.date||"").localeCompare(String(x.date||""))||Number(x.period||0)-Number(y.period||0));
+ const count=state=>entries.filter(x=>x.status===state).length;
+ const reportTeacher=role==="teacher"?teacherName:"حسب السجلات";
+ const meta=[[["اسم الطالب",st.name],["الصف",st.grade]],[["الفصل",st.section],["المعلم المسؤول",reportTeacher]]];
+ const metaTable='<table class="student-report-meta"><tbody>'+meta.map(row=>'<tr>'+row.map(([key,value])=>'<th>'+esc(key)+'</th><td>'+esc(value||"—")+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
+ const statCards=[["الملاحظات",notes.length],...statuses.map(x=>[x,count(x)])].map(([name,n])=>'<div class="student-report-stat"><span>'+esc(name)+'</span><strong>'+n+'</strong></div>').join("");
+ const section=(title,head,rows,emptyCols,emptyMessage)=>'<section class="student-report-section"><h3>'+title+'</h3><div class="scroll"><table class="student-report-table"><thead><tr>'+head.map(x=>'<th>'+esc(x)+'</th>').join("")+'</tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="'+emptyCols+'" class="student-report-empty">'+emptyMessage+'</td></tr>')+'</tbody></table></div></section>';
+ const repeated=section("تكرار الملاحظات",["م","الملاحظة","مرات التكرار"],[...counts].sort((x,y)=>y[1]-x[1]||String(x[0]).localeCompare(String(y[0]),"ar")).map(([k,n],i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(k)+'</td><td class="numeric-cell">'+n+'</td></tr>'),3,"لا توجد ملاحظات مسجلة");
+ const noteRows=notes.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.date||"—")+'</td><td>'+esc(x.category||"—")+'</td><td>'+esc(x.kind||"—")+'</td><td>'+esc(x.teacherName||"—")+'</td><td>'+esc(x.details||"—")+'</td></tr>');
+ const noteHistory=section("سجل الملاحظات",["م","التاريخ","الملاحظة","النوع","المعلم","التفاصيل"],noteRows,6,"لا توجد ملاحظات مسجلة");
+ const entryRows=entries.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.date||"—")+'</td><td>'+esc(x.period||"—")+'</td><td>'+esc(x.subject||"—")+'</td><td><span class="student-report-status '+(x.status==="غائب"?"absent":x.status==="حاضر"?"present":x.status==="متأخر"?"late":"")+'">'+esc(x.status||"—")+'</span></td></tr>');
+ const attendance=section("سجل الحضور والغياب",["م","التاريخ","الحصة","المادة","الحالة"],entryRows,5,"لا توجد حصص محفوظة");
+ el("reportHint").textContent="تقرير فردي شامل للملاحظات والحضور المسجل";
+ el("reportContent").innerHTML='<div class="student-report-shell"><div class="student-report-heading">بيانات الطالب</div>'+metaTable+'<div class="student-report-stats">'+statCards+'</div>'+repeated+noteHistory+attendance+'</div>';
+}
 function printStudentReport(){if(!el("student").value)return;document.body.classList.add("printing-report");window.print();setTimeout(()=>document.body.classList.remove("printing-report"),1200)}
 function printAttendance(){if(currentAttendance&&role==="teacher"){el("attMsg").textContent="احفظ كشف الحصة المفتوح أولًا قبل طباعة السجلات المحفوظة.";return}showAttendanceSummary();document.body.classList.add("printing-attendance");const restore=()=>document.body.classList.remove("printing-attendance");window.addEventListener("afterprint",restore,{once:true});window.print();setTimeout(restore,1800)}
 function printFollowup(){document.body.classList.add("printing-followup");window.print();setTimeout(()=>document.body.classList.remove("printing-followup"),1200)}
