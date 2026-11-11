@@ -76,7 +76,7 @@ body.printing-final-attendance .report thead{display:table-header-group}
 body.printing-final-attendance header,body.printing-final-attendance main>.card,body.printing-final-attendance main>.no-print,body.printing-final-attendance footer{display:none!important}
 body.printing-final-attendance #attendancePrintPages{display:block!important}
 body.printing-final-attendance main{width:100%!important;margin:0!important;padding:0!important}
-.attendance-print-page{break-after:page;page-break-after:always;padding:0;margin:0;max-width:100%}
+.attendance-print-page{break-after:auto;page-break-after:auto;padding:0;margin:0;max-width:100%;display:block}
 .attendance-print-page:last-child{break-after:auto;page-break-after:auto}
 .attendance-print-page h2{text-align:center;font-size:15px!important;margin:2px 0 9px!important;color:#15523b}
 .attendance-print-page .attendance-page-brand{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #b6c7bb;padding-bottom:5px;margin-bottom:5px}
@@ -95,7 +95,7 @@ body.printing-final-attendance main{width:100%!important;margin:0!important;padd
 .attendance-print-page .report th:nth-child(7),.attendance-print-page .report td:nth-child(7){width:18%!important}
 .attendance-print-page .lesson-detail{min-height:0!important;padding:0!important;line-height:1.1!important}
 .attendance-print-page .status{padding:1px 3px!important;font-size:8px!important}
-.attendance-print-page .report tr{break-inside:avoid;page-break-inside:avoid}
+.attendance-print-page .report{break-inside:auto!important;page-break-inside:auto!important}.attendance-print-page .report tbody{break-inside:auto!important;page-break-inside:auto!important}.attendance-print-page .report thead{display:table-header-group!important}.attendance-print-page .report tr{break-inside:avoid;page-break-inside:avoid}
 .attendance-page-footer{display:flex;justify-content:space-between;margin-top:7px;padding-top:5px;border-top:1px solid #c7d8cc;font-size:9px;color:#5d7567}
 }
 @media(max-width:800px){.toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -263,11 +263,11 @@ async function reloadData(){
 function buildPaginatedAttendancePrint(){
  const container=el("attendancePrintPages"),allRows=[...el("rows").querySelectorAll("tr")];
  const realRows=allRows.filter(row=>row.children.length===7);
- const chunks=[];for(let i=0;i<realRows.length;i+=25)chunks.push(realRows.slice(i,i+25));
- if(!chunks.length)chunks.push([]);
  const meta='<table class="print-meta attendance-page-meta"><tbody><tr><th>التاريخ</th><td>'+esc(el("metaDate").textContent)+'</td><th>الصف والفصل</th><td>'+esc(el("metaClass").textContent)+'</td></tr><tr><th>الحالة</th><td>'+esc(el("metaStatus").textContent)+'</td><th>الحصص المرصودة</th><td>'+esc(el("metaLessons").textContent)+'</td></tr></tbody></table>';
  const heads=el("rows").closest("table").querySelector("thead").innerHTML;
- container.innerHTML=chunks.map((chunk,index)=>'<article class="attendance-print-page"><div class="attendance-page-brand"><span><strong>مدارس الفلاح الأهلية</strong><div>نظام راصد — كشف الحضور والغياب النهائي</div></span><img src="logo.jpeg" alt="شعار المدرسة"></div><h2>كشف الحضور والغياب النهائي</h2>'+meta+'<table class="report"><thead>'+heads+'</thead><tbody>'+(chunk.length?chunk.map(row=>row.outerHTML).join(""):'<tr><td colspan="7">لا توجد سجلات مطابقة للفلاتر الحالية</td></tr>')+'</tbody></table><div class="attendance-page-footer"><span>تصميم محمد عامر أحمد</span><span>صفحة '+(index+1)+' من '+chunks.length+' — '+chunk.length+' طالبًا</span></div></article>').join("");
+ // Let the print engine flow a single continuous table naturally across A4 pages.
+ // Its THEAD is repeated on every new page and TRs are kept intact.
+ container.innerHTML='<article class="attendance-print-page"><div class="attendance-page-brand"><span><strong>مدارس الفلاح الأهلية</strong><div>نظام راصد — كشف الحضور والغياب النهائي</div></span><img src="logo.jpeg" alt="شعار المدرسة"></div><h2>كشف الحضور والغياب النهائي</h2>'+meta+'<table class="report attendance-print-table"><thead>'+heads+'</thead><tbody>'+(realRows.length?realRows.map(row=>row.outerHTML).join(""):'<tr><td colspan="7">لا توجد سجلات مطابقة للفلاتر الحالية</td></tr>')+'</tbody></table><div class="attendance-page-footer"><span>تصميم محمد عامر أحمد</span><span>إجمالي الطلاب: '+realRows.length+'</span></div></article>';
 }
 function printReport(){
  if(!ready){alert("انتظر اكتمال تحميل البيانات أولًا.");return}
