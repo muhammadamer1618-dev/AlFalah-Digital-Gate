@@ -29,6 +29,7 @@ body.printing-attendance #attStats{margin:8px 0}
  <div class="attendance-history-heading"><div><strong>📚 سجل الحضور والغياب المحفوظ</strong><small>اختر تاريخًا محددًا لعرض غياب اليوم فقط، أو اعرض جميع التواريخ.</small></div></div>
  <div class="attendance-history-controls no-print">
   <label for="attHistoryDate">تاريخ الكشف<select id="attHistoryDate" onchange="showAttendanceSummary()"><option value="">جميع الأيام</option></select></label>
+  <label for="attHistoryStatus">حالة الحضور<select id="attHistoryStatus" onchange="showAttendanceSummary()"><option value="">الكل</option><option value="حاضر">الحاضر</option><option value="غائب">الغائب</option><option value="متأخر">المتأخر</option><option value="مستأذن">المستأذن</option></select></label>
   <button type="button" class="light-att" onclick="selectLatestAttendanceDate()">📅 أحدث يوم</button>
   <button type="button" class="light-att" onclick="showAllAttendanceDates()">كل الأيام</button>
   <button type="button" class="print-att" onclick="printAttendance()">🖨️ طباعة الكشف المحدد</button>
@@ -104,11 +105,12 @@ function showAttendanceSummary(){
  data.sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))||Number(a.period||0)-Number(b.period||0)||String(a.name||"").localeCompare(String(b.name||""),"ar"));
  const counts={};statuses.forEach(x=>counts[x]=data.filter(i=>i.status===x).length);
  el("attStats").innerHTML=statuses.map(k=>'<div class="stat">'+k+': <b>'+counts[k]+'</b></div>').join("");
+ const selectedStatus=el("attHistoryStatus").value,visibleData=selectedStatus?data.filter(x=>x.status===selectedStatus):data;
  const scopeText=[g,c].filter(Boolean).join(" / ")||"جميع الصفوف",dateText=selectedDate||"جميع الأيام";
  const teachers=[...new Set(sessions.map(x=>x.teacherName).filter(Boolean))];
- el("attPrintHeading").textContent="التاريخ: "+dateText+" | الصف والفصل: "+scopeText+" | المعلم: "+(role==="teacher"?teacherName:teachers.join("، ")||"حسب السجلات")+" | عدد السجلات: "+data.length;
+ el("attPrintHeading").textContent="التاريخ: "+dateText+" | الصف والفصل: "+scopeText+" | المعلم: "+(role==="teacher"?teacherName:teachers.join("، ")||"حسب السجلات")+" | الحالة: "+(selectedStatus||"الكل")+" | عدد السجلات: "+visibleData.length;
  if(role==="teacher"&&currentAttendance)return;
- el("attRows").innerHTML=data.map((x,i)=>{
+ el("attRows").innerHTML=visibleData.map((x,i)=>{
   const statusClass=x.status==="غائب"?"att-absent":x.status==="متأخر"?"att-late":x.status==="حاضر"?"att-present":"";
   const lesson=esc(x.subjectName||"—")+" — الحصة "+esc(x.period||"—")+(selectedDate?"":" — "+esc(x.date||"—"));
   return '<tr><td>'+(i+1)+'</td><td>'+esc(x.name)+'</td><td>'+lesson+'</td><td class="'+statusClass+'">'+esc(x.status)+'</td></tr>';
