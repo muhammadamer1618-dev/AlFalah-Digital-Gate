@@ -25,7 +25,7 @@ h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;color:#145a44}
 .scroll{overflow-x:auto}table.report{width:100%;border-collapse:collapse}
 .report th,.report td{border:1px solid #d7e4dc;padding:9px 7px;text-align:right;line-height:1.7}
 .report th{background:#e7f2ea;color:#174f3b}.report td:first-child,.report th:first-child{text-align:center;width:42px}
-.report td:nth-child(3),.report td:nth-child(4),.report td:last-child{text-align:center}
+.report td:nth-child(3),.report td:nth-child(4),.report td:nth-child(5){text-align:center}
 .status{display:inline-block;padding:5px 9px;border-radius:7px;font-weight:bold;background:#eef4ef}
 .present{background:#e0f6e8;color:#147240}.absent{background:#fff0ef;color:#a2352b}.late{background:#fff6e1;color:#98600b}.unrecorded{background:#eef1f5;color:#52677b}
 .muted{font-size:12px;color:#6e8075}.empty{padding:20px;text-align:center;color:#6e8075}
@@ -87,12 +87,10 @@ body.printing-final-attendance main{width:100%!important;margin:0!important;padd
 .attendance-print-page .report{width:100%;table-layout:fixed;border-collapse:collapse}
 .attendance-print-page .report th,.attendance-print-page .report td{font-size:8px!important;padding:2px 3px!important;line-height:1.2!important;overflow-wrap:anywhere}
 .attendance-print-page .report th:first-child,.attendance-print-page .report td:first-child{width:23px!important}
-.attendance-print-page .report th:nth-child(2),.attendance-print-page .report td:nth-child(2){width:24%!important;min-width:0!important}
-.attendance-print-page .report th:nth-child(3),.attendance-print-page .report td:nth-child(3){width:8%!important}
-.attendance-print-page .report th:nth-child(4),.attendance-print-page .report td:nth-child(4){width:8%!important}
-.attendance-print-page .report th:nth-child(5),.attendance-print-page .report td:nth-child(5){width:19%!important}
-.attendance-print-page .report th:nth-child(6),.attendance-print-page .report td:nth-child(6){width:18%!important;min-width:0!important}
-.attendance-print-page .report th:nth-child(7),.attendance-print-page .report td:nth-child(7){width:18%!important}
+.attendance-print-page .report th:nth-child(2),.attendance-print-page .report td:nth-child(2){width:34%!important;min-width:0!important}
+.attendance-print-page .report th:nth-child(3),.attendance-print-page .report td:nth-child(3){width:21%!important}
+.attendance-print-page .report th:nth-child(4),.attendance-print-page .report td:nth-child(4){width:17%!important}
+.attendance-print-page .report th:nth-child(5),.attendance-print-page .report td:nth-child(5){width:22%!important}
 .attendance-print-page .lesson-detail{min-height:0!important;padding:0!important;line-height:1.1!important}
 .attendance-print-page .status{padding:1px 3px!important;font-size:8px!important}
 .attendance-print-page .report{break-inside:auto!important;page-break-inside:auto!important}.attendance-print-page .report tbody{break-inside:auto!important;page-break-inside:auto!important}.attendance-print-page .report thead{display:table-header-group!important}.attendance-print-page .report tr{break-inside:avoid;page-break-inside:avoid}
@@ -284,7 +282,7 @@ function render(){
  const count=status=>rows.filter(x=>x.status===status).length;
  el("nAll").textContent=rows.length;el("nPresent").textContent=count("حاضر");el("nAbsent").textContent=count("غائب");
  el("nOther").textContent=count("متأخر")+count("مستأذن");el("nUnknown").textContent=count("لم يُرصد");
- el("metaDate").textContent=el("day").value||"—";el("metaClass").textContent=[el("grade").value||"جميع الصفوف",el("section").value||"جميع الفصول"].join(" / ");
+ el("metaDate").textContent=el("day").value||"—";el("metaClass").textContent=[el("grade").value||"جميع الصفوف",selectedClassKeys===null?"جميع الفصول":("فصول مختارة: "+selectedClassKeys.size)].join(" / ");
  el("metaStatus").textContent=filter||"كل الحالات";el("metaLessons").textContent=sessions.length;
  el("summary").textContent="المعروض "+visible.length+" من "+rows.length+" طالبًا. كل طالب يُحسب مرة واحدة في إجمالي اليوم.";
  el("rows").innerHTML=visible.length?visible.map((r,i)=>{
