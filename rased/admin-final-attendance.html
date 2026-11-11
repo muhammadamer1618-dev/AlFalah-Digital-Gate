@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الحضور والغياب النهائي | راصد</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f7f4;color:#163e31;font:14px Tahoma,Arial,sans-serif}
+header{background:linear-gradient(125deg,#075440,#08765a);color:#fff;text-align:center;padding:17px}
+header img{width:66px;height:66px;object-fit:contain;background:#fff;border-radius:12px;padding:5px}
+h1{margin:7px 0;font-size:24px}header p{margin:5px 0;color:#dfefe6}
+main{width:min(1200px,calc(100% - 24px));margin:18px auto 30px}
+.card{background:#fff;border:1px solid #dbe8e0;border-radius:15px;padding:18px;margin:0 0 15px;box-shadow:0 3px 14px #143e290a}
+.toolbar{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:12px;align-items:end}
+label{display:block;font-weight:bold;color:#315d4a;font-size:12px}select,input{display:block;width:100%;margin-top:7px;border:1px solid #c1d6c9;border-radius:9px;padding:10px;background:#fff;font:inherit;min-height:41px}
+button,.btn{background:#09684d;color:#fff;border:0;border-radius:9px;padding:11px 15px;font:700 13px Tahoma,Arial;cursor:pointer;text-decoration:none;display:inline-block}
+button.secondary,.btn.secondary{background:#e7f2eb;color:#155843}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.note{background:#eef7f1;border:1px solid #d8e8dd;border-radius:10px;padding:12px;line-height:1.9;color:#3f6853;margin:10px 0}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:16px 0}
+.stat{border:1px solid #dfeae2;background:#f6faf7;border-radius:12px;text-align:center;padding:12px}
+.stat span{display:block;color:#6b8072;font-size:12px;margin-bottom:5px}.stat b{font-size:24px;color:#0b6249}
+h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;color:#145a44}
+.print-meta{width:100%;border-collapse:collapse;margin:10px 0 15px;table-layout:fixed}
+.print-meta th,.print-meta td{border:1px solid #cddfd4;padding:9px;text-align:right;overflow-wrap:anywhere}
+.print-meta th{background:#eaf4ee;width:17%}.print-meta td{width:33%}
+.scroll{overflow-x:auto}table.report{width:100%;border-collapse:collapse}
+.report th,.report td{border:1px solid #d7e4dc;padding:9px 7px;text-align:right;line-height:1.7}
+.report th{background:#e7f2ea;color:#174f3b}.report td:first-child,.report th:first-child{text-align:center;width:42px}
+.report td:nth-child(3),.report td:nth-child(4){text-align:center}
+.status{display:inline-block;padding:5px 9px;border-radius:7px;font-weight:bold;background:#eef4ef}
+.present{background:#e0f6e8;color:#147240}.absent{background:#fff0ef;color:#a2352b}.late{background:#fff6e1;color:#98600b}.unrecorded{background:#eef1f5;color:#52677b}
+.muted{font-size:12px;color:#6e8075}.empty{padding:20px;text-align:center;color:#6e8075}
+footer{text-align:center;color:#738a7c;padding:14px;font-size:11px}
+@media(max-width:800px){.toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.toolbar{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@page{size:A4 portrait;margin:10mm}
+@media print{
+body{background:#fff}header{color:#174c39!important;background:white!important;border-bottom:2px solid #ac9461;padding:5px}
+header p{color:#466652}header img{width:52px;height:52px}h1{font-size:17px}
+main{width:100%;margin:4px auto}.no-print{display:none!important}.card{border:0;box-shadow:none;margin:0;padding:5px}
+.stats{grid-template-columns:repeat(5,1fr);gap:5px;margin:8px 0}.stat{padding:6px}.stat span{font-size:9px}.stat b{font-size:15px}
+.print-meta th,.print-meta td,.report th,.report td{font-size:9px;padding:5px}
+.report thead{display:table-header-group}.report tr{break-inside:avoid}
+.scroll{overflow:visible}footer{font-size:9px}
+}}
+</style></head>
+<body><header><img src="logo.jpeg" alt="شعار مدارس الفلاح"><h1>الحضور والغياب النهائي للطلاب</h1><p>مدارس الفلاح الأهلية — نظام راصد</p></header>
+<main><div class="no-print actions"><a class="btn secondary" href="admin.html">↩ العودة إلى الإدارة</a></div>
+<section class="card no-print"><h2>📅 حصر الغياب النهائي لليوم</h2>
+<div class="note">يُحتسب الطالب <b>حاضرًا نهائيًا</b> إذا سُجل حاضرًا في حصة واحدة على الأقل في اليوم المحدد، مهما كان عدد حصص الغياب. الطلاب بلا أي سجل ظاهرون بوصف «لم يُرصد» وليسوا غائبين تلقائيًا.</div>
+<div class="toolbar">
+<label>التاريخ<input id="day" type="date"></label>
+<label>الصف<select id="grade"><option value="">جميع الصفوف</option></select></label>
+<label>الفصل<select id="section"><option value="">جميع الفصول</option></select></label>
+<label>الحالة النهائية<select id="status"><option value="">كل الحالات</option><option value="حاضر">حاضر</option><option value="غائب">غائب</option><option value="متأخر">متأخر</option><option value="مستأذن">مستأذن</option><option value="لم يُرصد">لم يُرصد</option></select></label>
+</div><div class="actions"><button type="button" onclick="render()">عرض الكشف</button><button type="button" class="secondary" onclick="printReport()">🖨️ طباعة الكشف</button><button type="button" class="secondary" onclick="reloadData()">↻ تحديث بيانات المعلمين</button></div>
+<div id="message" class="muted">جارٍ التحميل...</div>
+</section>
+<section class="card"><h2>كشف الحضور والغياب النهائي</h2>
+<table class="print-meta"><tbody><tr><th>التاريخ</th><td id="metaDate">—</td><th>الصف والفصل</th><td id="metaClass">—</td></tr><tr><th>نوع الكشف</th><td id="metaStatus">جميع الحالات</td><th>الحصص المرصودة</th><td id="metaLessons">—</td></tr></tbody></table>
+<div class="stats"><div class="stat"><span>إجمالي الطلاب</span><b id="nAll">0</b></div><div class="stat"><span>حاضر نهائيًا</span><b id="nPresent">0</b></div><div class="stat"><span>غائب نهائيًا</span><b id="nAbsent">0</b></div><div class="stat"><span>متأخر / مستأذن</span><b id="nOther">0</b></div><div class="stat"><span>لم يُرصد</span><b id="nUnknown">0</b></div></div>
+<p class="muted" id="summary"></p>
+<div class="scroll"><table class="report"><thead><tr><th>م</th><th>اسم الطالب</th><th>الحالة النهائية</th><th>الحصص المسجلة</th><th>تفاصيل الحضور</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">جارٍ التحميل...</td></tr></tbody></table></div>
+</section></main><footer>تصميم محمد عامر أحمد — نظام راصد 2026</footer>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd",storageBucket:"results2026-7c0dd.firebasestorage.app",messagingSenderId:"241421115694",appId:"1:241421115694:web:96f55fd9fd1d5b18b31abf"});
+const db=firebase.firestore(),el=id=>document.getElementById(id);
+let students=[],attendanceSessions=[],ready=false;
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=v=>String(v??"").trim();
+function secureAdmin(){
+ const role=String(sessionStorage.getItem("currentUserRole")||localStorage.getItem("currentUserRole")||"").trim().toLowerCase();
+ if(!["admin","superadmin"].includes(role)){el("message").textContent="هذا التقرير مخصص للإدارة فقط.";el("rows").innerHTML='<tr><td colspan="5">غير مصرح بالدخول</td></tr>';return false}
+ return true;
+}
+const dateLocal=()=>{const x=new Date();return [x.getFullYear(),String(x.getMonth()+1).padStart(2,"0"),String(x.getDate()).padStart(2,"0")].join("-")};
+function classOptions(){
+ const grades=[...new Set(students.map(s=>norm(s.grade)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar",{numeric:true}));
+ el("grade").replaceChildren(new Option("جميع الصفوف",""));grades.forEach(g=>el("grade").add(new Option(g,g)));
+ updateSections();
+}
+function updateSections(){
+ const g=el("grade").value,previous=el("section").value;
+ const list=[...new Set(students.filter(s=>!g||norm(s.grade)===g).map(s=>norm(s.section)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar",{numeric:true}));
+ el("section").replaceChildren(new Option("جميع الفصول",""));list.forEach(x=>el("section").add(new Option(x,x)));if(list.includes(previous))el("section").value=previous;
+ render();
+}
+function finalState(items){
+ const set=new Set(items.map(x=>norm(x.status)));
+ if(set.has("حاضر"))return "حاضر";
+ if(set.has("متأخر"))return "متأخر";
+ if(set.has("مستأذن"))return "مستأذن";
+ if(set.has("غائب"))return "غائب";
+ return "لم يُرصد";
+}
+function compute(){
+ const date=el("day").value,g=el("grade").value,c=el("section").value;
+ const sessions=attendanceSessions.filter(x=>norm(x.date)===date&&(!g||norm(x.grade)===g)&&(!c||norm(x.section)===c));
+ const log=new Map();
+ sessions.forEach(session=>(session.entries||[]).forEach(item=>{
+  const code=norm(item.code);if(!code)return;
+  if(!log.has(code))log.set(code,[]);
+  log.get(code).push({status:item.status,period:session.period,subject:session.subjectName||"—",teacher:session.teacherName||"—"});
+ }));
+ const roster=students.filter(x=>(!g||norm(x.grade)===g)&&(!c||norm(x.section)===c)).sort((a,b)=>norm(a.name).localeCompare(norm(b.name),"ar"));
+ const rows=roster.map(s=>{const items=log.get(norm(s.code))||[];return {student:s,items,status:finalState(items)}});
+ return {rows,sessions};
+}
+function render(){
+ if(!ready)return;
+ const {rows,sessions}=compute(),filter=el("status").value,visible=filter?rows.filter(x=>x.status===filter):rows;
+ const count=status=>rows.filter(x=>x.status===status).length;
+ el("nAll").textContent=rows.length;el("nPresent").textContent=count("حاضر");el("nAbsent").textContent=count("غائب");
+ el("nOther").textContent=count("متأخر")+count("مستأذن");el("nUnknown").textContent=count("لم يُرصد");
+ el("metaDate").textContent=el("day").value||"—";el("metaClass").textContent=[el("grade").value||"جميع الصفوف",el("section").value||"جميع الفصول"].join(" / ");
+ el("metaStatus").textContent=filter||"كل الحالات";el("metaLessons").textContent=sessions.length;
+ el("summary").textContent="المعروض "+visible.length+" من "+rows.length+" طالبًا. كل طالب يُحسب مرة واحدة في إجمالي اليوم.";
+ el("rows").innerHTML=visible.length?visible.map((r,i)=>{
+  const cls=r.status==="حاضر"?"present":r.status==="غائب"?"absent":r.status==="متأخر"?"late":r.status==="لم يُرصد"?"unrecorded":"";
+  const present=r.items.filter(x=>norm(x.status)==="حاضر").length;
+  const info=r.items.length?("حاضر في "+present+" من "+r.items.length+" حصة مسجلة"):"لا توجد بيانات حضور لهذا اليوم";
+  return '<tr><td>'+(i+1)+'</td><td>'+esc(r.student.name||"—")+'</td><td><span class="status '+cls+'">'+esc(r.status)+'</span></td><td>'+r.items.length+'</td><td>'+esc(info)+'</td></tr>';
+ }).join(""):'<tr><td colspan="5" class="empty">لا يوجد طلاب مطابقون للفلاتر الحالية.</td></tr>';
+}
+async function reloadData(){
+ if(!secureAdmin())return;
+ ready=false;el("message").textContent="جارٍ تحميل الطلاب وحصص المعلمين المحفوظة...";
+ try{
+  const [a,b]=await Promise.all([db.collection("students").get(),db.collection("studentClassAttendance").get()]);
+  students=a.docs.map(d=>({...d.data(),code:String(d.data().code||d.id)}));
+  attendanceSessions=b.docs.map(d=>({id:d.id,...d.data()}));
+  ready=true;classOptions();el("message").textContent="تم تحديث البيانات: "+attendanceSessions.length+" كشف حصة محفوظ.";
+ }catch(e){el("message").textContent="تعذر تحميل البيانات: "+e.message;el("rows").innerHTML='<tr><td colspan="5">تعذر جلب بيانات الحضور</td></tr>'}
+}
+function printReport(){if(!ready){alert("انتظر اكتمال تحميل البيانات أولًا.");return}render();window.print()}
+el("day").value=dateLocal();
+el("day").addEventListener("change",render);el("grade").addEventListener("change",updateSections);el("section").addEventListener("change",render);el("status").addEventListener("change",render);
+reloadData();
+</script></body></html>
