@@ -71,6 +71,33 @@ body.printing-final-attendance .final-attendance-hint,body.printing-final-attend
 body.printing-final-attendance .final-attendance-content{display:block!important;padding:0!important}
 body.printing-final-attendance .report thead{display:table-header-group}
 }
+#attendancePrintPages{display:none}
+@media print{
+body.printing-final-attendance header,body.printing-final-attendance main>.card,body.printing-final-attendance main>.no-print,body.printing-final-attendance footer{display:none!important}
+body.printing-final-attendance #attendancePrintPages{display:block!important}
+body.printing-final-attendance main{width:100%!important;margin:0!important;padding:0!important}
+.attendance-print-page{break-after:page;page-break-after:always;padding:0;margin:0;max-width:100%}
+.attendance-print-page:last-child{break-after:auto;page-break-after:auto}
+.attendance-print-page h2{text-align:center;font-size:15px!important;margin:2px 0 9px!important;color:#15523b}
+.attendance-print-page .attendance-page-brand{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #b6c7bb;padding-bottom:5px;margin-bottom:5px}
+.attendance-print-page .attendance-page-brand img{height:36px;width:36px;object-fit:contain}
+.attendance-print-page .attendance-page-brand strong{font-size:12px;color:#21513e}
+.attendance-print-page .attendance-page-meta{margin:3px 0 8px}
+.attendance-print-page .attendance-page-meta th,.attendance-print-page .attendance-page-meta td{font-size:9px!important;padding:4px!important}
+.attendance-print-page .report{width:100%;table-layout:fixed;border-collapse:collapse}
+.attendance-print-page .report th,.attendance-print-page .report td{font-size:8px!important;padding:2px 3px!important;line-height:1.2!important;overflow-wrap:anywhere}
+.attendance-print-page .report th:first-child,.attendance-print-page .report td:first-child{width:23px!important}
+.attendance-print-page .report th:nth-child(2),.attendance-print-page .report td:nth-child(2){width:24%!important;min-width:0!important}
+.attendance-print-page .report th:nth-child(3),.attendance-print-page .report td:nth-child(3){width:8%!important}
+.attendance-print-page .report th:nth-child(4),.attendance-print-page .report td:nth-child(4){width:8%!important}
+.attendance-print-page .report th:nth-child(5),.attendance-print-page .report td:nth-child(5){width:19%!important}
+.attendance-print-page .report th:nth-child(6),.attendance-print-page .report td:nth-child(6){width:18%!important;min-width:0!important}
+.attendance-print-page .report th:nth-child(7),.attendance-print-page .report td:nth-child(7){width:18%!important}
+.attendance-print-page .lesson-detail{min-height:0!important;padding:0!important;line-height:1.1!important}
+.attendance-print-page .status{padding:1px 3px!important;font-size:8px!important}
+.attendance-print-page .report tr{break-inside:avoid;page-break-inside:avoid}
+.attendance-page-footer{display:flex;justify-content:space-between;margin-top:7px;padding-top:5px;border-top:1px solid #c7d8cc;font-size:9px;color:#5d7567}
+}
 @media(max-width:800px){.toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.toolbar{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @page{size:A4 portrait;margin:10mm}
@@ -102,6 +129,7 @@ main{width:100%;margin:4px auto}.no-print{display:none!important}.card{border:0;
 <p class="muted" id="summary"></p>
 <div class="scroll"><table class="report"><thead><tr><th>م</th><th>اسم الطالب</th><th>الحصص المسجلة</th><th>الحصة</th><th>المادة</th><th>المعلم</th><th>الحالة النهائية</th></tr></thead><tbody id="rows"><tr><td colspan="7" class="empty">جارٍ التحميل...</td></tr></tbody></table></div></div></details>
 </section>
+<section id="attendancePrintPages" aria-label="كشف الحضور المقسم إلى صفحات" hidden></section>
 <section class="card" id="classCoverageCard">
  <div class="coverage-heading"><div><h2>🏫 حصر رصد الحضور حسب الفصول</h2><p class="muted">حالة كل فصل في التاريخ المحدد وفق كشوف الحصص المحفوظة من المعلمين</p></div>
  <div class="actions no-print"><button type="button" class="secondary" onclick="printClassCoverage()">🖨️ طباعة حصر الفصول</button></div></div>
@@ -232,7 +260,24 @@ async function reloadData(){
   ready=true;classOptions();el("message").textContent="تم تحديث البيانات: "+attendanceSessions.length+" كشف حصة محفوظ.";
  }catch(e){el("message").textContent="تعذر تحميل البيانات: "+e.message;el("rows").innerHTML='<tr><td colspan="7">تعذر جلب بيانات الحضور</td></tr>'}
 }
-function printReport(){if(!ready){alert("انتظر اكتمال تحميل البيانات أولًا.");return}render();const details=el("finalAttendanceDetails"),wasOpen=details.open;details.open=true;document.body.classList.add("printing-final-attendance");let restored=false;const restore=()=>{if(restored)return;restored=true;document.body.classList.remove("printing-final-attendance");details.open=wasOpen};window.addEventListener("afterprint",restore,{once:true});window.print();setTimeout(restore,2500)}
+function buildPaginatedAttendancePrint(){
+ const container=el("attendancePrintPages"),allRows=[...el("rows").querySelectorAll("tr")];
+ const realRows=allRows.filter(row=>row.children.length===7);
+ const chunks=[];for(let i=0;i<realRows.length;i+=25)chunks.push(realRows.slice(i,i+25));
+ if(!chunks.length)chunks.push([]);
+ const meta='<table class="print-meta attendance-page-meta"><tbody><tr><th>التاريخ</th><td>'+esc(el("metaDate").textContent)+'</td><th>الصف والفصل</th><td>'+esc(el("metaClass").textContent)+'</td></tr><tr><th>الحالة</th><td>'+esc(el("metaStatus").textContent)+'</td><th>الحصص المرصودة</th><td>'+esc(el("metaLessons").textContent)+'</td></tr></tbody></table>';
+ const heads=el("rows").closest("table").querySelector("thead").innerHTML;
+ container.innerHTML=chunks.map((chunk,index)=>'<article class="attendance-print-page"><div class="attendance-page-brand"><span><strong>مدارس الفلاح الأهلية</strong><div>نظام راصد — كشف الحضور والغياب النهائي</div></span><img src="logo.jpeg" alt="شعار المدرسة"></div><h2>كشف الحضور والغياب النهائي</h2>'+meta+'<table class="report"><thead>'+heads+'</thead><tbody>'+(chunk.length?chunk.map(row=>row.outerHTML).join(""):'<tr><td colspan="7">لا توجد سجلات مطابقة للفلاتر الحالية</td></tr>')+'</tbody></table><div class="attendance-page-footer"><span>تصميم محمد عامر أحمد</span><span>صفحة '+(index+1)+' من '+chunks.length+' — '+chunk.length+' طالبًا</span></div></article>').join("");
+}
+function printReport(){
+ if(!ready){alert("انتظر اكتمال تحميل البيانات أولًا.");return}
+ render();buildPaginatedAttendancePrint();
+ document.body.classList.add("printing-final-attendance");
+ let restored=false;
+ const restore=()=>{if(restored)return;restored=true;document.body.classList.remove("printing-final-attendance");el("attendancePrintPages").innerHTML=""};
+ window.addEventListener("afterprint",restore,{once:true});
+ window.print();setTimeout(restore,2500);
+}
 el("day").value=dateLocal();
 el("day").addEventListener("change",render);el("grade").addEventListener("change",updateSections);el("section").addEventListener("change",render);el("status").addEventListener("change",render);el("classCoverageFilter").addEventListener("change",renderClassCoverage);
 reloadData();
