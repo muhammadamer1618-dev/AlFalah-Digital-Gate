@@ -43,7 +43,7 @@
 </div></section>
 <section class="card"><div class="title">📊 متابعة أعمال الإشراف والشواهد</div><div class="body"><div class="stats">
 <div class="stat">الإجمالي<b id="sAll">0</b></div><div class="stat">الدورات<b id="sCourses">0</b></div><div class="stat">الاجتماعات<b id="sMeetings">0</b></div><div class="stat">أقروا بالاطلاع<b id="sCompleted">0</b></div><div class="stat">التوقيعات<b id="sSigned">0</b></div>
-</div><div class="table-wrap"><table><thead><tr><th>#</th><th>العنوان</th><th>النوع</th><th>التاريخ</th><th>الفئة المستهدفة</th><th>فتحوا المادة</th><th>الإكمال / التوقيع</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="eventsBody"></tbody></table></div></div></section>
+</div><div class="table-wrap"><table><thead><tr><th>#</th><th>العنوان</th><th>النوع</th><th>تاريخ النشر / الإتاحة</th><th>الفئة المستهدفة</th><th>فتحوا المادة</th><th>الإكمال / التوقيع</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="eventsBody"></tbody></table></div></div></section>
 <div class="foot">نظام راصد - مدارس الفلاح الأهلية | تصميم محمد عامر أحمد</div>
 </main>
 <div class="modal" id="reportModal"><div class="modal-card"><div class="modal-head" id="reportTitle"></div><div class="modal-body" id="reportBody"></div></div></div>
@@ -117,7 +117,15 @@ async function loadAll(){
  teachers=supervisorScopedTeachers(allTeacherRecords(ts.docs,us.docs));
  events=cs.docs.map(d=>({id:d.id,...d.data()}));
  if(isSupervisorUser)events=events.filter(c=>String(c.createdBy||c.updatedBy||"").trim().toLowerCase()===currentUser);
- events.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+ // Display supervision work in its scheduled publication/availability order,
+// not in the order the supervisor created the records.
+events.sort((a,b)=>{
+ const dateA=String(a.startDate||"").trim(),dateB=String(b.startDate||"").trim();
+ if(dateA&&dateB&&dateA!==dateB)return dateA.localeCompare(dateB);
+ if(dateA&&!dateB)return -1;
+ if(!dateA&&dateB)return 1;
+ return (a.createdAt?.seconds||0)-(b.createdAt?.seconds||0)||String(a.title||"").localeCompare(String(b.title||""),"ar");
+});
  const ids=new Set(events.map(x=>x.id));
  progress=ps.docs.map(d=>({id:d.id,...d.data()})).filter(p=>ids.has(p.courseId));
  renderTeacherChoices();updateTargetCount();renderEvents();renderStats();
