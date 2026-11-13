@@ -1,0 +1,155 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>خطة متابعة أعمال الإشراف التعليمية الأسبوعية</title><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><style>
+*{box-sizing:border-box}body{margin:0;font:13px Tahoma,Arial,sans-serif;background:#f0f6f3;color:#1d4b39}header{background:#0e5747;color:white;text-align:center;padding:14px}header img{height:64px;background:#fff;border-radius:50%;padding:4px}header h1{font-size:22px;margin:7px}
+main{max-width:1550px;margin:16px auto;padding:0 12px}.card{background:#fff;border:1px solid #d2e4d7;border-radius:14px;padding:17px;margin:12px 0;box-shadow:0 3px 12px #0b38200a}h2{font-size:17px;margin:3px 0 13px}label{font-weight:700;font-size:12px}input,select{font:inherit;border:1px solid #bed4c7;border-radius:8px;padding:10px;width:100%;background:#fff;min-width:0}button,.btn{font:700 12px Tahoma;border:0;border-radius:8px;background:#0c7055;color:#fff;padding:11px 15px;cursor:pointer;text-decoration:none;display:inline-block}.secondary{background:#e8f2ec;color:#17543b}.red{background:#ad3f3f}.fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.fields>label{display:flex;flex-direction:column;gap:6px}.wide{grid-column:span 2}.actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.note{background:#edf7f0;padding:11px;border-radius:9px;line-height:1.8}.week-days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:10px}.day-box{border:1px solid #d5e4d7;border-radius:10px;padding:8px;background:#fbfdfb}.day-box strong{display:block;text-align:center;margin-bottom:6px}.teacher-checks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-height:225px;overflow:auto;padding:8px;border:1px solid #d5e4d7;border-radius:8px}.teacher-checks label{font-size:11px;border:1px solid #e2ebe4;border-radius:7px;padding:9px;display:flex;align-items:center;gap:5px}.teacher-checks input{width:16px;height:16px;accent-color:#0c7055}.scroll{overflow:auto}.listing{width:100%;border-collapse:collapse}.listing th,.listing td{border:1px solid #c5d8ca;padding:8px;white-space:normal}.listing th{background:#e8f3ea}.listing button{padding:6px 9px}.status{min-height:21px;color:#5c7563}
+.weekly-table{border-collapse:collapse;table-layout:fixed;min-width:1460px;width:100%;font-size:9px}.weekly-table th,.weekly-table td{border:1px solid #555;padding:3px 2px;text-align:center;vertical-align:middle;overflow-wrap:anywhere}.weekly-table th{background:#ecf3e4;font-weight:800}.weekly-table .vertical{height:117px;min-width:27px;width:27px;vertical-align:bottom;padding:0}.weekly-table .vertical>span{display:block;writing-mode:vertical-rl;transform:rotate(180deg);margin:auto;padding:7px 1px;font-size:8px}.weekly-table .day-column{width:57px;background:#e6f0de}.weekly-table .name-column{width:110px}.weekly-table .lesson-column{width:55px}.weekly-table .score-column{width:46px}.weekly-table .check-cell{width:27px;font-weight:900;color:#0c694a}.weekly-table .day-stamp{font-size:9px;display:block;margin-top:5px;color:#466655;direction:ltr}.weekly-table tbody tr{height:24px}.report-header{text-align:center;border-bottom:1px solid #b59c70;margin-bottom:9px;padding-bottom:7px}.report-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}.report-top img{height:58px}.report-top>div:first-child{text-align:right}.report-top>div:last-child{text-align:left}.report-title{font-size:15px;font-weight:800;margin:8px 0;color:#587132}.report-meta{display:flex;justify-content:space-around;flex-wrap:wrap;gap:10px;font-weight:700;margin:8px 0}.signature{display:flex;justify-content:space-around;gap:20px;text-align:center;margin-top:11px;font-weight:700}.signature>div{flex:1}.signature small{display:block;margin-top:10px}.screen-report{padding:10px;border:1px solid #cedbd2;border-radius:10px;background:white}
+@media(max-width:950px){.fields{grid-template-columns:repeat(2,1fr)}.teacher-checks{grid-template-columns:repeat(2,1fr)}.week-days{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.fields,.week-days,.teacher-checks{grid-template-columns:1fr}.wide{grid-column:auto}}
+</style></head><body>
+<header><img src="logo.jpeg" alt="شعار مدارس الفلاح"><h1>خطة متابعة أعمال الإشراف التعليمية الأسبوعية</h1></header>
+<main>
+<div class="actions"><a class="btn secondary" href="supervisor-training.html">↩ متابعة أعمال الإشراف</a></div>
+<section class="card"><h2>بيانات الخطة الأسبوعية</h2><div class="fields"><label>اسم المشرف<input id="supervisorName" placeholder="اسم المشرف"></label><label>التخصص<input id="specialty" placeholder="التخصص"></label><label>رقم الأسبوع<input id="weekNumber" placeholder="مثال: 10"></label><label>الفترة من<input id="weekFrom" type="date"></label><label>الفترة إلى<input id="weekTo" type="date"></label><label>اسم المشرف على المدارس<input id="generalSupervisor" value="أحمد سمير"></label><label>اسم المديرة العامة للمجمعات<input id="generalDirector" value="جوهرة الزهراني"></label></div>
+<div class="note">أدخل تواريخ الأيام يدويًا، ويظهر كل تاريخ تحت اسم يومه في رأس التقرير. لا يتم تغييرها تلقائيًا.</div>
+<div class="week-days" id="dayInputs"></div><div class="actions"><button onclick="saveWeekSettings()">💾 حفظ بيانات الأسبوع</button><button class="secondary" onclick="loadWeekSettings()">فتح الأسبوع المحفوظ</button></div><p id="weekMsg" class="status"></p></section>
+<section class="card"><h2>إضافة عمل إشرافي إلى التقرير</h2><div class="fields"><label>البند<select id="category"></select></label><label>اليوم<select id="actionDay"></select></label><label>التاريخ (من تواريخ الأسبوع)<input id="actionDate" readonly></label><label>ملاحظات (اختياري)<input id="actionNote" placeholder="وصف مختصر"></label></div>
+<p class="note">حدّد المعلمين الذين نُفذ لهم العمل. بعد الحفظ تظهر علامة ✓ أمام كل معلم تحت البند وفي اليوم المختار. يمكنك تعديل التسجيل أو حذفه لاحقًا.</p>
+<div class="actions"><button class="secondary" onclick="checkTeachers(true)">اختيار الكل</button><button class="secondary" onclick="checkTeachers(false)">إلغاء الكل</button></div><div class="teacher-checks" id="teacherChecks"></div>
+<input type="hidden" id="editLogId"><div class="actions"><button onclick="saveLog()">💾 حفظ العمل</button><button class="secondary" onclick="clearLog()">إلغاء التعديل</button></div><p id="logMsg" class="status"></p></section>
+<section class="card"><h2>الأعمال المسجلة لهذا الأسبوع</h2><div class="scroll"><table class="listing"><thead><tr><th>اليوم / التاريخ</th><th>البند</th><th>المعلمون</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="logsBody"></tbody></table></div><div class="note">الأعمال المنشورة سابقًا من «متابعة أعمال الإشراف» تظهر في التقرير تلقائيًا عند مطابقة تاريخ الإتاحة وأسماء المعلمين. لا يؤدي حذف سجل من هذا التقرير إلى حذف العمل المنشور الأصلي.</div></section>
+<section class="card"><div class="actions"><button onclick="printWeekly()">🖨️ طباعة الاستمارة الأصلية – A3 أفقي</button><button class="secondary" onclick="renderWeekly()">🔄 تحديث التقرير</button></div><div class="scroll screen-report" id="weeklyPreview"></div></section>
+</main>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd"});
+const db=firebase.firestore(),el=id=>document.getElementById(id),days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"],categories=["اجتماع","ورشة عمل","نقاش","حضور درس (تبادل زيارات)","دورات","حلقة تنشيطية","مناقشة أعمال الاختبارات","مناقشة التحصيلي والقدرات","مناقشة مستوى الطلاب","مناقشة مستوى المعلمين","المقابلات","حضور حصص القدرات والتحصيلي","متابعة السجلات","متابعة المشاريع والخطط","متابعة المناهج","متابعة أوراق العمل","متابعة حضور الإذاعة الصباحية","متابعة البحوث والابتكارات","متابعة مستوى الطلاب الضعاف","متابعة مشاريع المقررات","متابعة الطلاب الموهوبين","حضور برنامج","أعمال مكتبية","متابعة تلبية الاحتياجات","متابعة توزيع الحصص على المعلمين (الانتظار)"];
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=v=>String(v||"").trim().toLowerCase();
+let user="",role="",teachers=[],allVisits=[],publishedActions=[],logs=[],savedWeeks=[],supervisorProfile={},authorized=false;
+const teacherKey=t=>norm(t.email||t.username||t.id),ownLog=x=>norm(x.supervisorEmail)===user;
+const dayDate=i=>el("day"+i).value;
+function weekIdentity(){return [user,el("weekNumber").value.trim(),el("weekFrom").value.trim()].map(encodeURIComponent).join("_")}
+function selectedEmails(){return [...document.querySelectorAll(".target-checkbox:checked")].map(n=>norm(n.value))}
+function checkTeachers(value){document.querySelectorAll(".target-checkbox").forEach(n=>n.checked=value)}
+function updateActionDate(){const i=Number(el("actionDay").value);el("actionDate").value=dayDate(i)||""}
+function latestVisit(teacher,date){
+ const keys=new Set([teacherKey(teacher),norm(teacher.code),norm(teacher.name)].filter(Boolean));
+ return allVisits.filter(v=>norm(v.supervisorName)===norm(el("supervisorName").value)||norm(v.supervisorId)===norm(supervisorProfile.followUpId)).filter(v=>[v.teacherCode,v.teacherEmail,v.teacherName].some(k=>keys.has(norm(k)))).filter(v=>String(v.visitDate||"")<=date).sort((a,b)=>String(b.visitDate||"").localeCompare(String(a.visitDate||"")))[0]||null;
+}
+function matchTeacher(teacher,ref){return [teacherKey(teacher),norm(teacher.code),norm(teacher.name),norm(teacher.id),norm(teacher.username)].includes(norm(ref))}
+function rowMarks(teacher,date){
+ const result=new Set();
+ for(const x of logs)if(x.date===date&&x.teachers.some(ref=>matchTeacher(teacher,ref)))result.add(x.category);
+ for(const x of publishedActions){
+  if(x.published===false||x.startDate!==date)continue;
+  const targets=Array.isArray(x.targetTeacherEmails)?x.targetTeacherEmails:[];
+  if(targets.some(ref=>matchTeacher(teacher,ref)))result.add(x.contentType|| (x.eventKind==="meeting"?"اجتماع":"دورات"));
+ }
+ return result;
+}
+function renderWeekly(){
+ const week=el("weekNumber").value||"—",from=el("weekFrom").value||"—",to=el("weekTo").value||"—";
+ const headers=categories.map(x=>'<th class="vertical"><span>'+esc(x)+'</span></th>').join("");
+ let body="";
+ for(let i=0;i<5;i++){
+  const date=dayDate(i); const dayTeachers=teachers;
+  dayTeachers.forEach((t,j)=>{
+   const marks=rowMarks(t,date),v=date?latestVisit(t,date):null;
+   const grade=String(v?.grade||""),section=String(v?.section||"");
+   const td=categories.map(x=>'<td class="check-cell">'+(marks.has(x)?"✓":"")+'</td>').join("");
+   body+='<tr>'+(j===0?'<td class="day-column" rowspan="'+dayTeachers.length+'"><strong>'+days[i]+'</strong><span class="day-stamp">'+esc(date||"—")+'</span></td>':"")+
+   '<td class="name-column">'+esc(t.name||t.email||"—")+'</td><td>'+esc([grade,section].filter(Boolean).join(" / ")||"—")+'</td><td class="lesson-column">'+esc(v?.lessonPeriod||"—")+'</td><td class="score-column">'+esc(v?.finalScore??"—")+'</td>'+td+'</tr>';
+  });
+ }
+ const header='<div class="report-header"><div class="report-top"><div>المملكة العربية السعودية<br>الإدارة العامة للتعليم بالمنطقة الشرقية<br>مدارس الفلاح الأهلية (بنين)</div><img src="logo.jpeg" alt="شعار المدرسة"><div lang="en">Kingdom of Saudi Arabia<br>General Management of Eastern Province Education<br>Al-Falah National Schools (Boys)</div></div><div class="report-title">خطة متابعة أعمال الإشراف التعليمية الأسبوعية</div><div class="report-meta"><span>الأسبوع ( '+esc(week)+' )</span><span>من '+esc(from)+' إلى '+esc(to)+'</span><span>اسم المشرف التعليمي: '+esc(el("supervisorName").value||"—")+'</span><span>التخصص: '+esc(el("specialty").value||"—")+'</span></div></div>';
+ const table='<table class="weekly-table"><thead><tr><th colspan="5">متابعة حضور المعلمين</th><th colspan="'+categories.length+'">الأعمال المنجزة</th></tr><tr><th class="day-column">اليوم / التاريخ</th><th class="name-column">اسم المعلم</th><th>الصف والفصل</th><th class="lesson-column">الحصة</th><th class="score-column">مستوى الأداء</th>'+headers+'</tr></thead><tbody>'+body+'</tbody></table>';
+ const signatures='<div class="signature"><div>المشرف التعليمي<small>الاسم: '+esc(el("supervisorName").value)+'<br>التوقيع: ...........................</small></div><div>المشرف على المدارس<small>الاسم: '+esc(el("generalSupervisor").value)+'<br>التوقيع: ...........................</small></div><div>يعتمد – المديرة العامة للمجمعات<small>'+esc(el("generalDirector").value)+'</small></div></div>';
+ el("weeklyPreview").innerHTML=header+table+signatures;
+}
+function renderLogs(){
+ const dates=new Set(days.map((_,i)=>dayDate(i)).filter(Boolean));
+ const view=logs.filter(x=>dates.has(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
+ el("logsBody").innerHTML=view.map(x=>'<tr><td>'+esc(x.day||"")+'<div>'+esc(x.date)+'</div></td><td>'+esc(x.category)+'</td><td>'+esc((x.teacherNames||[]).join("، "))+'</td><td>'+esc(x.note||"—")+'</td><td><button class="secondary" onclick="editLog(\''+esc(x.id)+'\')">تعديل</button> <button class="red" onclick="deleteLog(\''+esc(x.id)+'\')">حذف</button></td></tr>').join("")||'<tr><td colspan="5">لا توجد أعمال يدوية مسجلة ضمن تواريخ هذا الأسبوع.</td></tr>';
+ renderWeekly();
+}
+function clearLog(){el("editLogId").value="";el("actionNote").value="";checkTeachers(false);el("logMsg").textContent=""}
+function editLog(id){
+ const x=logs.find(v=>v.id===id);if(!x)return;
+ el("editLogId").value=id;el("category").value=x.category;
+ const i=days.findIndex((_,i)=>dayDate(i)===x.date);if(i>=0)el("actionDay").value=i;
+ updateActionDate();el("actionNote").value=x.note||"";
+ document.querySelectorAll(".target-checkbox").forEach(n=>n.checked=x.teachers.includes(norm(n.value)));
+ el("logMsg").textContent="جارٍ تعديل العمل المحدد.";scrollTo({top:0,behavior:"smooth"});
+}
+async function deleteLog(id){const x=logs.find(x=>x.id===id);if(!x||!confirm("حذف هذا التسجيل من التقرير؟"))return;await db.collection("supervisionWeeklyLogs").doc(id).delete();logs=logs.filter(x=>x.id!==id);renderLogs()}
+async function saveLog(){
+ if(!authorized)return;
+ const category=el("category").value,date=el("actionDate").value,teachersSelected=selectedEmails(),id=el("editLogId").value;
+ if(!date)return alert("أدخل تاريخ اليوم المختار أولًا.");
+ if(!teachersSelected.length)return alert("اختر معلمًا واحدًا على الأقل.");
+ const dayIndex=Number(el("actionDay").value),day=days[dayIndex];
+ const doc={supervisorEmail:user,category,date,day,teachers:teachersSelected,teacherNames:teachers.filter(t=>teachersSelected.includes(teacherKey(t))).map(t=>t.name||t.email),note:el("actionNote").value.trim(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+ if(id){const existing=logs.find(x=>x.id===id);if(!existing||!ownLog(existing))return;await db.collection("supervisionWeeklyLogs").doc(id).set(doc,{merge:true})}
+ else {doc.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection("supervisionWeeklyLogs").add(doc)}
+ await loadLogs();clearLog();el("logMsg").textContent="✓ تم الحفظ، وأضيفت علامات الصح إلى التقرير.";
+}
+async function loadLogs(){
+ const snap=await db.collection("supervisionWeeklyLogs").get();
+ logs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(ownLog);renderLogs();
+}
+function weekDoc(){return {supervisorEmail:user,supervisorName:el("supervisorName").value.trim(),specialty:el("specialty").value.trim(),weekNumber:el("weekNumber").value.trim(),from:el("weekFrom").value,to:el("weekTo").value,dates:days.map((_,i)=>dayDate(i)),generalSupervisor:el("generalSupervisor").value,generalDirector:el("generalDirector").value}}
+async function saveWeekSettings(){
+ if(!el("weekNumber").value.trim()||!el("weekFrom").value)return alert("أدخل رقم الأسبوع وتاريخ البداية.");
+ const dates=days.map((_,i)=>dayDate(i));
+ if(dates.some(x=>!x)||new Set(dates).size!==5)return alert("أدخل تواريخ مختلفة وصحيحة للأيام الخمسة.");
+ if(dates.some((d,i)=>new Date(d+"T12:00:00").getDay()!==i))return alert("تاريخ أحد الأيام لا يطابق اسم اليوم. راجع التواريخ.");
+ await db.collection("supervisionWeeklyPlans").doc(weekIdentity()).set({...weekDoc(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+ el("weekMsg").textContent="✓ تم حفظ الأسبوع.";renderLogs();
+}
+async function loadWeekSettings(){
+ const id=weekIdentity();if(!el("weekNumber").value||!el("weekFrom").value)return alert("أدخل رقم الأسبوع وتاريخ البداية أولًا.");
+ const doc=await db.collection("supervisionWeeklyPlans").doc(id).get();
+ if(!doc.exists)return el("weekMsg").textContent="لا توجد خطة محفوظة لرقم الأسبوع وتاريخ البداية المحددين.";
+ const x=doc.data();if(norm(x.supervisorEmail)!==user)return;
+ for(const [id,value] of Object.entries({supervisorName:x.supervisorName,specialty:x.specialty,weekNumber:x.weekNumber,weekFrom:x.from,weekTo:x.to,generalSupervisor:x.generalSupervisor,generalDirector:x.generalDirector}))if(el(id))el(id).value=value||"";
+ days.forEach((_,i)=>el("day"+i).value=x.dates?.[i]||"");updateActionDate();renderLogs();el("weekMsg").textContent="✓ تم فتح خطة الأسبوع.";
+}
+function printWeekly(){
+ if(!authorized)return;renderWeekly();
+ const content=el("weeklyPreview").innerHTML;
+ const css=document.querySelector("style").textContent;
+ const printStyles='@page{size:A3 landscape;margin:7mm}body{background:#fff;margin:0;color:#111;font-size:8px}main{max-width:none;margin:0;padding:0}.screen-report{border:0;padding:0}.weekly-table{width:100%;min-width:0;table-layout:fixed;font-size:7px}.weekly-table th,.weekly-table td{padding:1px;border:1px solid #444}.weekly-table .vertical{height:95px;min-width:0;width:20px}.weekly-table .vertical>span{font-size:6px}.weekly-table tbody tr{height:15px;break-inside:avoid}.weekly-table .day-column{width:45px}.weekly-table .name-column{width:85px}.weekly-table .lesson-column,.weekly-table .score-column{width:28px}.report-top img{height:42px}.report-header{margin-bottom:4px}.report-title{font-size:12px}.report-meta{font-size:9px}.signature{font-size:9px}.signature small{font-size:8px}';
+ const w=window.open("","_blank");if(!w)return alert("اسمح بالنوافذ المنبثقة للطباعة.");
+ w.document.open();w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>خطة متابعة أعمال الإشراف الأسبوعية</title><base href="'+esc(location.href)+'"><style>'+css+printStyles+'</style></head><body><main><div class="screen-report">'+content+'</div></main></body></html>');w.document.close();w.onload=()=>{w.focus();w.print()};
+}
+async function init(){
+ role=norm(sessionStorage.getItem("currentUserRole")||localStorage.getItem("currentUserRole"));
+ user=norm(sessionStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUser")||localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser"));
+ if(!user||!["supervisor","manager"].includes(role)){alert("الدخول للمشرف فقط");location.href="supervisor-training.html";return}
+ const u=await db.collection("users").doc(user).get();
+ if(role==="supervisor"&&(!u.exists||norm(u.data()?.role)!=="supervisor"||u.data()?.permissions?.trainingManage===false)){alert("ليس لديك صلاحية التقرير");location.href="supervisor-training.html";return}
+ authorized=true;supervisorProfile=u.exists?u.data():{};
+ el("supervisorName").value=supervisorProfile.name||sessionStorage.getItem("currentUserName")||user;
+ el("specialty").value=supervisorProfile.specialty||supervisorProfile.subjectName||"";
+ el("dayInputs").innerHTML=days.map((d,i)=>'<div class="day-box"><strong>'+d+'</strong><input id="day'+i+'" type="date" aria-label="تاريخ '+d+'"></div>').join("");
+ el("category").replaceChildren(...categories.map(x=>new Option(x,x)));
+ el("actionDay").replaceChildren(...days.map((x,i)=>new Option(x,String(i))));
+ el("actionDay").addEventListener("change",updateActionDate);
+ days.forEach((_,i)=>el("day"+i).addEventListener("change",()=>{updateActionDate();renderLogs()}));
+ ["supervisorName","specialty","weekNumber","weekFrom","weekTo","generalSupervisor","generalDirector"].forEach(id=>el(id).addEventListener("change",renderWeekly));
+ const [ts,us,cs,vs]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),db.collection("visits").get()]);
+ const assignments=[...(supervisorProfile.assignedTeacherEmails||[]),...(supervisorProfile.assignedTeacherIds||[])].map(norm);
+ const access=new Set(assignments);
+ const teachersMap=new Map();
+ [...ts.docs,...us.docs.filter(d=>norm(d.data()?.role)==="teacher")].forEach(doc=>{
+  const x=doc.data(),email=norm(x.email||x.username||doc.id),keys=[email,norm(doc.id),norm(x.code),norm(x.username)];
+  if(role==="supervisor"&&!keys.some(key=>access.has(key)))return;
+  if(!teachersMap.has(email))teachersMap.set(email,{...x,email,id:doc.id});
+  else teachersMap.set(email,{...x,...teachersMap.get(email)});
+ });
+ teachers=[...teachersMap.values()].sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
+ el("teacherChecks").innerHTML=teachers.map(t=>'<label><input class="target-checkbox" type="checkbox" value="'+esc(teacherKey(t))+'"><span>'+esc(t.name||t.email)+'</span></label>').join("")||"لا يوجد معلمون مسندون إلى هذا المشرف.";
+ allVisits=vs.docs.map(d=>({id:d.id,...d.data()}));
+ publishedActions=cs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.createdBy||x.updatedBy)===user);
+ updateActionDate();await loadLogs();
+}
+init().catch(e=>{console.error(e);el("weekMsg").textContent="تعذر فتح التقرير: "+e.message});
+</script></body></html>
