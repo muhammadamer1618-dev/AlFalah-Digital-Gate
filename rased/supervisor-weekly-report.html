@@ -9,13 +9,9 @@ main{max-width:1550px;margin:16px auto;padding:0 12px}.card{background:#fff;bord
 <main>
 <div class="actions"><a class="btn secondary" href="supervisor-training.html">↩ متابعة أعمال الإشراف</a></div>
 <section class="card"><h2>بيانات الخطة الأسبوعية</h2><div class="fields"><label>اسم المشرف<input id="supervisorName" placeholder="اسم المشرف"></label><label>التخصص<input id="specialty" placeholder="التخصص"></label><label>رقم الأسبوع<input id="weekNumber" placeholder="مثال: 10"></label><label>الفترة من<input id="weekFrom" type="date"></label><label>الفترة إلى<input id="weekTo" type="date"></label><label>اسم المشرف على المدارس<input id="generalSupervisor" value="أحمد سمير"></label><label>اسم المديرة العامة للمجمعات<input id="generalDirector" value="جوهرة الزهراني"></label></div>
-<div class="note">أدخل تواريخ الأيام يدويًا، ويظهر كل تاريخ تحت اسم يومه في رأس التقرير. لا يتم تغييرها تلقائيًا.</div>
-<div class="week-days" id="dayInputs"></div><div class="actions"><button onclick="saveWeekSettings()">💾 حفظ بيانات الأسبوع</button><button class="secondary" onclick="loadWeekSettings()">فتح الأسبوع المحفوظ</button></div><p id="weekMsg" class="status"></p></section>
-<section class="card"><h2>إضافة عمل إشرافي إلى التقرير</h2><div class="fields"><label>البند<select id="category"></select></label><label>اليوم<select id="actionDay"></select></label><label>التاريخ (من تواريخ الأسبوع)<input id="actionDate" readonly></label><label>ملاحظات (اختياري)<input id="actionNote" placeholder="وصف مختصر"></label></div>
-<p class="note">حدّد المعلمين الذين نُفذ لهم العمل. بعد الحفظ تظهر علامة ✓ أمام كل معلم تحت البند وفي اليوم المختار. يمكنك تعديل التسجيل أو حذفه لاحقًا.</p>
-<div class="actions"><button class="secondary" onclick="checkTeachers(true)">اختيار الكل</button><button class="secondary" onclick="checkTeachers(false)">إلغاء الكل</button></div><div class="teacher-checks" id="teacherChecks"></div>
-<input type="hidden" id="editLogId"><div class="actions"><button onclick="saveLog()">💾 حفظ العمل</button><button class="secondary" onclick="clearLog()">إلغاء التعديل</button></div><p id="logMsg" class="status"></p></section>
-<section class="card"><h2>الأعمال المسجلة لهذا الأسبوع</h2><div class="scroll"><table class="listing"><thead><tr><th>اليوم / التاريخ</th><th>البند</th><th>المعلمون</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="logsBody"></tbody></table></div><div class="note">الأعمال المنشورة سابقًا من «متابعة أعمال الإشراف» تظهر في التقرير تلقائيًا عند مطابقة تاريخ الإتاحة وأسماء المعلمين. لا يؤدي حذف سجل من هذا التقرير إلى حذف العمل المنشور الأصلي.</div></section>
+<div class="note">أدخل رقم الأسبوع والفترة وتواريخ الأيام يدويًا. بعد الحفظ سيظهر الأسبوع في قائمة الأسابيع المحفوظة، ويمكنك الرجوع إليه وتعديله أو حذفه في أي وقت.</div><input type="hidden" id="editWeekDocId">
+<div class="week-days" id="dayInputs"></div><div class="actions"><button onclick="saveWeekSettings()">💾 حفظ بيانات الأسبوع</button></div><p id="weekMsg" class="status"></p></section>
+<section class="card"><h2>الأسابيع المحفوظة</h2><p class="note">من هنا يمكنك فتح أي أسبوع محفوظ لتعديل بياناته وتواريخه، أو حذف الأسبوع بالكامل. علامات الأعمال والشواهد تُسحب من صفحة متابعة أعمال الإشراف الأصلية، وتعديلها أو حذفها يتم من هناك.</p><div class="scroll"><table class="listing"><thead><tr><th>رقم الأسبوع</th><th>الفترة</th><th>اسم المشرف</th><th>الإجراءات</th></tr></thead><tbody id="weeksBody"><tr><td colspan="4">جارٍ تحميل الأسابيع...</td></tr></tbody></table></div><p id="weeksMsg" class="status"></p></section>
 <section class="card"><div class="actions"><button onclick="printWeekly()">🖨️ طباعة الاستمارة الأصلية – A3 أفقي</button><button class="secondary" onclick="renderWeekly()">🔄 تحديث التقرير</button></div><div class="scroll screen-report" id="weeklyPreview"></div></section>
 </main>
 <script>
@@ -23,7 +19,7 @@ firebase.initializeApp({apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDom
 const db=firebase.firestore(),el=id=>document.getElementById(id),days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"],categories=["اجتماع","ورشة عمل","نقاش","حضور درس (تبادل زيارات)","دورات","حلقة تنشيطية","مناقشة أعمال الاختبارات","مناقشة التحصيلي والقدرات","مناقشة مستوى الطلاب","مناقشة مستوى المعلمين","المقابلات","حضور حصص القدرات والتحصيلي","متابعة السجلات","متابعة المشاريع والخطط","متابعة المناهج","متابعة أوراق العمل","متابعة حضور الإذاعة الصباحية","متابعة البحوث والابتكارات","متابعة مستوى الطلاب الضعاف","متابعة مشاريع المقررات","متابعة الطلاب الموهوبين","حضور برنامج","أعمال مكتبية","متابعة تلبية الاحتياجات","متابعة توزيع الحصص على المعلمين (الانتظار)"];
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm=v=>String(v||"").trim().toLowerCase();
-let user="",role="",teachers=[],allVisits=[],publishedActions=[],logs=[],savedWeeks=[],supervisorProfile={},authorized=false;
+let user="",role="",teachers=[],allVisits=[],publishedActions=[],savedWeeks=[],supervisorProfile={},authorized=false;
 const teacherKey=t=>norm(t.email||t.username||t.id),ownLog=x=>norm(x.supervisorEmail)===user;
 const dayDate=i=>el("day"+i).value;
 function weekIdentity(){return [user,el("weekNumber").value.trim(),el("weekFrom").value.trim()].map(encodeURIComponent).join("_")}
@@ -37,7 +33,6 @@ function latestVisit(teacher,date){
 function matchTeacher(teacher,ref){return [teacherKey(teacher),norm(teacher.code),norm(teacher.name),norm(teacher.id),norm(teacher.username)].includes(norm(ref))}
 function rowMarks(teacher,date){
  const result=new Set();
- for(const x of logs)if(x.date===date&&x.teachers.some(ref=>matchTeacher(teacher,ref)))result.add(x.category);
  for(const x of publishedActions){
   if(x.published===false||x.startDate!==date)continue;
   const targets=Array.isArray(x.targetTeacherEmails)?x.targetTeacherEmails:[];
@@ -107,16 +102,34 @@ async function saveWeekSettings(){
  const dates=days.map((_,i)=>dayDate(i));
  if(dates.some(x=>!x)||new Set(dates).size!==5)return alert("أدخل تواريخ مختلفة وصحيحة للأيام الخمسة.");
  if(dates.some((d,i)=>new Date(d+"T12:00:00").getDay()!==i))return alert("تاريخ أحد الأيام لا يطابق اسم اليوم. راجع التواريخ.");
- await db.collection("supervisionWeeklyPlans").doc(weekIdentity()).set({...weekDoc(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
- el("weekMsg").textContent="✓ تم حفظ الأسبوع.";renderLogs();
+ const editingId=el("editWeekDocId").value.trim(),targetId=editingId||weekIdentity();
+ await db.collection("supervisionWeeklyPlans").doc(targetId).set({...weekDoc(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+ el("editWeekDocId").value=targetId;
+ el("weekMsg").textContent=editingId?"✓ تم تحديث الأسبوع المحفوظ.":"✓ تم حفظ الأسبوع بنجاح. يمكنك تعديله أو حذفه من قائمة الأسابيع المحفوظة.";
+ await loadSavedWeeks();renderWeekly();
 }
-async function loadWeekSettings(){
- const id=weekIdentity();if(!el("weekNumber").value||!el("weekFrom").value)return alert("أدخل رقم الأسبوع وتاريخ البداية أولًا.");
+async function loadSavedWeek(id){
  const doc=await db.collection("supervisionWeeklyPlans").doc(id).get();
- if(!doc.exists)return el("weekMsg").textContent="لا توجد خطة محفوظة لرقم الأسبوع وتاريخ البداية المحددين.";
- const x=doc.data();if(norm(x.supervisorEmail)!==user)return;
- for(const [id,value] of Object.entries({supervisorName:x.supervisorName,specialty:x.specialty,weekNumber:x.weekNumber,weekFrom:x.from,weekTo:x.to,generalSupervisor:x.generalSupervisor,generalDirector:x.generalDirector}))if(el(id))el(id).value=value||"";
- days.forEach((_,i)=>el("day"+i).value=x.dates?.[i]||"");updateActionDate();renderLogs();el("weekMsg").textContent="✓ تم فتح خطة الأسبوع.";
+ if(!doc.exists)return el("weeksMsg").textContent="هذا الأسبوع لم يعد موجودًا.";
+ const x=doc.data();if(norm(x.supervisorEmail)!==user)return alert("لا يمكنك فتح أسبوع مشرف آخر.");
+ el("editWeekDocId").value=id;
+ for(const [field,value] of Object.entries({supervisorName:x.supervisorName,specialty:x.specialty,weekNumber:x.weekNumber,weekFrom:x.from,weekTo:x.to,generalSupervisor:x.generalSupervisor,generalDirector:x.generalDirector}))if(el(field))el(field).value=value||"";
+ days.forEach((_,i)=>el("day"+i).value=x.dates?.[i]||"");
+ el("weekMsg").textContent="✓ تم فتح الأسبوع رقم "+(x.weekNumber||"—")+" للتعديل. اضغط حفظ بيانات الأسبوع بعد الانتهاء.";
+ renderWeekly();el("weekNumber").scrollIntoView({behavior:"smooth",block:"center"});
+}
+async function deleteSavedWeek(id){
+ const x=savedWeeks.find(w=>w.id===id);if(!x||norm(x.supervisorEmail)!==user)return;
+ if(!confirm("هل تريد حذف الأسبوع رقم "+(x.weekNumber||"—")+" نهائيًا؟ لن يتم حذف الشواهد الأصلية من متابعة أعمال الإشراف."))return;
+ await db.collection("supervisionWeeklyPlans").doc(id).delete();
+ if(el("editWeekDocId").value===id){el("editWeekDocId").value="";el("weekNumber").value="";el("weekFrom").value="";el("weekTo").value="";days.forEach((_,i)=>el("day"+i).value="");renderWeekly();}
+ el("weeksMsg").textContent="تم حذف الأسبوع من التقارير المحفوظة.";
+ await loadSavedWeeks();
+}
+async function loadSavedWeeks(){
+ const snap=await db.collection("supervisionWeeklyPlans").get();
+ savedWeeks=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.supervisorEmail)===user).sort((a,b)=>String(b.from||"").localeCompare(String(a.from||""))||String(b.weekNumber||"").localeCompare(String(a.weekNumber||"")));
+ el("weeksBody").innerHTML=savedWeeks.map(x=>'<tr><td>'+esc(x.weekNumber||"—")+'</td><td>'+esc(x.from||"—")+' — '+esc(x.to||"—")+'</td><td>'+esc(x.supervisorName||"—")+'</td><td><button class="secondary" onclick="loadSavedWeek(\''+esc(x.id)+'\')">تعديل / فتح</button> <button class="red" onclick="deleteSavedWeek(\''+esc(x.id)+'\')">حذف الأسبوع</button></td></tr>').join("")||'<tr><td colspan="4">لا توجد أسابيع محفوظة حتى الآن.</td></tr>';
 }
 function printWeekly(){
  if(!authorized)return;renderWeekly();
@@ -136,10 +149,7 @@ async function init(){
  el("supervisorName").value=supervisorProfile.name||sessionStorage.getItem("currentUserName")||user;
  el("specialty").value=supervisorProfile.specialty||supervisorProfile.subjectName||"";
  el("dayInputs").innerHTML=days.map((d,i)=>'<div class="day-box"><strong>'+d+'</strong><input id="day'+i+'" type="date" aria-label="تاريخ '+d+'"></div>').join("");
- el("category").replaceChildren(...categories.map(x=>new Option(x,x)));
- el("actionDay").replaceChildren(...days.map((x,i)=>new Option(x,String(i))));
- el("actionDay").addEventListener("change",updateActionDate);
- days.forEach((_,i)=>el("day"+i).addEventListener("change",()=>{updateActionDate();renderLogs()}));
+ days.forEach((_,i)=>el("day"+i).addEventListener("change",renderWeekly));
  ["supervisorName","specialty","weekNumber","weekFrom","weekTo","generalSupervisor","generalDirector"].forEach(id=>el(id).addEventListener("change",renderWeekly));
  const [ts,us,cs,vs]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),db.collection("visits").get()]);
  const assignments=[...(supervisorProfile.assignedTeacherEmails||[]),...(supervisorProfile.assignedTeacherIds||[])].map(norm);
@@ -155,7 +165,7 @@ async function init(){
  el("teacherChecks").innerHTML=teachers.map(t=>'<label><input class="target-checkbox" type="checkbox" value="'+esc(teacherKey(t))+'"><span>'+esc(t.name||t.email)+'</span></label>').join("")||"لا يوجد معلمون مسندون إلى هذا المشرف.";
  allVisits=vs.docs.map(d=>({id:d.id,...d.data()}));
  publishedActions=cs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.createdBy||x.updatedBy)===user);
- updateActionDate();await loadLogs();
+ renderWeekly();await loadSavedWeeks();
 }
 init().catch(e=>{console.error(e);el("weekMsg").textContent="تعذر فتح التقرير: "+e.message});
 </script>
