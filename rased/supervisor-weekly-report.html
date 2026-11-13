@@ -27,13 +27,13 @@ function selectedEmails(){return [...document.querySelectorAll(".target-checkbox
 function checkTeachers(value){document.querySelectorAll(".target-checkbox").forEach(n=>n.checked=value)}
 function updateActionDate(){const i=Number(el("actionDay").value);el("actionDate").value=dayDate(i)||""}
 function normalizeTeacherIdentity(value){
- return String(value||"").normalize("NFKC").replace(/[\\u064B-\\u065F\\u0670\\u0640]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/[.،,]/g," ").replace(/\\s+/g," ").trim().toLowerCase();
+ return String(value||"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/[.،,]/g," ").replace(/\s+/g," ").trim().toLowerCase();
 }
 function visitDateValue(value){
  if(value&&typeof value.toDate==="function"){const d=value.toDate();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
  const raw=String(value||"").trim();
- if(/^\\d{4}-\\d{2}-\\d{2}/.test(raw))return raw.slice(0,10);
- const m=raw.match(/^(\\d{1,2})[\\/-](\\d{1,2})[\\/-](\\d{4})$/);
+ if(/^\d{4}-\d{2}-\d{2}/.test(raw))return raw.slice(0,10);
+ const m=raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
  return m?m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0"):"";
 }
 function latestVisit(teacher,date){
@@ -165,7 +165,7 @@ function printWeekly(){
  if(!authorized)return;renderWeekly();
  const content=el("weeklyPreview").innerHTML;
  const css=document.querySelector("style").textContent;
- const printStyles='@page{size:A4 landscape;margin:4mm}body{background:#fff;margin:0;color:#111;font-size:7px}main{max-width:none;margin:0;padding:0}.screen-report{border:0;padding:0}.report-page{width:100%;break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid}.report-page:last-child{break-after:auto;page-break-after:auto}.weekly-table{width:100%;min-width:0;table-layout:fixed;font-size:5.5px}.weekly-table th,.weekly-table td{padding:1px;border:1px solid #444}.weekly-table .vertical{height:78px;min-width:0;width:auto}.weekly-table .vertical>span{font-size:5px}.weekly-table tbody tr{height:17px;break-inside:avoid}.weekly-table .day-column{width:13mm}.weekly-table .name-column{width:25mm}.weekly-table .lesson-column,.weekly-table .score-column{width:9mm}.report-top img{height:35px}.report-header{margin-bottom:3px}.report-title{font-size:10px}.report-meta{font-size:7px;margin:3px 0}.page-counter{font-size:7px;text-align:center;margin:2px}.signature{font-size:7px;margin-top:4px}.signature small{font-size:6px;margin-top:3px}';
+ const printStyles='@page{size:A4 landscape;margin:4mm}html,body{background:#fff;margin:0;padding:0;color:#111;font-size:8px}main{max-width:none;margin:0;padding:0}.screen-report{border:0;padding:0}.report-page{width:100%;height:202mm;box-sizing:border-box;display:flex;flex-direction:column;break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid}.report-page:last-child{break-after:auto;page-break-after:auto}.weekly-table{width:100%;height:100%;flex:1;min-width:0;table-layout:fixed;font-size:7px;border-collapse:collapse}.weekly-table th,.weekly-table td{padding:2px 2px;border:1px solid #333;line-height:1.2}.weekly-table .vertical{height:94px;min-width:0;width:auto;padding:0}.weekly-table .vertical>span{font-size:6.5px;padding:5px 1px}.weekly-table tbody tr{height:25px;break-inside:avoid;page-break-inside:avoid}.weekly-table .day-column{width:15mm}.weekly-table .name-column{width:28mm}.weekly-table .lesson-column,.weekly-table .score-column{width:12mm}.report-top img{height:42px}.report-header{margin-bottom:5px;padding-bottom:4px}.report-title{font-size:13px;margin:5px 0}.report-meta{font-size:8px;margin:5px 0}.page-counter{font-size:8px;text-align:center;margin:3px}.signature{font-size:8px;margin-top:auto;padding-top:7px}.signature small{font-size:7px;margin-top:5px}';
  const w=window.open("","_blank");if(!w)return alert("اسمح بالنوافذ المنبثقة للطباعة.");
  w.document.open();w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>خطة متابعة أعمال الإشراف الأسبوعية</title><base href="'+esc(location.href)+'"><style>'+css+printStyles+'</style></head><body><main><div class="screen-report">'+content+'</div></main></body></html>');w.document.close();w.onload=()=>{w.focus();w.print()};
 }
