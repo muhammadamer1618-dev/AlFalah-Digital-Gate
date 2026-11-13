@@ -27,8 +27,15 @@ function selectedEmails(){return [...document.querySelectorAll(".target-checkbox
 function checkTeachers(value){document.querySelectorAll(".target-checkbox").forEach(n=>n.checked=value)}
 function updateActionDate(){const i=Number(el("actionDay").value);el("actionDate").value=dayDate(i)||""}
 function latestVisit(teacher,date){
- const keys=new Set([teacherKey(teacher),norm(teacher.code),norm(teacher.name)].filter(Boolean));
- return allVisits.filter(v=>norm(v.supervisorName)===norm(el("supervisorName").value)||norm(v.supervisorId)===norm(supervisorProfile.followUpId)).filter(v=>[v.teacherCode,v.teacherEmail,v.teacherName].some(k=>keys.has(norm(k)))).filter(v=>String(v.visitDate||"")<=date).sort((a,b)=>String(b.visitDate||"").localeCompare(String(a.visitDate||"")))[0]||null;
+ const keys=new Set([teacherKey(teacher),norm(teacher.email),norm(teacher.username),norm(teacher.id),norm(teacher.code),norm(teacher.name)].filter(Boolean));
+ const matches=allVisits.filter(v=>[v.teacherCode,v.teacherEmail,v.teacherId,v.teacherUid,v.teacherName].some(k=>keys.has(norm(k))));
+ const dated=matches.filter(v=>{
+  const vd=String(v.visitDate||"").slice(0,10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(vd)&&vd<=date&&(!el("weekFrom").value||vd>=el("weekFrom").value)&&(!el("weekTo").value||vd<=el("weekTo").value);
+ });
+ const supervisorIds=new Set([user,supervisorProfile.followUpId,supervisorProfile.uid,supervisorProfile.authUid,supervisorProfile.id].map(norm).filter(Boolean));
+ const own=dated.filter(v=>supervisorIds.has(norm(v.supervisorId))||norm(v.supervisorName)===norm(el("supervisorName").value));
+ return (own.length?own:dated).sort((a,b)=>String(b.visitDate||"").localeCompare(String(a.visitDate||"")))[0]||null;
 }
 function matchTeacher(teacher,ref){return [teacherKey(teacher),norm(teacher.code),norm(teacher.name),norm(teacher.id),norm(teacher.username)].includes(norm(ref))}
 function rowMarks(teacher,date){
@@ -58,12 +65,12 @@ function renderWeekly(){
     const grade=String(v?.grade||""),section=String(v?.section||"");
     const td=categories.map(x=>'<td class="check-cell">'+(marks.has(x)?"✓":"")+'</td>').join("");
     body+='<tr>'+(j===0?'<td class="day-column" rowspan="'+Math.max(dayTeachers.length,1)+'"><strong>'+days[i]+'</strong><span class="day-stamp">'+esc(date||"—")+'</span></td>':"")+
-    '<td class="name-column">'+esc(shortTeacherName(t.name||t.email||"—"))+'</td><td>'+esc([grade,section].filter(Boolean).join(" / ")||"—")+'</td><td class="lesson-column">'+esc(v?.lessonPeriod||"—")+'</td><td class="score-column">'+esc(v?.finalScore??"—")+'</td>'+td+'</tr>';
+    '<td class="name-column">'+esc(shortTeacherName(t.name||t.email||"—"))+'</td><td>'+esc([grade,section].filter(Boolean).join(" / ")||"—")+'</td><td>'+esc(v?.subject||"—")+'</td><td class="lesson-column">'+esc(v?.lessonPeriod?("الحصة "+v.lessonPeriod):"—")+'</td><td class="score-column">'+esc(v?.finalScore??"—")+'</td>'+td+'</tr>';
    });
-   if(!dayTeachers.length)body+='<tr><td class="day-column">'+days[i]+'<span class="day-stamp">'+esc(date||"—")+'</span></td><td colspan="'+(4+categories.length)+'">لا يوجد معلمون في هذه المجموعة</td></tr>';
+   if(!dayTeachers.length)body+='<tr><td class="day-column">'+days[i]+'<span class="day-stamp">'+esc(date||"—")+'</span></td><td colspan="'+(5+categories.length)+'">لا يوجد معلمون في هذه المجموعة</td></tr>';
   }
   const header='<div class="report-header"><div class="report-top"><div>المملكة العربية السعودية<br>الإدارة العامة للتعليم بالمنطقة الشرقية<br>مدارس الفلاح الأهلية (بنين)</div><img src="logo.jpeg" alt="شعار المدرسة"><div lang="en">Kingdom of Saudi Arabia<br>General Management of Eastern Province Education<br>Al-Falah National Schools (Boys)</div></div><div class="report-title">خطة متابعة أعمال الإشراف التعليمية الأسبوعية</div><div class="report-meta"><span>الأسبوع ( '+esc(week)+' )</span><span>من '+esc(from)+' إلى '+esc(to)+'</span><span>اسم المشرف التعليمي: '+esc(el("supervisorName").value||"—")+'</span><span>التخصص: '+esc(el("specialty").value||"—")+'</span></div><div class="page-counter">صفحة '+(pageIndex+1)+' من '+groups.length+' — مجموعة المعلمين '+(pageIndex*3+1)+' إلى '+(pageIndex*3+dayTeachers.length)+'</div></div>';
-  const table='<table class="weekly-table"><thead><tr><th colspan="5">متابعة حضور المعلمين</th><th colspan="'+categories.length+'">الأعمال المنجزة</th></tr><tr><th class="day-column">اليوم / التاريخ</th><th class="name-column">اسم المعلم</th><th>الصف والفصل</th><th class="lesson-column">الحصة</th><th class="score-column">مستوى الأداء</th>'+headers+'</tr></thead><tbody>'+body+'</tbody></table>';
+  const table='<table class="weekly-table"><thead><tr><th colspan="6">متابعة حضور المعلمين</th><th colspan="'+categories.length+'">الأعمال المنجزة</th></tr><tr><th class="day-column">اليوم / التاريخ</th><th class="name-column">اسم المعلم</th><th>الصف والفصل</th><th>المادة</th><th class="lesson-column">الحصة</th><th class="score-column">درجة الزيارة</th>'+headers+'</tr></thead><tbody>'+body+'</tbody></table>';
   const signatures='<div class="signature"><div>المشرف التعليمي<small>الاسم: '+esc(el("supervisorName").value)+'<br>التوقيع: ...........................</small></div><div>المشرف على المدارس<small>الاسم: '+esc(el("generalSupervisor").value)+'<br>التوقيع: ...........................</small></div><div>يعتمد – المديرة العامة للمجمعات<small>'+esc(el("generalDirector").value)+'</small></div></div>';
   return '<section class="report-page">'+header+table+signatures+'</section>';
  });
