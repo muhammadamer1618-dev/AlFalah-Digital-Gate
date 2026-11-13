@@ -197,30 +197,15 @@ async function init(){
  role=norm(sessionStorage.getItem("currentUserRole")||localStorage.getItem("currentUserRole"));
  user=norm(sessionStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUser")||localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser"));
  if(!user||!["supervisor","manager"].includes(role)){alert("الدخول للمشرف فقط");location.href="supervisor-training.html";return}
- // Render the day controls immediately so the page remains usable while data loads.
- el("dayInputs").innerHTML=days.map((d,i)=>'<div class="day-box"><strong>'+d+'</strong><input id="day'+i+'" type="date" aria-label="تاريخ '+d+'"><label class="day-note-toggle"><input id="dayNoteEnabled'+i+'" type="checkbox"> تفعيل ملاحظة لهذا اليوم</label><input id="dayNoteText'+i+'" class="day-note-input" type="text" placeholder="اكتب الملاحظة التي تظهر بدل صفوف اليوم" aria-label="ملاحظة يوم '+d+'"></div>').join("");
- days.forEach((_,i)=>{el("day"+i).addEventListener("change",renderWeekly);el("dayNoteEnabled"+i).addEventListener("change",renderWeekly);el("dayNoteText"+i).addEventListener("input",renderWeekly);});
- ["supervisorName","specialty","weekNumber","weekFrom","weekTo","generalSupervisor","generalDirector"].forEach(id=>el(id).addEventListener("change",renderWeekly));
- el("weeksBody").innerHTML='<tr><td colspan="4">جارٍ تحميل الأسابيع...</td></tr>';
  const u=await db.collection("users").doc(user).get();
  if(role==="supervisor"&&(!u.exists||norm(u.data()?.role)!=="supervisor"||u.data()?.permissions?.trainingManage===false)){alert("ليس لديك صلاحية التقرير");location.href="supervisor-training.html";return}
  authorized=true;supervisorProfile=u.exists?u.data():{};
  el("supervisorName").value=supervisorProfile.name||sessionStorage.getItem("currentUserName")||user;
  el("specialty").value=supervisorProfile.specialty||supervisorProfile.subjectName||"";
- // Load saved weeks independently before fetching teachers, activities, and visits.
- try{await loadSavedWeeks()}catch(e){console.error("loadSavedWeeks:",e);el("weeksBody").innerHTML='<tr><td colspan="4">تعذر تحميل الأسابيع المحفوظة: '+esc(e.message||e)+'</td></tr>';el("weeksMsg").textContent="تحقق من اتصال قاعدة البيانات وصلاحيات القراءة."}
- const results=await Promise.allSettled([
-  db.collection("teachers").get(),
-  db.collection("users").get(),
-  db.collection("trainingCourses").get(),
-  followUpDb.collection("visits").get()
- ]);
- const [tsResult,usResult,csResult,vsResult]=results;
- const ts=tsResult.status==="fulfilled"?tsResult.value:{docs:[]};
- const us=usResult.status==="fulfilled"?usResult.value:{docs:[]};
- const cs=csResult.status==="fulfilled"?csResult.value:{docs:[]};
- const vs=vsResult.status==="fulfilled"?vsResult.value:{docs:[]};
- const failed=results.map((r,i)=>r.status==="rejected"?["المعلمين","المستخدمين","الأعمال المنشورة","الزيارات"][i]+": "+(r.reason?.message||r.reason):null).filter(Boolean);
+ el("dayInputs").innerHTML=days.map((d,i)=>'<div class="day-box"><strong>'+d+'</strong><input id="day'+i+'" type="date" aria-label="تاريخ '+d+'"><label class="day-note-toggle"><input id="dayNoteEnabled'+i+'" type="checkbox"> تفعيل ملاحظة لهذا اليوم</label><input id="dayNoteText'+i+'" class="day-note-input" type="text" placeholder="اكتب الملاحظة التي تظهر بدل صفوف اليوم" aria-label="ملاحظة يوم '+d+'"></div>').join("");
+ days.forEach((_,i)=>{el("day"+i).addEventListener("change",renderWeekly);el("dayNoteEnabled"+i).addEventListener("change",renderWeekly);el("dayNoteText"+i).addEventListener("input",renderWeekly);});
+ ["supervisorName","specialty","weekNumber","weekFrom","weekTo","generalSupervisor","generalDirector"].forEach(id=>el(id).addEventListener("change",renderWeekly));
+ const [ts,us,cs,vs]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),followUpDb.collection("visits").get()]);
  const assignments=[...(supervisorProfile.assignedTeacherEmails||[]),...(supervisorProfile.assignedTeacherIds||[])].map(norm);
  const access=new Set(assignments);
  const teachersMap=new Map();
@@ -233,10 +218,10 @@ async function init(){
  teachers=[...teachersMap.values()].filter(t=>{const n=norm(t.name),identity=norm(t.email||t.username||t.id);return identity!==user&&n!=="محمد عامر أحمد"&&n!=="محمد عامر عبدالله";}).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
  allVisits=vs.docs.map(d=>({id:d.id,...d.data()}));
  publishedActions=cs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.createdBy||x.updatedBy)===user);
- renderWeekly();
- el("weekMsg").textContent=failed.length?"تم تحميل التقرير جزئيًا. تعذر تحميل: "+failed.join(" | "):"تم تحميل "+allVisits.length+" زيارة من قاعدة بيانات استمارة الزيارات.";
+ renderWeekly();await loadSavedWeeks();
+ el("weekMsg").textContent="تم تحميل "+allVisits.length+" زيارة من قاعدة بيانات استمارة الزيارات.";
 }
-init().catch(e=>{console.error(e);el("weekMsg").textContent="تعذر تهيئة التقرير: "+(e.message||e);if(el("weeksBody"))el("weeksBody").innerHTML='<tr><td colspan="4">تعذر تحميل الأسابيع: '+esc(e.message||e)+'</td></tr>';if(el("weeksMsg"))el("weeksMsg").textContent="يرجى تحديث الصفحة. إذا استمرت المشكلة أرسل رسالة الخطأ للدعم."});
+init().catch(e=>{console.error(e);el("weekMsg").textContent="تعذر فتح التقرير أو قراءة الزيارات: "+e.message});
 </script>
 <!-- alfalah-designer-credit:start -->
 <style id="alfalah-designer-credit-style">
