@@ -57,7 +57,7 @@ function latestVisit(teacher,date){
   return idMatch||phoneMatch||nameMatch;
  });
  const dated=matches.map(v=>({...v,__reportDate:visitDateValue(v.visitDate)||visitDateValue(v.createdAt)}))
-  .filter(v=>!v.__reportDate||(date&&v.__reportDate<=date));
+  .filter(v=>!!date&&v.__reportDate===date);
  const supervisorIds=new Set([user,supervisorProfile.followUpId,supervisorProfile.uid,supervisorProfile.authUid,supervisorProfile.id].map(norm).filter(Boolean));
  const own=dated.filter(v=>supervisorIds.has(norm(v.supervisorId))||normalizeTeacherIdentity(v.supervisorName)===normalizeTeacherIdentity(el("supervisorName").value));
  const candidates=own.length?own:dated;
@@ -88,7 +88,7 @@ function renderWeekly(){
   for(let i=0;i<5;i++){
    const date=dayDate(i);
    dayTeachers.forEach((t,j)=>{
-    const marks=rowMarks(t,date),v=latestVisit(t,to||date);
+    const marks=rowMarks(t,date),v=latestVisit(t,date);
     const grade=String(v?.grade||""),section=String(v?.section||"");
     const td=categories.map(x=>'<td class="check-cell">'+(marks.has(x)?"✓":"")+'</td>').join("");
     body+='<tr>'+(j===0?'<td class="day-column" rowspan="'+Math.max(dayTeachers.length,1)+'"><strong>'+days[i]+'</strong><span class="day-stamp">'+esc(date||"—")+'</span></td>':"")+
