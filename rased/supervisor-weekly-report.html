@@ -12,7 +12,7 @@ main{max-width:1550px;margin:16px auto;padding:0 12px}.card{background:#fff;bord
 <div class="note">أدخل رقم الأسبوع والفترة وتواريخ الأيام يدويًا. بعد الحفظ سيظهر الأسبوع في قائمة الأسابيع المحفوظة، ويمكنك الرجوع إليه وتعديله أو حذفه في أي وقت.</div><input type="hidden" id="editWeekDocId">
 <div class="week-days" id="dayInputs"></div><div class="actions"><button onclick="saveWeekSettings()">💾 حفظ بيانات الأسبوع</button><button class="secondary" onclick="newWeekForm()">＋ إنشاء أسبوع جديد</button></div><p id="weekMsg" class="status"></p></section>
 <section class="card"><h2>الأسابيع المحفوظة</h2><p class="note">من هنا يمكنك فتح أي أسبوع محفوظ لتعديل بياناته وتواريخه، أو حذف الأسبوع بالكامل. علامات الأعمال والشواهد تُسحب من صفحة متابعة أعمال الإشراف الأصلية، وتعديلها أو حذفها يتم من هناك.</p><div class="scroll"><table class="listing"><thead><tr><th>رقم الأسبوع</th><th>الفترة</th><th>اسم المشرف</th><th>الإجراءات</th></tr></thead><tbody id="weeksBody"><tr><td colspan="4">جارٍ تحميل الأسابيع...</td></tr></tbody></table></div><p id="weeksMsg" class="status"></p></section>
-<section class="card"><div class="actions"><button onclick="printWeekly()">🖨️ طباعة الاستمارة الأصلية – A3 أفقي</button><button class="secondary" onclick="renderWeekly()">🔄 تحديث التقرير</button></div><div class="scroll screen-report" id="weeklyPreview"></div></section>
+<section class="card"><div class="actions"><button onclick="printWeekly()">🖨️ طباعة الاستمارة الأصلية – A4 أفقي</button><button class="secondary" onclick="renderWeekly()">🔄 تحديث التقرير</button></div><div class="scroll screen-report" id="weeklyPreview"></div></section>
 </main>
 <script>
 firebase.initializeApp({apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd"});
@@ -40,6 +40,10 @@ function rowMarks(teacher,date){
  }
  return result;
 }
+function shortTeacherName(fullName){
+ const parts=String(fullName||"").trim().split(/\\s+/).filter(Boolean);
+ return parts.length>2?parts.slice(0,2).join(" "):(parts.join(" ")||"—");
+}
 function renderWeekly(){
  const week=el("weekNumber").value||"—",from=el("weekFrom").value||"—",to=el("weekTo").value||"—";
  const headers=categories.map(x=>'<th class="vertical"><span>'+esc(x)+'</span></th>').join("");
@@ -54,7 +58,7 @@ function renderWeekly(){
     const grade=String(v?.grade||""),section=String(v?.section||"");
     const td=categories.map(x=>'<td class="check-cell">'+(marks.has(x)?"✓":"")+'</td>').join("");
     body+='<tr>'+(j===0?'<td class="day-column" rowspan="'+Math.max(dayTeachers.length,1)+'"><strong>'+days[i]+'</strong><span class="day-stamp">'+esc(date||"—")+'</span></td>':"")+
-    '<td class="name-column">'+esc(t.name||t.email||"—")+'</td><td>'+esc([grade,section].filter(Boolean).join(" / ")||"—")+'</td><td class="lesson-column">'+esc(v?.lessonPeriod||"—")+'</td><td class="score-column">'+esc(v?.finalScore??"—")+'</td>'+td+'</tr>';
+    '<td class="name-column">'+esc(shortTeacherName(t.name||t.email||"—"))+'</td><td>'+esc([grade,section].filter(Boolean).join(" / ")||"—")+'</td><td class="lesson-column">'+esc(v?.lessonPeriod||"—")+'</td><td class="score-column">'+esc(v?.finalScore??"—")+'</td>'+td+'</tr>';
    });
    if(!dayTeachers.length)body+='<tr><td class="day-column">'+days[i]+'<span class="day-stamp">'+esc(date||"—")+'</span></td><td colspan="'+(4+categories.length)+'">لا يوجد معلمون في هذه المجموعة</td></tr>';
   }
