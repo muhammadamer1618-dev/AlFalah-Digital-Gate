@@ -48,21 +48,27 @@ function rowMarks(teacher,date){
 function renderWeekly(){
  const week=el("weekNumber").value||"—",from=el("weekFrom").value||"—",to=el("weekTo").value||"—";
  const headers=categories.map(x=>'<th class="vertical"><span>'+esc(x)+'</span></th>').join("");
- let body="";
- for(let i=0;i<5;i++){
-  const date=dayDate(i); const dayTeachers=teachers;
-  dayTeachers.forEach((t,j)=>{
-   const marks=rowMarks(t,date),v=date?latestVisit(t,date):null;
-   const grade=String(v?.grade||""),section=String(v?.section||"");
-   const td=categories.map(x=>'<td class="check-cell">'+(marks.has(x)?"✓":"")+'</td>').join("");
-   body+='<tr>'+(j===0?'<td class="day-column" rowspan="'+dayTeachers.length+'"><strong>'+days[i]+'</strong><span class="day-stamp">'+esc(date||"—")+'</span></td>':"")+
-   '<td class="name-column">'+esc(t.name||t.email||"—")+'</td><td>'+esc([grade,section].filter(Boolean).join(" / ")||"—")+'</td><td class="lesson-column">'+esc(v?.lessonPeriod||"—")+'</td><td class="score-column">'+esc(v?.finalScore??"—")+'</td>'+td+'</tr>';
-  });
- }
- const header='<div class="report-header"><div class="report-top"><div>المملكة العربية السعودية<br>الإدارة العامة للتعليم بالمنطقة الشرقية<br>مدارس الفلاح الأهلية (بنين)</div><img src="logo.jpeg" alt="شعار المدرسة"><div lang="en">Kingdom of Saudi Arabia<br>General Management of Eastern Province Education<br>Al-Falah National Schools (Boys)</div></div><div class="report-title">خطة متابعة أعمال الإشراف التعليمية الأسبوعية</div><div class="report-meta"><span>الأسبوع ( '+esc(week)+' )</span><span>من '+esc(from)+' إلى '+esc(to)+'</span><span>اسم المشرف التعليمي: '+esc(el("supervisorName").value||"—")+'</span><span>التخصص: '+esc(el("specialty").value||"—")+'</span></div></div>';
- const table='<table class="weekly-table"><thead><tr><th colspan="5">متابعة حضور المعلمين</th><th colspan="'+categories.length+'">الأعمال المنجزة</th></tr><tr><th class="day-column">اليوم / التاريخ</th><th class="name-column">اسم المعلم</th><th>الصف والفصل</th><th class="lesson-column">الحصة</th><th class="score-column">مستوى الأداء</th>'+headers+'</tr></thead><tbody>'+body+'</tbody></table>';
- const signatures='<div class="signature"><div>المشرف التعليمي<small>الاسم: '+esc(el("supervisorName").value)+'<br>التوقيع: ...........................</small></div><div>المشرف على المدارس<small>الاسم: '+esc(el("generalSupervisor").value)+'<br>التوقيع: ...........................</small></div><div>يعتمد – المديرة العامة للمجمعات<small>'+esc(el("generalDirector").value)+'</small></div></div>';
- el("weeklyPreview").innerHTML=header+table+signatures;
+ const groups=[];for(let i=0;i<teachers.length;i+=4)groups.push(teachers.slice(i,i+4));
+ if(!groups.length)groups.push([]);
+ const pages=groups.map((dayTeachers,pageIndex)=>{
+  let body="";
+  for(let i=0;i<5;i++){
+   const date=dayDate(i);
+   dayTeachers.forEach((t,j)=>{
+    const marks=rowMarks(t,date),v=date?latestVisit(t,date):null;
+    const grade=String(v?.grade||""),section=String(v?.section||"");
+    const td=categories.map(x=>'<td class="check-cell">'+(marks.has(x)?"✓":"")+'</td>').join("");
+    body+='<tr>'+(j===0?'<td class="day-column" rowspan="'+Math.max(dayTeachers.length,1)+'"><strong>'+days[i]+'</strong><span class="day-stamp">'+esc(date||"—")+'</span></td>':"")+
+    '<td class="name-column">'+esc(t.name||t.email||"—")+'</td><td>'+esc([grade,section].filter(Boolean).join(" / ")||"—")+'</td><td class="lesson-column">'+esc(v?.lessonPeriod||"—")+'</td><td class="score-column">'+esc(v?.finalScore??"—")+'</td>'+td+'</tr>';
+   });
+   if(!dayTeachers.length)body+='<tr><td class="day-column">'+days[i]+'<span class="day-stamp">'+esc(date||"—")+'</span></td><td colspan="'+(4+categories.length)+'">لا يوجد معلمون في هذه المجموعة</td></tr>';
+  }
+  const header='<div class="report-header"><div class="report-top"><div>المملكة العربية السعودية<br>الإدارة العامة للتعليم بالمنطقة الشرقية<br>مدارس الفلاح الأهلية (بنين)</div><img src="logo.jpeg" alt="شعار المدرسة"><div lang="en">Kingdom of Saudi Arabia<br>General Management of Eastern Province Education<br>Al-Falah National Schools (Boys)</div></div><div class="report-title">خطة متابعة أعمال الإشراف التعليمية الأسبوعية</div><div class="report-meta"><span>الأسبوع ( '+esc(week)+' )</span><span>من '+esc(from)+' إلى '+esc(to)+'</span><span>اسم المشرف التعليمي: '+esc(el("supervisorName").value||"—")+'</span><span>التخصص: '+esc(el("specialty").value||"—")+'</span></div><div class="page-counter">صفحة '+(pageIndex+1)+' من '+groups.length+' — مجموعة المعلمين '+(pageIndex*4+1)+' إلى '+(pageIndex*4+dayTeachers.length)+'</div></div>';
+  const table='<table class="weekly-table"><thead><tr><th colspan="5">متابعة حضور المعلمين</th><th colspan="'+categories.length+'">الأعمال المنجزة</th></tr><tr><th class="day-column">اليوم / التاريخ</th><th class="name-column">اسم المعلم</th><th>الصف والفصل</th><th class="lesson-column">الحصة</th><th class="score-column">مستوى الأداء</th>'+headers+'</tr></thead><tbody>'+body+'</tbody></table>';
+  const signatures='<div class="signature"><div>المشرف التعليمي<small>الاسم: '+esc(el("supervisorName").value)+'<br>التوقيع: ...........................</small></div><div>المشرف على المدارس<small>الاسم: '+esc(el("generalSupervisor").value)+'<br>التوقيع: ...........................</small></div><div>يعتمد – المديرة العامة للمجمعات<small>'+esc(el("generalDirector").value)+'</small></div></div>';
+  return '<section class="report-page">'+header+table+signatures+'</section>';
+ });
+ el("weeklyPreview").innerHTML=pages.join("");
 }
 function renderLogs(){
  const dates=new Set(days.map((_,i)=>dayDate(i)).filter(Boolean));
@@ -116,7 +122,7 @@ function printWeekly(){
  if(!authorized)return;renderWeekly();
  const content=el("weeklyPreview").innerHTML;
  const css=document.querySelector("style").textContent;
- const printStyles='@page{size:A3 landscape;margin:7mm}body{background:#fff;margin:0;color:#111;font-size:8px}main{max-width:none;margin:0;padding:0}.screen-report{border:0;padding:0}.weekly-table{width:100%;min-width:0;table-layout:fixed;font-size:7px}.weekly-table th,.weekly-table td{padding:1px;border:1px solid #444}.weekly-table .vertical{height:95px;min-width:0;width:20px}.weekly-table .vertical>span{font-size:6px}.weekly-table tbody tr{height:15px;break-inside:avoid}.weekly-table .day-column{width:45px}.weekly-table .name-column{width:85px}.weekly-table .lesson-column,.weekly-table .score-column{width:28px}.report-top img{height:42px}.report-header{margin-bottom:4px}.report-title{font-size:12px}.report-meta{font-size:9px}.signature{font-size:9px}.signature small{font-size:8px}';
+ const printStyles='@page{size:A4 landscape;margin:4mm}body{background:#fff;margin:0;color:#111;font-size:7px}main{max-width:none;margin:0;padding:0}.screen-report{border:0;padding:0}.report-page{width:100%;break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid}.report-page:last-child{break-after:auto;page-break-after:auto}.weekly-table{width:100%;min-width:0;table-layout:fixed;font-size:5.5px}.weekly-table th,.weekly-table td{padding:1px;border:1px solid #444}.weekly-table .vertical{height:78px;min-width:0;width:auto}.weekly-table .vertical>span{font-size:5px}.weekly-table tbody tr{height:17px;break-inside:avoid}.weekly-table .day-column{width:13mm}.weekly-table .name-column{width:25mm}.weekly-table .lesson-column,.weekly-table .score-column{width:9mm}.report-top img{height:35px}.report-header{margin-bottom:3px}.report-title{font-size:10px}.report-meta{font-size:7px;margin:3px 0}.page-counter{font-size:7px;text-align:center;margin:2px}.signature{font-size:7px;margin-top:4px}.signature small{font-size:6px;margin-top:3px}';
  const w=window.open("","_blank");if(!w)return alert("اسمح بالنوافذ المنبثقة للطباعة.");
  w.document.open();w.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>خطة متابعة أعمال الإشراف الأسبوعية</title><base href="'+esc(location.href)+'"><style>'+css+printStyles+'</style></head><body><main><div class="screen-report">'+content+'</div></main></body></html>');w.document.close();w.onload=()=>{w.focus();w.print()};
 }
@@ -145,7 +151,7 @@ async function init(){
   if(!teachersMap.has(email))teachersMap.set(email,{...x,email,id:doc.id});
   else teachersMap.set(email,{...x,...teachersMap.get(email)});
  });
- teachers=[...teachersMap.values()].sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
+ teachers=[...teachersMap.values()].filter(t=>{const n=norm(t.name),identity=norm(t.email||t.username||t.id);return identity!==user&&n!=="محمد عامر أحمد"&&n!=="محمد عامر عبدالله";}).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
  el("teacherChecks").innerHTML=teachers.map(t=>'<label><input class="target-checkbox" type="checkbox" value="'+esc(teacherKey(t))+'"><span>'+esc(t.name||t.email)+'</span></label>').join("")||"لا يوجد معلمون مسندون إلى هذا المشرف.";
  allVisits=vs.docs.map(d=>({id:d.id,...d.data()}));
  publishedActions=cs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.createdBy||x.updatedBy)===user);
