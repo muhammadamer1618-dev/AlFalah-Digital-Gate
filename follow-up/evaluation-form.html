@@ -743,6 +743,14 @@
 
 
       <div class="field">
+        <label>الفصل</label>
+        <input type="text" id="section" placeholder="مثال: أ">
+      </div>
+      <div class="field">
+        <label>رقم الحصة</label>
+        <select id="lessonPeriod"><option value="">اختر الحصة</option><option value="1">الحصة 1</option><option value="2">الحصة 2</option><option value="3">الحصة 3</option><option value="4">الحصة 4</option><option value="5">الحصة 5</option><option value="6">الحصة 6</option><option value="7">الحصة 7</option><option value="8">الحصة 8</option></select>
+      </div>
+      <div class="field">
         <label>المادة</label>
         <input type="text" id="subject">
       </div>
@@ -1943,6 +1951,9 @@ async function saveVisit(){
       .value
       .trim(),
 
+    section:el("section").value.trim(),
+    lessonPeriod:el("lessonPeriod").value,
+
     subject:
       el("subject")
       .value
@@ -2144,6 +2155,8 @@ async function loadVisitForEditing(){
     selectTeacher(teacher);
 
     el("grade").value = editVisitData.grade || "";
+    el("section").value = editVisitData.section || "";
+    el("lessonPeriod").value = String(editVisitData.lessonPeriod||"");
     el("subject").value = editVisitData.subject || "";
     el("lessonTitle").value = editVisitData.lessonTitle || "";
     el("visitNumber").value = editVisitData.visitNumber ?? editVisitData.visitNo ?? "";
@@ -2383,6 +2396,8 @@ function clearForm(){
 
 
   el("grade").value = "";
+  el("section").value = "";
+  el("lessonPeriod").value = "";
 
   el("subject").value = "";
 
