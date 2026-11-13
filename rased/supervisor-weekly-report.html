@@ -162,7 +162,6 @@ async function init(){
   else teachersMap.set(email,{...x,...teachersMap.get(email)});
  });
  teachers=[...teachersMap.values()].filter(t=>{const n=norm(t.name),identity=norm(t.email||t.username||t.id);return identity!==user&&n!=="محمد عامر أحمد"&&n!=="محمد عامر عبدالله";}).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
- el("teacherChecks").innerHTML=teachers.map(t=>'<label><input class="target-checkbox" type="checkbox" value="'+esc(teacherKey(t))+'"><span>'+esc(t.name||t.email)+'</span></label>').join("")||"لا يوجد معلمون مسندون إلى هذا المشرف.";
  allVisits=vs.docs.map(d=>({id:d.id,...d.data()}));
  publishedActions=cs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.createdBy||x.updatedBy)===user);
  renderWeekly();await loadSavedWeeks();
