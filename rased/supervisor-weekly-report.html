@@ -30,24 +30,36 @@ function normalizeTeacherIdentity(value){
  return String(value||"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/[.،,]/g," ").replace(/\s+/g," ").trim().toLowerCase();
 }
 function visitDateValue(value){
- if(value&&typeof value.toDate==="function"){const d=value.toDate();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+ if(value&&typeof value.toDate==="function")value=value.toDate();
+ if(value instanceof Date&&!isNaN(value))return value.getFullYear()+"-"+String(value.getMonth()+1).padStart(2,"0")+"-"+String(value.getDate()).padStart(2,"0");
+ if(value&&typeof value==="object"&&Number.isFinite(value.seconds))value=new Date(value.seconds*1000);
+ if(typeof value==="number"&&Number.isFinite(value))value=new Date(value>(1e12)?value:value*1000);
  const raw=String(value||"").trim();
  if(/^\d{4}-\d{2}-\d{2}/.test(raw))return raw.slice(0,10);
  const m=raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
  return m?m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0"):"";
 }
+function normalizePhone(value){return String(value||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/\D/g,"").replace(/^966/,"0")}
 function latestVisit(teacher,date){
- const ids=[teacherKey(teacher),teacher.email,teacher.username,teacher.id,teacher.code].map(norm).filter(Boolean);
- const names=[teacher.name].map(normalizeTeacherIdentity).filter(Boolean);
+ const ids=[teacher.email,teacher.username,teacher.id,teacher.code].map(norm).filter(Boolean);
+ const names=[teacher.name,teacher.fullName,teacher.teacherName].map(normalizeTeacherIdentity).filter(Boolean);
+ const phones=[teacher.phone,teacher.mobile,teacher.phoneNumber].map(normalizePhone).filter(x=>x.length>=8);
  const matches=allVisits.filter(v=>{
-  const visitIds=[v.teacherCode,v.teacherEmail,v.teacherId,v.teacherUid].map(norm).filter(Boolean);
-  const visitName=normalizeTeacherIdentity(v.teacherName);
-  return ids.some(id=>visitIds.includes(id))||(visitName&&names.includes(visitName));
+  const visitIds=[v.teacherCode,v.teacherEmail,v.teacherId,v.teacherUid,v.teacherUsername].map(norm).filter(Boolean);
+  const visitNames=[v.teacherName,v.fullName,v.teacher?.name].map(normalizeTeacherIdentity).filter(Boolean);
+  const visitPhones=[v.teacherPhone,v.phone,v.mobile].map(normalizePhone).filter(x=>x.length>=8);
+  const idMatch=ids.some(id=>visitIds.includes(id));
+  const phoneMatch=phones.some(phone=>visitPhones.includes(phone));
+  const nameMatch=names.some(name=>visitNames.some(vn=>vn===name||vn.includes(name)||name.includes(vn)));
+  return idMatch||phoneMatch||nameMatch;
  });
- const dated=matches.filter(v=>{const vd=visitDateValue(v.visitDate);return vd&&vd<=date});
+ const dated=matches.map(v=>({...v,__reportDate:visitDateValue(v.visitDate)||visitDateValue(v.createdAt)}))
+  .filter(v=>!v.__reportDate||(date&&v.__reportDate<=date));
  const supervisorIds=new Set([user,supervisorProfile.followUpId,supervisorProfile.uid,supervisorProfile.authUid,supervisorProfile.id].map(norm).filter(Boolean));
  const own=dated.filter(v=>supervisorIds.has(norm(v.supervisorId))||normalizeTeacherIdentity(v.supervisorName)===normalizeTeacherIdentity(el("supervisorName").value));
- return (own.length?own:dated).sort((a,b)=>visitDateValue(b.visitDate).localeCompare(visitDateValue(a.visitDate)))[0]||null;
+ const candidates=own.length?own:dated;
+ candidates.sort((a,b)=>(b.__reportDate||"").localeCompare(a.__reportDate||""));
+ return candidates[0]||null;
 }
 function matchTeacher(teacher,ref){return [teacherKey(teacher),norm(teacher.code),norm(teacher.name),norm(teacher.id),norm(teacher.username)].includes(norm(ref))}
 function rowMarks(teacher,date){
@@ -73,7 +85,7 @@ function renderWeekly(){
   for(let i=0;i<5;i++){
    const date=dayDate(i);
    dayTeachers.forEach((t,j)=>{
-    const marks=rowMarks(t,date),v=date?latestVisit(t,date):null;
+    const marks=rowMarks(t,date),v=latestVisit(t,to||date);
     const grade=String(v?.grade||""),section=String(v?.section||"");
     const td=categories.map(x=>'<td class="check-cell">'+(marks.has(x)?"✓":"")+'</td>').join("");
     body+='<tr>'+(j===0?'<td class="day-column" rowspan="'+Math.max(dayTeachers.length,1)+'"><strong>'+days[i]+'</strong><span class="day-stamp">'+esc(date||"—")+'</span></td>':"")+
