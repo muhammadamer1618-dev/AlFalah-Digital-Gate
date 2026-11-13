@@ -41,7 +41,7 @@ function rowMarks(teacher,date){
  return result;
 }
 function shortTeacherName(fullName){
- const parts=String(fullName||"").trim().split(/\\s+/).filter(Boolean);
+ const parts=String(fullName||"").trim().split(/\s+/).filter(Boolean);
  return parts.length>2?parts.slice(0,2).join(" "):(parts.join(" ")||"—");
 }
 function renderWeekly(){
