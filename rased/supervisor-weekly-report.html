@@ -16,7 +16,10 @@ main{max-width:1550px;margin:16px auto;padding:0 12px}.card{background:#fff;bord
 </main>
 <script>
 firebase.initializeApp({apiKey:"AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk",authDomain:"results2026-7c0dd.firebaseapp.com",projectId:"results2026-7c0dd"});
-const db=firebase.firestore(),el=id=>document.getElementById(id),days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"],categories=["اجتماع","ورشة عمل","نقاش","حضور درس (تبادل زيارات)","دورات","حلقة تنشيطية","مناقشة أعمال الاختبارات","مناقشة التحصيلي والقدرات","مناقشة مستوى الطلاب","مناقشة مستوى المعلمين","المقابلات","حضور حصص القدرات والتحصيلي","متابعة السجلات","متابعة المشاريع والخطط","متابعة المناهج","متابعة أوراق العمل","متابعة حضور الإذاعة الصباحية","متابعة البحوث والابتكارات","متابعة مستوى الطلاب الضعاف","متابعة مشاريع المقررات","متابعة الطلاب الموهوبين","حضور برنامج","أعمال مكتبية","متابعة تلبية الاحتياجات","متابعة توزيع الحصص على المعلمين (الانتظار)"];
+const db=firebase.firestore();
+const followUpApp=firebase.initializeApp({apiKey:"AIzaSyBNFrPNCuQefOXHTCmiiKSBjgPLUy5Ug4U",authDomain:"follow-up-2026.firebaseapp.com",projectId:"follow-up-2026",storageBucket:"follow-up-2026.firebasestorage.app",messagingSenderId:"1077131515114",appId:"1:1077131515114:web:d10d9c5228382d7cfdb393"},"followUpVisits");
+const followUpDb=followUpApp.firestore();
+const el=id=>document.getElementById(id),days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"],categories=["اجتماع","ورشة عمل","نقاش","حضور درس (تبادل زيارات)","دورات","حلقة تنشيطية","مناقشة أعمال الاختبارات","مناقشة التحصيلي والقدرات","مناقشة مستوى الطلاب","مناقشة مستوى المعلمين","المقابلات","حضور حصص القدرات والتحصيلي","متابعة السجلات","متابعة المشاريع والخطط","متابعة المناهج","متابعة أوراق العمل","متابعة حضور الإذاعة الصباحية","متابعة البحوث والابتكارات","متابعة مستوى الطلاب الضعاف","متابعة مشاريع المقررات","متابعة الطلاب الموهوبين","حضور برنامج","أعمال مكتبية","متابعة تلبية الاحتياجات","متابعة توزيع الحصص على المعلمين (الانتظار)"];
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm=v=>String(v||"").trim().toLowerCase();
 let user="",role="",teachers=[],allVisits=[],publishedActions=[],savedWeeks=[],supervisorProfile={},authorized=false;
@@ -193,7 +196,7 @@ async function init(){
  el("dayInputs").innerHTML=days.map((d,i)=>'<div class="day-box"><strong>'+d+'</strong><input id="day'+i+'" type="date" aria-label="تاريخ '+d+'"></div>').join("");
  days.forEach((_,i)=>el("day"+i).addEventListener("change",renderWeekly));
  ["supervisorName","specialty","weekNumber","weekFrom","weekTo","generalSupervisor","generalDirector"].forEach(id=>el(id).addEventListener("change",renderWeekly));
- const [ts,us,cs,vs]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),db.collection("visits").get()]);
+ const [ts,us,cs,vs]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),followUpDb.collection("visits").get()]);
  const assignments=[...(supervisorProfile.assignedTeacherEmails||[]),...(supervisorProfile.assignedTeacherIds||[])].map(norm);
  const access=new Set(assignments);
  const teachersMap=new Map();
@@ -207,8 +210,9 @@ async function init(){
  allVisits=vs.docs.map(d=>({id:d.id,...d.data()}));
  publishedActions=cs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.createdBy||x.updatedBy)===user);
  renderWeekly();await loadSavedWeeks();
+ el("weekMsg").textContent="تم تحميل "+allVisits.length+" زيارة من قاعدة بيانات استمارة الزيارات.";
 }
-init().catch(e=>{console.error(e);el("weekMsg").textContent="تعذر فتح التقرير: "+e.message});
+init().catch(e=>{console.error(e);el("weekMsg").textContent="تعذر فتح التقرير أو قراءة الزيارات: "+e.message});
 </script>
 <!-- alfalah-designer-credit:start -->
 <style id="alfalah-designer-credit-style">
