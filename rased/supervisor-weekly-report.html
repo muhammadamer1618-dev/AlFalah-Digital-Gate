@@ -96,8 +96,10 @@ function renderWeekly(){
      const grade=String(v?.grade||""),section=String(v?.section||"");
      const td=categories.map(x=>'<td class="check-cell">'+(marks.has(x)?"✓":"")+'</td>').join("");
      const dayCell=j===0?'<td class="day-column" rowspan="'+dayTeachers.length+'"><strong>'+days[i]+'</strong><span class="day-stamp">'+esc(date||"—")+'</span></td>':"";
-     const teacherCells=showNote?(j===0?'<td class="day-note-cell" rowspan="'+dayTeachers.length+'" colspan="5">'+esc(note.text)+'</td>':""):
-      '<td class="name-column">'+esc(shortTeacherName(t.name||t.email||"—"))+'</td><td>'+esc([grade,section].filter(Boolean).join(" / ")||"—")+'</td><td>'+esc(v?.subject||"—")+'</td><td class="lesson-column">'+esc(v?.lessonPeriod?("الحصة "+v.lessonPeriod):"—")+'</td><td class="score-column">'+esc(v?.finalScore??"—")+'</td>';
+     const teacherName='<td class="name-column">'+esc(shortTeacherName(t.name||t.email||"—"))+'</td>';
+     const teacherDetails=showNote?(j===0?'<td class="day-note-cell" rowspan="'+dayTeachers.length+'" colspan="4">'+esc(note.text)+'</td>':""):
+      '<td>'+esc([grade,section].filter(Boolean).join(" / ")||"—")+'</td><td>'+esc(v?.subject||"—")+'</td><td class="lesson-column">'+esc(v?.lessonPeriod?("الحصة "+v.lessonPeriod):"—")+'</td><td class="score-column">'+esc(v?.finalScore??"—")+'</td>';
+     const teacherCells=teacherName+teacherDetails;
      body+='<tr>'+dayCell+teacherCells+td+'</tr>';
     });
    }
