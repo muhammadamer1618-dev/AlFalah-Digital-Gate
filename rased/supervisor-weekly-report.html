@@ -47,7 +47,7 @@ function shortTeacherName(fullName){
 function renderWeekly(){
  const week=el("weekNumber").value||"—",from=el("weekFrom").value||"—",to=el("weekTo").value||"—";
  const headers=categories.map(x=>'<th class="vertical"><span>'+esc(x)+'</span></th>').join("");
- const groups=[];for(let i=0;i<teachers.length;i+=4)groups.push(teachers.slice(i,i+4));
+ const groups=[];for(let i=0;i<teachers.length;i+=3)groups.push(teachers.slice(i,i+3));
  if(!groups.length)groups.push([]);
  const pages=groups.map((dayTeachers,pageIndex)=>{
   let body="";
@@ -62,7 +62,7 @@ function renderWeekly(){
    });
    if(!dayTeachers.length)body+='<tr><td class="day-column">'+days[i]+'<span class="day-stamp">'+esc(date||"—")+'</span></td><td colspan="'+(4+categories.length)+'">لا يوجد معلمون في هذه المجموعة</td></tr>';
   }
-  const header='<div class="report-header"><div class="report-top"><div>المملكة العربية السعودية<br>الإدارة العامة للتعليم بالمنطقة الشرقية<br>مدارس الفلاح الأهلية (بنين)</div><img src="logo.jpeg" alt="شعار المدرسة"><div lang="en">Kingdom of Saudi Arabia<br>General Management of Eastern Province Education<br>Al-Falah National Schools (Boys)</div></div><div class="report-title">خطة متابعة أعمال الإشراف التعليمية الأسبوعية</div><div class="report-meta"><span>الأسبوع ( '+esc(week)+' )</span><span>من '+esc(from)+' إلى '+esc(to)+'</span><span>اسم المشرف التعليمي: '+esc(el("supervisorName").value||"—")+'</span><span>التخصص: '+esc(el("specialty").value||"—")+'</span></div><div class="page-counter">صفحة '+(pageIndex+1)+' من '+groups.length+' — مجموعة المعلمين '+(pageIndex*4+1)+' إلى '+(pageIndex*4+dayTeachers.length)+'</div></div>';
+  const header='<div class="report-header"><div class="report-top"><div>المملكة العربية السعودية<br>الإدارة العامة للتعليم بالمنطقة الشرقية<br>مدارس الفلاح الأهلية (بنين)</div><img src="logo.jpeg" alt="شعار المدرسة"><div lang="en">Kingdom of Saudi Arabia<br>General Management of Eastern Province Education<br>Al-Falah National Schools (Boys)</div></div><div class="report-title">خطة متابعة أعمال الإشراف التعليمية الأسبوعية</div><div class="report-meta"><span>الأسبوع ( '+esc(week)+' )</span><span>من '+esc(from)+' إلى '+esc(to)+'</span><span>اسم المشرف التعليمي: '+esc(el("supervisorName").value||"—")+'</span><span>التخصص: '+esc(el("specialty").value||"—")+'</span></div><div class="page-counter">صفحة '+(pageIndex+1)+' من '+groups.length+' — مجموعة المعلمين '+(pageIndex*3+1)+' إلى '+(pageIndex*3+dayTeachers.length)+'</div></div>';
   const table='<table class="weekly-table"><thead><tr><th colspan="5">متابعة حضور المعلمين</th><th colspan="'+categories.length+'">الأعمال المنجزة</th></tr><tr><th class="day-column">اليوم / التاريخ</th><th class="name-column">اسم المعلم</th><th>الصف والفصل</th><th class="lesson-column">الحصة</th><th class="score-column">مستوى الأداء</th>'+headers+'</tr></thead><tbody>'+body+'</tbody></table>';
   const signatures='<div class="signature"><div>المشرف التعليمي<small>الاسم: '+esc(el("supervisorName").value)+'<br>التوقيع: ...........................</small></div><div>المشرف على المدارس<small>الاسم: '+esc(el("generalSupervisor").value)+'<br>التوقيع: ...........................</small></div><div>يعتمد – المديرة العامة للمجمعات<small>'+esc(el("generalDirector").value)+'</small></div></div>';
   return '<section class="report-page">'+header+table+signatures+'</section>';
