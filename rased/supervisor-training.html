@@ -528,8 +528,9 @@ function supervisionPrintTable(course){
  const names=new Map(teachers.map(t=>[String(t.email||"").toLowerCase(),t.name||t.email]));
  if(e.type==="broadcast"){
   const level={excellent:"ممتاز",good:"جيد",acceptable:"مقبول",not_done:"لم يتم"};
-  const body=rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(names.get(String(x.teacherEmail||"").toLowerCase())||x.teacherEmail||"—")+'</td><td>'+esc(x.training==="yes"?"تم":"لم يتم")+'</td><td>'+esc(x.training==="no"?"السبب: "+(x.trainingReason||"—")+" | الإجراء: "+(x.trainingAction||"—"):"—")+'</td><td>'+esc(level[x.execution]||"—")+'</td><td>'+esc(x.execution==="not_done"?"السبب: "+(x.executionReason||"—")+" | الإجراء: "+(x.executionAction||"—"):"—")+'</td><td>'+esc(x.recommendation||"—")+'</td></tr>').join("");
-  return '<h3 class="table-title">متابعة الإذاعة الصباحية</h3><table><thead><tr><th>م</th><th>المعلم</th><th>التدريب</th><th>سبب / إجراء التدريب</th><th>التنفيذ</th><th>سبب / إجراء التنفيذ</th><th>التوصية</th></tr></thead><tbody>'+body+'</tbody></table>';
+  const cell=(value,reason,action,missing)=>'<strong>'+esc(value)+'</strong>'+(missing?'<div style="text-align:right;margin-top:5px"><b>السبب:</b> '+esc(reason||"—")+'<div><b>الإجراء:</b> '+esc(action||"—")+'</div></div>':"");
+  const body=rows.map((x,i)=>'<tr><td style="width:21%">'+esc(names.get(String(x.teacherEmail||"").toLowerCase())||x.teacherEmail||"—")+'</td><td style="width:27%">'+cell(x.training==="yes"?"تم":"لم يتم",x.trainingReason,x.trainingAction,x.training==="no")+'</td><td style="width:27%">'+cell(level[x.execution]||"—",x.executionReason,x.executionAction,x.execution==="not_done")+'</td><td style="width:25%;text-align:right">'+esc(x.recommendation||"—")+'</td></tr>').join("");
+  return '<h3 class="table-title">متابعة الإذاعة الصباحية</h3><table><thead><tr><th>المعلم</th><th>تدريب الطلاب قبل الإذاعة</th><th>تنفيذ الإذاعة</th><th>التوصية</th></tr></thead><tbody>'+body+'</tbody></table>';
  }
  const head='<tr><th>م</th><th>اسم المعلم</th><th>الحالة</th><th>التفاصيل / الإجراء</th></tr>';
  const body=rows.map((x,i)=>{
