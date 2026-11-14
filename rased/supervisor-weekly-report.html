@@ -75,7 +75,7 @@ function rowMarks(teacher,date){
   const e=x.structuredEvidence;
   if(e&&typeof e==="object"){
    let confirmed=false;
-   if(Array.isArray(e.teacherOutcomes)&&["office","worksheets","activities"].includes(e.type)){
+   if(Array.isArray(e.teacherOutcomes)&&["office","worksheets","activities","exchange"].includes(e.type)){
     const personal=e.teacherOutcomes.find(row=>matchTeacher(teacher,row.teacherEmail));
     confirmed=!!personal&&(e.type==="activities"?(personal.published===true||personal.implemented===true):personal.published===true);
    }else{
