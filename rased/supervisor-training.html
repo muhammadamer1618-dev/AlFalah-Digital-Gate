@@ -654,7 +654,7 @@ function printEvidence(id){
  const docSections=meeting?[
  {label:"بنود الاجتماع",text:c.meetingAgendaText||""},
  {label:"التوصيات",text:c.meetingRecommendationsText||""}
- ]:(!showAcknowledgement&&Array.isArray(c.structuredEvidence?.teacherOutcomes)?[{label:"رقم الأسبوع",text:c.structuredEvidence.weekNumber||"—"}]:(Array.isArray(c.detailSections)?c.detailSections:[]));
+ ]:((!showAcknowledgement||c.structuredEvidence?.type==="exams")&&Array.isArray(c.structuredEvidence?.teacherOutcomes)?(c.structuredEvidence.type==="exams"?[{label:"نوع الاختبار",text:c.structuredEvidence.examType||"—"}]:[{label:"رقم الأسبوع",text:c.structuredEvidence.weekNumber||"—"}]):(Array.isArray(c.detailSections)?c.detailSections:[]));
  const sections=docSections.map(section=>'<section class="detail"><h3>'+esc(section.label||"بيانات التوثيق")+'</h3><div>'+esc(section.text||"لم تسجل بيانات")+'</div></section>').join("");
  const signed=rows.filter(x=>isSigned(c,x.p)).length;
  const count=Array.isArray(c.targetTeacherEmails)?c.targetTeacherEmails.length:rows.length;
@@ -665,7 +665,7 @@ function printEvidence(id){
  (c.description?'<section class="detail"><h3>الوصف</h3><div>'+esc(c.description)+'</div></section>':"")+
  (meeting?'<section class="detail"><h3>رقم محضر الاجتماع</h3><div>'+esc(c.meetingNumber||"—")+'</div></section>':"")+
  (sections||'<section class="detail"><h3>التفاصيل</h3><div>لم تسجل محاور لهذا المحتوى.</div></section>')+
- (!showAcknowledgement?supervisionPrintTable(c):"")+
+ (!showAcknowledgement||c.structuredEvidence?.type==="exams"?supervisionPrintTable(c):"")+
  (resource(c)?'<p><b>المرفق:</b> '+esc(resource(c))+'</p>':"")+
  (showAcknowledgement?'<div class="sign-title">سجل الاطلاع والتوقيعات الإلكترونية ('+signed+' من '+rows.length+')</div>':"")+
  (showAcknowledgement?'<table><thead><tr><th>م</th><th>اسم المعلم</th><th>الصفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th></tr></thead><tbody>':"")+
