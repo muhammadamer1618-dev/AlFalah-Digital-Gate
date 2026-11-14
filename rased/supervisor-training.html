@@ -673,7 +673,7 @@ function printEvidence(id){
  const docSections=meeting?[
  {label:"بنود الاجتماع",text:c.meetingAgendaText||""},
  {label:"التوصيات",text:c.meetingRecommendationsText||""}
- ]:((!showAcknowledgement||c.structuredEvidence?.type==="exams")&&Array.isArray(c.structuredEvidence?.teacherOutcomes)?(c.structuredEvidence.type==="exams"?[{label:"نوع الاختبار",text:c.structuredEvidence.examType||"—"}]:[{label:"رقم الأسبوع",text:c.structuredEvidence.weekNumber||"—"}]):(Array.isArray(c.detailSections)?c.detailSections:[]));
+ ]:((!showAcknowledgement||c.structuredEvidence?.type==="exams")&&Array.isArray(c.structuredEvidence?.teacherOutcomes)?(c.structuredEvidence.type==="exams"?[{label:"رقم الأسبوع",text:c.structuredEvidence.weekNumber||"—"},{label:"نوع الاختبار",text:c.structuredEvidence.examType||"—"},{label:"مراحل المناقشة",text:EXAM_STAGES.filter(([field])=>!Array.isArray(c.structuredEvidence.discussionStages)||c.structuredEvidence.discussionStages.includes(field)).map(([,label])=>label).join("، ")}]:[{label:"رقم الأسبوع",text:c.structuredEvidence.weekNumber||"—"}]):(Array.isArray(c.detailSections)?c.detailSections:[]));
  const sections=docSections.map(section=>'<section class="detail"><h3>'+esc(section.label||"بيانات التوثيق")+'</h3><div>'+esc(section.text||"لم تسجل بيانات")+'</div></section>').join("");
  const signed=rows.filter(x=>isSigned(c,x.p)).length;
  const count=Array.isArray(c.targetTeacherEmails)?c.targetTeacherEmails.length:rows.length;
