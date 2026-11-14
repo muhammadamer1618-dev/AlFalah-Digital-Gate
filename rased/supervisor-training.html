@@ -443,7 +443,7 @@ function showReport(id){
 }
 function closeReport(){el("reportModal").classList.remove("show")}
 document.addEventListener("click",event=>{const button=event.target.closest("[data-action]");if(!button)return;const id=button.dataset.id;switch(button.dataset.action){case"report":showReport(id);break;case"edit":editEvent(id);break;case"delete":deleteEvent(id);break;case"print-report":printReport(id);break;case"print-minutes":printMinutes(id);break;case"print-evidence":printEvidence(id);break}});
-const PRINT_WITH_ACKNOWLEDGEMENT=new Set(["اجتماع","حلقة تنشيطية","نقاش","دورات","ورشة عمل"]);
+const PRINT_WITH_ACKNOWLEDGEMENT=new Set(["اجتماع","حلقة تنشيطية","نقاش","دورات","ورشة عمل","مناقشة أعمال الاختبارات"]);
 function needsAcknowledgement(course){return PRINT_WITH_ACKNOWLEDGEMENT.has(contentLabel(course))}
 function openSupervisionPrint(html,message){
  const w=window.open("","_blank");if(!w){alert(message||"اسمح بالنوافذ المنبثقة للطباعة.");return}
