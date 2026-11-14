@@ -41,7 +41,7 @@
 </div>
 <div class="actions"><button class="primary" onclick="saveEvent()">💾 حفظ</button><button class="light" onclick="resetForm()">عنصر جديد</button></div>
 </div></section>
-<section class="card"><div class="title">📅 تقرير خطة متابعة أعمال الإشراف الأسبوعية</div><div class="body"><div class="note">استمارة أسبوعية تحتوي على 25 بندًا، وتواريخ الأيام الأحد إلى الخميس، وأسماء المعلمين وبيانات الزيارات الفنية، مع تعديل وحذف وطباعة أفقية. يمكن تسجيل شواهد الانتظار والأعمال المكتبية وأوراق العمل والأنشطة من قسم الشواهد داخل التقرير.</div><div class="actions"><button class="primary" type="button" onclick="location.href='supervisor-weekly-report.html'">📋 فتح التقرير الأسبوعي</button><button class="light" type="button" onclick="location.href='supervisor-weekly-report.html#evidencePanel'">✅ تسجيل شواهد المتابعة</button></div></div></section>
+<section class="card"><div class="title">📅 تقرير خطة متابعة أعمال الإشراف الأسبوعية</div><div class="body"><div class="note">يتم تسجيل شواهد البنود في نموذج «إنشاء وتوثيق عمل إشرافي» الموجود أعلى الصفحة، ثم تظهر آثارها في التقرير الأسبوعي. لا توجد حاجة لقسم شواهد منفصل.</div><div class="actions"><button class="primary" type="button" onclick="location.href='supervisor-weekly-report.html'">📋 فتح التقرير الأسبوعي</button></div></div></section>
 <section class="card"><div class="title">📊 متابعة أعمال الإشراف والشواهد</div><div class="body"><div class="stats">
 <div class="stat">الإجمالي<b id="sAll">0</b></div><div class="stat">الدورات<b id="sCourses">0</b></div><div class="stat">الاجتماعات<b id="sMeetings">0</b></div><div class="stat">أقروا بالاطلاع<b id="sCompleted">0</b></div><div class="stat">التوقيعات<b id="sSigned">0</b></div>
 </div><div class="table-wrap"><table><thead><tr><th>#</th><th>العنوان</th><th>النوع</th><th>تاريخ النشر / الإتاحة</th><th>الفئة المستهدفة</th><th>فتحوا المادة</th><th>الإكمال / التوقيع</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="eventsBody"></tbody></table></div></div></section>
@@ -149,18 +149,135 @@ function renderTeacherChoices(){el("teachersGrid").innerHTML=teachers.map(t=>'<l
 function toggleTargets(){el("targetType").value="selected";el("targetsWrap").style.display="block";el("specialtiesWrap").style.display="none";updateTargetCount()}
 function updateTargetCount(){el("targetCount").textContent="تم اختيار "+selectedTeachers().length+" من "+teachers.length+" معلم"}
 document.addEventListener("change",e=>{if(e.target.matches(".target-teacher"))updateTargetCount()});
-function toggleKind(){const meeting=el("eventKind").value==="meeting",category=chosenCategory();el("titleLabel").textContent=meeting?"اسم الاجتماع":"عنوان "+category;el("meetingFields").style.display=meeting?"block":"none";el("courseDateFields").style.display=meeting?"none":"block";el("tailoredFields").style.display=meeting?"none":"block";if(meeting){el("tailoredGrid").innerHTML="";return}const old=[...el("tailoredGrid").querySelectorAll("[data-detail-index]")].map(x=>x.value);el("tailoredGrid").innerHTML=(CONTENT_FIELDS[category]||["الأهداف","المحاور","النتائج والتوصيات"]).map((label,i)=>'<div class="span3"><label>'+esc(label)+'</label><textarea data-detail-index="'+i+'" placeholder="اكتب '+esc(label)+' — يمكن كتابة كل نقطة في سطر مستقل"></textarea></div>').join("");if(el("tailoredGrid").dataset.category===category)el("tailoredGrid").querySelectorAll("[data-detail-index]").forEach((x,i)=>x.value=old[i]||"");el("tailoredGrid").dataset.category=category}
+const SUPERVISION_EVIDENCE={
+ "متابعة توزيع الحصص على المعلمين (الانتظار)":"waiting",
+ "أعمال مكتبية":"office",
+ "متابعة أوراق العمل":"worksheets",
+ "متابعة المشاريع والخطط":"activities"
+};
+const EVIDENCE_AUTO_TYPES=new Set(["متابعة السجلات","متابعة المناهج"]);
+const evidenceType=category=>SUPERVISION_EVIDENCE[category]||"";
+function evidenceHtmlField(label,id,placeholder,type="text"){
+ return '<div><label>'+esc(label)+'</label><input id="'+id+'" type="'+type+'" placeholder="'+esc(placeholder)+'"></div>';
+}
+function evidenceHtmlCheckbox(id,text){
+ return '<label style="display:flex;align-items:center;gap:8px;line-height:1.7"><input id="'+id+'" type="checkbox" style="width:19px;height:19px;flex:none;accent-color:#0e7463"> '+esc(text)+'</label>';
+}
+function renderEvidenceInputs(category){
+ const type=evidenceType(category),week=evidenceHtmlField("رقم الأسبوع","evidenceWeekNumber","مثال: 12","number");
+ if(type==="waiting")return '<div class="span3 note">اختر التاريخ من «تاريخ بداية إتاحة المادة»، وحدد المعلم الذي دخل الانتظار من قائمة المعلمين. سجّل كل حصة انتظار على حدة.</div>'+
+  evidenceHtmlField("رقم الحصة","evidencePeriod","مثال: 3")+
+  evidenceHtmlField("اسم المعلم الغائب","evidenceAbsent","المعلم الذي دخلت بدلًا منه")+
+  evidenceHtmlField("الفصل","evidenceClass","مثال: رابع ابتدائي / ب")+
+  '<div class="span3">'+evidenceHtmlCheckbox("evidenceAttended","تم دخول المعلم حصة الانتظار بالفعل")+'</div>';
+ if(type==="office")return week+'<div class="span3">'+evidenceHtmlCheckbox("evidenceOfficePublished","تم نشر الخطة الأسبوعية للمعلم / المعلمين المختارين")+'</div>';
+ if(type==="worksheets")return week+'<div class="span3">'+evidenceHtmlCheckbox("evidenceWorksheetsPublished","تم نشر أوراق العمل للمعلم / المعلمين المختارين")+'</div>';
+ if(type==="activities")return week+
+  '<div><label>نوع النشاط</label><select id="evidenceActivityType"><option value="صفي">صفي</option><option value="لا صفي">لا صفي</option></select></div>'+
+  '<div class="span3">'+evidenceHtmlCheckbox("evidenceActivityPublished","تم نشر النشاط")+evidenceHtmlCheckbox("evidenceActivityImplemented","تم تنفيذ النشاط")+'</div>';
+ return "";
+}
+function evidenceInputValue(id){return String(el(id)?.value||"").trim()}
+function evidenceInputChecked(id){return !!el(id)?.checked}
+function structuredEvidenceFromForm(category){
+ const type=evidenceType(category);if(!type)return null;
+ const data={type,weekNumber:type==="waiting"?"":evidenceInputValue("evidenceWeekNumber")};
+ if(type==="waiting")Object.assign(data,{period:evidenceInputValue("evidencePeriod"),absentTeacher:evidenceInputValue("evidenceAbsent"),className:evidenceInputValue("evidenceClass"),attended:evidenceInputChecked("evidenceAttended")});
+ if(type==="office")data.planPublished=evidenceInputChecked("evidenceOfficePublished");
+ if(type==="worksheets")data.worksheetsPublished=evidenceInputChecked("evidenceWorksheetsPublished");
+ if(type==="activities")Object.assign(data,{activityType:evidenceInputValue("evidenceActivityType")||"صفي",activityPublished:evidenceInputChecked("evidenceActivityPublished"),activityImplemented:evidenceInputChecked("evidenceActivityImplemented")});
+ return data;
+}
+function evidenceDetails(e){
+ if(!e)return [];
+ const item=(label,value)=>({label,text:String(value)});
+ const yes=value=>value?"نعم":"لا";
+ if(e.type==="waiting")return [
+  item("دخول حصة الانتظار",yes(e.attended)),item("رقم الحصة",e.period||"—"),item("المعلم الغائب",e.absentTeacher||"—"),item("الفصل",e.className||"—")];
+ if(e.type==="office")return [item("رقم الأسبوع",e.weekNumber),item("هل تم نشر الخطة الأسبوعية؟",yes(e.planPublished))];
+ if(e.type==="worksheets")return [item("رقم الأسبوع",e.weekNumber),item("هل تم نشر أوراق العمل؟",yes(e.worksheetsPublished))];
+ return [item("رقم الأسبوع",e.weekNumber),item("نوع النشاط",e.activityType),item("هل تم نشر النشاط؟",yes(e.activityPublished)),item("هل تم تنفيذ النشاط؟",yes(e.activityImplemented))];
+}
+function fillEvidenceInputs(e){
+ if(!e)return;
+ const fill=(id,v)=>{if(el(id))el(id).value=v??""};
+ const check=(id,v)=>{if(el(id))el(id).checked=!!v};
+ fill("evidenceWeekNumber",e.weekNumber);fill("evidencePeriod",e.period);
+ fill("evidenceAbsent",e.absentTeacher);fill("evidenceClass",e.className);
+ fill("evidenceActivityType",e.activityType||"صفي");
+ check("evidenceAttended",e.attended);check("evidenceOfficePublished",e.planPublished);
+ check("evidenceWorksheetsPublished",e.worksheetsPublished);check("evidenceActivityPublished",e.activityPublished);check("evidenceActivityImplemented",e.activityImplemented);
+}
+function toggleKind(){
+ const meeting=el("eventKind").value==="meeting",category=chosenCategory(),type=evidenceType(category);
+ el("titleLabel").textContent=meeting?"اسم الاجتماع":"عنوان "+category;
+ el("meetingFields").style.display=meeting?"block":"none";
+ el("courseDateFields").style.display=meeting?"none":"block";
+ el("tailoredFields").style.display=meeting?"none":"block";
+ if(meeting){el("tailoredGrid").innerHTML="";return}
+ const old=[...el("tailoredGrid").querySelectorAll("[data-detail-index]")].map(x=>x.value);
+ if(EVIDENCE_AUTO_TYPES.has(category)){
+  el("tailoredHelp").textContent="هذا الشاهد مرتبط بالزيارة الفنية؛ لا تحتاج إلى تسجيل شاهد يدوي منفصل.";
+  el("tailoredGrid").innerHTML="";return;
+ }
+ if(type){
+  el("tailoredHelp").textContent="سجّل الشاهد في مكانه الأصلي. حدد المعلمين أدناه، واستخدم تاريخ بداية الإتاحة كتاريخ للشاهد. المربعات غير المحددة تُحفظ كحالة لم يتم تنفيذها.";
+  el("tailoredGrid").innerHTML=renderEvidenceInputs(category);
+ }else{
+  el("tailoredHelp").textContent="أكمل البيانات الخاصة بنوع المحتوى المختار.";
+  el("tailoredGrid").innerHTML=(CONTENT_FIELDS[category]||["الأهداف","المحاور","النتائج والتوصيات"]).map((label,i)=>'<div class="span3"><label>'+esc(label)+'</label><textarea data-detail-index="'+i+'" placeholder="اكتب '+esc(label)+' — يمكن كتابة كل نقطة في سطر مستقل"></textarea></div>').join("");
+  if(el("tailoredGrid").dataset.category===category)el("tailoredGrid").querySelectorAll("[data-detail-index]").forEach((x,i)=>x.value=old[i]||"");
+ }
+ el("tailoredGrid").dataset.category=category;
+}
 function selectedTeachers(){return [...document.querySelectorAll(".target-teacher:checked")].map(x=>x.value)}
 function selectedDetailSections(){const labels=CONTENT_FIELDS[chosenCategory()]||[];return [...el("tailoredGrid").querySelectorAll("[data-detail-index]")].map((x,i)=>({label:labels[i]||"المحور "+(i+1),text:x.value.trim()}))}
 function selectedSpecialties(){return [...document.querySelectorAll(".target-specialty:checked")].map(x=>x.value)}
 function selectTeachers(v){document.querySelectorAll(".target-teacher").forEach(x=>x.checked=!!v);updateTargetCount()}
 function selectSpecialties(v){document.querySelectorAll(".target-specialty").forEach(x=>x.checked=!!v)}
 async function uploadMaterial(){const f=el("materialFile").files[0];if(!f){alert("اختر ملفًا أولًا.");return}if(f.size>100*1024*1024){alert("حجم الملف أكبر من 100 ميجابايت.");return}const box=el("uploadProgress"),btn=el("uploadBtn");box.style.display="block";box.textContent="جارٍ رفع الملف...";btn.disabled=true;try{const ext=(f.name.split(".").pop()||"file").replace(/[^a-zA-Z0-9]/g,"").toLowerCase();const path="training/materials/"+Date.now()+"_"+Math.random().toString(36).slice(2,10)+"."+ext;const out=await supabaseClient.storage.from(SUPABASE_BUCKET).upload(path,f,{cacheControl:"3600",upsert:false,contentType:f.type||"application/octet-stream"});if(out.error)throw out.error;const url=supabaseClient.storage.from(SUPABASE_BUCKET).getPublicUrl(out.data.path)?.data?.publicUrl||"";if(!url)throw Error("تعذر إنشاء رابط الملف.");el("materialUrl").value=url;box.textContent="✅ تم رفع الملف. سيُحفظ رابطه عند حفظ العنصر.";box.style.background="#e8f7ee"}catch(e){console.error(e);box.textContent="❌ تعذر رفع الملف: "+(e.message||e)}finally{btn.disabled=false}}
-async function saveEvent(){const id=el("editId").value,title=el("title").value.trim(),description=el("description").value.trim(),kind=el("eventKind").value,category=chosenCategory(),meeting=kind==="meeting";const effectiveTargets=selectedTeachers();if(!title||!description){alert("أدخل الاسم والوصف.");return}if(!effectiveTargets.length){alert("حدد معلمًا واحدًا على الأقل للنشر.");return}const available=new Set(teachers.map(t=>t.email));if(effectiveTargets.some(email=>!available.has(email))){alert("يوجد معلم خارج نطاق الإسناد.");return}const effectiveType="selected",effectiveSpecs=[];
-const materialUrl=el("materialUrl").value.trim();if(materialUrl&&!validUrl(materialUrl)){alert("رابط الملف غير صحيح.");return}if(!materialUrl&&kind==="course"&&!selectedDetailSections().some(x=>x.text)){alert("أدخل بيانات المحتوى أو أرفق ملفًا للدورة.");return}const agenda=el("meetingAgenda").value.trim();if(kind==="meeting"&&!materialUrl&&!agenda){alert("أضف رابطًا/ملفًا للاجتماع أو أضف بنود الاجتماع.");return}
-const ref=id?db.collection("trainingCourses").doc(id):db.collection("trainingCourses").doc();const current=events.find(x=>x.id===id)||{};const data={title,description,eventKind:meeting?"meeting":"course",contentType:category,courseType:"material",detailSections:meeting?[]:selectedDetailSections(),meetingNumber:kind==="meeting"?el("meetingNumber").value.trim():"",meetingAgendaText:kind==="meeting"?agenda:"",meetingRecommendationsText:kind==="meeting"?el("meetingRecommendations").value.trim():"",startDate:kind==="meeting"?el("meetingDate").value:el("startDate").value,endDate:kind==="course"?el("endDate").value:"",fileUrl:materialUrl,fileName:el("materialFile").files[0]?.name||current.fileName||"",materialUrl,published:el("published").value==="true",targetType:effectiveType,targetTeacherEmails:effectiveType==="selected"?effectiveTargets:[],targetSpecialties:effectiveType==="specialties"?effectiveSpecs:[],updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser,supervisorName:currentSupervisorName};if(!id){data.createdAt=firebase.firestore.FieldValue.serverTimestamp();data.createdBy=currentUser}await ref.set(data,{merge:true});alert("تم حفظ "+category+" بنجاح ✅");resetForm();await loadAll()}
+async function saveEvent(){
+ const id=el("editId").value,kind=el("eventKind").value,category=chosenCategory(),meeting=kind==="meeting";
+ if(EVIDENCE_AUTO_TYPES.has(category))return alert("متابعة السجلات والمناهج مرتبطتان تلقائيًا بالزيارة الفنية، فلا يلزم إنشاء شاهد مكرر.");
+ const structured=structuredEvidenceFromForm(category),isEvidence=!!structured;
+ const targetEmails=selectedTeachers(),date=meeting?el("meetingDate").value:el("startDate").value;
+ if(!targetEmails.length)return alert("حدد معلمًا واحدًا على الأقل.");
+ const accessible=new Set(teachers.map(t=>t.email));
+ if(targetEmails.some(email=>!accessible.has(email)))return alert("يوجد معلم خارج نطاق إسنادك.");
+ if(isEvidence&&!date)return alert("اختر تاريخ الشاهد من تاريخ بداية إتاحة المادة.");
+ if(isEvidence&&structured.type!=="waiting"&&(!/^\d+$/.test(structured.weekNumber)||Number(structured.weekNumber)<1))return alert("أدخل رقم الأسبوع الصحيح.");
+ if(isEvidence&&structured.type==="waiting"){
+  if(targetEmails.length!==1)return alert("اختر معلمًا واحدًا لكل حصة انتظار.");
+  if(structured.attended&&(!structured.period||!structured.absentTeacher||!structured.className))return alert("أكمل رقم الحصة والمعلم الغائب والفصل.");
+ }
+ const title=el("title").value.trim()||(isEvidence?(category+(structured.weekNumber?" — الأسبوع "+structured.weekNumber:"")+" — "+date):"");
+ const description=el("description").value.trim()||(isEvidence?evidenceDetails(structured).map(v=>v.label+": "+v.text).join(" | "):"");
+ if(!title||!description)return alert("أدخل الاسم والوصف.");
+ const materialUrl=el("materialUrl").value.trim();
+ if(materialUrl&&!validUrl(materialUrl))return alert("رابط الملف غير صحيح.");
+ if(!materialUrl&&!meeting&&!isEvidence&&!selectedDetailSections().some(x=>x.text))return alert("أدخل بيانات المحتوى أو أرفق ملفًا للدورة.");
+ const agenda=el("meetingAgenda").value.trim();
+ if(meeting&&!materialUrl&&!agenda)return alert("أضف رابطًا/ملفًا للاجتماع أو بنوده.");
+ const ref=id?db.collection("trainingCourses").doc(id):db.collection("trainingCourses").doc();
+ const current=events.find(x=>x.id===id)||{};
+ const data={
+  title,description,eventKind:meeting?"meeting":"course",contentType:category,courseType:"material",
+  detailSections:isEvidence?evidenceDetails(structured):meeting?[]:selectedDetailSections(),
+  structuredEvidence:structured||null,
+  meetingNumber:meeting?el("meetingNumber").value.trim():"",
+  meetingAgendaText:meeting?agenda:"",meetingRecommendationsText:meeting?el("meetingRecommendations").value.trim():"",
+  startDate:date,endDate:!meeting?el("endDate").value:"",
+  fileUrl:materialUrl,fileName:el("materialFile").files[0]?.name||current.fileName||"",materialUrl,
+  published:el("published").value==="true",
+  targetType:"selected",targetTeacherEmails:targetEmails,targetSpecialties:[],
+  updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:currentUser,supervisorName:currentSupervisorName
+ };
+ if(!id){data.createdAt=firebase.firestore.FieldValue.serverTimestamp();data.createdBy=currentUser}
+ try{await ref.set(data,{merge:true});alert("تم حفظ "+category+" بنجاح ✅");resetForm();await loadAll()}
+ catch(e){console.error(e);alert("تعذر حفظ الشاهد: "+(e.message||e))}
+}
 function resetForm(){el("editId").value="";["title","description","meetingDate","meetingNumber","meetingAgenda","meetingRecommendations","startDate","endDate","materialUrl"].forEach(id=>el(id).value="");el("materialFile").value="";el("published").value="true";el("eventKind").value="meeting";el("targetType").value="selected";el("uploadProgress").style.display="none";selectTeachers(false);selectSpecialties(false);el("tailoredGrid").dataset.category="";toggleTargets();toggleKind()}
-function editEvent(id){const c=events.find(x=>x.id===id);if(!c)return;el("editId").value=id;el("title").value=c.title||"";el("description").value=c.description||"";const catOption=[...el("eventKind").options].find(o=>o.textContent===contentLabel(c));el("eventKind").value=catOption?catOption.value:eventKind(c);el("meetingDate").value=c.startDate||"";el("startDate").value=c.startDate||"";el("endDate").value=c.endDate||"";el("meetingNumber").value=c.meetingNumber||"";el("meetingAgenda").value=c.meetingAgendaText||"";el("meetingRecommendations").value=c.meetingRecommendationsText||"";el("materialUrl").value=resource(c);el("published").value=c.published===false?"false":"true";el("targetType").value="selected";selectTeachers(false);selectSpecialties(false);targetTeachers(c).forEach(t=>{const email=t.email;const box=[...document.querySelectorAll(".target-teacher")].find(x=>x.value===email);if(box)box.checked=true});(c.targetSpecialties||[]).forEach(k=>{const box=[...document.querySelectorAll(".target-specialty")].find(x=>x.value===k);if(box)box.checked=true});toggleTargets();toggleKind();el("tailoredGrid").querySelectorAll("[data-detail-index]").forEach((x,i)=>x.value=(Array.isArray(c.detailSections)?c.detailSections[i]?.text:"")||"");updateTargetCount();scrollTo({top:0,behavior:"smooth"})}
+function editEvent(id){const c=events.find(x=>x.id===id);if(!c)return;el("editId").value=id;el("title").value=c.title||"";el("description").value=c.description||"";const catOption=[...el("eventKind").options].find(o=>o.textContent===contentLabel(c));el("eventKind").value=catOption?catOption.value:eventKind(c);el("meetingDate").value=c.startDate||"";el("startDate").value=c.startDate||"";el("endDate").value=c.endDate||"";el("meetingNumber").value=c.meetingNumber||"";el("meetingAgenda").value=c.meetingAgendaText||"";el("meetingRecommendations").value=c.meetingRecommendationsText||"";el("materialUrl").value=resource(c);el("published").value=c.published===false?"false":"true";el("targetType").value="selected";selectTeachers(false);selectSpecialties(false);targetTeachers(c).forEach(t=>{const email=t.email;const box=[...document.querySelectorAll(".target-teacher")].find(x=>x.value===email);if(box)box.checked=true});(c.targetSpecialties||[]).forEach(k=>{const box=[...document.querySelectorAll(".target-specialty")].find(x=>x.value===k);if(box)box.checked=true});toggleTargets();toggleKind();el("tailoredGrid").querySelectorAll("[data-detail-index]").forEach((x,i)=>x.value=(Array.isArray(c.detailSections)?c.detailSections[i]?.text:"")||"");fillEvidenceInputs(c.structuredEvidence);updateTargetCount();scrollTo({top:0,behavior:"smooth"})}
 async function deleteEvent(id){const c=events.find(x=>x.id===id);if(!c||!confirm("حذف "+(eventKind(c)==="meeting"?"الاجتماع":"الدورة")+"؟\n"+c.title+"\nسجلات الاطلاع والتوقيع التاريخية ستظل محفوظة."))return;await db.collection("trainingCourses").doc(id).delete();await loadAll()}
 function targetTeachers(c){if(c.targetType==="selected"){const s=new Set((c.targetTeacherEmails||[]).map(x=>String(x).toLowerCase()));return teachers.filter(t=>s.has(String(t.email).toLowerCase()))}if(c.targetType==="specialties"){const wanted=new Set(c.targetSpecialties||[]);return teachers.filter(t=>[...teacherKeys(t)].some(k=>wanted.has(k)))}return teachers}
 function targetLabel(c){if(c.targetType==="selected")return (c.targetTeacherEmails||[]).length+" معلم";if(c.targetType==="specialties")return (c.targetSpecialties||[]).length+" تخصص";return"كل المعلمين"}
