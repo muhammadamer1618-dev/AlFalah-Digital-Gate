@@ -93,6 +93,16 @@ function rowMarks(teacher,date){
    }
    continue;
   }
+  if(currentEvidence?.type==="broadcast"){
+   if(x.startDate!==date)continue;
+   const outcomes=Array.isArray(currentEvidence.teacherOutcomes)?currentEvidence.teacherOutcomes:[];
+   const personal=outcomes.find(row=>matchTeacher(teacher,row.teacherEmail));
+   // The radio witness is completed only when the morning broadcast actually took place.
+   if(personal&&["excellent","good","acceptable"].includes(personal.execution)){
+    result.add("متابعة حضور الإذاعة الصباحية");
+   }
+   continue;
+  }
   if(x.startDate!==date)continue;
   const targets=Array.isArray(x.targetTeacherEmails)?x.targetTeacherEmails:[];
   if(!targets.some(ref=>matchTeacher(teacher,ref)))continue;
