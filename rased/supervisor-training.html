@@ -171,11 +171,16 @@ function syncOfficePublication(selected){
  if(yes&&no){if(selected==="yes"&&yes.checked)no.checked=false;if(selected==="no"&&no.checked)yes.checked=false}
  updateEvidenceActionVisibility();
 }
+function syncWorksheetsPublication(selected){
+ const yes=el("evidenceWorksheetsPublished"),no=el("evidenceWorksheetsNotPublished");
+ if(yes&&no){if(selected==="yes"&&yes.checked)no.checked=false;if(selected==="no"&&no.checked)yes.checked=false}
+ updateEvidenceActionVisibility();
+}
 function updateEvidenceActionVisibility(){
  const type=evidenceType(chosenCategory()),box=el("evidenceActionWrap");
  if(!box)return;
  const published=type==="office"?!!el("evidenceOfficePublished")?.checked:
-  type==="worksheets"?!!el("evidenceWorksheetsPublished")?.checked:
+  type==="worksheets"?!el("evidenceWorksheetsNotPublished")?.checked:
   type==="activities"?!!el("evidenceActivityPublished")?.checked:true;
  box.style.display=published?"none":"block";
 }
@@ -188,7 +193,7 @@ function renderEvidenceInputs(category){
   evidenceHtmlField("الفصل","evidenceClass","مثال: رابع ابتدائي / ب")+
   '<div class="span3">'+evidenceHtmlCheckbox("evidenceAttended","تم دخول المعلم حصة الانتظار بالفعل")+'</div>';
  if(type==="office")return week+'<div class="span3">'+evidenceHtmlCheckbox("evidenceOfficePublished","تم نشر الخطة الأسبوعية")+evidenceHtmlCheckbox("evidenceOfficeNotPublished","لم يتم نشر الخطة الأسبوعية")+'</div>'+evidenceActionField();
- if(type==="worksheets")return week+'<div class="span3">'+evidenceHtmlCheckbox("evidenceWorksheetsPublished","تم نشر أوراق العمل للمعلم / المعلمين المختارين")+'</div>'+evidenceActionField();
+ if(type==="worksheets")return week+'<div class="span3">'+evidenceHtmlCheckbox("evidenceWorksheetsPublished","تم النشر")+evidenceHtmlCheckbox("evidenceWorksheetsNotPublished","لم يتم النشر")+'</div>'+evidenceActionField();
  if(type==="activities")return week+
   '<div class="span3"><label>نوع النشاط (يمكن اختيار الاثنين)</label>'+evidenceHtmlCheckbox("evidenceActivityClassroom","صفي")+evidenceHtmlCheckbox("evidenceActivityExtracurricular","لا صفي")+'</div>'+
   '<div class="span3">'+evidenceHtmlCheckbox("evidenceActivityPublished","تم نشر النشاط")+evidenceHtmlCheckbox("evidenceActivityImplemented","تم تنفيذ النشاط")+'</div>'+evidenceActionField();
@@ -201,14 +206,14 @@ function structuredEvidenceFromForm(category){
  const data={type,weekNumber:type==="waiting"?"":evidenceInputValue("evidenceWeekNumber")};
  if(type==="waiting")Object.assign(data,{dayIndex:evidenceInputValue("evidenceWeekDay"),period:evidenceInputValue("evidencePeriod"),absentTeacher:evidenceInputValue("evidenceAbsent"),className:evidenceInputValue("evidenceClass"),attended:evidenceInputChecked("evidenceAttended")});
  if(type==="office")Object.assign(data,{planPublished:evidenceInputChecked("evidenceOfficePublished"),planNotPublished:evidenceInputChecked("evidenceOfficeNotPublished")});
- if(type==="worksheets")data.worksheetsPublished=evidenceInputChecked("evidenceWorksheetsPublished");
+ if(type==="worksheets")Object.assign(data,{worksheetsPublished:evidenceInputChecked("evidenceWorksheetsPublished"),worksheetsNotPublished:evidenceInputChecked("evidenceWorksheetsNotPublished")});
  if(type==="activities"){
   const activityTypes=[];
   if(evidenceInputChecked("evidenceActivityClassroom"))activityTypes.push("صفي");
   if(evidenceInputChecked("evidenceActivityExtracurricular"))activityTypes.push("لا صفي");
   Object.assign(data,{activityTypes,activityType:activityTypes.join(" و "),activityPublished:evidenceInputChecked("evidenceActivityPublished"),activityImplemented:evidenceInputChecked("evidenceActivityImplemented")});
  }
- const unpublished=type==="office"?data.planNotPublished:type==="worksheets"?!data.worksheetsPublished:type==="activities"?!data.activityPublished:false;
+ const unpublished=type==="office"?data.planNotPublished:type==="worksheets"?data.worksheetsNotPublished:type==="activities"?!data.activityPublished:false;
  if(unpublished)data.nonPublicationAction=evidenceInputValue("evidenceNonPublicationAction");
  return data;
 }
@@ -221,7 +226,7 @@ function evidenceDetails(e){
   item("دخول حصة الانتظار",yes(e.attended)),item("رقم الحصة",e.period||"—"),item("المعلم الغائب",e.absentTeacher||"—"),item("الفصل",e.className||"—")];
  const attachAction=(items,notPublished)=>notPublished&&e.nonPublicationAction?items.concat([item("الإجراء المتخذ عند عدم النشر",e.nonPublicationAction)]):items;
  if(e.type==="office")return attachAction([item("رقم الأسبوع",e.weekNumber),item("هل تم نشر الخطة الأسبوعية؟",yes(e.planPublished)),item("لم يتم النشر",yes(e.planNotPublished??!e.planPublished))],e.planNotPublished??!e.planPublished);
- if(e.type==="worksheets")return attachAction([item("رقم الأسبوع",e.weekNumber),item("هل تم نشر أوراق العمل؟",yes(e.worksheetsPublished))],!e.worksheetsPublished);
+ if(e.type==="worksheets")return attachAction([item("رقم الأسبوع",e.weekNumber),item("هل تم نشر أوراق العمل؟",yes(e.worksheetsPublished)),item("لم يتم النشر",yes(e.worksheetsNotPublished??!e.worksheetsPublished))],e.worksheetsNotPublished??!e.worksheetsPublished);
  const types=Array.isArray(e.activityTypes)?e.activityTypes:(e.activityType?[e.activityType]:[]);
  return attachAction([item("رقم الأسبوع",e.weekNumber),item("نوع النشاط",types.join("، ")||"—"),item("هل تم نشر النشاط؟",yes(e.activityPublished)),item("هل تم تنفيذ النشاط؟",yes(e.activityImplemented))],!e.activityPublished);
 }
@@ -236,7 +241,7 @@ function fillEvidenceInputs(e){
  check("evidenceActivityClassroom",types.includes("صفي"));check("evidenceActivityExtracurricular",types.includes("لا صفي"));
  check("evidenceAttended",e.attended);check("evidenceOfficePublished",e.planPublished);
  check("evidenceOfficeNotPublished",e.planNotPublished??!e.planPublished);
- check("evidenceWorksheetsPublished",e.worksheetsPublished);check("evidenceActivityPublished",e.activityPublished);check("evidenceActivityImplemented",e.activityImplemented);
+ check("evidenceWorksheetsPublished",e.worksheetsPublished);check("evidenceWorksheetsNotPublished",e.worksheetsNotPublished??!e.worksheetsPublished);check("evidenceActivityPublished",e.activityPublished);check("evidenceActivityImplemented",e.activityImplemented);
  updateEvidenceActionVisibility();
 }
 function toggleKind(){
@@ -260,7 +265,9 @@ function toggleKind(){
   el("tailoredGrid").innerHTML=renderEvidenceInputs(category);
   el("evidenceOfficePublished")?.addEventListener("change",()=>syncOfficePublication("yes"));
   el("evidenceOfficeNotPublished")?.addEventListener("change",()=>syncOfficePublication("no"));
-  ["evidenceWorksheetsPublished","evidenceActivityPublished"].forEach(id=>el(id)?.addEventListener("change",updateEvidenceActionVisibility));
+  el("evidenceWorksheetsPublished")?.addEventListener("change",()=>syncWorksheetsPublication("yes"));
+  el("evidenceWorksheetsNotPublished")?.addEventListener("change",()=>syncWorksheetsPublication("no"));
+  el("evidenceActivityPublished")?.addEventListener("change",updateEvidenceActionVisibility);
   updateEvidenceActionVisibility();
  }else{
   el("tailoredHelp").textContent="أكمل البيانات الخاصة بنوع المحتوى المختار.";
@@ -286,6 +293,7 @@ async function saveEvent(){
  if(isEvidence&&!date)return alert("اختر تاريخ الشاهد من تاريخ بداية إتاحة المادة.");
  if(isEvidence&&structured.type!=="waiting"&&(!/^\d+$/.test(structured.weekNumber)||Number(structured.weekNumber)<1))return alert("أدخل رقم الأسبوع الصحيح.");
  if(isEvidence&&structured.type==="office"&&structured.planPublished===structured.planNotPublished)return alert("حدد حالة واحدة للخطة الأسبوعية: تم النشر أو لم يتم النشر.");
+ if(isEvidence&&structured.type==="worksheets"&&structured.worksheetsPublished===structured.worksheetsNotPublished)return alert("حدد حالة واحدة لأوراق العمل: تم النشر أو لم يتم النشر.");
  if(isEvidence&&structured.type==="activities"&&!structured.activityTypes.length)return alert("اختر نشاطًا صفيًا أو لا صفيًا أو الاثنين معًا.");
  if(isEvidence&&structured.type==="waiting"){
   if(targetEmails.length!==1)return alert("اختر معلمًا واحدًا لكل حصة انتظار.");
