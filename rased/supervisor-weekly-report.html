@@ -71,7 +71,16 @@ function rowMarks(teacher,date){
  for(const x of publishedActions){
   if(x.published===false||x.startDate!==date)continue;
   const targets=Array.isArray(x.targetTeacherEmails)?x.targetTeacherEmails:[];
-  if(targets.some(ref=>matchTeacher(teacher,ref)))result.add(x.contentType|| (x.eventKind==="meeting"?"اجتماع":"دورات"));
+  if(!targets.some(ref=>matchTeacher(teacher,ref)))continue;
+  const e=x.structuredEvidence;
+  if(e&&typeof e==="object"){
+   const confirmed=e.type==="waiting"?e.attended===true:
+     e.type==="office"?e.planPublished===true:
+     e.type==="worksheets"?e.worksheetsPublished===true:
+     e.type==="activities"?(e.activityPublished===true||e.activityImplemented===true):false;
+   if(!confirmed)continue;
+  }
+  result.add(x.contentType|| (x.eventKind==="meeting"?"اجتماع":"دورات"));
  }
  return result;
 }
