@@ -74,10 +74,16 @@ function rowMarks(teacher,date){
   if(!targets.some(ref=>matchTeacher(teacher,ref)))continue;
   const e=x.structuredEvidence;
   if(e&&typeof e==="object"){
-   const confirmed=e.type==="waiting"?e.attended===true:
+   let confirmed=false;
+   if(Array.isArray(e.teacherOutcomes)&&["office","worksheets","activities"].includes(e.type)){
+    const personal=e.teacherOutcomes.find(row=>matchTeacher(teacher,row.teacherEmail));
+    confirmed=!!personal&&(e.type==="activities"?(personal.published===true||personal.implemented===true):personal.published===true);
+   }else{
+    confirmed=e.type==="waiting"?e.attended===true:
      e.type==="office"?e.planPublished===true:
      e.type==="worksheets"?e.worksheetsPublished===true:
      e.type==="activities"?(e.activityPublished===true||e.activityImplemented===true):false;
+   }
    if(!confirmed)continue;
   }
   result.add(x.contentType|| (x.eventKind==="meeting"?"اجتماع":"دورات"));
