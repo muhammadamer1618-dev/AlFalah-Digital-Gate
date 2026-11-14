@@ -17,7 +17,8 @@ main{max-width:1550px;margin:16px auto;padding:0 12px}.card{background:#fff;bord
 <div class="fields">
 <label>رقم الأسبوع<input id="evidenceWeek" readonly placeholder="افتح أسبوعًا محفوظًا"></label>
 <label>نوع الشاهد<select id="evidenceType" onchange="toggleEvidenceFields()"><option value="waiting">متابعة حصص الانتظار</option><option value="office">الأعمال المكتبية — الخطة الأسبوعية</option><option value="worksheets">متابعة أوراق العمل</option><option value="activities">متابعة المشاريع والخطط — الأنشطة</option></select></label>
-<label>اليوم<select id="evidenceDay"></select></label>
+<label>اليوم<select id="evidenceDay" onchange="syncEvidenceDate()"></select></label>
+<label>تاريخ الشاهد<input id="evidenceDate" type="date" readonly title="يُسحب من تاريخ اليوم في بيانات الأسبوع"></label>
 <div class="wide"><label>المعلمون المستهدفون</label><div class="actions"><button class="secondary" type="button" onclick="checkEvidenceTeachers(true)">تحديد الكل</button><button class="secondary" type="button" onclick="checkEvidenceTeachers(false)">إلغاء التحديد</button></div><div class="evidence-teachers" id="evidenceTeachers"></div></div>
 <div class="evidence-detail" data-evidence-type="waiting"><strong>شاهد حصة الانتظار</strong><div class="fields">
 <label>رقم الحصة<input id="evidencePeriod" inputmode="numeric" placeholder="مثال: 3"></label>
@@ -175,6 +176,7 @@ async function loadLogs(){
  logs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(ownLog);renderLogs();
 }
 
+function syncEvidenceDate(){const index=Number(el("evidenceDay").value);el("evidenceDate").value=dayDate(index)||""}
 function renderEvidenceTeacherChoices(){
  el("evidenceTeachers").innerHTML=teachers.map(t=>'<label><input type="checkbox" class="evidence-teacher" value="'+esc(teacherKey(t))+'"> '+esc(t.name||t.email||"—")+'</label>').join("")||"لا يوجد معلمون مسندون";
 }
@@ -219,7 +221,7 @@ function editEvidence(id){
  el("evidenceWorksheetsPublished").checked=x.type==="worksheets"&&!!x.published;
  el("evidenceActivityPublished").checked=x.type==="activities"&&!!x.published;el("evidenceActivityImplemented").checked=!!x.implemented;
  el("evidenceActivityType").value=x.activityType||"صفي";toggleEvidenceFields();
- el("evidencePanel").scrollIntoView({behavior:"smooth",block:"start"});
+ syncEvidenceDate();el("evidencePanel").scrollIntoView({behavior:"smooth",block:"start"});
 }
 async function persistEvidence(next){
  const id=el("editWeekDocId").value.trim();if(!authorized||!id)throw Error("افتح أسبوعًا محفوظًا أولًا");
@@ -288,6 +290,7 @@ function newWeekForm(){
  weeklyEvidence=[];resetEvidenceForm();renderEvidence();
  for(const id of ["weekNumber","weekFrom","weekTo"])el(id).value="";
  days.forEach((_,i)=>{el("day"+i).value="";el("dayNoteEnabled"+i).checked=false;el("dayNoteText"+i).value="";});
+ syncEvidenceDate();
  el("weekMsg").textContent="نموذج أسبوع جديد. أدخل البيانات ثم احفظ.";
  renderWeekly();
 }
@@ -298,7 +301,7 @@ async function loadSavedWeek(id){
  el("editWeekDocId").value=id;
  for(const [field,value] of Object.entries({supervisorName:x.supervisorName,specialty:x.specialty,weekNumber:x.weekNumber,weekFrom:x.from,weekTo:x.to,generalSupervisor:x.generalSupervisor,generalDirector:x.generalDirector}))if(el(field))el(field).value=value||"";
  days.forEach((_,i)=>{el("day"+i).value=x.dates?.[i]||"";el("dayNoteEnabled"+i).checked=!!x.dayNotes?.[i]?.enabled;el("dayNoteText"+i).value=x.dayNotes?.[i]?.text||"";});
- weeklyEvidence=Array.isArray(x.evidenceRecords)?x.evidenceRecords:[];resetEvidenceForm();renderEvidence();
+ weeklyEvidence=Array.isArray(x.evidenceRecords)?x.evidenceRecords:[];resetEvidenceForm();syncEvidenceDate();renderEvidence();
  el("weekMsg").textContent="✓ تم فتح الأسبوع رقم "+(x.weekNumber||"—")+" للتعديل. اضغط حفظ بيانات الأسبوع بعد الانتهاء.";
  renderWeekly();el("weekNumber").scrollIntoView({behavior:"smooth",block:"center"});
 }
@@ -333,9 +336,9 @@ async function init(){
  el("supervisorName").value=supervisorProfile.name||sessionStorage.getItem("currentUserName")||user;
  el("specialty").value=supervisorProfile.specialty||supervisorProfile.subjectName||"";
  el("evidenceDay").innerHTML=days.map((d,i)=>'<option value="'+i+'">'+d+'</option>').join("");
- toggleEvidenceFields();
+ toggleEvidenceFields();syncEvidenceDate();
  el("dayInputs").innerHTML=days.map((d,i)=>'<div class="day-box"><strong>'+d+'</strong><input id="day'+i+'" type="date" aria-label="تاريخ '+d+'"><label class="day-note-toggle"><input id="dayNoteEnabled'+i+'" type="checkbox"> تفعيل ملاحظة لهذا اليوم</label><input id="dayNoteText'+i+'" class="day-note-input" type="text" placeholder="اكتب الملاحظة التي تظهر بدل صفوف اليوم" aria-label="ملاحظة يوم '+d+'"></div>').join("");
- days.forEach((_,i)=>{el("day"+i).addEventListener("change",renderWeekly);el("dayNoteEnabled"+i).addEventListener("change",renderWeekly);el("dayNoteText"+i).addEventListener("input",renderWeekly);});
+ days.forEach((_,i)=>{el("day"+i).addEventListener("change",()=>{syncEvidenceDate();renderWeekly()});el("dayNoteEnabled"+i).addEventListener("change",renderWeekly);el("dayNoteText"+i).addEventListener("input",renderWeekly);});
  ["supervisorName","specialty","weekNumber","weekFrom","weekTo","generalSupervisor","generalDirector"].forEach(id=>el(id).addEventListener("change",renderWeekly));
  const [ts,us,cs,vs]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),followUpDb.collection("visits").get()]);
  const assignments=[...(supervisorProfile.assignedTeacherEmails||[]),...(supervisorProfile.assignedTeacherIds||[])].map(norm);
