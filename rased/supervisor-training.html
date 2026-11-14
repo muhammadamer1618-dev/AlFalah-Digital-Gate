@@ -480,7 +480,7 @@ function printReport(id){
  '<table><thead><tr><th>الاسم</th><th>الوظيفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th></tr></thead><tbody>'+
  rows.map(x=>'<tr><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+
  '</td><td>'+(hasViewed(c,x.p)?"اطّلع":"لم يطّلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td></tr>').join("")+
- '</tbody></table><script>window.onload=()=>window.print()<\/script></html>';
+ '</tbody></table></html>';
  openSupervisionPrint(html,"اسمح بالنوافذ المنبثقة لطباعة التقرير.");
 }
 function printEvidence(id){
@@ -528,8 +528,8 @@ function printEvidence(id){
  (resource(c)?'<p><b>المرفق:</b> '+esc(resource(c))+'</p>':"")+
  (showAcknowledgement?'<div class="sign-title">سجل الاطلاع والتوقيعات الإلكترونية ('+signed+' من '+rows.length+')</div>':"")+
  (showAcknowledgement?'<table><thead><tr><th>م</th><th>اسم المعلم</th><th>الصفة</th><th>الاطلاع</th><th>التوقيع الإلكتروني</th></tr></thead><tbody>':"")+
- (rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+'</td><td>'+(hasViewed(c,x.p)?"اطّلع":"لم يطّلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td></tr>').join("")||'<tr><td colspan="5">لا يوجد معلمون مستهدفون.</td></tr>')+
- (showAcknowledgement?'</tbody></table>':"")+'<div class="foot">مدارس الفلاح الأهلية | تصميم محمد عامر أحمد</div></main><script>window.onload=()=>window.print()<\/script></body></html>';
+ (showAcknowledgement?(rows.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x.teacher.name||x.teacher.email||"—")+'</td><td>'+esc(displayRole(x.teacher))+'</td><td>'+(hasViewed(c,x.p)?"اطّلع":"لم يطّلع")+'</td><td>'+esc(signatureName(c,x.p))+'</td></tr>').join("")||'<tr><td colspan="5">لا يوجد معلمون مستهدفون.</td></tr>'):"")+
+ (showAcknowledgement?'</tbody></table>':"")+'<div class="foot">مدارس الفلاح الأهلية | تصميم محمد عامر أحمد</div></main></body></html>';
  openSupervisionPrint(html,"اسمح بالنوافذ المنبثقة لطباعة الشاهد.");
 }
 
