@@ -69,7 +69,14 @@ function matchTeacher(teacher,ref){return [teacherKey(teacher),norm(teacher.code
 function rowMarks(teacher,date){
  const result=new Set();
  for(const x of publishedActions){
-  if(x.published===false||x.startDate!==date)continue;
+  if(x.published===false)continue;
+  const currentEvidence=x.structuredEvidence;
+  if(currentEvidence?.type==="exchange"&&Array.isArray(currentEvidence.teacherOutcomes)){
+   const personal=currentEvidence.teacherOutcomes.find(row=>matchTeacher(teacher,row.teacherEmail));
+   if(personal?.published===true&&(personal.date||x.startDate)===date)result.add("حضور درس (تبادل زيارات)");
+   continue;
+  }
+  if(x.startDate!==date)continue;
   const targets=Array.isArray(x.targetTeacherEmails)?x.targetTeacherEmails:[];
   if(!targets.some(ref=>matchTeacher(teacher,ref)))continue;
   const e=x.structuredEvidence;
