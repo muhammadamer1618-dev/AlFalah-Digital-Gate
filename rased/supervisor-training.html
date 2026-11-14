@@ -150,6 +150,7 @@ function toggleTargets(){el("targetType").value="selected";el("targetsWrap").sty
 function updateTargetCount(){el("targetCount").textContent="تم اختيار "+selectedTeachers().length+" من "+teachers.length+" معلم";renderTeacherOutcomeRows()}
 document.addEventListener("change",e=>{
  if(e.target.matches(".target-teacher"))updateTargetCount();
+ if(e.target.matches('.outcome-row [data-row-date]')&&evidenceType(chosenCategory())==="exchange")sortExchangeRows();
  const box=e.target.closest(".outcome-row");
  if(box&&e.target.matches("[data-status]")){
   const value=e.target.dataset.status;
@@ -208,6 +209,17 @@ function outcomesFromVisibleRows(){
    implemented:!!row.querySelector('[data-implemented]')?.checked};
  });
 }
+function sortExchangeRows(){
+ const body=el("teacherOutcomeRows");
+ if(!body||evidenceType(chosenCategory())!=="exchange")return;
+ const rows=[...body.querySelectorAll(".outcome-row")];
+ rows.sort((a,b)=>{
+  const da=a.querySelector("[data-row-date]")?.value||"9999-12-31";
+  const db=b.querySelector("[data-row-date]")?.value||"9999-12-31";
+  return da.localeCompare(db)||String(a.querySelector("td:nth-child(2)")?.textContent||"").localeCompare(String(b.querySelector("td:nth-child(2)")?.textContent||""),"ar");
+ });
+ rows.forEach((row,i)=>{body.appendChild(row);row.querySelector("td:first-child").textContent=String(i+1)});
+}
 function renderTeacherOutcomeRows(seed){
  const body=el("teacherOutcomeRows");if(!body)return;
  const type=evidenceType(chosenCategory());
@@ -228,6 +240,7 @@ function renderTeacherOutcomeRows(seed){
   row.querySelector('[data-status="yes"]').checked=!!x.published;
   row.querySelector('[data-status="no"]').checked=!!x.notPublished;
  });
+ sortExchangeRows();
 }
 function legacyOutcomes(e,targetEmails){
  const list=Array.isArray(e?.teacherOutcomes)?e.teacherOutcomes:[];
@@ -447,7 +460,8 @@ function printEvidence(id){
  const c=events.find(x=>x.id===id);if(!c)return;
  if(c.structuredEvidence?.type==="exchange"&&Array.isArray(c.structuredEvidence.teacherOutcomes)){
   const e=c.structuredEvidence,people=new Map(teachers.map(t=>[String(t.email||"").toLowerCase(),t.name||t.email]));
-  const details=e.teacherOutcomes.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(people.get(String(x.teacherEmail||"").toLowerCase())||x.teacherEmail||"—")+'</td><td>'+esc(x.date||c.startDate||"—")+'</td><td>'+(x.published?"تم الاستلام":x.notPublished?"لم يتم الاستلام":"—")+'</td><td>'+esc(x.notPublished?x.reason||"—":"—")+'</td><td>'+esc(x.notPublished?x.action||"—":"—")+'</td></tr>').join("");
+  const sortedExchange=e.teacherOutcomes.slice().sort((a,b)=>(a.date||"9999-12-31").localeCompare(b.date||"9999-12-31")||String(people.get(String(a.teacherEmail||"").toLowerCase())||a.teacherEmail||"").localeCompare(String(people.get(String(b.teacherEmail||"").toLowerCase())||b.teacherEmail||""),"ar"));
+  const details=sortedExchange.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(people.get(String(x.teacherEmail||"").toLowerCase())||x.teacherEmail||"—")+'</td><td>'+esc(x.date||c.startDate||"—")+'</td><td>'+(x.published?"تم الاستلام":x.notPublished?"لم يتم الاستلام":"—")+'</td><td>'+esc(x.notPublished?x.reason||"—":"—")+'</td><td>'+esc(x.notPublished?x.action||"—":"—")+'</td></tr>').join("");
   const logo=new URL("logo.jpeg",location.href).href;
   const content='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>شاهد تبادل الزيارات</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#153e34;margin:0;font-size:11px}header{text-align:center;border-bottom:2px solid #126b56;padding:8px 0 12px}header img{height:56px;object-fit:contain}h1{font-size:17px;margin:7px 0}p{font-size:12px;margin:8px 0}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:13px}th,td{border:1px solid #678477;padding:7px 4px;overflow-wrap:anywhere;text-align:center;vertical-align:middle;line-height:1.5}th{background:#edf5f1}th:nth-child(1){width:7%}th:nth-child(2){width:22%}th:nth-child(3){width:15%}th:nth-child(4){width:17%}th:nth-child(5){width:18%}th:nth-child(6){width:21%}tr{break-inside:avoid}.foot{border-top:1px solid #a9c0b4;margin-top:16px;padding:10px;text-align:center;font-size:10px}@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head><body><header><img src="'+esc(logo)+'" alt="شعار المدرسة"><h1>مدارس الفلاح الأهلية</h1><h1>شاهد حضور درس (تبادل زيارات)</h1><p>الأسبوع: '+esc(e.weekNumber||"—")+' | المشرف: '+esc(supervisorNameForPrint(c))+'</p></header><table><thead><tr><th>م</th><th>المعلم</th><th>تاريخ الزيارة</th><th>استلام الاستمارة</th><th>سبب عدم الاستلام</th><th>الإجراء المتخذ</th></tr></thead><tbody>'+details+'</tbody></table><div class="foot">سجل استلام استمارات تبادل الزيارات | مدارس الفلاح الأهلية</div><script>window.onload=()=>window.print()<\\/script></body></html>';
   const win=window.open("","_blank");if(!win){alert("اسمح بالنوافذ المنبثقة للطباعة.");return}win.document.open();win.document.write(content);win.document.close();return;
