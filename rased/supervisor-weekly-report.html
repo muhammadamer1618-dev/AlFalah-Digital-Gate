@@ -179,7 +179,7 @@ async function loadLogs(){
  logs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(ownLog);renderLogs();
 }
 
-function syncEvidenceDate(){const index=Number(el("evidenceDay").value);el("evidenceDate").value=dayDate(index)||""}
+function syncEvidenceDate(){const index=Number(el("evidenceDay").value);el("evidenceDate").value=el("day"+index)?.value||""}
 function renderEvidenceTeacherChoices(){
  el("evidenceTeachers").innerHTML=teachers.map(t=>'<label><input type="checkbox" class="evidence-teacher" value="'+esc(teacherKey(t))+'"> '+esc(t.name||t.email||"—")+'</label>').join("")||"لا يوجد معلمون مسندون";
 }
@@ -339,8 +339,9 @@ async function init(){
  el("supervisorName").value=supervisorProfile.name||sessionStorage.getItem("currentUserName")||user;
  el("specialty").value=supervisorProfile.specialty||supervisorProfile.subjectName||"";
  el("evidenceDay").innerHTML=days.map((d,i)=>'<option value="'+i+'">'+d+'</option>').join("");
- toggleEvidenceFields();syncEvidenceDate();
+ toggleEvidenceFields();
  el("dayInputs").innerHTML=days.map((d,i)=>'<div class="day-box"><strong>'+d+'</strong><input id="day'+i+'" type="date" aria-label="تاريخ '+d+'"><label class="day-note-toggle"><input id="dayNoteEnabled'+i+'" type="checkbox"> تفعيل ملاحظة لهذا اليوم</label><input id="dayNoteText'+i+'" class="day-note-input" type="text" placeholder="اكتب الملاحظة التي تظهر بدل صفوف اليوم" aria-label="ملاحظة يوم '+d+'"></div>').join("");
+ syncEvidenceDate();
  days.forEach((_,i)=>{el("day"+i).addEventListener("change",()=>{syncEvidenceDate();renderWeekly()});el("dayNoteEnabled"+i).addEventListener("change",renderWeekly);el("dayNoteText"+i).addEventListener("input",renderWeekly);});
  ["supervisorName","specialty","weekNumber","weekFrom","weekTo","generalSupervisor","generalDirector"].forEach(id=>el(id).addEventListener("change",renderWeekly));
  const [ts,us,cs,vs]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),followUpDb.collection("visits").get()]);
