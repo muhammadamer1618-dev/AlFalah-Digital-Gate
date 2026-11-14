@@ -147,10 +147,14 @@ async function retryLoad(){
 }
 function renderTeacherChoices(){el("teachersGrid").innerHTML=teachers.map(t=>'<label class="teacher-check"><input type="checkbox" class="target-teacher" value="'+esc(t.email)+'"><span>'+esc(t.name||t.email)+'<br><small>'+esc(t.email)+'</small></span></label>').join("")||"لا يوجد معلمون مسندون إلى حسابك. راجع إسناد المعلمين من لوحة الإدارة.";const m=new Map();teachers.forEach(t=>(Array.isArray(t.assignments)?t.assignments:[]).forEach(a=>{const k=specialtyKey(a);if(k&&!m.has(k))m.set(k,a.subjectName||a.subjectId||k)}));el("specialtiesGrid").innerHTML=[...m.entries()].sort((a,b)=>String(a[1]).localeCompare(String(b[1]),"ar")).map(([k,n])=>'<label class="teacher-check"><input type="checkbox" class="target-specialty" value="'+esc(k)+'"><span>'+esc(n)+'</span></label>').join("")||"لا توجد تخصصات"}
 function toggleTargets(){el("targetType").value="selected";el("targetsWrap").style.display="block";el("specialtiesWrap").style.display="none";updateTargetCount()}
-function updateTargetCount(){el("targetCount").textContent="تم اختيار "+selectedTeachers().length+" من "+teachers.length+" معلم";renderTeacherOutcomeRows();renderBroadcastRows()}
+function updateTargetCount(){el("targetCount").textContent="تم اختيار "+selectedTeachers().length+" من "+teachers.length+" معلم";renderTeacherOutcomeRows();renderBroadcastRows();renderExamRows()}
 document.addEventListener("change",e=>{
  if(e.target.matches(".target-teacher"))updateTargetCount();
  if(e.target.matches('.outcome-row [data-row-date]')&&evidenceType(chosenCategory())==="exchange")sortExchangeRows();
+ if(e.target.matches("[data-exam-status]")){
+  const stage=e.target.closest(".exam-stage");
+  if(stage)stage.querySelector("[data-exam-exception]").hidden=e.target.value!=="no";
+ }
  if(e.target.matches("[data-broadcast-training],[data-broadcast-execution]")){
   const row=e.target.closest(".broadcast-row");
   if(row){
@@ -172,7 +176,8 @@ const SUPERVISION_EVIDENCE={
  "متابعة أوراق العمل":"worksheets",
  "متابعة المشاريع والخطط":"activities",
  "حضور درس (تبادل زيارات)":"exchange",
- "متابعة حضور الإذاعة الصباحية":"broadcast"
+ "متابعة حضور الإذاعة الصباحية":"broadcast",
+ "مناقشة أعمال الاختبارات":"exams"
 };
 const EVIDENCE_AUTO_TYPES=new Set(["متابعة السجلات","متابعة المناهج"]);
 const evidenceType=category=>SUPERVISION_EVIDENCE[category]||"";
@@ -206,6 +211,40 @@ function updateEvidenceActionVisibility(){
 const PER_TEACHER_TYPES=new Set(["office","worksheets","activities","exchange","broadcast"]);
 function statusCheckbox(type,label){
  return '<label style="display:inline-flex;gap:5px;align-items:center;font-size:12px;white-space:nowrap"><input type="checkbox" data-status="'+type+'" style="width:17px;height:17px;flex:none"> '+label+'</label>';
+}
+const EXAM_STAGES=[["delivery","التسليم"],["execution","التنفيذ"],["grading","الرصد"]];
+function examOutcomesFromRows(){
+ return [...document.querySelectorAll(".exam-row")].map(row=>{
+  const result={teacherEmail:row.dataset.email,recommendation:row.querySelector("[data-exam-recommendation]")?.value.trim()||""};
+  EXAM_STAGES.forEach(([stage])=>{
+   const area=row.querySelector('[data-exam-stage="'+stage+'"]');
+   result[stage]=area.querySelector("[data-exam-status]")?.value||"";
+   result[stage+"Reason"]=result[stage]==="no"?(area.querySelector("[data-exam-reason]")?.value.trim()||""):"";
+   result[stage+"Action"]=result[stage]==="no"?(area.querySelector("[data-exam-action]")?.value.trim()||""):"";
+  });
+  return result;
+ });
+}
+function renderExamRows(seed){
+ const root=el("examTeacherRows");if(!root)return;
+ const previous=Array.isArray(seed)?seed:examOutcomesFromRows();
+ const saved=new Map(previous.map(r=>[String(r.teacherEmail||"").trim().toLowerCase(),r]));
+ const people=new Map(teachers.map(t=>[String(t.email||"").trim().toLowerCase(),t]));
+ const chosen=selectedTeachers();
+ if(!chosen.length){root.innerHTML='<div class="note">اختر المعلم أو المعلمين من القائمة أدناه لإظهار متابعة الاختبارات.</div>';return}
+ root.innerHTML=chosen.map((email,i)=>{
+  const t=people.get(email.toLowerCase()),r=saved.get(email.toLowerCase())||{};
+  const fields=EXAM_STAGES.map(([field,label])=>{
+   const state=r[field]||"";
+   return '<section class="exam-stage" data-exam-stage="'+field+'" style="border:1px solid #d2e1d8;border-radius:8px;padding:9px;margin:8px 0">'+
+    '<label>'+label+'</label><select data-exam-status><option value="">اختر الحالة</option><option value="yes" '+(state==="yes"?"selected":"")+'>تم</option><option value="no" '+(state==="no"?"selected":"")+'>لم يتم</option></select>'+
+    '<div data-exam-exception '+(state==="no"?"":"hidden")+'><label>سبب عدم '+label+'</label><textarea data-exam-reason placeholder="السبب">'+esc(r[field+"Reason"]||"")+'</textarea>'+
+    '<label>الإجراء المتخذ</label><textarea data-exam-action placeholder="الإجراء">'+esc(r[field+"Action"]||"")+'</textarea></div></section>';
+  }).join("");
+  return '<div class="exam-row" data-email="'+esc(email)+'" style="background:#fff;border:1px solid #b2ccc1;border-radius:10px;padding:12px;margin:10px 0">'+
+   '<h4 style="margin:0 0 10px">'+(i+1)+' - '+esc(t?.name||email)+'</h4>'+fields+
+   '<label>التوصية</label><textarea data-exam-recommendation placeholder="التوصية الخاصة بالمعلم">'+esc(r.recommendation||"")+'</textarea></div>';
+ }).join("");
 }
 function broadcastOutcomesFromRows(){
  return [...document.querySelectorAll(".broadcast-row")].map(row=>({
@@ -299,6 +338,7 @@ function renderEvidenceInputs(category){
   evidenceHtmlField("اسم المعلم الغائب","evidenceAbsent","المعلم الذي دخلت بدلًا منه")+
   evidenceHtmlField("الفصل","evidenceClass","مثال: رابع ابتدائي / ب")+
   '<div class="span3">'+evidenceHtmlCheckbox("evidenceAttended","تم دخول المعلم حصة الانتظار بالفعل")+'</div>';
+ if(type==="exams")return '<div class="span3"><label>نوع الاختبار</label><select id="evidenceExamType"><option value="">اختر نوع الاختبار</option><option value="تشخيصي">تشخيصي</option><option value="قصير">قصير</option><option value="وحدة">وحدة</option><option value="فترة أولى">فترة أولى</option><option value="فترة ثانية">فترة ثانية</option><option value="نهائي">نهائي</option></select></div><div class="span3"><div class="note">اختر المعلمين أدناه، ثم سجل التسليم والتنفيذ والرصد والتوصية لكل معلم بشكل مستقل. عند اختيار لم يتم، يظهر السبب والإجراء.</div><div id="examTeacherRows"></div></div>';
  if(type==="broadcast")return week+'<div class="span3"><div class="note">اختر تاريخ الشاهد ثم المعلمين أدناه، وحدد التدريب وتقييم تنفيذ الإذاعة والسبب والإجراء عند عدم التنفيذ، ثم التوصية لكل معلم.</div><div id="broadcastTeacherRows"></div></div>';
  if(PER_TEACHER_TYPES.has(type))return week+
   '<div class="span3"><div class="note">'+(type==="exchange"?"سجل واحد لكل الأسبوع: اختر المعلمين أدناه، وحدد التاريخ لكل معلم وتأكد من استلام استمارته. عند عدم الاستلام دوّن السبب والإجراء المتخذ. لا حاجة إلى رفع صور.":type==="office"?"حدد المعلمين الذين تمت متابعتهم فقط، ثم اختر لكل معلم تاريخ متابعة نشر خطته وحالته والإجراء الخاص به. لن توضع علامة في التقرير دون تاريخ وحالة نشر مؤكدة.":"حدد المعلمين أسفل النموذج، ثم قيّم كل معلم على حدة. نوع النشاط يمكن أن يكون صفيًا أو لا صفيًا أو الاثنين معًا لنفس المعلم.")+'</div><div class="table-wrap"><table><thead><tr><th>م</th><th>اسم المعلم</th><th>'+(type==="exchange"?"استلام استمارة التبادل":"حالة النشر")+'</th><th>'+(type==="exchange"?"تاريخ الزيارة":type==="office"?"تاريخ المتابعة":type==="activities"?"نوع النشاط / التنفيذ":"المتابعة")+'</th><th>'+(type==="exchange"?"السبب والإجراء عند عدم الاستلام":"الإجراء عند عدم النشر")+'</th></tr></thead><tbody id="teacherOutcomeRows"></tbody></table></div></div>';
@@ -319,7 +359,8 @@ function structuredEvidenceFromForm(category){
   if(evidenceInputChecked("evidenceActivityExtracurricular"))activityTypes.push("لا صفي");
   Object.assign(data,{activityTypes,activityType:activityTypes.join(" و "),activityPublished:evidenceInputChecked("evidenceActivityPublished"),activityImplemented:evidenceInputChecked("evidenceActivityImplemented")});
  }
- if(type==="broadcast")data.teacherOutcomes=broadcastOutcomesFromRows();
+ if(type==="exams"){data.examType=evidenceInputValue("evidenceExamType");data.teacherOutcomes=examOutcomesFromRows()}
+ else if(type==="broadcast")data.teacherOutcomes=broadcastOutcomesFromRows();
  else if(PER_TEACHER_TYPES.has(type))data.teacherOutcomes=outcomesFromVisibleRows();
  else{
   const unpublished=type==="office"?data.planNotPublished:type==="worksheets"?data.worksheetsNotPublished:type==="activities"?!data.activityPublished:false;
@@ -335,6 +376,15 @@ function evidenceDetails(e){
   item("اليوم",["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"][Number(e.dayIndex)]||"—"),
   item("دخول حصة الانتظار",yes(e.attended)),item("رقم الحصة",e.period||"—"),item("المعلم الغائب",e.absentTeacher||"—"),item("الفصل",e.className||"—")];
  const attachAction=(items,notPublished)=>notPublished&&e.nonPublicationAction?items.concat([item("الإجراء المتخذ عند عدم النشر",e.nonPublicationAction)]):items;
+ if(e.type==="exams"&&Array.isArray(e.teacherOutcomes)){
+  const entries=e.teacherOutcomes.map((row,i)=>{
+   const teacher=teachers.find(t=>String(t.email).toLowerCase()===String(row.teacherEmail).toLowerCase());
+   const fields=EXAM_STAGES.map(([stage,label])=>label+": "+(row[stage]==="yes"?"تم":row[stage]==="no"?"لم يتم":"—")+
+    (row[stage]==="no"?" | السبب: "+(row[stage+"Reason"]||"—")+" | الإجراء: "+(row[stage+"Action"]||"—"):"")).join(" | ");
+   return item("المعلم "+(i+1)+": "+(teacher?.name||row.teacherEmail),fields+" | التوصية: "+(row.recommendation||"—"));
+  });
+  return [item("نوع الاختبار",e.examType||"—"),...entries];
+ }
  if(e.type==="broadcast"&&Array.isArray(e.teacherOutcomes)){
   const labels={excellent:"ممتاز",good:"جيد",acceptable:"مقبول",not_done:"لم يتم"};
   const entries=e.teacherOutcomes.map((row,i)=>{
@@ -377,6 +427,10 @@ function fillEvidenceInputs(e){
  updateEvidenceActionVisibility();
  if(PER_TEACHER_TYPES.has(e.type)&&e.type!=="broadcast")renderTeacherOutcomeRows(legacyOutcomes(e,selectedTeachers()));
  if(e.type==="broadcast")renderBroadcastRows(e.teacherOutcomes||[]);
+ if(e.type==="exams"){
+  fill("evidenceExamType",e.examType);
+  renderExamRows(e.teacherOutcomes||[]);
+ }
 }
 function toggleKind(){
  const meeting=el("eventKind").value==="meeting",category=chosenCategory(),type=evidenceType(category);
@@ -399,7 +453,8 @@ function toggleKind(){
  if(type){
   el("tailoredHelp").textContent=type==="exchange"?"سجّل كل معلم بتاريخ زيارته داخل الجدول؛ الشاهد يُحفظ مرة واحدة للأسبوع.":type==="office"?"سجّل تاريخ متابعة الخطة الأسبوعية بجوار كل معلم؛ ينعكس النشر المؤكد فقط على يومه في التقرير الأسبوعي.":"سجّل الشاهد في مكانه الأصلي. حدد المعلمين أدناه، واستخدم تاريخ بداية الإتاحة كتاريخ للشاهد. المربعات غير المحددة تُحفظ كحالة لم يتم تنفيذها.";
   el("tailoredGrid").innerHTML=renderEvidenceInputs(category);
-  if(type==="broadcast")renderBroadcastRows();
+  if(type==="exams")renderExamRows();
+  else if(type==="broadcast")renderBroadcastRows();
   else if(PER_TEACHER_TYPES.has(type))renderTeacherOutcomeRows();
   el("evidenceOfficePublished")?.addEventListener("change",()=>syncOfficePublication("yes"));
   el("evidenceOfficeNotPublished")?.addEventListener("change",()=>syncOfficePublication("no"));
@@ -430,6 +485,16 @@ async function saveEvent(){
  if(targetEmails.some(email=>!accessible.has(email)))return alert("يوجد معلم خارج نطاق إسنادك.");
  if(isEvidence&&!date&&!["exchange","office"].includes(structured.type))return alert("اختر تاريخ الشاهد من تاريخ بداية إتاحة المادة.");
  if(isEvidence&&structured.type!=="waiting"&&(!/^\d+$/.test(structured.weekNumber)||Number(structured.weekNumber)<1))return alert("أدخل رقم الأسبوع الصحيح.");
+ if(isEvidence&&structured.type==="exams"){
+  if(!["تشخيصي","قصير","وحدة","فترة أولى","فترة ثانية","نهائي"].includes(structured.examType))return alert("حدد نوع الاختبار.");
+  if(structured.teacherOutcomes.length!==targetEmails.length)return alert("أكمل متابعة المعلمين المحددين.");
+  for(const row of structured.teacherOutcomes){
+   for(const [field,label] of EXAM_STAGES){
+    if(!["yes","no"].includes(row[field]))return alert("حدد حالة "+label+" لكل معلم.");
+    if(row[field]==="no"&&(!row[field+"Reason"]||!row[field+"Action"]))return alert("أكمل السبب والإجراء عند عدم "+label+" لكل معلم.");
+   }
+  }
+ }
  if(isEvidence&&structured.type==="broadcast"){
   if(structured.teacherOutcomes.length!==targetEmails.length)return alert("اختر المعلمين وحدد متابعة كل معلم.");
   if(structured.teacherOutcomes.some(x=>!["yes","no"].includes(x.training)||!["excellent","good","acceptable","not_done"].includes(x.execution)))return alert("حدد حالة التدريب وتقييم تنفيذ الإذاعة لكل معلم.");
@@ -526,6 +591,12 @@ function supervisionPrintTable(course){
  const e=course.structuredEvidence,rows=e?.teacherOutcomes;
  if(!Array.isArray(rows))return "";
  const names=new Map(teachers.map(t=>[String(t.email||"").toLowerCase(),t.name||t.email]));
+ if(e.type==="exams"){
+  const label=(row,field)=>row[field]==="yes"?"تم":row[field]==="no"?"لم يتم":"—";
+  const cell=(row,field)=>'<b>'+label(row,field)+'</b>'+(row[field]==="no"?'<div style="margin-top:4px;text-align:right"><b>السبب:</b> '+esc(row[field+"Reason"]||"—")+'<div><b>الإجراء:</b> '+esc(row[field+"Action"]||"—")+'</div></div>':"");
+  const data=rows.map((row,i)=>'<tr><td>'+esc(names.get(String(row.teacherEmail||"").toLowerCase())||row.teacherEmail||"—")+'</td><td>'+cell(row,"delivery")+'</td><td>'+cell(row,"execution")+'</td><td>'+cell(row,"grading")+'</td><td>'+esc(row.recommendation||"—")+'</td></tr>').join("");
+  return '<h3 class="table-title">متابعة أعمال الاختبارات — '+esc(e.examType||"—")+'</h3><table><thead><tr><th style="width:20%">المعلم</th><th style="width:18%">التسليم</th><th style="width:18%">التنفيذ</th><th style="width:18%">الرصد</th><th style="width:26%">التوصية</th></tr></thead><tbody>'+data+'</tbody></table>';
+ }
  if(e.type==="broadcast"){
   const level={excellent:"ممتاز",good:"جيد",acceptable:"مقبول",not_done:"لم يتم"};
   const cell=(value,reason,action,missing)=>'<strong>'+esc(value)+'</strong>'+(missing?'<div style="text-align:right;margin-top:5px"><b>السبب:</b> '+esc(reason||"—")+'<div><b>الإجراء:</b> '+esc(action||"—")+'</div></div>':"");
