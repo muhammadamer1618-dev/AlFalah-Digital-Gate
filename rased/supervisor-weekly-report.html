@@ -91,7 +91,10 @@ const evidenceManagedCategories=new Set([...Object.values(evidenceCategory),"م�
 function rowMarks(teacher,date){
  const result=new Set();
  if(!date)return result;
- if(latestVisit(teacher,date)){result.add("متابعة السجلات");result.add("متابعة المناهج");}
+ const assessedVisit=latestVisit(teacher,date);
+ if(assessedVisit&&assessedVisit.finalScore!==null&&assessedVisit.finalScore!==undefined&&String(assessedVisit.finalScore).trim()!==""){
+  result.add("متابعة السجلات");result.add("متابعة المناهج");
+ }
  for(const x of publishedActions){
   if(x.published===false||x.startDate!==date)continue;
   const targets=Array.isArray(x.targetTeacherEmails)?x.targetTeacherEmails:[];
