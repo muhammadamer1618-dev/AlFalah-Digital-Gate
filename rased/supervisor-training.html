@@ -296,8 +296,7 @@ function outcomesFromVisibleRows(){
   return {teacherEmail:email,published:yes,notPublished:no,action:row.querySelector("[data-row-action]")?.value.trim()||"",
    date:row.querySelector("[data-row-date]")?.value||"",reason:row.querySelector("[data-row-reason]")?.value.trim()||"",
    classroom:!!row.querySelector('[data-kind="classroom"]')?.checked,
-   extracurricular:!!row.querySelector('[data-kind="extracurricular"]')?.checked,
-   implemented:!!row.querySelector('[data-implemented]')?.checked};
+   extracurricular:!!row.querySelector('[data-kind="extracurricular"]')?.checked};
  });
 }
 function sortExchangeRows(){
@@ -321,10 +320,9 @@ function renderTeacherOutcomeRows(seed){
  body.innerHTML=chosen.map((email,i)=>{
   const t=byEmail.get(email.toLowerCase()),x=map.get(email.toLowerCase())||{};
   const kind=type==="activities"?'<div style="display:flex;gap:9px;flex-wrap:wrap"><label><input type="checkbox" data-kind="classroom" '+(x.classroom?'checked':'')+'> صفي</label><label><input type="checkbox" data-kind="extracurricular" '+(x.extracurricular?'checked':'')+'> لا صفي</label></div>':'—';
-  const implemented=type==="activities"?'<label style="display:inline-flex;gap:5px;align-items:center"><input type="checkbox" data-implemented '+(x.implemented?'checked':'')+'> تم التنفيذ</label>':'—';
   const evidenceDate=["exchange","office"].includes(type)?'<input type="date" data-row-date value="'+esc(x.date||"")+'" aria-label="'+(type==="office"?"تاريخ متابعة الخطة الأسبوعية":"تاريخ تبادل الزيارة")+' للمعلم '+esc(t?.name||email)+'" style="min-width:135px">':'';
   const missingReason=type==="exchange"?'<input data-row-reason placeholder="مثال: تعليق الدراسة" value="'+esc(x.reason||"")+'" aria-label="سبب عدم الاستلام مع '+esc(t?.name||email)+'" style="margin-bottom:6px">':'';
-  return '<tr class="outcome-row" data-email="'+esc(email)+'"><td>'+(i+1)+'</td><td><b>'+esc(t?.name||email)+'</b></td><td><div style="display:flex;gap:10px;flex-wrap:wrap">'+statusCheckbox("yes",type==="exchange"?"تم استلام الاستمارة":"تم النشر")+statusCheckbox("no",type==="exchange"?"لم يتم الاستلام":"لم يتم النشر")+'</div></td><td>'+evidenceDate+(["exchange","office"].includes(type)?"":kind+(type==="activities"?'<div style="margin-top:7px">'+implemented+'</div>':''))+'</td><td><div data-action-wrap '+(!x.notPublished?'hidden':'')+'>'+missingReason+'<input data-row-action placeholder="'+(type==="exchange"?"مثل: تنبيه لتسليم الاستمارة":"مثل: إنذار أو مساءلة")+'" value="'+esc(x.action||"")+'" aria-label="الإجراء المتخذ مع '+esc(t?.name||email)+'"></div><span data-action-hint '+(x.notPublished?'hidden':'')+'>—</span></td></tr>';
+  return '<tr class="outcome-row" data-email="'+esc(email)+'"><td>'+(i+1)+'</td><td><b>'+esc(t?.name||email)+'</b></td><td><div style="display:flex;gap:10px;flex-wrap:wrap">'+statusCheckbox("yes",type==="exchange"?"تم استلام الاستمارة":"تم النشر")+statusCheckbox("no",type==="exchange"?"لم يتم الاستلام":"لم يتم النشر")+'</div></td><td>'+evidenceDate+(["exchange","office"].includes(type)?"":kind)+'</td><td><div data-action-wrap '+(!x.notPublished?'hidden':'')+'>'+missingReason+'<input data-row-action placeholder="'+(type==="exchange"?"مثل: تنبيه لتسليم الاستمارة":"مثل: إنذار أو مساءلة")+'" value="'+esc(x.action||"")+'" aria-label="الإجراء المتخذ مع '+esc(t?.name||email)+'"></div><span data-action-hint '+(x.notPublished?'hidden':'')+'>—</span></td></tr>';
  }).join("");
  const rows=[...body.querySelectorAll(".outcome-row")];
  rows.forEach(row=>{const x=map.get(row.dataset.email.toLowerCase())||{};
@@ -339,7 +337,7 @@ function legacyOutcomes(e,targetEmails){
  if(!e)return [];
  const published=e.type==="office"?e.planPublished===true:e.type==="worksheets"?e.worksheetsPublished===true:e.type==="exchange"?e.received===true:e.activityPublished===true;
  const types=Array.isArray(e.activityTypes)?e.activityTypes:(e.activityType?[e.activityType]:[]);
- return targetEmails.map(email=>({teacherEmail:email,published,notPublished:!published,action:e.nonPublicationAction||"",date:["exchange","office"].includes(e.type)?e.date||e.startDate||"":"",reason:"",classroom:types.includes("صفي"),extracurricular:types.includes("لا صفي"),implemented:!!e.activityImplemented}));
+ return targetEmails.map(email=>({teacherEmail:email,published,notPublished:!published,action:e.nonPublicationAction||"",date:["exchange","office"].includes(e.type)?e.date||e.startDate||"":"",reason:"",classroom:types.includes("صفي"),extracurricular:types.includes("لا صفي")}));
 }
 function renderEvidenceInputs(category){
  const type=evidenceType(category),week=evidenceHtmlField("رقم الأسبوع","evidenceWeekNumber","مثال: 12","number");
@@ -371,7 +369,7 @@ function structuredEvidenceFromForm(category){
   const activityTypes=[];
   if(evidenceInputChecked("evidenceActivityClassroom"))activityTypes.push("صفي");
   if(evidenceInputChecked("evidenceActivityExtracurricular"))activityTypes.push("لا صفي");
-  Object.assign(data,{activityTypes,activityType:activityTypes.join(" و "),activityPublished:evidenceInputChecked("evidenceActivityPublished"),activityImplemented:evidenceInputChecked("evidenceActivityImplemented")});
+  Object.assign(data,{activityTypes,activityType:activityTypes.join(" و "),activityPublished:evidenceInputChecked("evidenceActivityPublished"),});
  }
  if(type==="exams"){data.examType=evidenceInputValue("evidenceExamType");data.discussionStages=selectedExamStages();data.teacherOutcomes=examOutcomesFromRows()}
  else if(type==="broadcast")data.teacherOutcomes=broadcastOutcomesFromRows();
@@ -424,7 +422,7 @@ function evidenceDetails(e){
  if(e.type==="office")return attachAction([item("رقم الأسبوع",e.weekNumber),item("هل تم نشر الخطة الأسبوعية؟",yes(e.planPublished)),item("لم يتم النشر",yes(e.planNotPublished??!e.planPublished))],e.planNotPublished??!e.planPublished);
  if(e.type==="worksheets")return attachAction([item("رقم الأسبوع",e.weekNumber),item("هل تم نشر أوراق العمل؟",yes(e.worksheetsPublished)),item("لم يتم النشر",yes(e.worksheetsNotPublished??!e.worksheetsPublished))],e.worksheetsNotPublished??!e.worksheetsPublished);
  const types=Array.isArray(e.activityTypes)?e.activityTypes:(e.activityType?[e.activityType]:[]);
- return attachAction([item("رقم الأسبوع",e.weekNumber),item("نوع النشاط",types.join("، ")||"—"),item("هل تم نشر النشاط؟",yes(e.activityPublished)),item("هل تم تنفيذ النشاط؟",yes(e.activityImplemented))],!e.activityPublished);
+ return attachAction([item("رقم الأسبوع",e.weekNumber),item("نوع النشاط",types.join("، ")||"—"),item("هل تم نشر النشاط؟",yes(e.activityPublished))],!e.activityPublished);
 }
 function fillEvidenceInputs(e){
  if(!e)return;
@@ -437,7 +435,7 @@ function fillEvidenceInputs(e){
  check("evidenceActivityClassroom",types.includes("صفي"));check("evidenceActivityExtracurricular",types.includes("لا صفي"));
  check("evidenceAttended",e.attended);check("evidenceOfficePublished",e.planPublished);
  check("evidenceOfficeNotPublished",e.planNotPublished??!e.planPublished);
- check("evidenceWorksheetsPublished",e.worksheetsPublished);check("evidenceWorksheetsNotPublished",e.worksheetsNotPublished??!e.worksheetsPublished);check("evidenceActivityPublished",e.activityPublished);check("evidenceActivityImplemented",e.activityImplemented);
+ check("evidenceWorksheetsPublished",e.worksheetsPublished);check("evidenceWorksheetsNotPublished",e.worksheetsNotPublished??!e.worksheetsPublished);check("evidenceActivityPublished",e.activityPublished);
  updateEvidenceActionVisibility();
  if(PER_TEACHER_TYPES.has(e.type)&&e.type!=="broadcast")renderTeacherOutcomeRows(legacyOutcomes(e,selectedTeachers()));
  if(e.type==="broadcast")renderBroadcastRows(e.teacherOutcomes||[]);
@@ -624,7 +622,7 @@ function supervisionPrintTable(course){
  }
  const head='<tr><th>م</th><th>اسم المعلم</th><th>الحالة</th><th>التفاصيل / الإجراء</th></tr>';
  const body=rows.map((x,i)=>{
-  const activity=e.type==="activities"?[x.classroom?"صفي":"",x.extracurricular?"لا صفي":""].filter(Boolean).join(" و ")+(x.implemented?" | تم التنفيذ":""):"";
+  const activity=e.type==="activities"?[x.classroom?"صفي":"",x.extracurricular?"لا صفي":""].filter(Boolean).join(" و "):"";
   const extra=[e.type==="office"?"التاريخ: "+(x.date||course.startDate||"—"):"",activity,x.notPublished&&x.reason?"السبب: "+x.reason:"",x.notPublished&&x.action?"الإجراء: "+x.action:""].filter(Boolean).join(" | ");
   return '<tr><td>'+(i+1)+'</td><td>'+esc(names.get(String(x.teacherEmail||"").toLowerCase())||x.teacherEmail||"—")+'</td><td>'+(x.published?"تم النشر":x.notPublished?"لم يتم النشر":"—")+'</td><td>'+esc(extra||"—")+'</td></tr>';
  }).join("");
