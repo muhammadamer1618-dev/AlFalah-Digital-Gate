@@ -613,7 +613,7 @@ function supervisionPrintTable(course){
 }
 function printReport(id){
  const c=events.find(x=>x.id===id);if(!c)return;
- if(!needsAcknowledgement(c)){printEvidence(id);return}
+ if(!needsAcknowledgement(c)||c.structuredEvidence?.type==="exams"){printEvidence(id);return}
  const rows=records(c);
  const html='<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>'+esc(contentLabel(c))+'</title>'+
  '<style>@page{size:A4 portrait;margin:11mm}*{box-sizing:border-box}body{font-family:Tahoma,Arial;margin:0;padding:10px 12px;color:#163e36;font-size:13px;line-height:1.6}h1{text-align:center;font-size:19px}h2{font-size:16px;text-align:center}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border:1px solid #888;padding:9px;text-align:center}tr{break-inside:avoid}thead{display:table-header-group}</style>'+
