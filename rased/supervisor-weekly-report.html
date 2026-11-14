@@ -68,6 +68,13 @@ function latestVisit(teacher,date){
 function matchTeacher(teacher,ref){return [teacherKey(teacher),norm(teacher.code),norm(teacher.name),norm(teacher.id),norm(teacher.username)].includes(norm(ref))}
 function rowMarks(teacher,date){
  const result=new Set();
+ // A scored technical visit is the direct evidence for these three follow-ups.
+ const visit=date?latestVisit(teacher,date):null;
+ if(visit&&visit.finalScore!==undefined&&visit.finalScore!==null&&String(visit.finalScore).trim()!==""){
+  result.add("متابعة السجلات");
+  result.add("متابعة المناهج");
+  result.add("مناقشة مستوى المعلمين");
+ }
  for(const x of publishedActions){
   if(x.published===false)continue;
   const currentEvidence=x.structuredEvidence;
