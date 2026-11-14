@@ -106,7 +106,8 @@ function rowMarks(teacher,date){
   if(currentEvidence?.type==="exams"){
    if(x.startDate!==date)continue;
    const personal=(Array.isArray(currentEvidence.teacherOutcomes)?currentEvidence.teacherOutcomes:[]).find(row=>matchTeacher(teacher,row.teacherEmail));
-   if(personal&&["yes","no"].includes(personal.delivery)&&["yes","no"].includes(personal.execution)&&["yes","no"].includes(personal.grading)){
+   const stages=Array.isArray(currentEvidence.discussionStages)?currentEvidence.discussionStages:["delivery","execution","grading"];
+   if(personal&&stages.length>0&&stages.every(field=>["yes","no"].includes(personal[field]))){
     result.add("مناقشة أعمال الاختبارات");
    }
    continue;
