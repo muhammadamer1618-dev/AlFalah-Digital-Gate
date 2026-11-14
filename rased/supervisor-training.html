@@ -476,8 +476,8 @@ function printEvidence(id){
    '<table><thead><tr><th>م</th><th>اسم المعلم</th><th>تاريخ الزيارة</th><th>استلام الاستمارة</th><th>سبب عدم الاستلام</th><th>الإجراء المتخذ</th></tr></thead><tbody>'+details+'</tbody></table>'+
    '<div class="foot">مدارس الفلاح الأهلية | تصميم محمد عامر أحمد</div></main></body></html>';
   const win=window.open("","_blank");if(!win){alert("اسمح بالنوافذ المنبثقة لطباعة الشاهد.");return}
-  win.document.open();win.document.write(html);win.document.close();
   win.onload=()=>{win.focus();win.print()};
+  win.document.open();win.document.write(html);win.document.close();
   return;
  }
  const rows=records(c),meeting=eventKind(c)==="meeting",kind=contentLabel(c);
