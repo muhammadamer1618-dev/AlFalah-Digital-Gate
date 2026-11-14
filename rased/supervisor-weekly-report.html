@@ -1,7 +1,7 @@
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>خطة متابعة أعمال الإشراف التعليمية الأسبوعية</title><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><style>
 *{box-sizing:border-box}body{margin:0;font:13px Tahoma,Arial,sans-serif;background:#f0f6f3;color:#1d4b39}header{background:#0e5747;color:white;text-align:center;padding:14px}header img{height:64px;background:#fff;border-radius:50%;padding:4px}header h1{font-size:22px;margin:7px}
 main{max-width:1550px;margin:16px auto;padding:0 12px}.card{background:#fff;border:1px solid #d2e4d7;border-radius:14px;padding:17px;margin:12px 0;box-shadow:0 3px 12px #0b38200a}h2{font-size:17px;margin:3px 0 13px}label{font-weight:700;font-size:12px}input,select{font:inherit;border:1px solid #bed4c7;border-radius:8px;padding:10px;width:100%;background:#fff;min-width:0}button,.btn{font:700 12px Tahoma;border:0;border-radius:8px;background:#0c7055;color:#fff;padding:11px 15px;cursor:pointer;text-decoration:none;display:inline-block}.secondary{background:#e8f2ec;color:#17543b}.red{background:#ad3f3f}.fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.fields>label{display:flex;flex-direction:column;gap:6px}.wide{grid-column:span 2}.actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.note{background:#edf7f0;padding:11px;border-radius:9px;line-height:1.8}.week-days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:10px}.day-box{border:1px solid #d5e4d7;border-radius:10px;padding:8px;background:#fbfdfb}.day-box strong{display:block;text-align:center;margin-bottom:6px}.day-note-toggle{display:flex;align-items:center;gap:6px;margin:8px 0 5px;font-size:11px}.day-note-toggle input{width:16px;height:16px;accent-color:#0c7055}.day-note-input{font-size:11px;padding:7px!important}.day-note-cell{background:#f3f7ed;color:#1d4b39;font-weight:800;font-size:13px;padding:12px 8px!important;line-height:1.9;vertical-align:middle!important}.teacher-checks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-height:225px;overflow:auto;padding:8px;border:1px solid #d5e4d7;border-radius:8px}.teacher-checks label{font-size:11px;border:1px solid #e2ebe4;border-radius:7px;padding:9px;display:flex;align-items:center;gap:5px}.teacher-checks input{width:16px;height:16px;accent-color:#0c7055}.scroll{overflow:auto}.listing{width:100%;border-collapse:collapse}.listing th,.listing td{border:1px solid #c5d8ca;padding:8px;white-space:normal}.listing th{background:#e8f3ea}.listing button{padding:6px 9px}.status{min-height:21px;color:#5c7563}
-.weekly-table{border-collapse:collapse;table-layout:fixed;min-width:1460px;width:100%;font-size:9px}.weekly-table th,.weekly-table td{border:1px solid #555;padding:3px 2px;text-align:center;vertical-align:middle;overflow-wrap:anywhere}.weekly-table th{background:#ecf3e4;font-weight:800}.weekly-table .vertical{height:117px;min-width:27px;width:27px;vertical-align:bottom;padding:0}.weekly-table .vertical>span{display:flex;align-items:center;justify-content:center;text-align:center;writing-mode:vertical-rl;transform:rotate(180deg);margin:auto;padding:7px 1px;font-size:8px;width:100%;height:100%}.weekly-table .vertical,.weekly-table .check-cell{text-align:center!important;vertical-align:middle!important}.weekly-table .check-cell{font-size:10px}.weekly-table .day-column{width:57px;background:#e6f0de}.weekly-table .name-column{width:110px}.weekly-table .lesson-column{width:55px}.weekly-table .score-column{width:46px}.weekly-table .check-cell{width:27px;font-weight:900;color:#0c694a}.weekly-table .day-stamp{font-size:9px;display:block;margin-top:5px;color:#466655;direction:ltr}.weekly-table tbody tr{height:24px}.report-header{text-align:center;border-bottom:1px solid #b59c70;margin-bottom:9px;padding-bottom:7px}.report-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}.report-top img{height:58px}.report-top>div:first-child{text-align:right}.report-top>div:last-child{text-align:left}.report-title{font-size:15px;font-weight:800;margin:8px 0;color:#587132}.report-meta{display:flex;justify-content:space-around;flex-wrap:wrap;gap:10px;font-weight:700;margin:8px 0}.signature{display:flex;justify-content:space-around;gap:20px;text-align:center;margin-top:11px;font-weight:700}.signature>div{flex:1}.signature small{display:block;margin-top:10px}.screen-report{padding:10px;border:1px solid #cedbd2;border-radius:10px;background:white}
+.weekly-table{border-collapse:collapse;table-layout:fixed;min-width:1460px;width:100%;font-size:9px}.weekly-table th,.weekly-table td{border:1px solid #555;padding:3px 2px;text-align:center;vertical-align:middle;overflow-wrap:anywhere}.weekly-table th{background:#ecf3e4;font-weight:800}.weekly-table .vertical{height:117px;min-width:27px;width:27px;vertical-align:bottom;padding:0}.weekly-table .vertical>span{display:flex;align-items:center;justify-content:center;text-align:center;writing-mode:vertical-rl;transform:rotate(180deg);margin:auto;padding:7px 1px;font-size:8px;width:100%;height:100%}.weekly-table .vertical,.weekly-table .check-cell{text-align:center!important;vertical-align:middle!important}.weekly-table .check-cell{font-size:10px}.weekly-table .day-column{width:57px;background:#e6f0de}.weekly-table .name-column{width:110px}.weekly-table .lesson-column{width:55px}.weekly-table .score-column{width:46px}.weekly-table .check-cell{width:27px;font-weight:900;color:#0c694a}.weekly-table .day-stamp{font-size:9px;display:block;margin-top:5px;color:#466655;direction:ltr}.weekly-table tbody tr{height:24px}.report-header{text-align:center;border-bottom:1px solid #b59c70;margin-bottom:9px;padding-bottom:7px}.report-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}.report-top img{height:58px}.report-top>div:first-child{text-align:right}.report-top>div:last-child{text-align:left}.report-title{font-size:15px;font-weight:800;margin:8px 0;color:#587132}.report-meta{display:flex;justify-content:space-around;flex-wrap:wrap;gap:10px;font-weight:700;margin:8px 0}.signature{display:flex;justify-content:space-around;gap:20px;text-align:center;margin-top:11px;font-weight:700}.signature>div{flex:1}.signature small{display:block;margin-top:10px}.screen-report{padding:10px;border:1px solid #cedbd2;border-radius:10px;background:white}.evidence-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.evidence-options label{display:flex;gap:7px;align-items:center;font-size:12px;font-weight:600}.evidence-options input{width:17px;height:17px;flex:none;accent-color:#0c7055}.evidence-teachers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;max-height:190px;overflow:auto;padding:9px;border:1px solid #d5e4d7;border-radius:9px}.evidence-teachers label{display:flex;gap:7px;align-items:center;font-size:11px}.evidence-teachers input{width:17px;height:17px;flex:none}.evidence-detail{grid-column:1/-1;border:1px solid #d9e7dd;padding:12px;border-radius:9px;background:#f9fcf9}.evidence-detail .fields{margin-top:8px}.evidence-detail>label{display:inline-flex;gap:7px;align-items:center}.evidence-detail>label input{width:17px;height:17px}.evidence-status{font-weight:700}.evidence-status.yes{color:#126744}.evidence-status.no{color:#995a22}@media(max-width:950px){.evidence-teachers{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:950px){.fields{grid-template-columns:repeat(2,1fr)}.teacher-checks{grid-template-columns:repeat(2,1fr)}.week-days{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.fields,.week-days,.teacher-checks{grid-template-columns:1fr}.wide{grid-column:auto}}
 </style></head><body>
@@ -12,6 +12,25 @@ main{max-width:1550px;margin:16px auto;padding:0 12px}.card{background:#fff;bord
 <div class="note">أدخل رقم الأسبوع والفترة وتواريخ الأيام يدويًا. بعد الحفظ سيظهر الأسبوع في قائمة الأسابيع المحفوظة، ويمكنك الرجوع إليه وتعديله أو حذفه في أي وقت.</div><input type="hidden" id="editWeekDocId">
 <div class="week-days" id="dayInputs"></div><div class="actions"><button onclick="saveWeekSettings()">💾 حفظ بيانات الأسبوع</button><button class="secondary" onclick="newWeekForm()">＋ إنشاء أسبوع جديد</button></div><p id="weekMsg" class="status"></p></section>
 <section class="card"><h2>الأسابيع المحفوظة</h2><p class="note">من هنا يمكنك فتح أي أسبوع محفوظ لتعديل بياناته وتواريخه، أو حذف الأسبوع بالكامل. علامات الأعمال والشواهد تُسحب من صفحة متابعة أعمال الإشراف الأصلية، وتعديلها أو حذفها يتم من هناك.</p><div class="scroll"><table class="listing"><thead><tr><th>رقم الأسبوع</th><th>الفترة</th><th>اسم المشرف</th><th>الإجراءات</th></tr></thead><tbody id="weeksBody"><tr><td colspan="4">جارٍ تحميل الأسابيع...</td></tr></tbody></table></div><p id="weeksMsg" class="status"></p></section>
+<section class="card" id="evidencePanel"><h2>تسجيل شواهد بنود المتابعة</h2>
+<p class="note">افتح أسبوعًا محفوظًا أولًا، ثم اختر المعلمين ونوع الشاهد. يسجل النظام النتيجة الإيجابية أو غير المنجزة، وتظهر علامة الصح في التقرير بتاريخ الشاهد فقط. شاهدا متابعة السجلات والمناهج يُسجلان تلقائيًا عند وجود زيارة فنية.</p>
+<div class="fields">
+<label>رقم الأسبوع<input id="evidenceWeek" readonly placeholder="افتح أسبوعًا محفوظًا"></label>
+<label>نوع الشاهد<select id="evidenceType" onchange="toggleEvidenceFields()"><option value="waiting">متابعة حصص الانتظار</option><option value="office">الأعمال المكتبية — الخطة الأسبوعية</option><option value="worksheets">متابعة أوراق العمل</option><option value="activities">متابعة المشاريع والخطط — الأنشطة</option></select></label>
+<label>اليوم<select id="evidenceDay"></select></label>
+<div class="wide"><label>المعلمون المستهدفون</label><div class="actions"><button class="secondary" type="button" onclick="checkEvidenceTeachers(true)">تحديد الكل</button><button class="secondary" type="button" onclick="checkEvidenceTeachers(false)">إلغاء التحديد</button></div><div class="evidence-teachers" id="evidenceTeachers"></div></div>
+<div class="evidence-detail" data-evidence-type="waiting"><strong>شاهد حصة الانتظار</strong><div class="fields">
+<label>رقم الحصة<input id="evidencePeriod" inputmode="numeric" placeholder="مثال: 3"></label>
+<label>اسم المعلم الغائب<input id="evidenceAbsentTeacher" placeholder="المعلم الذي تم تغطية حصته"></label>
+<label>الفصل<input id="evidenceClass" placeholder="مثال: رابع ابتدائي / ب"></label>
+</div><div class="evidence-options"><label><input type="checkbox" id="evidenceAttended"> تم دخول المعلم حصة الانتظار بالفعل</label></div></div>
+<div class="evidence-detail" data-evidence-type="office" hidden><strong>الأعمال المكتبية — نشر الخطة الأسبوعية</strong><div class="evidence-options"><label><input type="checkbox" id="evidenceOfficePublished"> تم نشر الخطة الأسبوعية</label></div><p>ترك المربع غير محدد يعني لم يتم النشر.</p></div>
+<div class="evidence-detail" data-evidence-type="worksheets" hidden><strong>متابعة أوراق العمل</strong><div class="evidence-options"><label><input type="checkbox" id="evidenceWorksheetsPublished"> تم نشر أوراق العمل</label></div><p>يتبع الشاهد رقم الأسبوع واليوم المحدد.</p></div>
+<div class="evidence-detail" data-evidence-type="activities" hidden><strong>متابعة المشاريع والخطط</strong><div class="fields"><label>نوع النشاط<select id="evidenceActivityType"><option value="صفي">صفي</option><option value="لا صفي">لا صفي</option></select></label></div><div class="evidence-options"><label><input type="checkbox" id="evidenceActivityPublished"> تم نشر النشاط</label><label><input type="checkbox" id="evidenceActivityImplemented"> تم تنفيذ النشاط</label></div></div>
+</div>
+<input id="editEvidenceId" type="hidden"><div class="actions"><button onclick="saveEvidence()">💾 حفظ الشاهد</button><button class="secondary" onclick="resetEvidenceForm()">شاهد جديد</button></div><p id="evidenceMsg" class="status"></p>
+<div class="scroll"><table class="listing"><thead><tr><th>اليوم / التاريخ</th><th>المعلم</th><th>الشاهد</th><th>البيانات والحالة</th><th>الإجراءات</th></tr></thead><tbody id="evidenceBody"><tr><td colspan="5">افتح أسبوعًا محفوظًا لعرض شواهده.</td></tr></tbody></table></div>
+</section>
 <section class="card"><div class="actions"><button onclick="printWeekly()">🖨️ طباعة الاستمارة الأصلية – A4 أفقي</button><button class="secondary" onclick="renderWeekly()">🔄 تحديث التقرير</button></div><div class="scroll screen-report" id="weeklyPreview"></div></section>
 </main>
 <script>
@@ -22,7 +41,7 @@ const followUpDb=followUpApp.firestore();
 const el=id=>document.getElementById(id),days=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"],categories=["اجتماع","ورشة عمل","نقاش","حضور درس (تبادل زيارات)","دورات","حلقة تنشيطية","مناقشة أعمال الاختبارات","مناقشة التحصيلي والقدرات","مناقشة مستوى الطلاب","مناقشة مستوى المعلمين","المقابلات","حضور حصص القدرات والتحصيلي","متابعة السجلات","متابعة المشاريع والخطط","متابعة المناهج","متابعة أوراق العمل","متابعة حضور الإذاعة الصباحية","متابعة البحوث والابتكارات","متابعة مستوى الطلاب الضعاف","متابعة مشاريع المقررات","متابعة الطلاب الموهوبين","حضور برنامج","أعمال مكتبية","متابعة تلبية الاحتياجات","متابعة توزيع الحصص على المعلمين (الانتظار)"];
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm=v=>String(v||"").trim().toLowerCase();
-let user="",role="",teachers=[],allVisits=[],publishedActions=[],savedWeeks=[],supervisorProfile={},authorized=false;
+let user="",role="",teachers=[],allVisits=[],publishedActions=[],savedWeeks=[],supervisorProfile={},authorized=false,weeklyEvidence=[];
 const teacherKey=t=>norm(t.email||t.username||t.id),ownLog=x=>norm(x.supervisorEmail)===user;
 const dayDate=i=>el("day"+i).value;
 function dayNote(i){return {enabled:!!el("dayNoteEnabled"+i)?.checked,text:el("dayNoteText"+i)?.value.trim()||""}}
@@ -66,12 +85,24 @@ function latestVisit(teacher,date){
  return candidates[0]||null;
 }
 function matchTeacher(teacher,ref){return [teacherKey(teacher),norm(teacher.code),norm(teacher.name),norm(teacher.id),norm(teacher.username)].includes(norm(ref))}
+const evidenceCategory={waiting:"متابعة توزيع الحصص على المعلمين (الانتظار)",office:"أعمال مكتبية",worksheets:"متابعة أوراق العمل",activities:"متابعة المشاريع والخطط"};
+const evidenceManagedCategories=new Set([...Object.values(evidenceCategory),"متابعة السجلات","متابعة المناهج"]);
 function rowMarks(teacher,date){
  const result=new Set();
+ if(!date)return result;
+ if(latestVisit(teacher,date)){result.add("متابعة السجلات");result.add("متابعة المناهج");}
  for(const x of publishedActions){
   if(x.published===false||x.startDate!==date)continue;
   const targets=Array.isArray(x.targetTeacherEmails)?x.targetTeacherEmails:[];
-  if(targets.some(ref=>matchTeacher(teacher,ref)))result.add(x.contentType|| (x.eventKind==="meeting"?"اجتماع":"دورات"));
+  const category=x.contentType||(x.eventKind==="meeting"?"اجتماع":"دورات");
+  if(!evidenceManagedCategories.has(category)&&targets.some(ref=>matchTeacher(teacher,ref)))result.add(category);
+ }
+ for(const x of weeklyEvidence){
+  if(x.date!==date||!matchTeacher(teacher,x.teacherEmail))continue;
+  const positive=x.type==="waiting"?x.attended===true:
+   x.type==="office"||x.type==="worksheets"?x.published===true:
+   x.type==="activities"?(x.published===true||x.implemented===true):false;
+  if(positive&&evidenceCategory[x.type])result.add(evidenceCategory[x.type]);
  }
  return result;
 }
@@ -143,6 +174,101 @@ async function loadLogs(){
  const snap=await db.collection("supervisionWeeklyLogs").get();
  logs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(ownLog);renderLogs();
 }
+
+function renderEvidenceTeacherChoices(){
+ el("evidenceTeachers").innerHTML=teachers.map(t=>'<label><input type="checkbox" class="evidence-teacher" value="'+esc(teacherKey(t))+'"> '+esc(t.name||t.email||"—")+'</label>').join("")||"لا يوجد معلمون مسندون";
+}
+function selectedEvidenceTeachers(){
+ const selected=new Set([...document.querySelectorAll(".evidence-teacher:checked")].map(x=>x.value));
+ return teachers.filter(t=>selected.has(teacherKey(t)));
+}
+function checkEvidenceTeachers(value){document.querySelectorAll(".evidence-teacher").forEach(x=>x.checked=!!value)}
+function toggleEvidenceFields(){
+ const type=el("evidenceType").value;
+ document.querySelectorAll("[data-evidence-type]").forEach(node=>node.hidden=node.dataset.evidenceType!==type);
+}
+function resetEvidenceForm(){
+ el("editEvidenceId").value="";
+ checkEvidenceTeachers(false);
+ ["evidencePeriod","evidenceAbsentTeacher","evidenceClass"].forEach(id=>el(id).value="");
+ ["evidenceAttended","evidenceOfficePublished","evidenceWorksheetsPublished","evidenceActivityPublished","evidenceActivityImplemented"].forEach(id=>el(id).checked=false);
+ el("evidenceActivityType").value="صفي";
+ el("evidenceMsg").textContent="";
+}
+function renderEvidence(){
+ el("evidenceWeek").value=el("editWeekDocId").value?el("weekNumber").value:"";
+ const body=el("evidenceBody");
+ if(!el("editWeekDocId").value){body.innerHTML='<tr><td colspan="5">افتح أسبوعًا محفوظًا أولًا لتسجيل وعرض الشواهد.</td></tr>';return}
+ const typeNames={waiting:"متابعة الانتظار",office:"الأعمال المكتبية",worksheets:"أوراق العمل",activities:"المشاريع والخطط"};
+ body.innerHTML=weeklyEvidence.map(x=>{
+  const details=x.type==="waiting"?"دخول الانتظار: "+(x.attended?"نعم":"لا")+" | الحصة "+(x.period||"—")+" | الغائب: "+(x.absentTeacher||"—")+" | الفصل: "+(x.className||"—"):
+   x.type==="office"?"نشر الخطة الأسبوعية: "+(x.published?"نعم":"لا"):
+   x.type==="worksheets"?"نشر أوراق العمل: "+(x.published?"نعم":"لا"):
+   "النشاط: "+(x.activityType||"—")+" | النشر: "+(x.published?"نعم":"لا")+" | التنفيذ: "+(x.implemented?"نعم":"لا");
+  return '<tr><td>'+esc(x.day||"")+'<div>'+esc(x.date||"")+'</div></td><td>'+esc(x.teacherName||x.teacherEmail)+'</td><td>'+esc(typeNames[x.type]||x.type)+'</td><td>'+esc(details)+'</td><td><button class="secondary" onclick="editEvidence(\''+esc(x.id)+'\')">تعديل</button> <button class="red" onclick="deleteEvidence(\''+esc(x.id)+'\')">حذف</button></td></tr>';
+ }).join("")||'<tr><td colspan="5">لا توجد شواهد مسجلة لهذا الأسبوع.</td></tr>';
+}
+function editEvidence(id){
+ const x=weeklyEvidence.find(v=>v.id===id);if(!x)return;
+ resetEvidenceForm();el("editEvidenceId").value=x.id;
+ el("evidenceType").value=x.type;el("evidenceDay").value=String(days.findIndex((_,i)=>dayDate(i)===x.date));
+ if(el("evidenceDay").value==="-1")el("evidenceDay").value="0";
+ document.querySelectorAll(".evidence-teacher").forEach(box=>box.checked=box.value===x.teacherEmail);
+ el("evidencePeriod").value=x.period||"";el("evidenceAbsentTeacher").value=x.absentTeacher||"";el("evidenceClass").value=x.className||"";
+ el("evidenceAttended").checked=!!x.attended;el("evidenceOfficePublished").checked=x.type==="office"&&!!x.published;
+ el("evidenceWorksheetsPublished").checked=x.type==="worksheets"&&!!x.published;
+ el("evidenceActivityPublished").checked=x.type==="activities"&&!!x.published;el("evidenceActivityImplemented").checked=!!x.implemented;
+ el("evidenceActivityType").value=x.activityType||"صفي";toggleEvidenceFields();
+ el("evidencePanel").scrollIntoView({behavior:"smooth",block:"start"});
+}
+async function persistEvidence(next){
+ const id=el("editWeekDocId").value.trim();if(!authorized||!id)throw Error("افتح أسبوعًا محفوظًا أولًا");
+ await db.runTransaction(async tr=>{
+  const ref=db.collection("supervisionWeeklyPlans").doc(id),snap=await tr.get(ref);
+  if(!snap.exists||norm(snap.data()?.supervisorEmail)!==user)throw Error("الأسبوع غير موجود أو ليس ضمن صلاحياتك");
+  tr.update(ref,{evidenceRecords:next,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+ });
+ weeklyEvidence=next;renderEvidence();renderWeekly();
+}
+async function saveEvidence(){
+ const id=el("editWeekDocId").value.trim();if(!id)return alert("افتح أو احفظ الأسبوع أولًا");
+ const type=el("evidenceType").value,index=Number(el("evidenceDay").value),date=dayDate(index);
+ const chosen=selectedEvidenceTeachers(),editId=el("editEvidenceId").value;
+ if(!date)return alert("حدد تاريخ اليوم في بيانات الأسبوع أولًا");
+ if(!chosen.length)return alert("اختر معلمًا واحدًا على الأقل");
+ if(type==="waiting"&&chosen.length!==1)return alert("شاهد الانتظار يحتاج معلمًا واحدًا لكل حصة");
+ if(editId&&chosen.length!==1)return alert("عند تعديل الشاهد اختر معلمًا واحدًا فقط");
+ const attended=el("evidenceAttended").checked;
+ const period=el("evidencePeriod").value.trim(),absentTeacher=el("evidenceAbsentTeacher").value.trim(),className=el("evidenceClass").value.trim();
+ if(type==="waiting"&&attended&&(!period||!absentTeacher||!className))return alert("أكمل رقم الحصة والمعلم الغائب والفصل لإثبات دخول الانتظار");
+ const now=new Date().toISOString(),create=(t)=>({
+  id:editId||(String(Date.now())+"_"+Math.random().toString(36).slice(2,10)),
+  teacherEmail:teacherKey(t),teacherName:t.name||t.email||"—",
+  type,date,day:days[index],weekNumber:el("weekNumber").value.trim(),
+  attended:type==="waiting"&&attended,
+  period:type==="waiting"?period:"",absentTeacher:type==="waiting"?absentTeacher:"",className:type==="waiting"?className:"",
+  published:type==="office"?el("evidenceOfficePublished").checked:type==="worksheets"?el("evidenceWorksheetsPublished").checked:type==="activities"?el("evidenceActivityPublished").checked:false,
+  activityType:type==="activities"?el("evidenceActivityType").value:"",
+  implemented:type==="activities"&&el("evidenceActivityImplemented").checked,
+  createdAt:weeklyEvidence.find(x=>x.id===editId)?.createdAt||now,updatedAt:now
+ });
+ let next=weeklyEvidence.slice();
+ for(const t of chosen){
+  const entry=create(t);
+  if(editId){const at=next.findIndex(x=>x.id===editId);if(at<0)return alert("الشاهد لم يعد موجودًا");next[at]=entry}
+  else if(type!=="waiting"){next=next.filter(x=>!(x.type===type&&x.date===date&&x.teacherEmail===teacherKey(t)));next.push(entry)}
+  else next.push(entry);
+ }
+ try{
+  await persistEvidence(next);resetEvidenceForm();
+  el("evidenceMsg").textContent="✓ تم حفظ الشاهد وتحديث التقرير.";
+ }catch(e){console.error(e);el("evidenceMsg").textContent="تعذر حفظ الشاهد: "+(e.message||e)}
+}
+async function deleteEvidence(id){
+ const x=weeklyEvidence.find(v=>v.id===id);if(!x||!confirm("حذف هذا الشاهد؟"))return;
+ try{await persistEvidence(weeklyEvidence.filter(v=>v.id!==id));resetEvidenceForm();el("evidenceMsg").textContent="تم حذف الشاهد وتحديث التقرير."}
+ catch(e){el("evidenceMsg").textContent="تعذر الحذف: "+(e.message||e)}
+}
 function weekDoc(){return {supervisorEmail:user,supervisorName:el("supervisorName").value.trim(),specialty:el("specialty").value.trim(),weekNumber:el("weekNumber").value.trim(),from:el("weekFrom").value,to:el("weekTo").value,dates:days.map((_,i)=>dayDate(i)),dayNotes:days.map((_,i)=>dayNote(i)),generalSupervisor:el("generalSupervisor").value,generalDirector:el("generalDirector").value}}
 async function saveWeekSettings(){
  if(!el("weekNumber").value.trim()||!el("weekFrom").value)return alert("أدخل رقم الأسبوع وتاريخ البداية.");
@@ -152,11 +278,14 @@ async function saveWeekSettings(){
  const editingId=el("editWeekDocId").value.trim(),targetId=editingId||weekIdentity();
  await db.collection("supervisionWeeklyPlans").doc(targetId).set({...weekDoc(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
  el("editWeekDocId").value=targetId;
+ if(!editingId)weeklyEvidence=[];
+ renderEvidence();
  el("weekMsg").textContent=editingId?"✓ تم تحديث الأسبوع المحفوظ.":"✓ تم حفظ الأسبوع بنجاح. يمكنك تعديله أو حذفه من قائمة الأسابيع المحفوظة.";
  await loadSavedWeeks();renderWeekly();
 }
 function newWeekForm(){
  el("editWeekDocId").value="";
+ weeklyEvidence=[];resetEvidenceForm();renderEvidence();
  for(const id of ["weekNumber","weekFrom","weekTo"])el(id).value="";
  days.forEach((_,i)=>{el("day"+i).value="";el("dayNoteEnabled"+i).checked=false;el("dayNoteText"+i).value="";});
  el("weekMsg").textContent="نموذج أسبوع جديد. أدخل البيانات ثم احفظ.";
@@ -169,6 +298,7 @@ async function loadSavedWeek(id){
  el("editWeekDocId").value=id;
  for(const [field,value] of Object.entries({supervisorName:x.supervisorName,specialty:x.specialty,weekNumber:x.weekNumber,weekFrom:x.from,weekTo:x.to,generalSupervisor:x.generalSupervisor,generalDirector:x.generalDirector}))if(el(field))el(field).value=value||"";
  days.forEach((_,i)=>{el("day"+i).value=x.dates?.[i]||"";el("dayNoteEnabled"+i).checked=!!x.dayNotes?.[i]?.enabled;el("dayNoteText"+i).value=x.dayNotes?.[i]?.text||"";});
+ weeklyEvidence=Array.isArray(x.evidenceRecords)?x.evidenceRecords:[];resetEvidenceForm();renderEvidence();
  el("weekMsg").textContent="✓ تم فتح الأسبوع رقم "+(x.weekNumber||"—")+" للتعديل. اضغط حفظ بيانات الأسبوع بعد الانتهاء.";
  renderWeekly();el("weekNumber").scrollIntoView({behavior:"smooth",block:"center"});
 }
@@ -176,7 +306,7 @@ async function deleteSavedWeek(id){
  const x=savedWeeks.find(w=>w.id===id);if(!x||norm(x.supervisorEmail)!==user)return;
  if(!confirm("هل تريد حذف الأسبوع رقم "+(x.weekNumber||"—")+" نهائيًا؟ لن يتم حذف الشواهد الأصلية من متابعة أعمال الإشراف."))return;
  await db.collection("supervisionWeeklyPlans").doc(id).delete();
- if(el("editWeekDocId").value===id){el("editWeekDocId").value="";el("weekNumber").value="";el("weekFrom").value="";el("weekTo").value="";days.forEach((_,i)=>{el("day"+i).value="";el("dayNoteEnabled"+i).checked=false;el("dayNoteText"+i).value="";});renderWeekly();}
+ if(el("editWeekDocId").value===id){el("editWeekDocId").value="";weeklyEvidence=[];resetEvidenceForm();renderEvidence();el("weekNumber").value="";el("weekFrom").value="";el("weekTo").value="";days.forEach((_,i)=>{el("day"+i).value="";el("dayNoteEnabled"+i).checked=false;el("dayNoteText"+i).value="";});renderWeekly();}
  el("weeksMsg").textContent="تم حذف الأسبوع من التقارير المحفوظة.";
  await loadSavedWeeks();
 }
@@ -202,6 +332,8 @@ async function init(){
  authorized=true;supervisorProfile=u.exists?u.data():{};
  el("supervisorName").value=supervisorProfile.name||sessionStorage.getItem("currentUserName")||user;
  el("specialty").value=supervisorProfile.specialty||supervisorProfile.subjectName||"";
+ el("evidenceDay").innerHTML=days.map((d,i)=>'<option value="'+i+'">'+d+'</option>').join("");
+ toggleEvidenceFields();
  el("dayInputs").innerHTML=days.map((d,i)=>'<div class="day-box"><strong>'+d+'</strong><input id="day'+i+'" type="date" aria-label="تاريخ '+d+'"><label class="day-note-toggle"><input id="dayNoteEnabled'+i+'" type="checkbox"> تفعيل ملاحظة لهذا اليوم</label><input id="dayNoteText'+i+'" class="day-note-input" type="text" placeholder="اكتب الملاحظة التي تظهر بدل صفوف اليوم" aria-label="ملاحظة يوم '+d+'"></div>').join("");
  days.forEach((_,i)=>{el("day"+i).addEventListener("change",renderWeekly);el("dayNoteEnabled"+i).addEventListener("change",renderWeekly);el("dayNoteText"+i).addEventListener("input",renderWeekly);});
  ["supervisorName","specialty","weekNumber","weekFrom","weekTo","generalSupervisor","generalDirector"].forEach(id=>el(id).addEventListener("change",renderWeekly));
@@ -216,6 +348,7 @@ async function init(){
   else teachersMap.set(email,{...x,...teachersMap.get(email)});
  });
  teachers=[...teachersMap.values()].filter(t=>{const n=norm(t.name),identity=norm(t.email||t.username||t.id);return identity!==user&&n!=="محمد عامر أحمد"&&n!=="محمد عامر عبدالله";}).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
+ renderEvidenceTeacherChoices();renderEvidence();
  allVisits=vs.docs.map(d=>({id:d.id,...d.data()}));
  publishedActions=cs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.createdBy||x.updatedBy)===user);
  renderWeekly();await loadSavedWeeks();
