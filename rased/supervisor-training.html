@@ -165,7 +165,8 @@ function evidenceHtmlCheckbox(id,text){
 }
 function renderEvidenceInputs(category){
  const type=evidenceType(category),week=evidenceHtmlField("رقم الأسبوع","evidenceWeekNumber","مثال: 12","number");
- if(type==="waiting")return '<div class="span3 note">اختر التاريخ من «تاريخ بداية إتاحة المادة»، وحدد المعلم الذي دخل الانتظار من قائمة المعلمين. سجّل كل حصة انتظار على حدة.</div>'+
+ if(type==="waiting")return '<div class="span3 note">اختر اليوم وتاريخ الشاهد، ثم المعلم الذي دخل الانتظار من قائمة المعلمين. سجّل كل حصة انتظار على حدة.</div>'+
+  '<div><label>اليوم</label><select id="evidenceWeekDay"><option value="">اختر اليوم</option><option value="0">الأحد</option><option value="1">الاثنين</option><option value="2">الثلاثاء</option><option value="3">الأربعاء</option><option value="4">الخميس</option></select></div>'+
   evidenceHtmlField("رقم الحصة","evidencePeriod","مثال: 3")+
   evidenceHtmlField("اسم المعلم الغائب","evidenceAbsent","المعلم الذي دخلت بدلًا منه")+
   evidenceHtmlField("الفصل","evidenceClass","مثال: رابع ابتدائي / ب")+
@@ -182,7 +183,7 @@ function evidenceInputChecked(id){return !!el(id)?.checked}
 function structuredEvidenceFromForm(category){
  const type=evidenceType(category);if(!type)return null;
  const data={type,weekNumber:type==="waiting"?"":evidenceInputValue("evidenceWeekNumber")};
- if(type==="waiting")Object.assign(data,{period:evidenceInputValue("evidencePeriod"),absentTeacher:evidenceInputValue("evidenceAbsent"),className:evidenceInputValue("evidenceClass"),attended:evidenceInputChecked("evidenceAttended")});
+ if(type==="waiting")Object.assign(data,{dayIndex:evidenceInputValue("evidenceWeekDay"),period:evidenceInputValue("evidencePeriod"),absentTeacher:evidenceInputValue("evidenceAbsent"),className:evidenceInputValue("evidenceClass"),attended:evidenceInputChecked("evidenceAttended")});
  if(type==="office")data.planPublished=evidenceInputChecked("evidenceOfficePublished");
  if(type==="worksheets")data.worksheetsPublished=evidenceInputChecked("evidenceWorksheetsPublished");
  if(type==="activities")Object.assign(data,{activityType:evidenceInputValue("evidenceActivityType")||"صفي",activityPublished:evidenceInputChecked("evidenceActivityPublished"),activityImplemented:evidenceInputChecked("evidenceActivityImplemented")});
@@ -193,6 +194,7 @@ function evidenceDetails(e){
  const item=(label,value)=>({label,text:String(value)});
  const yes=value=>value?"نعم":"لا";
  if(e.type==="waiting")return [
+  item("اليوم",["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"][Number(e.dayIndex)]||"—"),
   item("دخول حصة الانتظار",yes(e.attended)),item("رقم الحصة",e.period||"—"),item("المعلم الغائب",e.absentTeacher||"—"),item("الفصل",e.className||"—")];
  if(e.type==="office")return [item("رقم الأسبوع",e.weekNumber),item("هل تم نشر الخطة الأسبوعية؟",yes(e.planPublished))];
  if(e.type==="worksheets")return [item("رقم الأسبوع",e.weekNumber),item("هل تم نشر أوراق العمل؟",yes(e.worksheetsPublished))];
@@ -204,7 +206,7 @@ function fillEvidenceInputs(e){
  const check=(id,v)=>{if(el(id))el(id).checked=!!v};
  fill("evidenceWeekNumber",e.weekNumber);fill("evidencePeriod",e.period);
  fill("evidenceAbsent",e.absentTeacher);fill("evidenceClass",e.className);
- fill("evidenceActivityType",e.activityType||"صفي");
+ fill("evidenceActivityType",e.activityType||"صفي");fill("evidenceWeekDay",e.dayIndex);
  check("evidenceAttended",e.attended);check("evidenceOfficePublished",e.planPublished);
  check("evidenceWorksheetsPublished",e.worksheetsPublished);check("evidenceActivityPublished",e.activityPublished);check("evidenceActivityImplemented",e.activityImplemented);
 }
@@ -213,6 +215,10 @@ function toggleKind(){
  el("titleLabel").textContent=meeting?"اسم الاجتماع":"عنوان "+category;
  el("meetingFields").style.display=meeting?"block":"none";
  el("courseDateFields").style.display=meeting?"none":"block";
+ const dateLabel=el("courseDateFields").querySelector("label");
+ if(dateLabel)dateLabel.textContent=type?"تاريخ الشاهد":"تاريخ بداية إتاحة المادة (اختياري)";
+ const endDateWrap=el("endDate").closest("div");
+ if(endDateWrap)endDateWrap.style.display=type?"none":"block";
  el("tailoredFields").style.display=meeting?"none":"block";
  if(meeting){el("tailoredGrid").innerHTML="";return}
  const old=[...el("tailoredGrid").querySelectorAll("[data-detail-index]")].map(x=>x.value);
@@ -248,6 +254,8 @@ async function saveEvent(){
  if(isEvidence&&structured.type!=="waiting"&&(!/^\d+$/.test(structured.weekNumber)||Number(structured.weekNumber)<1))return alert("أدخل رقم الأسبوع الصحيح.");
  if(isEvidence&&structured.type==="waiting"){
   if(targetEmails.length!==1)return alert("اختر معلمًا واحدًا لكل حصة انتظار.");
+  const weekday=new Date(date+"T12:00:00").getDay();
+  if(structured.dayIndex===""||Number(structured.dayIndex)!==weekday)return alert("اختر اليوم المطابق للتاريخ الذي سجلته لحصة الانتظار.");
   if(structured.attended&&(!structured.period||!structured.absentTeacher||!structured.className))return alert("أكمل رقم الحصة والمعلم الغائب والفصل.");
  }
  const title=el("title").value.trim()||(isEvidence?(category+(structured.weekNumber?" — الأسبوع "+structured.weekNumber:"")+" — "+date):"");
