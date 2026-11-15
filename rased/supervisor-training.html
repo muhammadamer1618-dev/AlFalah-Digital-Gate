@@ -151,6 +151,7 @@ function updateTargetCount(){el("targetCount").textContent="تم اختيار "+
 document.addEventListener("change",e=>{
  if(e.target.matches(".target-teacher"))updateTargetCount();
  if(e.target.matches('.outcome-row [data-row-date]')&&evidenceType(chosenCategory())==="exchange")sortExchangeRows();
+ if(e.target.matches('.outcome-row [data-waiting-date]')&&evidenceType(chosenCategory())==="waitingDistribution")sortWaitingDistributionRows();
  if(e.target.matches("[data-exam-stage-choice]"))toggleExamStagesVisibility();
  if(e.target.matches("[data-exam-status]")){
   const stage=e.target.closest(".exam-stage");
@@ -300,6 +301,17 @@ function outcomesFromVisibleRows(){
    extracurricular:!!row.querySelector('[data-kind="extracurricular"]')?.checked};
  });
 }
+function sortWaitingDistributionRows(){
+ const body=el("teacherOutcomeRows");
+ if(!body||evidenceType(chosenCategory())!=="waitingDistribution")return;
+ const rows=[...body.querySelectorAll(".outcome-row")];
+ rows.sort((a,b)=>{
+  const da=a.querySelector("[data-waiting-date]")?.value||"9999-12-31";
+  const db=b.querySelector("[data-waiting-date]")?.value||"9999-12-31";
+  return da.localeCompare(db)||String(a.querySelector("td:nth-child(2)")?.textContent||"").localeCompare(String(b.querySelector("td:nth-child(2)")?.textContent||""),"ar");
+ });
+ rows.forEach((row,i)=>{body.appendChild(row);row.querySelector("td:first-child").textContent=String(i+1)});
+}
 function sortExchangeRows(){
  const body=el("teacherOutcomeRows");
  if(!body||evidenceType(chosenCategory())!=="exchange")return;
@@ -336,6 +348,7 @@ function renderTeacherOutcomeRows(seed){
   row.querySelector('[data-status="no"]').checked=!!x.notPublished;
  });
  sortExchangeRows();
+ sortWaitingDistributionRows();
 }
 function legacyOutcomes(e,targetEmails){
  const list=Array.isArray(e?.teacherOutcomes)?e.teacherOutcomes:[];
@@ -655,6 +668,14 @@ function printReport(id){
 }
 function printEvidence(id){
  const c=events.find(x=>x.id===id);if(!c)return;
+ if(c.structuredEvidence?.type==="waitingDistribution"&&Array.isArray(c.structuredEvidence.teacherOutcomes)){
+  const e=c.structuredEvidence,people=new Map(teachers.map(t=>[String(t.email||"").toLowerCase(),t.name||t.email]));
+  const sorted=e.teacherOutcomes.slice().sort((a,b)=>(a.waitingDate||a.date||"9999-12-31").localeCompare(b.waitingDate||b.date||"9999-12-31")||String(people.get(String(a.teacherEmail||"").toLowerCase())||a.teacherEmail||"").localeCompare(String(people.get(String(b.teacherEmail||"").toLowerCase())||b.teacherEmail||""),"ar"));
+  const rows=sorted.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(people.get(String(x.teacherEmail||"").toLowerCase())||x.teacherEmail||"—")+'</td><td>'+esc(x.waitingDate||x.date||"—")+'</td><td>'+(x.published?"تم التوزيع":x.notPublished?"لم يتم التوزيع":"—")+'</td></tr>').join("");
+  const logo=new URL("logo.jpeg",location.href).href,ministry=new URL("moe-vision2030-logo.png",location.href).href;
+  const html='<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>متابعة توزيع حصص الانتظار</title><style>@page{size:A4 portrait;margin:10mm}body{font-family:Tahoma,Arial,sans-serif;color:#17372f;font-size:12px;line-height:1.7}h1,h2{text-align:center}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border:1px solid #888;padding:9px;text-align:center}th{background:#edf5f0}</style><h1>مدارس الفلاح الأهلية</h1><h2>متابعة توزيع حصص الانتظار</h2><p>رقم الأسبوع: '+esc(e.weekNumber||"—")+'</p><table><thead><tr><th>م</th><th>اسم المعلم</th><th>تاريخ التوزيع</th><th>حالة التوزيع</th></tr></thead><tbody>'+rows+'</tbody></table></html>';
+  openSupervisionPrint(html,"اسمح بالنوافذ المنبثقة لطباعة التقرير.");return;
+ }
  if(c.structuredEvidence?.type==="exchange"&&Array.isArray(c.structuredEvidence.teacherOutcomes)){
   const e=c.structuredEvidence,people=new Map(teachers.map(t=>[String(t.email||"").toLowerCase(),t.name||t.email]));
   const sortedExchange=e.teacherOutcomes.slice().sort((a,b)=>(a.date||"9999-12-31").localeCompare(b.date||"9999-12-31")||String(people.get(String(a.teacherEmail||"").toLowerCase())||a.teacherEmail||"").localeCompare(String(people.get(String(b.teacherEmail||"").toLowerCase())||b.teacherEmail||""),"ar"));
