@@ -532,7 +532,7 @@ async function saveEvent(){
   const invalid=structured.teacherOutcomes.find(x=>x.published===x.notPublished);
   if(invalid)return alert(structured.type==="exchange"?"حدد تم الاستلام أو لم يتم الاستلام أمام كل معلم (حالة واحدة فقط).":structured.type==="waitingDistribution"?"حدد تم التوزيع أو لم يتم التوزيع أمام كل معلم (حالة واحدة فقط).":"حدد تم النشر أو لم يتم النشر أمام كل معلم (حالة واحدة فقط).");
   if(structured.type==="activities"&&structured.teacherOutcomes.some(x=>!x.classroom&&!x.extracurricular))return alert("حدد نوع النشاط لكل معلم: صفي أو لا صفي أو الاثنين.");
-  if(structured.type==="waitingDistribution"&&structured.teacherOutcomes.some(x=>!/^\\d{4}-\\d{2}-\\d{2}$/.test(x.waitingDate||"")))return alert("حدد تاريخ التوزيع أمام كل معلم.");
+  if(structured.type==="waitingDistribution"&&structured.teacherOutcomes.some(x=>!/^\d{4}-\d{2}-\d{2}$/.test(x.waitingDate||"")))return alert("حدد تاريخ التوزيع أمام كل معلم.");
   if(["exchange","office"].includes(structured.type)){
    if(structured.teacherOutcomes.some(x=>!/^\d{4}-\d{2}-\d{2}$/.test(x.date||"")))return alert(structured.type==="office"?"حدد تاريخ متابعة الخطة لكل معلم.":"حدد تاريخ زيارة صحيحًا أمام كل معلم.");
    if(structured.type==="exchange"&&structured.teacherOutcomes.some(x=>x.notPublished&&!x.reason))return alert("أدخل سبب عدم تسليم الاستمارة لكل معلم لم يسلّمها.");
