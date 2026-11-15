@@ -105,8 +105,9 @@ function rowMarks(teacher,date){
   }
   if(currentEvidence?.type==="waitingDistribution"){
    const personal=(Array.isArray(currentEvidence.teacherOutcomes)?currentEvidence.teacherOutcomes:[]).find(row=>matchTeacher(teacher,row.teacherEmail));
-   const dayIndex=Number(personal?.dayIndex);
-   if(personal?.published===true&&Number.isInteger(dayIndex)&&dayIndex>=0&&dayIndex<5&&dayDate(dayIndex)===date){
+   const legacyDay=Number(personal?.dayIndex);
+   const assignedDate=personal?.waitingDate||personal?.date||(Number.isInteger(legacyDay)&&legacyDay>=0&&legacyDay<5?dayDate(legacyDay):"");
+   if(personal?.published===true&&assignedDate===date){
     result.add("متابعة توزيع الحصص على المعلمين (الانتظار)");
    }
    continue;
