@@ -529,7 +529,7 @@ async function saveEvent(){
  if(isEvidence&&PER_TEACHER_TYPES.has(structured.type)&&structured.type!=="broadcast"){
   if(structured.teacherOutcomes.length!==targetEmails.length)return alert("لم تكتمل قائمة المعلمين.");
   const invalid=structured.teacherOutcomes.find(x=>x.published===x.notPublished);
-  if(invalid)return alert(structured.type==="exchange"?"حدد تم الاستلام أو لم يتم الاستلام أمام كل معلم (حالة واحدة فقط).":"حدد تم النشر أو لم يتم النشر أمام كل معلم (حالة واحدة فقط).");
+  if(invalid)return alert(structured.type==="exchange"?"حدد تم الاستلام أو لم يتم الاستلام أمام كل معلم (حالة واحدة فقط).":structured.type==="waitingDistribution"?"حدد تم التوزيع أو لم يتم التوزيع أمام كل معلم (حالة واحدة فقط).":"حدد تم النشر أو لم يتم النشر أمام كل معلم (حالة واحدة فقط).");
   if(structured.type==="activities"&&structured.teacherOutcomes.some(x=>!x.classroom&&!x.extracurricular))return alert("حدد نوع النشاط لكل معلم: صفي أو لا صفي أو الاثنين.");
   if(structured.type==="waitingDistribution"&&structured.teacherOutcomes.some(x=>!/^\\d$/.test(String(x.dayIndex))||Number(x.dayIndex)>4||!/^([1-8])$/.test(String(x.period))))return alert("حدد اليوم ورقم الحصة أمام كل معلم.");
   if(["exchange","office"].includes(structured.type)){
