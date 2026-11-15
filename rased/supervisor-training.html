@@ -295,7 +295,7 @@ function outcomesFromVisibleRows(){
   const email=row.dataset.email,yes=!!row.querySelector('[data-status="yes"]')?.checked,no=!!row.querySelector('[data-status="no"]')?.checked;
   return {teacherEmail:email,published:yes,notPublished:no,action:row.querySelector("[data-row-action]")?.value.trim()||"",
    date:row.querySelector("[data-row-date]")?.value||"",reason:row.querySelector("[data-row-reason]")?.value.trim()||"",
-   dayIndex:row.querySelector("[data-waiting-day]")?.value??"",period:row.querySelector("[data-waiting-period]")?.value??"",
+   waitingDate:row.querySelector("[data-waiting-date]")?.value||"",
    classroom:!!row.querySelector('[data-kind="classroom"]')?.checked,
    extracurricular:!!row.querySelector('[data-kind="extracurricular"]')?.checked};
  });
@@ -322,13 +322,12 @@ function renderTeacherOutcomeRows(seed){
   const t=byEmail.get(email.toLowerCase()),x=map.get(email.toLowerCase())||{};
   const kind=type==="activities"?'<div style="display:flex;gap:9px;flex-wrap:wrap"><label><input type="checkbox" data-kind="classroom" '+(x.classroom?'checked':'')+'> صفي</label><label><input type="checkbox" data-kind="extracurricular" '+(x.extracurricular?'checked':'')+'> لا صفي</label></div>':'—';
   const evidenceDate=["exchange","office"].includes(type)?'<input type="date" data-row-date value="'+esc(x.date||"")+'" aria-label="'+(type==="office"?"تاريخ متابعة الخطة الأسبوعية":"تاريخ تبادل الزيارة")+' للمعلم '+esc(t?.name||email)+'" style="min-width:135px">':'';
-  const waitingSchedule=type==="waitingDistribution"?'<select data-waiting-day aria-label="يوم الانتظار"><option value="">اختر اليوم</option>'+["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"].map((day,index)=>'<option value="'+index+'" '+(String(x.dayIndex)===String(index)?"selected":"")+'>'+day+'</option>').join("")+'</select>':'';
-  const waitingPeriod=type==="waitingDistribution"?'<select data-waiting-period aria-label="رقم حصة الانتظار"><option value="">اختر الحصة</option>'+Array.from({length:8},(_,index)=>index+1).map(period=>'<option value="'+period+'" '+(String(x.period)===String(period)?"selected":"")+'>'+period+'</option>').join("")+'</select>':'';
+  const waitingDate=type==="waitingDistribution"?'<input type="date" data-waiting-date value="'+esc(x.waitingDate||"")+'" aria-label="تاريخ توزيع الانتظار للمعلم '+esc(t?.name||email)+'" style="min-width:145px">':'';
   const statusYes=type==="waitingDistribution"?"تم التوزيع":type==="exchange"?"تم استلام الاستمارة":"تم النشر";
   const statusNo=type==="waitingDistribution"?"لم يتم التوزيع":type==="exchange"?"لم يتم الاستلام":"لم يتم النشر";
   const missingReason=type==="exchange"?'<input data-row-reason placeholder="مثال: تعليق الدراسة" value="'+esc(x.reason||"")+'" aria-label="سبب عدم الاستلام مع '+esc(t?.name||email)+'" style="margin-bottom:6px">':'';
   return type==="waitingDistribution"?
-   '<tr class="outcome-row" data-email="'+esc(email)+'"><td>'+(i+1)+'</td><td><b>'+esc(t?.name||email)+'</b></td><td>'+waitingSchedule+'</td><td>'+waitingPeriod+'</td><td><div style="display:flex;gap:10px;flex-wrap:wrap">'+statusCheckbox("yes",statusYes)+statusCheckbox("no",statusNo)+'</div></td></tr>':
+   '<tr class="outcome-row" data-email="'+esc(email)+'"><td>'+(i+1)+'</td><td><b>'+esc(t?.name||email)+'</b></td><td>'+waitingDate+'</td><td><div style="display:flex;gap:10px;flex-wrap:wrap">'+statusCheckbox("yes",statusYes)+statusCheckbox("no",statusNo)+'</div></td></tr>':
    '<tr class="outcome-row" data-email="'+esc(email)+'"><td>'+(i+1)+'</td><td><b>'+esc(t?.name||email)+'</b></td><td><div style="display:flex;gap:10px;flex-wrap:wrap">'+statusCheckbox("yes",statusYes)+statusCheckbox("no",statusNo)+'</div></td><td>'+waitingSchedule+waitingPeriod+evidenceDate+(["exchange","office","waitingDistribution"].includes(type)?"":kind)+'</td><td><div data-action-wrap '+(!x.notPublished?'hidden':'')+'>'+missingReason+'<input data-row-action placeholder="'+(type==="exchange"?"مثل: تنبيه لتسليم الاستمارة":"مثل: إنذار أو مساءلة")+'" value="'+esc(x.action||"")+'" aria-label="الإجراء المتخذ مع '+esc(t?.name||email)+'"></div><span data-action-hint '+(x.notPublished?'hidden':'')+'>—</span></td></tr>';
  }).join("");
  const rows=[...body.querySelectorAll(".outcome-row")];
@@ -349,8 +348,8 @@ function legacyOutcomes(e,targetEmails){
 function renderEvidenceInputs(category){
  const type=evidenceType(category),week=evidenceHtmlField("رقم الأسبوع","evidenceWeekNumber","مثال: 12","number");
  if(type==="waitingDistribution")return week+
-  '<div class="span3 note">اختر المعلمين المستهدفين، ثم حدد أمام كل معلم اليوم والحصة، واختر هل تم توزيع حصة الانتظار عليه أم لا. ستظهر علامة الصح في يوم التوزيع بالتقرير الأسبوعي عند اختيار «تم التوزيع».</div>'+
-  '<div class="span3 table-wrap"><table><thead><tr><th>م</th><th>اسم المعلم</th><th>اليوم</th><th>رقم الحصة</th><th>حالة التوزيع</th></tr></thead><tbody id="teacherOutcomeRows"></tbody></table></div>';
+  '<div class="span3 note">اختر المعلمين، ثم حدد تاريخ التوزيع أمام كل معلم وحالة التوزيع. ستظهر علامة الصح أمام المعلم في التاريخ المطابق له بالكشف الأسبوعي عند اختيار «تم التوزيع».</div>'+
+  '<div class="span3 table-wrap"><table><thead><tr><th>م</th><th>اسم المعلم</th><th>تاريخ التوزيع</th><th>حالة التوزيع</th></tr></thead><tbody id="teacherOutcomeRows"></tbody></table></div>';
  if(type==="exams")return week+
   '<div><label>نوع الاختبار</label><select id="evidenceExamType"><option value="">اختر نوع الاختبار</option><option value="تشخيصي">تشخيصي</option><option value="قصير">قصير</option><option value="وحدة">وحدة</option><option value="فترة أولى">فترة أولى</option><option value="فترة ثانية">فترة ثانية</option><option value="نهائي">نهائي</option></select></div>'+
   '<div class="span3"><label>مراحل المناقشة (اختر مرحلة واحدة أو أكثر)</label><div class="note" style="display:flex;flex-wrap:wrap;gap:20px">'+EXAM_STAGES.map(([stage,label])=>'<label style="display:flex;align-items:center;gap:7px"><input type="checkbox" data-exam-stage-choice="'+stage+'" checked> '+label+'</label>').join("")+'</div></div>'+
@@ -395,7 +394,7 @@ function evidenceDetails(e){
   const dayNames=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"];
   return [item("رقم الأسبوع",e.weekNumber||"—"),...e.teacherOutcomes.map(row=>{
    const teacher=teachers.find(t=>String(t.email).toLowerCase()===String(row.teacherEmail).toLowerCase());
-   return item("المعلم: "+(teacher?.name||row.teacherEmail),(dayNames[Number(row.dayIndex)]||"—")+" | الحصة: "+(row.period||"—")+" | "+(row.published?"تم التوزيع":"لم يتم التوزيع"));
+   return item("المعلم: "+(teacher?.name||row.teacherEmail),"التاريخ: "+(row.waitingDate||row.date||"—")+" | "+(row.published?"تم التوزيع":"لم يتم التوزيع"));
   })];
  }
  const attachAction=(items,notPublished)=>notPublished&&e.nonPublicationAction?items.concat([item("الإجراء المتخذ عند عدم النشر",e.nonPublicationAction)]):items;
@@ -464,7 +463,7 @@ function toggleKind(){
  el("meetingFields").style.display=meeting?"block":"none";
  el("courseDateFields").style.display=meeting?"none":"block";
  const dateLabel=el("courseDateFields").querySelector("label");
- if(dateLabel)dateLabel.textContent=type==="waitingDistribution"?"التاريخ مرتبط بيوم التوزيع في التقرير الأسبوعي":["exchange","office"].includes(type)?"التواريخ محددة لكل معلم":type?"تاريخ الشاهد":"تاريخ بداية إتاحة المادة (اختياري)";
+ if(dateLabel)dateLabel.textContent=type==="waitingDistribution"?"التاريخ يحدد لكل معلم داخل الجدول":["exchange","office"].includes(type)?"التواريخ محددة لكل معلم":type?"تاريخ الشاهد":"تاريخ بداية إتاحة المادة (اختياري)";
  const startDateWrap=el("startDate").closest("div");
  if(startDateWrap)startDateWrap.style.display=["exchange","office","waitingDistribution"].includes(type)?"none":"block";
  const endDateWrap=el("endDate").closest("div");
@@ -533,7 +532,7 @@ async function saveEvent(){
   const invalid=structured.teacherOutcomes.find(x=>x.published===x.notPublished);
   if(invalid)return alert(structured.type==="exchange"?"حدد تم الاستلام أو لم يتم الاستلام أمام كل معلم (حالة واحدة فقط).":structured.type==="waitingDistribution"?"حدد تم التوزيع أو لم يتم التوزيع أمام كل معلم (حالة واحدة فقط).":"حدد تم النشر أو لم يتم النشر أمام كل معلم (حالة واحدة فقط).");
   if(structured.type==="activities"&&structured.teacherOutcomes.some(x=>!x.classroom&&!x.extracurricular))return alert("حدد نوع النشاط لكل معلم: صفي أو لا صفي أو الاثنين.");
-  if(structured.type==="waitingDistribution"&&structured.teacherOutcomes.some(x=>!/^\\d$/.test(String(x.dayIndex))||Number(x.dayIndex)>4||!/^([1-8])$/.test(String(x.period))))return alert("حدد اليوم ورقم الحصة أمام كل معلم.");
+  if(structured.type==="waitingDistribution"&&structured.teacherOutcomes.some(x=>!/^\\d{4}-\\d{2}-\\d{2}$/.test(x.waitingDate||"")))return alert("حدد تاريخ التوزيع أمام كل معلم.");
   if(["exchange","office"].includes(structured.type)){
    if(structured.teacherOutcomes.some(x=>!/^\d{4}-\d{2}-\d{2}$/.test(x.date||"")))return alert(structured.type==="office"?"حدد تاريخ متابعة الخطة لكل معلم.":"حدد تاريخ زيارة صحيحًا أمام كل معلم.");
    if(structured.type==="exchange"&&structured.teacherOutcomes.some(x=>x.notPublished&&!x.reason))return alert("أدخل سبب عدم تسليم الاستمارة لكل معلم لم يسلّمها.");
@@ -635,7 +634,7 @@ function supervisionPrintTable(course){
  const head='<tr><th>م</th><th>اسم المعلم</th><th>الحالة</th><th>التفاصيل / الإجراء</th></tr>';
  const body=rows.map((x,i)=>{
   const activity=e.type==="activities"?[x.classroom?"صفي":"",x.extracurricular?"لا صفي":""].filter(Boolean).join(" و "):"";
-  const extra=[e.type==="office"?"التاريخ: "+(x.date||course.startDate||"—"):"",e.type==="waitingDistribution"?"اليوم: "+(["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"][Number(x.dayIndex)]||"—")+" | الحصة: "+(x.period||"—"):"",activity,x.notPublished&&x.reason?"السبب: "+x.reason:"",x.notPublished&&x.action?"الإجراء: "+x.action:""].filter(Boolean).join(" | ");
+  const extra=[e.type==="office"?"التاريخ: "+(x.date||course.startDate||"—"):"",e.type==="waitingDistribution"?"التاريخ: "+(x.waitingDate||x.date||"—"):"",activity,x.notPublished&&x.reason?"السبب: "+x.reason:"",x.notPublished&&x.action?"الإجراء: "+x.action:""].filter(Boolean).join(" | ");
   const status=e.type==="waitingDistribution"?(x.published?"تم التوزيع":x.notPublished?"لم يتم التوزيع":"—"):(x.published?"تم النشر":x.notPublished?"لم يتم النشر":"—");
   return '<tr><td>'+(i+1)+'</td><td>'+esc(names.get(String(x.teacherEmail||"").toLowerCase())||x.teacherEmail||"—")+'</td><td>'+status+'</td><td>'+esc(extra||"—")+'</td></tr>';
  }).join("");
