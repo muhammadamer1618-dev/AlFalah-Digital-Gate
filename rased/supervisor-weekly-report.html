@@ -63,17 +63,22 @@ function latestVisit(teacher,date){
  });
  const dated=matches.map(v=>({...v,__reportDate:visitDateValue(v.visitDate)||visitDateValue(v.createdAt)}))
   .filter(v=>!!date&&v.__reportDate===date);
- const supervisorIds=new Set([user,supervisorProfile.followUpId,supervisorProfile.uid,supervisorProfile.authUid,supervisorProfile.id].map(norm).filter(Boolean));
- const profileName=normalizeTeacherIdentity(supervisorProfile.name||sessionStorage.getItem("currentUserName")||"");
- // Only use this supervisor's own visit. Legacy name-only ownership is accepted only
- // when the visit has no supervisorId; never fall back to another supervisor's records.
+ let followUpSession={};
+ try{followUpSession=JSON.parse(sessionStorage.getItem("currentSupervisor")||localStorage.getItem("currentSupervisor")||"{}")}catch{}
+ const supervisorIds=new Set([
+  user,supervisorProfile.followUpId,supervisorProfile.uid,supervisorProfile.authUid,supervisorProfile.id,
+  followUpSession.id,followUpSession.uid,followUpSession.authUid,followUpSession.email,followUpSession.username
+ ].map(norm).filter(Boolean));
+ const supervisorNames=[
+  supervisorProfile.name,sessionStorage.getItem("currentUserName"),localStorage.getItem("currentUserName"),
+  followUpSession.name,el("supervisorName")?.value
+ ].map(normalizeTeacherIdentity).filter(Boolean);
+ // Visits store the follow-up account's internal ID, not necessarily the Rased login email.
  const own=dated.filter(v=>{
   const visitSupervisorId=norm(v.supervisorId);
   const visitSupervisorName=normalizeTeacherIdentity(v.supervisorName);
-  // Some manager/admin sessions identify the account by email while visits store
-  // the supervisor's internal ID. Accept an exact supervisor-name match as well.
   const idMatch=!!visitSupervisorId&&supervisorIds.has(visitSupervisorId);
-  const exactNameMatch=!!profileName&&visitSupervisorName===profileName;
+  const exactNameMatch=!!visitSupervisorName&&supervisorNames.includes(visitSupervisorName);
   return idMatch||exactNameMatch;
  });
  own.sort((a,b)=>{
