@@ -57,16 +57,27 @@ function latestVisit(teacher,date){
   const visitPhones=[v.teacherPhone,v.phone,v.mobile].map(normalizePhone).filter(x=>x.length>=8);
   const idMatch=ids.some(id=>visitIds.includes(id));
   const phoneMatch=phones.some(phone=>visitPhones.includes(phone));
-  const nameMatch=names.some(name=>visitNames.some(vn=>vn===name||vn.includes(name)||name.includes(vn)));
+  // Name matching is exact and only a fallback for legacy records without stable teacher identifiers.
+  const nameMatch=!visitIds.length&&!visitPhones.length&&names.some(name=>visitNames.includes(name));
   return idMatch||phoneMatch||nameMatch;
  });
  const dated=matches.map(v=>({...v,__reportDate:visitDateValue(v.visitDate)||visitDateValue(v.createdAt)}))
   .filter(v=>!!date&&v.__reportDate===date);
  const supervisorIds=new Set([user,supervisorProfile.followUpId,supervisorProfile.uid,supervisorProfile.authUid,supervisorProfile.id].map(norm).filter(Boolean));
- const own=dated.filter(v=>supervisorIds.has(norm(v.supervisorId))||normalizeTeacherIdentity(v.supervisorName)===normalizeTeacherIdentity(el("supervisorName").value));
- const candidates=own.length?own:dated;
- candidates.sort((a,b)=>(b.__reportDate||"").localeCompare(a.__reportDate||""));
- const result=candidates[0]||null;
+ const profileName=normalizeTeacherIdentity(supervisorProfile.name||sessionStorage.getItem("currentUserName")||"");
+ // Only use this supervisor's own visit. Legacy name-only ownership is accepted only
+ // when the visit has no supervisorId; never fall back to another supervisor's records.
+ const own=dated.filter(v=>{
+  const visitSupervisorId=norm(v.supervisorId);
+  if(visitSupervisorId)return supervisorIds.has(visitSupervisorId);
+  return !!profileName&&normalizeTeacherIdentity(v.supervisorName)===profileName;
+ });
+ own.sort((a,b)=>{
+  const ad=visitDateValue(a.createdAt)||"",bd=visitDateValue(b.createdAt)||"";
+  if(ad!==bd)return bd.localeCompare(ad);
+  return Number(b.visitNumber||b.visitNo||0)-Number(a.visitNumber||a.visitNo||0);
+ });
+ const result=own[0]||null;
  latestVisitCache.set(cacheKey,result);
  return result;
 }
