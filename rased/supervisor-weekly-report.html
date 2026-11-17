@@ -23,6 +23,7 @@ const el=id=>document.getElementById(id),days=["الأحد","الاثنين","ا
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm=v=>String(v||"").trim().toLowerCase();
 let user="",role="",teachers=[],allVisits=[],publishedActions=[],savedWeeks=[],supervisorProfile={},authorized=false;
+const latestVisitCache=new Map();
 const teacherKey=t=>norm(t.email||t.username||t.id),ownLog=x=>norm(x.supervisorEmail)===user;
 const dayDate=i=>el("day"+i).value;
 function dayNote(i){return {enabled:!!el("dayNoteEnabled"+i)?.checked,text:el("dayNoteText"+i)?.value.trim()||""}}
@@ -45,6 +46,8 @@ function visitDateValue(value){
 }
 function normalizePhone(value){return String(value||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/\D/g,"").replace(/^966/,"0")}
 function latestVisit(teacher,date){
+ const cacheKey=[teacherKey(teacher),norm(teacher.code),norm(teacher.name),date].join("|");
+ if(latestVisitCache.has(cacheKey))return latestVisitCache.get(cacheKey);
  const ids=[teacher.email,teacher.username,teacher.id,teacher.code].map(norm).filter(Boolean);
  const names=[teacher.name,teacher.fullName,teacher.teacherName].map(normalizeTeacherIdentity).filter(Boolean);
  const phones=[teacher.phone,teacher.mobile,teacher.phoneNumber].map(normalizePhone).filter(x=>x.length>=8);
@@ -63,7 +66,9 @@ function latestVisit(teacher,date){
  const own=dated.filter(v=>supervisorIds.has(norm(v.supervisorId))||normalizeTeacherIdentity(v.supervisorName)===normalizeTeacherIdentity(el("supervisorName").value));
  const candidates=own.length?own:dated;
  candidates.sort((a,b)=>(b.__reportDate||"").localeCompare(a.__reportDate||""));
- return candidates[0]||null;
+ const result=candidates[0]||null;
+ latestVisitCache.set(cacheKey,result);
+ return result;
 }
 function matchTeacher(teacher,ref){return [teacherKey(teacher),norm(teacher.code),norm(teacher.name),norm(teacher.id),norm(teacher.username)].includes(norm(ref))}
 function rowMarks(teacher,date){
@@ -149,12 +154,13 @@ function shortTeacherName(fullName){
 function renderWeekly(){
  const week=el("weekNumber").value||"—",from=el("weekFrom").value||"—",to=el("weekTo").value||"—";
  const headers=categories.map(x=>'<th class="vertical"><span>'+esc(x)+'</span></th>').join("");
+ const dailyTeachers=days.map((_,i)=>teachers.slice().sort((a,b)=>Number(!!latestVisit(b,dayDate(i)))-Number(!!latestVisit(a,dayDate(i)))));
  const pageCount=Math.max(1,Math.ceil(teachers.length/3));
  const pages=Array.from({length:pageCount},(_,pageIndex)=>{
   let body="";
   for(let i=0;i<5;i++){
    const date=dayDate(i);
-   const dayTeachers=teachers.slice().sort((a,b)=>Number(!!latestVisit(b,date))-Number(!!latestVisit(a,date))).slice(pageIndex*3,pageIndex*3+3);
+   const dayTeachers=dailyTeachers[i].slice(pageIndex*3,pageIndex*3+3);
    const note=dayNote(i);
    const showNote=note.enabled&&note.text;
    if(dayTeachers.length){
@@ -284,6 +290,7 @@ async function init(){
  });
  teachers=[...teachersMap.values()].filter(t=>{const n=norm(t.name),identity=norm(t.email||t.username||t.id);return identity!==user&&n!=="محمد عامر أحمد"&&n!=="محمد عامر عبدالله";}).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
  allVisits=vs.docs.map(d=>({id:d.id,...d.data()}));
+ latestVisitCache.clear();
  publishedActions=cs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.createdBy||x.updatedBy)===user);
  renderWeekly();await loadSavedWeeks();
  el("weekMsg").textContent="تم تحميل "+allVisits.length+" زيارة من قاعدة بيانات استمارة الزيارات.";
