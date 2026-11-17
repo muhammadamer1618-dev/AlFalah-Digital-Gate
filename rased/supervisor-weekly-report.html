@@ -69,8 +69,12 @@ function latestVisit(teacher,date){
  // when the visit has no supervisorId; never fall back to another supervisor's records.
  const own=dated.filter(v=>{
   const visitSupervisorId=norm(v.supervisorId);
-  if(visitSupervisorId)return supervisorIds.has(visitSupervisorId);
-  return !!profileName&&normalizeTeacherIdentity(v.supervisorName)===profileName;
+  const visitSupervisorName=normalizeTeacherIdentity(v.supervisorName);
+  // Some manager/admin sessions identify the account by email while visits store
+  // the supervisor's internal ID. Accept an exact supervisor-name match as well.
+  const idMatch=!!visitSupervisorId&&supervisorIds.has(visitSupervisorId);
+  const exactNameMatch=!!profileName&&visitSupervisorName===profileName;
+  return idMatch||exactNameMatch;
  });
  own.sort((a,b)=>{
   const ad=visitDateValue(a.createdAt)||"",bd=visitDateValue(b.createdAt)||"";
