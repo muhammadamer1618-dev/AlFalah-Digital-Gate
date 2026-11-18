@@ -510,6 +510,7 @@ function toggleKind(){
   el("tailoredGrid").innerHTML=renderEvidenceInputs(category);
   if(type==="exams")renderExamRows();
   else if(type==="broadcast")renderBroadcastRows();
+  else if(type==="researchInnovation")renderResearchInnovationRows();
   else if(PER_TEACHER_TYPES.has(type))renderTeacherOutcomeRows();
   el("evidenceOfficePublished")?.addEventListener("change",()=>syncOfficePublication("yes"));
   el("evidenceOfficeNotPublished")?.addEventListener("change",()=>syncOfficePublication("no"));
