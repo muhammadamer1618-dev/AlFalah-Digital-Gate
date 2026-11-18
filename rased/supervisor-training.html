@@ -493,9 +493,9 @@ function toggleKind(){
  el("meetingFields").style.display=meeting?"block":"none";
  el("courseDateFields").style.display=meeting?"none":"block";
  const dateLabel=el("courseDateFields").querySelector("label");
- if(dateLabel)dateLabel.textContent=type==="waitingDistribution"?"التاريخ يحدد لكل معلم داخل الجدول":["exchange","office"].includes(type)?"التواريخ محددة لكل معلم":type?"تاريخ الشاهد":"تاريخ بداية إتاحة المادة (اختياري)";
+ if(dateLabel)dateLabel.textContent=type==="waitingDistribution"?"تاريخ الشاهد": ["exchange","office"].includes(type)?"التواريخ محددة لكل معلم":type?"تاريخ الشاهد":"تاريخ بداية إتاحة المادة (اختياري)";
  const startDateWrap=el("startDate").closest("div");
- if(startDateWrap)startDateWrap.style.display=["exchange","office","waitingDistribution"].includes(type)?"none":"block";
+ if(startDateWrap)startDateWrap.style.display=["exchange","office"].includes(type)?"none":"block";
  const endDateWrap=el("endDate").closest("div");
  if(endDateWrap)endDateWrap.style.display=type?"none":"block";
  el("tailoredFields").style.display=meeting?"none":"block";
@@ -539,7 +539,7 @@ async function saveEvent(){
  if(!targetEmails.length)return alert("حدد معلمًا واحدًا على الأقل.");
  const accessible=new Set(teachers.map(t=>t.email));
  if(targetEmails.some(email=>!accessible.has(email)))return alert("يوجد معلم خارج نطاق إسنادك.");
- if(isEvidence&&!date&&!["exchange","office","waitingDistribution"].includes(structured.type))return alert("اختر تاريخ الشاهد من تاريخ بداية إتاحة المادة.");
+ if(isEvidence&&!date&&!["exchange","office"].includes(structured.type))return alert("اختر تاريخ الشاهد من تاريخ بداية إتاحة المادة.");
  if(isEvidence&&structured.type!=="waiting"&&(!/^\d+$/.test(structured.weekNumber)||Number(structured.weekNumber)<1))return alert("أدخل رقم الأسبوع الصحيح.");
  if(isEvidence&&structured.type==="exams"){
   if(!["تشخيصي","قصير","وحدة","فترة أولى","فترة ثانية","نهائي"].includes(structured.examType))return alert("حدد نوع الاختبار.");
