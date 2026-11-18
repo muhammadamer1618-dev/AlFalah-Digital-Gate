@@ -300,16 +300,21 @@ async function init(){
  days.forEach((_,i)=>{el("day"+i).addEventListener("change",renderWeekly);el("dayNoteEnabled"+i).addEventListener("change",renderWeekly);el("dayNoteText"+i).addEventListener("input",renderWeekly);});
  ["supervisorName","specialty","weekNumber","weekFrom","weekTo","generalSupervisor","generalDirector"].forEach(id=>el(id).addEventListener("change",renderWeekly));
  const [ts,us,cs,vs]=await Promise.all([db.collection("teachers").get(),db.collection("users").get(),db.collection("trainingCourses").get(),followUpDb.collection("visits").get()]);
- const assignments=[...(supervisorProfile.assignedTeacherEmails||[]),...(supervisorProfile.assignedTeacherIds||[])].map(norm);
+ const assignments=[...(Array.isArray(supervisorProfile.assignedTeacherEmails)?supervisorProfile.assignedTeacherEmails:[]),...(Array.isArray(supervisorProfile.assignedTeacherIds)?supervisorProfile.assignedTeacherIds:[]),...(Array.isArray(supervisorProfile.assignedTeachers)?supervisorProfile.assignedTeachers:[])].flatMap(x=>x&&typeof x==="object"?[x.email,x.teacherEmail,x.username,x.id,x.value]:[x]).map(norm).filter(Boolean);
  const access=new Set(assignments);
- const teachersMap=new Map();
- [...ts.docs,...us.docs.filter(d=>norm(d.data()?.role)==="teacher")].forEach(doc=>{
-  const x=doc.data(),email=norm(x.email||x.username||doc.id),keys=[email,norm(doc.id),norm(x.code),norm(x.username)];
-  if(role==="supervisor"&&!keys.some(key=>access.has(key)))return;
-  if(!teachersMap.has(email))teachersMap.set(email,{...x,email,id:doc.id});
-  else teachersMap.set(email,{...x,...teachersMap.get(email)});
+ const teacherDocs=[...ts.docs,...us.docs.filter(d=>norm(d.data()?.role)==="teacher")];
+ const teachersMap=new Map(), keyMap=new Map();
+ teacherDocs.forEach(doc=>{
+  const x=doc.data()||{};
+  const aliases=[doc.id,x.email,x.username,x.teacherEmail,x.code].map(norm).filter(Boolean);
+  const email=norm(x.email||x.username||doc.id);
+  let existing=aliases.map(k=>keyMap.get(k)).find(Boolean);
+  if(existing){const combined=[...new Set([...(existing._keys||[]),...aliases])];for(const [k,v] of Object.entries(x))if(v!==undefined&&v!==null&&v!=="")existing[k]=existing[k]||v;existing._keys=combined;for(const key of combined)keyMap.set(key,existing);}
+  else{existing={...x,id:doc.id,email,_keys:aliases};teachersMap.set(email,existing);for(const key of aliases)keyMap.set(key,existing);}
  });
- teachers=[...teachersMap.values()].filter(t=>{const n=norm(t.name),identity=norm(t.email||t.username||t.id);return identity!==user&&n!=="محمد عامر أحمد"&&n!=="محمد عامر عبدالله";}).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
+ let teacherList=[...teachersMap.values()];
+ if(role==="supervisor"){const result=[],seen=new Set();for(const ref of assignments){const t=keyMap.get(ref);if(t&&!seen.has(t)){result.push(t);seen.add(t)}}teacherList=result;}
+ teachers=teacherList.filter(t=>{const n=norm(t.name),identity=norm(t.email||t.username||t.id);return identity!==user&&n!=="محمد عامر أحمد"&&n!=="محمد عامر عبدالله";}).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"ar"));
  allVisits=vs.docs.map(d=>({id:d.id,...d.data()}));
  latestVisitCache.clear();
  publishedActions=cs.docs.map(d=>({id:d.id,...d.data()})).filter(x=>norm(x.createdBy||x.updatedBy)===user);
