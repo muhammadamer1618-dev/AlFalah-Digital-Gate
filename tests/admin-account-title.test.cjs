@@ -1,0 +1,7 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync(__dirname+'/../rased/admin.html','utf8');
+assert(source.includes('<option value="executive_viewer">المدير العام</option>'));
+const els={supervisorOriginalUsername:{value:''},supervisorName:{value:'حساب تجريبي'},supervisorUsername:{value:'1000000000'},supervisorPassword:{value:'test-password'},supervisorPhone:{value:'0500000000'},supervisorRole:{value:'executive_viewer'},supervisorAccountTitle:{value:'المشرف العام'}};
+const writes=[];const context=vm.createContext({document:{getElementById:id=>els[id]},supervisors:[],readSupervisorPermissions:()=>({}),selectedSupervisorTeacherEmails:()=>[],db:{collection:()=>({doc:()=>({get:async()=>({exists:false}),set:async data=>writes.push(data)})})},firebase:{firestore:{FieldValue:{serverTimestamp:()=>0}}},writeAuditLog:async()=>{},supervisorTypeLabel:()=> 'المدير العام',alert(){},clearSupervisorForm(){},closeSupervisorEditor(){},loadSupervisors:async()=>{}});
+const start=source.indexOf('async function saveSupervisor(){'),end=source.indexOf('function editSupervisor(',start);vm.runInContext(source.slice(start,end),context);
+module.exports=(async()=>{await vm.runInContext('saveSupervisor()',context);assert.equal(writes.length,1);assert.equal(writes[0].supervisorType,'executive_viewer');assert.equal(writes[0].accountTitle,'المشرف العام');assert.equal(writes[0].role,'supervisor');console.log('PASS: administrative label and independent account title persist without changing stored role type.');})();

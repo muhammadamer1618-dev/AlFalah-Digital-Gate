@@ -2711,6 +2711,7 @@ onclick="clearCurrentTeacherAssignments()">
 
 <div class="row">
 <div class="col"><label>الاسم</label><input id="supervisorName" placeholder="مثال: أحمد سمير عباس"></div>
+<div class="col"><label for="supervisorAccountTitle">المسمى الظاهر للحساب</label><input id="supervisorAccountTitle" maxlength="80" placeholder="مثال: المشرف العام أو مديرة المجمعات التعليمية"></div>
 <div class="col"><label>رقم الهوية / الإقامة</label><input id="supervisorUsername" inputmode="numeric" maxlength="10" placeholder="10 أرقام — يستخدم للدخول من بوابة الفلاح"></div>
 <div class="col"><label>رقم الجوال — اسم المستخدم في الزيارات الفنية</label><input id="supervisorPhone" inputmode="tel" placeholder="05xxxxxxxx"></div>
 <div class="col"><label>كلمة المرور</label><input id="supervisorPassword" type="text" autocomplete="new-password"></div>
@@ -2719,7 +2720,7 @@ onclick="clearCurrentTeacherAssignments()">
 <select id="supervisorRole" onchange="toggleSupervisorTeacherScope()">
 <option value="general_supervisor">مشرف عام</option>
 <option value="manager">مدير</option>
-<option value="executive_viewer">مديرة المجمعات التعليمية (اطلاع شامل فقط)</option>
+<option value="executive_viewer">المدير العام</option>
 <option value="deputy">وكيل</option>
 <option value="supervisor">مشرف</option>
 </select>
@@ -9689,7 +9690,7 @@ const SUPERVISOR_PERMISSION_DEFS=[
 ];
 
 function supervisorTypeLabel(type){
-return {general_supervisor:"مشرف عام",manager:"مدير",deputy:"وكيل",supervisor:"مشرف",executive_viewer:"مديرة المجمعات التعليمية"}[String(type||"").toLowerCase()]||"مشرف عام";
+return {general_supervisor:"مشرف عام",manager:"مدير",deputy:"وكيل",supervisor:"مشرف",executive_viewer:"المدير العام"}[String(type||"").toLowerCase()]||"مشرف عام";
 }
 
 function normalizeTeacherEmail(v){return String(v||"").trim().toLowerCase()}
@@ -9779,6 +9780,7 @@ password:data.password||"",
 phone:data.phone||data.mobile||"",
 role:"supervisor",
 supervisorType:data.supervisorType||"general_supervisor",
+accountTitle:String(data.accountTitle||""),
 assignedTeacherEmails:Array.isArray(data.assignedTeacherEmails)?data.assignedTeacherEmails.map(normalizeTeacherEmail).filter(Boolean):[],
 permissions:normalizeSupervisorPermissions(data.permissions)
 });
@@ -9814,7 +9816,7 @@ function renderSupervisors(){
   const teacherPanelItems=assignedNames;
   const teacherPanelId="supervisor-teachers-"+index,permissionPanelId="supervisor-permissions-"+index;
   return `<article class="account-card" data-account-search="${escapeHtml([item.name,item.username,item.phone||"",supervisorTypeLabel(item.supervisorType)||"","renderSupervisors"].filter(Boolean).join(" "))}">
-   <div class="supervisor-gold-profile"><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span><span>📞 ${escapeHtml(item.phone||"غير مسجل")}</span></div></div><span class="account-role-badge">${escapeHtml(supervisorTypeLabel(item.supervisorType))}</span></div>
+   <div class="supervisor-gold-profile"><div class="account-card-main"><strong class="account-card-name">${escapeHtml(item.name)}</strong><div class="account-card-meta"><span>👤 ${escapeHtml(item.username)}</span><span>📞 ${escapeHtml(item.phone||"غير مسجل")}</span></div></div><span class="account-role-badge">${escapeHtml(item.accountTitle||supervisorTypeLabel(item.supervisorType))}</span></div>
    <div class="account-detail-tiles">${accountDetailTile(teacherPanelId,isScoped?"المعلمون المسندون":"المعلمون ضمن النطاق",assignedNames.length,"عرض أسماء المعلمين")}${accountDetailTile(permissionPanelId,"الصلاحيات",perms.length+" / "+SUPERVISOR_PERMISSION_DEFS.length,"عرض الصلاحيات المفعّلة")}</div>
    ${accountDetailPanel(teacherPanelId,isScoped?"المعلمون المسندون":"جميع المعلمين ضمن النطاق",teacherPanelItems,"لا يوجد معلمون مرتبطون بهذا الحساب.")}
    ${accountDetailPanel(permissionPanelId,"الصلاحيات المفعّلة",perms,"لا توجد صلاحيات مفعّلة.")}
@@ -9870,6 +9872,7 @@ return permissions;
 async function saveSupervisor(){
 const original=document.getElementById("supervisorOriginalUsername").value.trim().toLowerCase();
 const name=document.getElementById("supervisorName").value.trim();
+const accountTitle=document.getElementById("supervisorAccountTitle").value.trim().slice(0,80);
 const username=document.getElementById("supervisorUsername").value.trim().toLowerCase();
 const password=document.getElementById("supervisorPassword").value.trim();
 const phone=document.getElementById("supervisorPhone").value.trim();
@@ -9904,7 +9907,7 @@ if(oldDoc.exists&&String(oldDoc.data().role||"").toLowerCase()==="supervisor")aw
 }
 
 await db.collection("users").doc(username).set({
-name,username,identityNumber:username,phone:savedSupervisorPhone,mobile:savedSupervisorPhone,role:"supervisor",supervisorType,password,permissions,
+name,username,identityNumber:username,phone:savedSupervisorPhone,mobile:savedSupervisorPhone,role:"supervisor",supervisorType,accountTitle,password,permissions,
 assignedTeacherEmails,
 teacherScopeMode:supervisorType==="supervisor"?"assigned":"all",
 updatedAt:firebase.firestore.FieldValue.serverTimestamp()
@@ -9923,6 +9926,7 @@ await writeAuditLog(
     phone:savedSupervisorPhone,
     role:"supervisor",
     supervisorType,
+    accountTitle,
     permissions,
     assignedTeacherEmails,
     teacherScopeMode:supervisorType==="supervisor"?"assigned":"all"
@@ -9940,6 +9944,7 @@ function editSupervisor(username){
 const s=supervisors.find(x=>x.username===username);if(!s)return;
 document.getElementById("supervisorOriginalUsername").value=s.username;
 document.getElementById("supervisorName").value=s.name||"";
+document.getElementById("supervisorAccountTitle").value=s.accountTitle||"";
 document.getElementById("supervisorUsername").value=s.username||"";
 document.getElementById("supervisorPhone").value=s.phone||"";
 document.getElementById("supervisorPassword").value=s.password||"";
@@ -9955,6 +9960,7 @@ scrollToSection("supervisorsSection");
 function clearSupervisorForm(){
 document.getElementById("supervisorOriginalUsername").value="";
 document.getElementById("supervisorName").value="";
+document.getElementById("supervisorAccountTitle").value="";
 document.getElementById("supervisorUsername").value="";
 document.getElementById("supervisorPhone").value="";
 document.getElementById("supervisorPassword").value="";

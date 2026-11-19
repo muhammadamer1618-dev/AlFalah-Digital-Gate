@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>المشرف العام | متابعة حسابات المشرفين — راصد</title>
+<title>المدير العام | متابعة حسابات المشرفين — راصد</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -90,7 +90,7 @@
 @media print{.head,.no-print,#supervisorDirectory,#supervisorModules,.workspace-heading,.status-message,.workspace-profile,.module-filters,.subtabs{display:none!important}.wrap{max-width:none;margin:0;padding:0}.module-panel{border:0;padding:0;box-shadow:none}.table{overflow:visible;border:0}.table table{min-width:0}dialog[open]{position:static;display:block;max-height:none;width:100%;box-shadow:none}.dialog-heading{position:static}.dialog-heading button{display:none}.module-actions{display:none}.detail-body{display:block}.detail-field,.detail-item{break-inside:avoid;margin:6px 0}}
 .dialog-actions{display:flex;gap:8px;flex-wrap:wrap}@media print{body.printing-record .wrap,body.printing-record .head{display:none!important}body.printing-record dialog[open]{position:static;inset:auto;display:block;max-height:none;overflow:visible;width:100%;margin:0;padding:0;border:0;box-shadow:none}body.printing-record .dialog-heading{position:static;background:white!important;color:#173b55!important;border-bottom:2px solid #145b61}body.printing-record .dialog-heading h2{color:#173b55!important}body.printing-record .detail-body{display:block;padding:12px 0}body.printing-record .detail-group,body.printing-record .detail-item{display:block;break-inside:auto}body.printing-record .detail-field{break-inside:avoid}dialog::backdrop{background:transparent}}
 </style></head><body>
-<header class="head"><img src="logo.jpeg" class="logo" alt="شعار مدارس الفلاح"><h1>مدارس الفلاح الأهلية</h1><p>نظام راصد — المشرف العام • متابعة حسابات المشرفين</p><div class="viewer-chip"><span id="viewerName">مديرة المجمعات</span><span>• مشاهدة فقط</span></div><button id="logout" class="logout-viewer">تسجيل الخروج</button></header>
+<header class="head"><img src="logo.jpeg" class="logo" alt="شعار مدارس الفلاح"><h1>مدارس الفلاح الأهلية</h1><p>نظام راصد — <span id="viewerTitle">المدير العام</span> • متابعة حسابات المشرفين</p><div class="viewer-chip"><span id="viewerName">الحساب الإداري</span><span>• مشاهدة فقط</span></div><button id="logout" class="logout-viewer">تسجيل الخروج</button></header>
 <main class="wrap">
 <section id="supervisorDirectory">
 <div class="directory-intro"><div><h2>حسابات المشرفين</h2><p>اختاري المشرف للدخول إلى لوحة متابعة أقسامه وأعماله.</p></div><span id="directoryCount" class="count-pill">جارٍ التحميل...</span></div>
@@ -107,7 +107,7 @@
 <div class="module-filters no-print"><label for="moduleSearch">البحث<input id="moduleSearch" type="search" placeholder="البحث في بيانات القسم"></label><label for="gradeFilter">الصف<select id="gradeFilter"><option value="">كل الصفوف</option></select></label><label for="sectionFilter">الشعبة<select id="sectionFilter"><option value="">كل الشعب</option></select></label><label for="teacherFilter">المعلم<select id="teacherFilter"><option value="">كل المعلمين</option></select></label><label for="testFilter">الاختبار<select id="testFilter"><option value="">كل الاختبارات</option></select></label><label for="threshold" id="thresholdBox" hidden>حد النسبة المئوية<input id="threshold" type="number" min="0" max="100" value="50"></label><button id="clearModuleFilters" class="btn-light">مسح البحث</button></div>
 <div id="sectionSummary" class="section-summary"></div><div id="moduleBody"></div></section></section>
 <div class="foot">نظام راصد — مدارس الفلاح الأهلية • متابعة دون إضافة أو تعديل أو حذف</div></main>
-<dialog id="recordDialog"><div class="dialog-heading"><h2 id="detailTitle">تفاصيل السجل</h2><div class="dialog-actions no-print"><button id="printDetails" class="btn-light">🖨️ طباعة الشاهد / التقرير</button><button id="closeDetails" class="btn-light">إغلاق</button></div></div><div id="detailBody" class="detail-body"></div></dialog><script src="executive-viewer.js?v=20261119-record-print"></script>
+<dialog id="recordDialog"><div class="dialog-heading"><h2 id="detailTitle">تفاصيل السجل</h2><div class="dialog-actions no-print"><button id="printDetails" class="btn-light">🖨️ طباعة الشاهد / التقرير</button><button id="closeDetails" class="btn-light">إغلاق</button></div></div><div id="detailBody" class="detail-body"></div></dialog><script src="executive-viewer.js?v=20261119-account-title"></script>
 
 <!-- alfalah-designer-credit:start -->
 <style id="alfalah-designer-credit-style">

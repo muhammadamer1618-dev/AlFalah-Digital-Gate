@@ -51,9 +51,9 @@ class Element {
  close(){this.open=false;this.listeners.close?.();}
  insertAdjacentHTML(_,html){this._html+=html;}
 }
-async function browserSession(role='supervisor',actorType='executive_viewer'){
+async function browserSession(role='supervisor',actorType='executive_viewer',accountTitle=''){
  const els={},writes=[],reads=[],printEvents=[];
- const users=[{id:'boss',name:'viewer',role:'supervisor',supervisorType:actorType,password:'NEVER_RENDER'},a,b];
+ const users=[{id:'boss',name:'viewer',role:'supervisor',supervisorType:actorType,accountTitle,password:'NEVER_RENDER'},a,b];
  const data={users,teachers,students:[{id:'s-a',name:'طالب أ',grade:'3',section:'أ'},{id:'s-b',name:'طالب ب',grade:'4',section:'ب'}],remoteSessions:[{id:'remote-a',teacherEmail:'a@test',grade:'3',section:'أ',topic:'حصة أ'},{id:'remote-b',teacherEmail:'b@test',grade:'4',section:'ب',topic:'حصة ب'}],remoteAttendance:[{id:'ra',sessionId:'remote-a',studentName:'طالب أ',status:'present'},{id:'rb',sessionId:'remote-b',studentName:'طالب ب',status:'present'}],studentClassAttendance:[{id:'att-a',grade:'3',section:'أ',date:'2026-11-19',entries:[{studentCode:'s-a',studentName:'طالب أ',status:'present'}]}],studentFollowupEvents:[{id:'event-a',studentCode:'s-a',note:'متابعة خاصة بأ'}],guidanceIncidents:[{id:'guide-a',studentCode:'s-a',problemType:'ملاحظة توجيهية أ'}],trainingCourses:[{id:'c-a',createdBy:'sup-a',title:'عمل أ',targetTeacherEmails:['a@test']},{id:'c-b',createdBy:'sup-b',title:'عمل ب'}]};
  const storage={getItem:k=>({currentUserEmail:'boss',currentUserRole:role,rasedTabAuthReady:'1'}[k]||null),setItem(...x){writes.push(x)},removeItem(...x){writes.push(x)}};
  const win={document:{body:{classList:{add(k){printEvents.push(k)},remove(){}}},getElementById:id=>els[id]??=new Element()},sessionStorage:storage,localStorage:storage,location:{href:''},firebase:{apps:[],initializeApp(config,name){return {name,firestore:()=>({collection:collection=>({get:async()=>{reads.push(collection);return {docs:(data[collection]||[]).map(d=>({id:d.id,data:()=>d}))}},doc:id=>({get:async()=>{reads.push(collection+'/'+id);const d=(data[collection]||[]).find(x=>x.id===id);return {exists:!!d,data:()=>d}}})})})}}},print(){printEvents.push('print')}};
@@ -62,7 +62,9 @@ async function browserSession(role='supervisor',actorType='executive_viewer'){
 module.exports=(async()=>{
  const denied=await browserSession('teacher');assert.equal(denied.win.location.href,'index.html');assert.equal(denied.reads.length,0);
  const invalid=await browserSession('supervisor','general_supervisor');assert.equal(invalid.win.location.href,'index.html');assert.deepEqual(invalid.reads,['users/boss']);
- const s=await browserSession();assert.equal(s.els.supervisorCards.querySelectorAll().length,2);assert(!s.els.supervisorCards.innerHTML.includes('NEVER_RENDER'));
+ const named=await browserSession('supervisor','executive_viewer','المشرف العام');assert.equal(named.els.viewerTitle.textContent,'المشرف العام');
+ const director=await browserSession('supervisor','executive_viewer','مديرة المجمعات التعليمية');assert.equal(director.els.viewerTitle.textContent,'مديرة المجمعات التعليمية');
+ const s=await browserSession();assert.equal(s.els.viewerTitle.textContent,'المدير العام');assert.equal(s.els.supervisorCards.querySelectorAll().length,2);assert(!s.els.supervisorCards.innerHTML.includes('NEVER_RENDER'));
  await s.els.supervisorCards.querySelectorAll()[0].onclick();assert.equal(s.els.selectedName.textContent,'sup-a');
  const studentsButton=s.els.supervisorModules.querySelectorAll().find(e=>e.dataset.module==='students');await studentsButton.onclick();assert(s.els.moduleBody.innerHTML.includes('طالب أ'));assert(!s.els.moduleBody.innerHTML.includes('طالب ب'));
  await s.els.supervisorModules.querySelectorAll().find(e=>e.dataset.module==='training').onclick();assert(s.els.moduleBody.innerHTML.includes('عمل أ'));assert(!s.els.moduleBody.innerHTML.includes('عمل ب'));await s.els.moduleBody.querySelectorAll()[0].onclick();assert(s.els.detailBody.innerHTML.includes('>أ</section>'));assert(!s.els.detailBody.innerHTML.includes('a@test'));s.els.printDetails.onclick();assert.deepEqual(s.printEvents,['printing-record','print']);s.els.closeDetails.onclick();
