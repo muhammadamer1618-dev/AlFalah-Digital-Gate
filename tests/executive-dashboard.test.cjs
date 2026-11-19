@@ -1,5 +1,10 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const V=require('../rased/executive-viewer.js');
+assert.equal(V.visitScore({finalScore:94}),'94 / 100');
+assert.equal(V.visitScore({finalScore:0}),'0 / 100');
+assert.equal(V.visitScore({finalScore:'87.5'}),'87.5 / 100');
+assert.equal(V.visitScore({}),'—');
+assert.equal(V.visitScore({finalScore:''}),'—');
 const a={id:'sup-a',role:'supervisor',supervisorType:'supervisor',assignedTeacherEmails:['a@test'],permissions:{studentsView:true,teachersView:true,gradesView:true,activitiesView:false}};
 const b={id:'sup-b',role:'supervisor',supervisorType:'supervisor',assignedTeacherIds:['t-b'],permissions:{}};
 const teachers=[{id:'t-a',email:'a@test',name:'أ',assignments:[{subjectId:'math',grade:'3',section:'أ'}]},{id:'t-b',email:'b@test',name:'ب',assignments:[{subjectId:'science',grade:'4',section:'ب'}]}];
