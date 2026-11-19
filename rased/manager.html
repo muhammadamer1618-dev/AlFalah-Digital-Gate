@@ -25,4 +25,14 @@ async function showResults(){const c=cats.find(x=>x[0]===$("cat").value);if(!c)r
 function resetFilters(){["cat","sup","teacher","item","from","to"].forEach(id=>$(id).value="");["sup","teacher","item"].forEach(id=>$(id).disabled=true);$("rows").innerHTML='<tr><td colspan="6" class="empty">اختاري محددات البحث.</td></tr>';$("total").textContent="0"}
 async function changePassword(){const old=$("old").value,n=$("next").value,cf=$("confirm").value;if(!old||!n||!cf)return $("pwmsg").textContent="أكملي الحقول الثلاثة.";if(String(profile.password||"")!==old)return $("pwmsg").textContent="كلمة المرور الحالية غير صحيحة.";if(n.length<8)return $("pwmsg").textContent="استخدمي 8 أحرف على الأقل.";if(n!==cf)return $("pwmsg").textContent="تأكيد كلمة المرور غير مطابق.";try{await db.collection("users").doc(user).update({password:n,passwordChangedAt:firebase.firestore.FieldValue.serverTimestamp()});profile.password=n;["old","next","confirm"].forEach(id=>$(id).value="");$("pwmsg").textContent="تم تغيير كلمة المرور."}catch(e){$("pwmsg").textContent="تعذر تغيير كلمة المرور: "+e.message}}
 init().catch(e=>{$("status").textContent="تعذر تحميل البيانات: "+e.message;console.error(e)});
-</script></body></html>
+</script>
+<!-- alfalah-designer-credit:start -->
+<style id="alfalah-designer-credit-style">
+#alfalah-designer-credit{display:block;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
+@media print {
+ #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
+}
+</style>
+<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
+<!-- alfalah-designer-credit:end -->
+</body></html>
