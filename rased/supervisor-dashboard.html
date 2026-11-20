@@ -586,7 +586,7 @@ async function ensureVisitSupervisorSession(){
   }
 
   try{
-    const raw=localStorage.getItem("currentSupervisor")||sessionStorage.getItem("currentSupervisor");
+    const raw=executiveMode?sessionStorage.getItem("currentSupervisor"):(localStorage.getItem("currentSupervisor")||sessionStorage.getItem("currentSupervisor"));
     if(raw){
       const x=JSON.parse(raw);
       const sameGate=String(x?.gateUsername||"").trim().toLowerCase()===gateUsername;
@@ -596,7 +596,7 @@ async function ensureVisitSupervisorSession(){
   }catch(e){}
 
   try{
-    localStorage.removeItem("currentSupervisor");
+    if(!executiveMode)localStorage.removeItem("currentSupervisor");
     sessionStorage.removeItem("currentSupervisor");
 
     const visitConfig={
@@ -716,7 +716,7 @@ async function ensureVisitSupervisorSession(){
     };
 
     const value=JSON.stringify(session);
-    localStorage.setItem("currentSupervisor",value);
+    if(!executiveMode)localStorage.setItem("currentSupervisor",value);
     sessionStorage.setItem("currentSupervisor",value);
     return session;
 
