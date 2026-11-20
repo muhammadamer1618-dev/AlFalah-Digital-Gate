@@ -38,6 +38,20 @@
    return send.apply(this,arguments);
   };
  }
+ const rawStorageGet=w.Storage&&w.Storage.prototype.getItem;
+ if(rawStorageGet){
+  w.__RASED_RAW_SESSION_GET__=key=>rawStorageGet.call(s,key);
+  w.Storage.prototype.getItem=function(key){
+   if(enabled()&&(this===s||this===w.localStorage)){
+    const k=String(key);
+    if(k==='currentUser'||k==='currentUserEmail')return rawStorageGet.call(s,'rasedExecutiveTarget')||rawStorageGet.call(this,k);
+    if(k==='currentUserName')return rawStorageGet.call(s,'rasedExecutiveTargetName')||rawStorageGet.call(this,k);
+    if(k==='currentUserRole')return 'supervisor';
+    if(k==='currentUserType'||k==='currentUserPermissions')return rawStorageGet.call(s,k)||rawStorageGet.call(this,k);
+   }
+   return rawStorageGet.call(this,key);
+  };
+ }
  const authKeys=/^(currentUser(?:Role|Email|Name|Type|Permissions)?|alfalah\.gate\.session\.v1)$/;
  try{
   const set=w.localStorage.setItem.bind(w.localStorage),remove=w.localStorage.removeItem.bind(w.localStorage);
