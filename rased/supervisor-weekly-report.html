@@ -8,7 +8,7 @@ main{max-width:1550px;margin:16px auto;padding:0 12px}.card{background:#fff;bord
 </style></head><body>
 <header><img src="logo.jpeg" alt="شعار مدارس الفلاح"><h1>خطة متابعة أعمال الإشراف التعليمية الأسبوعية</h1></header>
 <main>
-<div class="actions"><a class="btn secondary" href="supervisor-training.html">↩ متابعة أعمال الإشراف</a></div>
+<div class="actions"><a class="btn secondary" href="supervisor-training.html?v=20261120-native1">↩ متابعة أعمال الإشراف</a></div>
 <section class="card"><h2>بيانات الخطة الأسبوعية</h2><div class="fields"><label>اسم المشرف<input id="supervisorName" placeholder="اسم المشرف"></label><label>التخصص<input id="specialty" placeholder="التخصص"></label><label>رقم الأسبوع<input id="weekNumber" placeholder="مثال: 10"></label><label>الفترة من<input id="weekFrom" type="date"></label><label>الفترة إلى<input id="weekTo" type="date"></label><label>اسم المشرف على المدارس<input id="generalSupervisor" value="أحمد سمير"></label><label>اسم المديرة العامة للمجمعات<input id="generalDirector" value="جوهرة الزهراني"></label></div>
 <div class="note">أدخل رقم الأسبوع والفترة وتواريخ الأيام يدويًا. بعد الحفظ سيظهر الأسبوع في قائمة الأسابيع المحفوظة، ويمكنك الرجوع إليه وتعديله أو حذفه في أي وقت.</div><input type="hidden" id="editWeekDocId">
 <div class="week-days" id="dayInputs"></div><div class="actions"><button onclick="saveWeekSettings()">💾 حفظ بيانات الأسبوع</button><button class="secondary" onclick="newWeekForm()">＋ إنشاء أسبوع جديد</button></div><p id="weekMsg" class="status"></p></section>
@@ -291,9 +291,9 @@ function printWeekly(){
 async function init(){
  role=norm(sessionStorage.getItem("currentUserRole")||localStorage.getItem("currentUserRole"));
  user=norm(sessionStorage.getItem("currentUserEmail")||sessionStorage.getItem("currentUser")||localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser"));
- if(!user||!["supervisor","manager"].includes(role)){alert("الدخول للمشرف فقط");location.href="supervisor-training.html";return}
+ if(!user||!["supervisor","manager"].includes(role)){alert("الدخول للمشرف فقط");location.href="supervisor-training.html?v=20261120-native1";return}
  const u=await db.collection("users").doc(user).get();
- if(role==="supervisor"&&(!u.exists||norm(u.data()?.role)!=="supervisor"||u.data()?.permissions?.trainingManage===false)){alert("ليس لديك صلاحية التقرير");location.href="supervisor-training.html";return}
+ if(role==="supervisor"&&(!u.exists||norm(u.data()?.role)!=="supervisor"||u.data()?.permissions?.trainingManage===false)){alert("ليس لديك صلاحية التقرير");location.href="supervisor-training.html?v=20261120-native1";return}
  authorized=true;supervisorProfile=u.exists?u.data():{};
  el("supervisorName").value=supervisorProfile.name||sessionStorage.getItem("currentUserName")||user;
  el("specialty").value=supervisorProfile.specialty||supervisorProfile.subjectName||"";
