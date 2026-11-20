@@ -441,6 +441,17 @@ async function openUnifiedWorkspace(kind){
   }
   if(!url)return;
   title.textContent=label;
+  frame.onload=function(){
+    if(sessionStorage.getItem("rasedExecutiveReadOnly")!=="1")return;
+    try{
+      const child=frame.contentDocument;
+      if(!child||child.getElementById("rasedExecutiveReadonlyInjected"))return;
+      const guard=child.createElement("script");
+      guard.id="rasedExecutiveReadonlyInjected";
+      guard.src="/rased/rased-readonly-guard.js?v=20261120-1";
+      (child.head||child.documentElement).appendChild(guard);
+    }catch(e){console.warn("تعذر تفعيل وضع القراءة فقط داخل الخدمة الفرعية",e);}
+  };
   frame.src=url;
   box.classList.add("open");
   box.setAttribute("aria-hidden","false");
