@@ -172,7 +172,7 @@
     async function init(){try{const user=norm(auth('currentUserEmail')||auth('currentUser'));if(!user||norm(auth('currentUserRole'))!=='supervisor'){win.location.href='index.html';return;}
       const snap=await store('rased').collection('users').doc(user).get();const actor=snap.exists?sanitize(snap.data()):{};
       if(norm(actor.role)!=='supervisor'||norm(actor.supervisorType)!=='executive_viewer'||actor.active===false){win.location.href='index.html';return;}
-      authorized=true;$('viewerName').textContent=actor.name||'الحساب الإداري';$('viewerTitle').textContent=text(actor.accountTitle)||'المدير العام';doc.title=$('viewerTitle').textContent+' | متابعة حسابات المشرفين — راصد';const users=await read('users');profiles=users.filter(p=>norm(p.role)==='supervisor'&&norm(p.supervisorType)!=='executive_viewer');
+      authorized=true;win.sessionStorage.setItem('rasedExecutiveActorType',norm(actor.supervisorType));$('viewerName').textContent=actor.name||'الحساب الإداري';$('viewerTitle').textContent=text(actor.accountTitle)||'المدير العام';doc.title=$('viewerTitle').textContent+' | متابعة حسابات المشرفين — راصد';const users=await read('users');profiles=users.filter(p=>norm(p.role)==='supervisor'&&norm(p.supervisorType)!=='executive_viewer');
       $('directoryStatus').textContent='اختاري المشرف لعرض لوحته وأعماله. جميع الأقسام هنا للمشاهدة والطباعة فقط.';$('directoryRefresh').disabled=false;renderDirectory();
     }catch(e){$('directoryStatus').textContent=errorText(e);$('directoryStatus').classList.add('error');$('directoryRefresh').disabled=false;}}
     function errorText(e){return /resource-exhausted|quota/i.test(e?.code||e?.message||'')?'تعذر التحميل بسبب بلوغ حد استخدام قاعدة البيانات. أعيدي المحاولة لاحقًا.':/permission-denied/i.test(e?.code||'')?'تعذر الوصول إلى البيانات بصلاحيات الحساب الحالية.':'تعذر تحميل البيانات. تحققي من الاتصال ثم أعيدي المحاولة.';}
@@ -187,12 +187,6 @@
       win.sessionStorage.setItem('rasedExecutiveActorId',norm(auth('currentUserEmail')||auth('currentUser')));
       win.sessionStorage.setItem('rasedExecutiveTarget',profile.id);
       win.sessionStorage.setItem('rasedExecutiveTargetName',text(profile.name||profile.id));
-      win.sessionStorage.setItem('currentUserRole','supervisor');
-      win.sessionStorage.setItem('currentUser',profile.id);
-      win.sessionStorage.setItem('currentUserEmail',profile.id);
-      win.sessionStorage.setItem('currentUserName',text(profile.name||profile.id));
-      win.sessionStorage.removeItem('currentUserType');
-      win.sessionStorage.removeItem('currentUserPermissions');
       win.location.href='supervisor-dashboard.html?executiveView=1';
     }
     function renderModules(){ $('supervisorModules').innerHTML=groups.map((g,i)=>{const allowed=modules.filter(m=>m.group===i&&canSee(selected,m.permission));return allowed.length?`<section class="supervisor-dashboard-group"><h3 class="supervisor-dashboard-group-title">${g}</h3><div class="supervisor-dashboard-grid">${allowed.map(m=>`<button class="supervisor-dashboard-tool" data-module="${m.id}"><span>${m.icon}</span><strong>${m.title}</strong><small>${m.hint}</small></button>`).join('')}</div></section>`:'';}).join('');$('supervisorModules').querySelectorAll('[data-module]').forEach(b=>b.onclick=()=>open(b.dataset.module)); }
