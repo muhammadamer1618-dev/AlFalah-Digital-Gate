@@ -187,7 +187,7 @@
       win.sessionStorage.setItem('rasedExecutiveActorId',norm(auth('currentUserEmail')||auth('currentUser')));
       win.sessionStorage.setItem('rasedExecutiveTarget',profile.id);
       win.sessionStorage.setItem('rasedExecutiveTargetName',text(profile.name||profile.id));
-      win.location.href='supervisor-dashboard.html?executiveView=1';
+      win.location.href='supervisor-dashboard.html?executiveView=1&v=20261120-native1';
     }
     function renderModules(){ $('supervisorModules').innerHTML=groups.map((g,i)=>{const allowed=modules.filter(m=>m.group===i&&canSee(selected,m.permission));return allowed.length?`<section class="supervisor-dashboard-group"><h3 class="supervisor-dashboard-group-title">${g}</h3><div class="supervisor-dashboard-grid">${allowed.map(m=>`<button class="supervisor-dashboard-tool" data-module="${m.id}"><span>${m.icon}</span><strong>${m.title}</strong><small>${m.hint}</small></button>`).join('')}</div></section>`:'';}).join('');$('supervisorModules').querySelectorAll('[data-module]').forEach(b=>b.onclick=()=>open(b.dataset.module)); }
     function enrich(rows){const teachers=new Map(teacherRecords.flatMap(t=>identities(t).map(k=>[k,t])));return rows.map(r=>{const t=teachers.get(norm(r.teacherEmail||r.teacherId));return {...r,teacherName:r.teacherName?teacherDisplayName(r.teacherName,teacherRecords):t?teacherDisplayName(t.id,teacherRecords):r.teacherName};});}
