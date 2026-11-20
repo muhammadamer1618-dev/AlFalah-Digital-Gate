@@ -319,7 +319,8 @@ node.style.display=hasPerm(key)?"":"none";
 }
 async function verifyAccount(){
  const executiveMode=sessionStorage.getItem("rasedExecutiveReadOnly")==="1";
- const actorId=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
+ const rawAuthGet=window.__RASED_RAW_SESSION_GET__||((key)=>sessionStorage.getItem(key));
+ const actorId=(rawAuthGet("currentUserEmail")||rawAuthGet("currentUser")||"").trim().toLowerCase();
  let u=actorId,x={};
  if(executiveMode){
   if(!actorId)throw Error("لم يتم العثور على الحساب الإداري.");
