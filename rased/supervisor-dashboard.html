@@ -288,14 +288,8 @@ function hydrateAlfalahGateSession(){
 function protect(){
  hydrateAlfalahGateSession();
  const executiveMode=sessionStorage.getItem("rasedExecutiveReadOnly")==="1";
- if(executiveMode){
-  const target=String(sessionStorage.getItem("rasedExecutiveTarget")||"").trim().toLowerCase();
-  const current=String(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
-  const actorType=String(sessionStorage.getItem("rasedExecutiveActorType")||"").trim().toLowerCase();
-  if(!target||target!==current||actorType!=="executive_viewer"){
-   alert("جلسة عرض المدير العام غير صالحة. عودي إلى لوحة المدير العام واختاري المشرف من جديد.");
-   location.href="executive-dashboard.html";return false;
-  }
+ if(executiveMode&&!String(sessionStorage.getItem("rasedExecutiveTarget")||"").trim()){
+  alert("لم يتم تحديد حساب المشرف المطلوب عرضه.");location.href="executive-dashboard.html";return false;
  }
  const r=(rasedAuthGet("currentUserRole")||"").toLowerCase();
  if(r!=="supervisor"){alert("هذه الصفحة لحسابات الإشراف فقط");location.href="index.html";return false}
@@ -324,24 +318,38 @@ node.style.display=hasPerm(key)?"":"none";
 });
 }
 async function verifyAccount(){
-let gateSession=null;try{gateSession=JSON.parse(localStorage.getItem("alfalah.gate.session.v1")||"null")}catch(e){}
-const u=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||gateSession?.username||"").trim().toLowerCase();
-if(u){rasedAuthSet("currentUserEmail",u);rasedAuthSet("currentUser",u);if(gateSession?.name&&!rasedAuthGet("currentUserName"))rasedAuthSet("currentUserName",gateSession.name);}
-if(!u)throw Error("لم يتم العثور على حساب الإشراف");
-const d=await db.collection("users").doc(u).get();
-if(!d.exists||String(d.data()?.role||"").toLowerCase()!=="supervisor")throw Error("حساب الإشراف غير صالح");
-const x=d.data()||{};
-currentSupervisorType=String(x.supervisorType||"general_supervisor").toLowerCase();
-currentSupervisorPhone=String(x.phone||x.mobile||"").trim();
-assignedTeacherEmails=Array.isArray(x.assignedTeacherEmails)?[...new Set(x.assignedTeacherEmails.map(v=>String(v||"").trim().toLowerCase()).filter(Boolean))]:[];
-currentPermissions=x.permissions&&typeof x.permissions==="object"?x.permissions:{};
-const roleLabel=roleTypeLabel(currentSupervisorType);
-supName.textContent=x.name||rasedAuthGet("currentUserName")||u;
-supRoleLabel.textContent="نوع الحساب: "+roleLabel;
-portalRoleTitle.textContent="نظام راصد - بوابة "+roleLabel;
-rasedAuthSet("currentUserType",currentSupervisorType);
-rasedAuthSet("currentUserPermissions",JSON.stringify(currentPermissions));
-applyPermissions();
+ const executiveMode=sessionStorage.getItem("rasedExecutiveReadOnly")==="1";
+ const actorId=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
+ let u=actorId,x={};
+ if(executiveMode){
+  if(!actorId)throw Error("لم يتم العثور على الحساب الإداري.");
+  const actorSnap=await db.collection("users").doc(actorId).get();
+  const actor=actorSnap.exists?actorSnap.data()||{}:{};
+  if(String(actor.role||"").toLowerCase()!=="supervisor"||String(actor.supervisorType||"").toLowerCase()!=="executive_viewer"||actor.active===false)throw Error("هذا الحساب غير مخول بعرض بوابات المشرفين.");
+  u=String(sessionStorage.getItem("rasedExecutiveTarget")||"").trim().toLowerCase();
+  if(!u)throw Error("لم يتم تحديد حساب المشرف.");
+ }else{
+  let gateSession=null;try{gateSession=JSON.parse(localStorage.getItem("alfalah.gate.session.v1")||"null")}catch(e){}
+  u=(actorId||gateSession?.username||"").trim().toLowerCase();
+  if(u){rasedAuthSet("currentUserEmail",u);rasedAuthSet("currentUser",u);if(gateSession?.name&&!rasedAuthGet("currentUserName"))rasedAuthSet("currentUserName",gateSession.name);}
+ }
+ if(!u)throw Error("لم يتم العثور على حساب الإشراف");
+ const dSnap=await db.collection("users").doc(u).get();
+ if(!dSnap.exists||String(dSnap.data()?.role||"").toLowerCase()!=="supervisor")throw Error("حساب الإشراف غير صالح");
+ x=dSnap.data()||{};
+ if(executiveMode&&String(x.supervisorType||"").toLowerCase()==="executive_viewer")throw Error("لا يمكن فتح حساب مدير عام كأنه حساب مشرف.");
+ currentSupervisorType=String(x.supervisorType||"general_supervisor").toLowerCase();
+ currentSupervisorPhone=String(x.phone||x.mobile||"").trim();
+ assignedTeacherEmails=Array.isArray(x.assignedTeacherEmails)?[...new Set(x.assignedTeacherEmails.map(v=>String(v||"").trim().toLowerCase()).filter(Boolean))]:[];
+ currentPermissions=x.permissions&&typeof x.permissions==="object"?x.permissions:{};
+ const roleLabel=roleTypeLabel(currentSupervisorType);
+ supName.textContent=x.name||sessionStorage.getItem("rasedExecutiveTargetName")||rasedAuthGet("currentUserName")||u;
+ supRoleLabel.textContent="نوع الحساب: "+roleLabel;
+ portalRoleTitle.textContent=executiveMode?"عرض بوابة المشرف — المدير العام (قراءة فقط)":"نظام راصد - بوابة "+roleLabel;
+ if(executiveMode)rasedAuthSet("currentUserName",x.name||u);
+ rasedAuthSet("currentUserType",currentSupervisorType);
+ rasedAuthSet("currentUserPermissions",JSON.stringify(currentPermissions));
+ applyPermissions();
 }
 async function loadCollectionIfAllowed(permissionKey,collectionName,mapper){
 if(!hasPerm(permissionKey))return [];
@@ -525,8 +533,9 @@ document.addEventListener("keydown",function(e){
 })();
 
 async function ensureVisitSupervisorSession(){
-  const gateUsername=(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"").trim().toLowerCase();
-  const gateName=String(rasedAuthGet("currentUserName")||"").trim();
+  const executiveMode=sessionStorage.getItem("rasedExecutiveReadOnly")==="1";
+  const gateUsername=(executiveMode?sessionStorage.getItem("rasedExecutiveTarget"):(rasedAuthGet("currentUserEmail")||rasedAuthGet("currentUser")||"")||"").trim().toLowerCase();
+  const gateName=String(executiveMode?sessionStorage.getItem("rasedExecutiveTargetName"):(rasedAuthGet("currentUserName")||"")).trim();
   if(!gateUsername)return null;
 
   const toEnglishDigits=value=>String(value||"")
