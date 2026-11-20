@@ -176,9 +176,25 @@
       $('directoryStatus').textContent='اختاري المشرف لعرض لوحته وأعماله. جميع الأقسام هنا للمشاهدة والطباعة فقط.';$('directoryRefresh').disabled=false;renderDirectory();
     }catch(e){$('directoryStatus').textContent=errorText(e);$('directoryStatus').classList.add('error');$('directoryRefresh').disabled=false;}}
     function errorText(e){return /resource-exhausted|quota/i.test(e?.code||e?.message||'')?'تعذر التحميل بسبب بلوغ حد استخدام قاعدة البيانات. أعيدي المحاولة لاحقًا.':/permission-denied/i.test(e?.code||'')?'تعذر الوصول إلى البيانات بصلاحيات الحساب الحالية.':'تعذر تحميل البيانات. تحققي من الاتصال ثم أعيدي المحاولة.';}
-    async function choose(id){if(!authorized)return;const profile=profiles.find(p=>p.id===id);if(!profile)return;const version=++choiceVersion;++viewVersion;selected=profile;currentModule=null;context=null;$('supervisorDirectory').hidden=true;$('supervisorWorkspace').hidden=false;$('modulePanel').hidden=true;$('supervisorModules').innerHTML='';$('selectedName').textContent=profile.name||profile.id;$('selectedRole').textContent=roleLabel(profile);$('selectedSpecialty').textContent=profile.specialty||profile.subjectName||'لم يسجل تخصص';$('selectedTeacherCount').textContent='—';$('selectedModuleCount').textContent='—';$('selectedScope').textContent='جارٍ تحميل الإسنادات...';notice('جارٍ تحميل بيانات المشرف...');
-      try{const raw=await read('teachers'),users=await read('users');if(version!==choiceVersion)return;const map=new Map();[...raw,...users.filter(u=>norm(u.role)==='teacher')].forEach(t=>{const keys=identities(t);const existing=[...map.values()].find(x=>identities(x).some(k=>keys.includes(k)));if(existing){for(const [k,v]of Object.entries(t))if(existing[k]==null||existing[k]==='')existing[k]=v;}else map.set(t.id,{...t});});teacherRecords=[...map.values()];context=makeContext(profile,teacherRecords);$('selectedScope').textContent=context.restricted?context.teachers.length+' معلم ضمن إسنادات المشرف':'إشراف عام • '+context.teachers.length+' معلم';$('selectedTeacherCount').textContent=String(context.teachers.length);$('selectedModuleCount').textContent=String(modules.filter(m=>canSee(profile,m.permission)).length);renderModules();notice('اختاري أحد أقسام المشرف لعرض بياناته.');
-      }catch(e){if(version===choiceVersion){notice(errorText(e),true);$('selectedScope').textContent='تعذر تحميل الإسنادات';}}}
+    async function choose(id){
+      if(!authorized)return;
+      const profile=profiles.find(p=>p.id===id);
+      if(!profile||profile.active===false)return;
+      const keys=['Role','User','UserName','UserEmail','UserType','UserPermissions'];
+      keys.forEach(k=>{const value=win.sessionStorage.getItem('currentUser'+k);if(value!==null)win.sessionStorage.setItem('rasedExecutiveActor'+k,value);});
+      win.sessionStorage.setItem('rasedTabAuthReady','1');
+      win.sessionStorage.setItem('rasedExecutiveReadOnly','1');
+      win.sessionStorage.setItem('rasedExecutiveActorId',norm(auth('currentUserEmail')||auth('currentUser')));
+      win.sessionStorage.setItem('rasedExecutiveTarget',profile.id);
+      win.sessionStorage.setItem('rasedExecutiveTargetName',text(profile.name||profile.id));
+      win.sessionStorage.setItem('currentUserRole','supervisor');
+      win.sessionStorage.setItem('currentUser',profile.id);
+      win.sessionStorage.setItem('currentUserEmail',profile.id);
+      win.sessionStorage.setItem('currentUserName',text(profile.name||profile.id));
+      win.sessionStorage.removeItem('currentUserType');
+      win.sessionStorage.removeItem('currentUserPermissions');
+      win.location.href='supervisor-dashboard.html?executiveView=1';
+    }
     function renderModules(){ $('supervisorModules').innerHTML=groups.map((g,i)=>{const allowed=modules.filter(m=>m.group===i&&canSee(selected,m.permission));return allowed.length?`<section class="supervisor-dashboard-group"><h3 class="supervisor-dashboard-group-title">${g}</h3><div class="supervisor-dashboard-grid">${allowed.map(m=>`<button class="supervisor-dashboard-tool" data-module="${m.id}"><span>${m.icon}</span><strong>${m.title}</strong><small>${m.hint}</small></button>`).join('')}</div></section>`:'';}).join('');$('supervisorModules').querySelectorAll('[data-module]').forEach(b=>b.onclick=()=>open(b.dataset.module)); }
     function enrich(rows){const teachers=new Map(teacherRecords.flatMap(t=>identities(t).map(k=>[k,t])));return rows.map(r=>{const t=teachers.get(norm(r.teacherEmail||r.teacherId));return {...r,teacherName:r.teacherName?teacherDisplayName(r.teacherName,teacherRecords):t?teacherDisplayName(t.id,teacherRecords):r.teacherName};});}
     async function getRows(module,source){
