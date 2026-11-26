@@ -9821,11 +9821,11 @@ function renderSupervisors(){
    ${accountDetailPanel(teacherPanelId,isScoped?"المعلمون المسندون":"جميع المعلمين ضمن النطاق",teacherPanelItems,"لا يوجد معلمون مرتبطون بهذا الحساب.")}
    ${accountDetailPanel(permissionPanelId,"الصلاحيات المفعّلة",perms,"لا توجد صلاحيات مفعّلة.")}
    <div class="supervisor-action-grid">
-    <button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"permissions")'>🔐 تعديل الصلاحيات</button>
-    <button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openSupervisorEditor(${JSON.stringify(item.username)},"teachers")'>👨‍🏫 تعديل إسناد المعلمين</button>
-    <button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openSupervisorEditor(${JSON.stringify(item.username)})'>✏️ تعديل الحساب</button>
-    <button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteSupervisor(${JSON.stringify(item.username)})'>🗑️ حذف الحساب</button>
-    <button type="button" class="supervisor-action-tile supervisor-action-copy" onclick='openSupervisorPermissionCopy(${JSON.stringify(item.username)})'>📋 نسخ الصلاحيات</button>
+    <button type="button" class="supervisor-action-tile supervisor-action-blue" onclick='openSupervisorEditor(${escapeHtml(JSON.stringify(item.username))},"permissions")'>🔐 تعديل الصلاحيات</button>
+    <button type="button" class="supervisor-action-tile supervisor-action-cyan" onclick='openSupervisorEditor(${escapeHtml(JSON.stringify(item.username))},"teachers")'>👨‍🏫 تعديل إسناد المعلمين</button>
+    <button type="button" class="supervisor-action-tile supervisor-action-edit" onclick='openSupervisorEditor(${escapeHtml(JSON.stringify(item.username))})'>✏️ تعديل الحساب</button>
+    <button type="button" class="supervisor-action-tile supervisor-action-delete" onclick='deleteSupervisor(${escapeHtml(JSON.stringify(item.username))})'>🗑️ حذف الحساب</button>
+    <button type="button" class="supervisor-action-tile supervisor-action-copy" onclick='openSupervisorPermissionCopy(${escapeHtml(JSON.stringify(item.username))})'>📋 نسخ الصلاحيات</button>
    </div>
 
   </article>`;
