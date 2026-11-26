@@ -339,7 +339,12 @@ async function verifyAccount(){
  if(!dSnap.exists||String(dSnap.data()?.role||"").toLowerCase()!=="supervisor")throw Error("حساب الإشراف غير صالح");
  x=dSnap.data()||{};
  if(executiveMode&&String(x.supervisorType||"").toLowerCase()==="executive_viewer")throw Error("لا يمكن فتح حساب مدير عام كأنه حساب مشرف.");
- currentSupervisorType=String(x.supervisorType||"general_supervisor").toLowerCase();
+ currentSupervisorType=String(x.supervisorType||"general_supervisor").trim().toLowerCase();
+ if(!executiveMode&&currentSupervisorType==="executive_viewer"){
+  rasedAuthSet("currentUserType",currentSupervisorType);
+  location.replace("executive-dashboard.html");
+  return false;
+ }
  currentSupervisorPhone=String(x.phone||x.mobile||"").trim();
  assignedTeacherEmails=Array.isArray(x.assignedTeacherEmails)?[...new Set(x.assignedTeacherEmails.map(v=>String(v||"").trim().toLowerCase()).filter(Boolean))]:[];
  currentPermissions=x.permissions&&typeof x.permissions==="object"?x.permissions:{};
@@ -351,6 +356,7 @@ async function verifyAccount(){
  rasedAuthSet("currentUserType",currentSupervisorType);
  rasedAuthSet("currentUserPermissions",JSON.stringify(currentPermissions));
  applyPermissions();
+ return true;
 }
 async function loadCollectionIfAllowed(permissionKey,collectionName,mapper){
 if(!hasPerm(permissionKey))return [];
@@ -406,7 +412,7 @@ function printSupervisorMessages(){
  win.document.open();win.document.write(html);win.document.close();win.focus();win.addEventListener("load",()=>win.print(),{once:true});
 }
 function renderMessages(){const filter=document.getElementById("messageTeacherFilter");const selected=filter.value;const names=[...new Set(messages.map(x=>String(x.teacherName||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));filter.innerHTML='<option value="">جميع المعلمين</option>'+names.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join("");filter.value=names.includes(selected)?selected:"";const teacher=filter.value;const rows=messages.filter(x=>!teacher||String(x.teacherName||"").trim()===teacher).sort((a,b)=>(b.sentAt?.seconds||0)-(a.sentAt?.seconds||0));messagesBody.innerHTML=rows.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.teacherName||"")}</td><td>${esc(x.studentName||"")}</td><td>${esc((x.grade||"")+"/"+(x.section||""))}</td><td>${esc(x.subjectName||"")}</td><td>${esc(x.messageType==='custom'?'رسالة عامة':(x.testName||'نتيجة اختبار'))}</td><td>${esc(x.guardianPhone||"")}</td><td style="text-align:right;white-space:pre-wrap;max-width:360px">${esc(x.message||"")}</td></tr>`).join('')||'<tr><td colspan="8">لا توجد رسائل.</td></tr>'}
-async function start(){if(!protect())return;try{if(sessionStorage.getItem("rasedExecutiveReadOnly")==="1"){document.getElementById("executiveReturn").style.display="block";document.querySelector(".logout").style.display="none";document.getElementById("portalRoleTitle").textContent="عرض بوابة المشرف — المدير العام (قراءة فقط)";}await verifyAccount();await loadAll()}catch(e){console.error(e);alert("تعذر تحميل بوابة المشرف:\\n"+e.message);location.href="index.html"}}start();
+async function start(){if(!protect())return;try{if(sessionStorage.getItem("rasedExecutiveReadOnly")==="1"){document.getElementById("executiveReturn").style.display="block";document.querySelector(".logout").style.display="none";document.getElementById("portalRoleTitle").textContent="عرض بوابة المشرف — المدير العام (قراءة فقط)";}if(await verifyAccount()===false)return;await loadAll()}catch(e){console.error(e);alert("تعذر تحميل بوابة المشرف:\\n"+e.message);location.href="index.html"}}start();
 </script>
 <style id="unifiedWorkspaceStyle">
 .unified-workspace{

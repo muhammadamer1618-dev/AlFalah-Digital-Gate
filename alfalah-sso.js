@@ -335,7 +335,7 @@ function rasedUrl(s){
   if(s.rasedRole==="superadmin")return "rased/admin.html";
   if(s.rasedRole==="student_counselor")return "rased/student-counselor.html";
   if(s.rasedRole==="activity_leader")return "rased/activity-leader.html";
-  if(s.rasedRole==="supervisor")return "rased/supervisor-dashboard.html";
+  if(s.rasedRole==="supervisor")return String(s.currentUserType||"").trim().toLowerCase()==="executive_viewer"?"rased/executive-dashboard.html":"rased/supervisor-dashboard.html";
   return "rased/index.html";
 }
 function followupUrl(s){
@@ -449,3 +449,4 @@ function install(){
   setTimeout(()=>clearInterval(timer),5000);
 }
 install();
+
