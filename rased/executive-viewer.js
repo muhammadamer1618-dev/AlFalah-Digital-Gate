@@ -28,6 +28,25 @@
     const allow = new Set(assigned(supervisor));
     return teachers.filter(t => identities(t).some(key => allow.has(key)));
   }
+  function mergeTeachers(teachers, users) {
+    const result=[],index=new Map();
+    for(const row of [...teachers,...users.filter(u=>norm(u.role)==='teacher')]){
+      const keys=identities(row),matches=[...new Set(keys.map(k=>index.get(k)).filter(Boolean))];
+      const target=matches[0]||{};
+      if(!matches.length)result.push(target);
+      for(const data of [...matches.slice(1),row]){
+        for(const [key,value] of Object.entries(data)){
+          if(key==='_keys')continue;
+          if(key==='assignments')target.assignments=[...new Map([...list(target.assignments),...list(value)].map(a=>[JSON.stringify(a),a])).values()];
+          else if(target[key]==null||target[key]==='')target[key]=value;
+        }
+      }
+      target._keys=[...new Set([...identities(target),...matches.flatMap(identities),...keys])];
+      matches.slice(1).forEach(other=>result.splice(result.indexOf(other),1));
+      target._keys.forEach(k=>index.set(k,target));
+    }
+    return result;
+  }
   function makeContext(supervisor, teachers) {
     const scoped = scopeTeachers(supervisor, teachers);
     return {supervisor,teachers:scoped,restricted:norm(supervisor.supervisorType)==='supervisor',teacherKeys:new Set(scoped.flatMap(identities)),classes:scoped.flatMap(t => list(t.assignments))};
@@ -162,7 +181,7 @@
   function mount(win) {
     const doc=win.document,$=id=>doc.getElementById(id);
     const configs={rased:{apiKey:'AIzaSyAfgSV-6_IMkXncgPWxY69omKfvFtGakgk',authDomain:'results2026-7c0dd.firebaseapp.com',projectId:'results2026-7c0dd'},visits:{apiKey:'AIzaSyBNFrPNCuQefOXHTCmiiKSBjgPLUy5Ug4U',authDomain:'follow-up-2026.firebaseapp.com',projectId:'follow-up-2026'},weekly:{apiKey:'AIzaSyBYxW_pdFvE1VZyDoTok4-EutPe6oigJhY',authDomain:'weekly-plan-3a743.firebaseapp.com',projectId:'weekly-plan-3a743'}};
-    const stores={},cache=new Map();let detailVersion=0;let profiles=[],teacherRecords=[],selected=null,context=null,currentModule=null,currentSource='',currentRows=[],visibleRows=[],page=1,viewVersion=0,choiceVersion=0,authorized=false;
+    const stores={},cache=new Map();let detailVersion=0;let profiles=[],teacherRecords=[],selected=null,context=null,currentModule=null,currentSource='',currentRows=[],visibleRows=[],page=1,printing=false,viewVersion=0,choiceVersion=0,authorized=false;
     function store(key){if(!stores[key]){const name='executive-'+key;const app=win.firebase.apps?.find(a=>a.name===name)||win.firebase.initializeApp(configs[key],name);stores[key]=readOnly(app.firestore());}return stores[key];}
     async function read(source,project='rased',refresh=false){const key=project+':'+source;if(refresh)cache.delete(key);if(!cache.has(key)){const promise=store(project).collection(source).get().then(s=>s.docs.map(d=>({...sanitize(d.data()),id:d.id})));cache.set(key,promise);promise.catch(()=>{if(cache.get(key)===promise)cache.delete(key);});}return cache.get(key);}
     function auth(key){const v=win.sessionStorage.getItem(key);if(win.sessionStorage.getItem('rasedTabAuthReady')==='1')return v||'';return v||win.localStorage.getItem(key)||'';}
@@ -172,22 +191,39 @@
     async function init(){try{const user=norm(auth('currentUserEmail')||auth('currentUser'));if(!user||norm(auth('currentUserRole'))!=='supervisor'){win.location.href='index.html';return;}
       const snap=await store('rased').collection('users').doc(user).get();const actor=snap.exists?sanitize(snap.data()):{};
       if(norm(actor.role)!=='supervisor'||norm(actor.supervisorType)!=='executive_viewer'||actor.active===false){win.location.href='index.html';return;}
-      authorized=true;win.sessionStorage.setItem('rasedExecutiveActorType',norm(actor.supervisorType));$('viewerName').textContent=actor.name||'الحساب الإداري';$('viewerTitle').textContent=text(actor.accountTitle)||'المدير العام';doc.title=$('viewerTitle').textContent+' | متابعة حسابات المشرفين — راصد';const users=await read('users');profiles=users.filter(p=>norm(p.role)==='supervisor'&&norm(p.supervisorType)!=='executive_viewer');
+      authorized=true;$('viewerName').textContent=actor.name||'الحساب الإداري';$('viewerTitle').textContent=text(actor.accountTitle)||'المدير العام';doc.title=$('viewerTitle').textContent+' | متابعة حسابات المشرفين — راصد';const users=await read('users');profiles=users.filter(p=>norm(p.role)==='supervisor'&&norm(p.supervisorType)!=='executive_viewer');
       $('directoryStatus').textContent='اختاري المشرف لعرض لوحته وأعماله. جميع الأقسام هنا للمشاهدة والطباعة فقط.';$('directoryRefresh').disabled=false;renderDirectory();
     }catch(e){$('directoryStatus').textContent=errorText(e);$('directoryStatus').classList.add('error');$('directoryRefresh').disabled=false;}}
     function errorText(e){return /resource-exhausted|quota/i.test(e?.code||e?.message||'')?'تعذر التحميل بسبب بلوغ حد استخدام قاعدة البيانات. أعيدي المحاولة لاحقًا.':/permission-denied/i.test(e?.code||'')?'تعذر الوصول إلى البيانات بصلاحيات الحساب الحالية.':'تعذر تحميل البيانات. تحققي من الاتصال ثم أعيدي المحاولة.';}
     async function choose(id){
       if(!authorized)return;
       const profile=profiles.find(p=>p.id===id);
-      if(!profile||profile.active===false)return;
-      const keys=['Role','User','UserName','UserEmail','UserType','UserPermissions'];
-      keys.forEach(k=>{const value=win.sessionStorage.getItem('currentUser'+k);if(value!==null)win.sessionStorage.setItem('rasedExecutiveActor'+k,value);});
-      win.sessionStorage.setItem('rasedTabAuthReady','1');
-      win.sessionStorage.setItem('rasedExecutiveReadOnly','1');
-      win.sessionStorage.setItem('rasedExecutiveActorId',norm(auth('currentUserEmail')||auth('currentUser')));
-      win.sessionStorage.setItem('rasedExecutiveTarget',profile.id);
-      win.sessionStorage.setItem('rasedExecutiveTargetName',text(profile.name||profile.id));
-      win.location.href='supervisor-dashboard.html?executiveView=1&v=20261120-native1';
+      if(!profile)return;
+      const version=++choiceVersion;
+      ++viewVersion;++detailVersion;
+      $('recordDialog').close();selected=profile;context=null;currentModule=null;
+      currentRows=[];visibleRows=[];page=1;
+      $('supervisorDirectory').hidden=true;$('supervisorWorkspace').hidden=false;
+      $('modulePanel').hidden=true;$('supervisorModules').innerHTML='';
+      $('selectedName').textContent=profile.name||profile.id;
+      $('selectedRole').textContent=roleLabel(profile);
+      $('selectedSpecialty').textContent=profile.specialty||profile.subjectName||'إشراف عام';
+      $('selectedTeacherCount').textContent='—';$('selectedModuleCount').textContent='—';
+      $('selectedScope').textContent='جارٍ تحميل إسنادات المشرف...';
+      notice('جارٍ تحميل بيانات المشرف وأعماله المسجلة...');
+      try{
+        const [teachers,users]=await Promise.all([read('teachers'),read('users')]);
+        if(version!==choiceVersion)return;
+        teacherRecords=mergeTeachers(teachers,users);
+        context=makeContext(profile,teacherRecords);
+        $('selectedTeacherCount').textContent=context.teachers.length;
+        $('selectedModuleCount').textContent=modules.filter(m=>canSee(profile,m.permission)).length;
+        const missing=assigned(profile).filter(k=>!context.teacherKeys.has(k));
+        $('selectedScope').textContent=(context.restricted?'المعلمون المسندون لهذا المشرف وفصولهم':'نطاق إشراف عام')+
+          (missing.length?' • توجد إسنادات لا تطابق سجل معلم؛ قد تكون بعض البيانات غير مكتملة.':'')+' • عرض وطباعة فقط';
+        renderModules();
+        await open(canSee(profile,'trainingManage')?'training':'teachers');
+      }catch(e){if(version!==choiceVersion)return;notice(errorText(e)+' استخدم تحديث بيانات المشرف لإعادة المحاولة.',true);}
     }
     function renderModules(){ $('supervisorModules').innerHTML=groups.map((g,i)=>{const allowed=modules.filter(m=>m.group===i&&canSee(selected,m.permission));return allowed.length?`<section class="supervisor-dashboard-group"><h3 class="supervisor-dashboard-group-title">${g}</h3><div class="supervisor-dashboard-grid">${allowed.map(m=>`<button class="supervisor-dashboard-tool" data-module="${m.id}"><span>${m.icon}</span><strong>${m.title}</strong><small>${m.hint}</small></button>`).join('')}</div></section>`:'';}).join('');$('supervisorModules').querySelectorAll('[data-module]').forEach(b=>b.onclick=()=>open(b.dataset.module)); }
     function enrich(rows){const teachers=new Map(teacherRecords.flatMap(t=>identities(t).map(k=>[k,t])));return rows.map(r=>{const t=teachers.get(norm(r.teacherEmail||r.teacherId));return {...r,teacherName:r.teacherName?teacherDisplayName(r.teacherName,teacherRecords):t?teacherDisplayName(t.id,teacherRecords):r.teacherName};});}
@@ -219,7 +255,7 @@
       const columns=m.id==='blank'?[['الكود',r=>r.code||r.id],['الطالب',r=>r.name],['الفصل',classText],['ملاحظات',()=> '']]:sourceColumns[currentSource]||[['العنوان',r=>r.title||r.name||r.fileName],['التاريخ',r=>dateText(r.createdAt||r.date)],['الحالة',r=>r.status]];
       renderTable(rows,columns);
     }
-    function renderTable(rows,columns){const pages=Math.max(1,Math.ceil(rows.length/50));page=Math.min(page,pages);const subset=rows.slice((page-1)*50,page*50);$('moduleBody').innerHTML=`<div class="table"><table><thead><tr><th>#</th>${columns.map(([title])=>'<th>'+title+'</th>').join('')}<th class="no-print">التفاصيل</th></tr></thead><tbody>${subset.map((r,i)=>`<tr><td>${(page-1)*50+i+1}</td>${columns.map(([,get])=>'<td>'+esc(cell(get(r)))+'</td>').join('')}<td class="no-print"><button class="btn-light" data-detail="${(page-1)*50+i}">عرض التفاصيل</button></td></tr>`).join('')||`<tr><td colspan="${columns.length+2}" class="empty-state">لا توجد سجلات مطابقة ضمن هذا القسم والنطاق.</td></tr>`}</tbody></table></div><div class="pagination no-print"><button id="prevPage" class="btn-light" ${page<=1?'disabled':''}>السابق</button><span>صفحة ${page} من ${pages}</span><button id="nextPage" class="btn-light" ${page>=pages?'disabled':''}>التالي</button></div>`;$('moduleBody').querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>detail(rows[Number(b.dataset.detail)]));$('prevPage').onclick=()=>{page--;render();};$('nextPage').onclick=()=>{page++;render();};}
+    function renderTable(rows,columns){const pages=Math.max(1,Math.ceil(rows.length/50));page=Math.min(page,pages);const offset=printing?0:(page-1)*50;const subset=printing?rows:rows.slice(offset,offset+50);$('moduleBody').innerHTML=`<div class="table"><table><thead><tr><th>#</th>${columns.map(([title])=>'<th>'+title+'</th>').join('')}<th class="no-print">التفاصيل</th></tr></thead><tbody>${subset.map((r,i)=>`<tr><td>${offset+i+1}</td>${columns.map(([,get])=>'<td>'+esc(cell(get(r)))+'</td>').join('')}<td class="no-print"><button class="btn-light" data-detail="${offset+i}">عرض التفاصيل</button></td></tr>`).join('')||`<tr><td colspan="${columns.length+2}" class="empty-state">لا توجد سجلات مطابقة ضمن هذا القسم والنطاق.</td></tr>`}</tbody></table></div><div class="pagination no-print"><button id="prevPage" class="btn-light" ${page<=1?'disabled':''}>السابق</button><span>صفحة ${page} من ${pages}</span><button id="nextPage" class="btn-light" ${page>=pages?'disabled':''}>التالي</button></div>`;$('moduleBody').querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>detail(rows[Number(b.dataset.detail)]));$('prevPage').onclick=()=>{page--;render();};$('nextPage').onclick=()=>{page++;render();};}
     function renderTeacherCards(rows){$('moduleBody').innerHTML='<div class="teacher-account-grid">'+rows.map((t,i)=>`<article class="supervisor-account"><h3>${esc(t.name||t.id)}</h3><div class="muted">${esc(t.email||t.username||t.id)}</div><div>${esc(t.phone||t.mobile||'—')}</div><div class="assignment-list">${list(t.assignments).map(a=>'<div>📚 '+esc(a.subjectName||'مادة')+' — '+esc(classText(a))+'</div>').join('')||'لا توجد إسنادات مسجلة'}</div><button class="btn-light" data-detail="${i}">عرض بيانات المعلم وإسناداته</button></article>`).join('')+'</div>';if(!rows.length)$('moduleBody').innerHTML='<div class="empty-state">لا يوجد معلمون ضمن إسنادات هذا المشرف.</div>';$('moduleBody').querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>detail(rows[Number(b.dataset.detail)]));}
     function renderAnalysis(rows,kind){const valid=rows.filter(r=>gradeValue(r)!==null),map=new Map();valid.forEach(r=>{const key=kind==='top'?text(r.studentCode):kind==='comparison'?classText(r):text(r.testName||r.testId);if(!map.has(key))map.set(key,{name:kind==='top'?r.studentName:kind==='comparison'?classText(r):r.testName,count:0,sum:0});const x=map.get(key);x.count++;x.sum+=gradeValue(r);});const totals=[...map.values()].sort((a,b)=>b.sum/b.count-a.sum/a.count);$('moduleBody').innerHTML='<div class="table"><table><thead><tr><th>#</th><th>'+(kind==='top'?'الطالب':kind==='comparison'?'الفصل':'الاختبار')+'</th><th>درجات مرصودة</th><th>المتوسط</th></tr></thead><tbody>'+totals.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name||'غير مسمى')}</td><td>${r.count}</td><td><div class="result-meter"><span style="width:${Math.max(0,Math.min(100,r.sum/r.count))}%"></span></div>${(r.sum/r.count).toFixed(1)}٪</td></tr>`).join('')+(totals.length?'':'<tr><td colspan="4" class="empty-state">لا توجد درجات مرصودة قابلة للتحليل.</td></tr>')+'</tbody></table></div><p class="muted">المتوسط من الدرجات المرصودة المعروضة فقط؛ لا يُحسب الغياب أو السجل بلا درجة صفرًا.</p>';}
     function detailHtml(value,depth=0){if(depth>7)return '<p class="muted">تفاصيل متداخلة إضافية.</p>'; if(Array.isArray(value))return value.map((x,i)=>`<section class="detail-item"><h4>${i+1}</h4>${typeof x==='object'?detailHtml(x,depth+1):esc(cell(x))}</section>`).join('');if(!value||typeof value!=='object')return esc(cell(value));return Object.entries(value).filter(([key])=>labels[key]&&!privateKey.test(key)).map(([key,v])=>{if(v==null||v==='')return '';if(['targetTeacherEmails','teacherIds','teachers','teacherNames','teacherEmail'].includes(key))v=Array.isArray(v)?v.map(ref=>teacherDisplayName(ref,teacherRecords)):teacherDisplayName(v,teacherRecords);if(v&&typeof v==='object'&&!v.toDate&&!v.seconds)return `<section class="detail-group"><h4>${labels[key]}</h4>${detailHtml(v,depth+1)}</section>`;const val=key==='finalScore'?visitScore({finalScore:v}):cell(v);let content=esc(val);if(/Url$|^url$/.test(key)){try{const url=new URL(v);content=['https:','http:'].includes(url.protocol)?`<a href="${esc(url.href)}" target="_blank" rel="noopener noreferrer">فتح المرفق ↗</a>`:'رابط غير متاح';}catch{content='رابط غير متاح';}}return `<div class="detail-field"><b>${labels[key]}</b><div>${content}</div></div>`;}).join('');}
@@ -249,7 +285,8 @@
     }
     function back(){++detailVersion;++choiceVersion;++viewVersion;$('recordDialog').close();selected=null;context=null;currentModule=null;$('supervisorWorkspace').hidden=true;$('supervisorDirectory').hidden=false;}
     function logout(){['currentUser','currentUserEmail','currentUserName','currentUserRole','currentUserType','currentUserPermissions'].forEach(k=>{win.sessionStorage.removeItem(k);win.localStorage.removeItem(k);});win.sessionStorage.setItem('rasedTabAuthReady','1');win.location.href='index.html';}
-    $('supervisorSearch').oninput=renderDirectory;$('supervisorTypeFilter').onchange=renderDirectory;$('directoryRefresh').onclick=async()=>{cache.delete('rased:users');await init();};$('backToDirectory').onclick=back;$('logout').onclick=logout;$('refreshModule').onclick=()=>{if(currentModule){cache.delete((currentModule.id==='weekly'?'weekly':currentModule.id==='visits'?'visits':'rased')+':'+currentSource);open(currentModule.id,currentSource);}else if(selected)choose(selected.id);};$('printModule').onclick=()=>{doc.body.classList.remove('printing-record');win.print();};$('printDetails').onclick=()=>{doc.body.classList.add('printing-record');win.print();};win.addEventListener?.('afterprint',()=>doc.body.classList.remove('printing-record'));$('closeDetails').onclick=()=>{++detailVersion;$('recordDialog').close();};$('recordDialog').addEventListener('close',()=>{++detailVersion;});$('recordDialog').onclick=e=>{if(e.target===$('recordDialog'))$('recordDialog').close();};['moduleSearch','gradeFilter','sectionFilter','teacherFilter','testFilter','threshold'].forEach(id=>{$(id).addEventListener(id==='moduleSearch'?'input':'change',()=>{page=1;render();});});$('clearModuleFilters').onclick=()=>{['moduleSearch','gradeFilter','sectionFilter','teacherFilter','testFilter'].forEach(id=>$(id).value='');page=1;render();};const ready=init();return Object.freeze({ready});
+    $('supervisorSearch').oninput=renderDirectory;$('supervisorTypeFilter').onchange=renderDirectory;$('directoryRefresh').onclick=async()=>{cache.clear();await init();};$('refreshSupervisor').onclick=()=>{cache.clear();if(selected)return choose(selected.id);};$('backToDirectory').onclick=back;$('logout').onclick=logout;$('refreshModule').onclick=()=>{if(currentModule){cache.delete((currentModule.id==='weekly'?'weekly':currentModule.id==='visits'?'visits':'rased')+':'+currentSource);open(currentModule.id,currentSource);}else if(selected)choose(selected.id);};$('printModule').onclick=()=>{doc.body.classList.remove('printing-record');printing=true;render();win.print();};$('printDetails').onclick=()=>{doc.body.classList.add('printing-record');win.print();};win.addEventListener?.('beforeprint',()=>{printing=true;render();});win.addEventListener?.('afterprint',()=>{printing=false;render();doc.body.classList.remove('printing-record');});$('closeDetails').onclick=()=>{++detailVersion;$('recordDialog').close();};$('recordDialog').addEventListener('close',()=>{++detailVersion;});$('recordDialog').onclick=e=>{if(e.target===$('recordDialog'))$('recordDialog').close();};['moduleSearch','gradeFilter','sectionFilter','teacherFilter','testFilter','threshold'].forEach(id=>{$(id).addEventListener(id==='moduleSearch'?'input':'change',()=>{page=1;render();});});$('clearModuleFilters').onclick=()=>{['moduleSearch','gradeFilter','sectionFilter','teacherFilter','testFilter'].forEach(id=>$(id).value='');page=1;render();};const ready=init();return Object.freeze({ready});
   }
-  return {mount,visitScore,teacherDisplayName,sanitize,scopeTeachers,makeContext,inClass,scopeRecords,ownedBy,matchVisitAccount,canSee,readOnly,modules};
+  return {mount,mergeTeachers,visitScore,teacherDisplayName,sanitize,scopeTeachers,makeContext,inClass,scopeRecords,ownedBy,matchVisitAccount,canSee,readOnly,modules};
 });
+
