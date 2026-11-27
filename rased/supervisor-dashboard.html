@@ -79,7 +79,9 @@
 </style>
 
 <link rel="stylesheet" href="rased-theme.css">
-</head><body>
+<link rel="stylesheet" href="rased-workspace.css?v=20261127-1">
+<script defer src="rased-workspace.js?v=20261127-1"></script>
+</head><body data-rased-workspace="supervisor">
 <header class="head"><img src="logo.jpeg" class="logo"><h1>مدارس الفلاح الأهلية</h1><div id="portalRoleTitle">نظام راصد - بوابة الإشراف</div><button class="logout" onclick="logout()">تسجيل الخروج</button><button id="executiveReturn" class="logout" style="left:auto;right:16px;display:none" onclick="returnToExecutiveDashboard()">← العودة للمدير العام</button></header>
 <div class="wrap"><div class="welcome">مرحبًا، <strong id="supName">المستخدم</strong> — <span id="supRoleLabel">حساب إشراف</span>. تظهر لك فقط الأقسام التي منحتها لك الإدارة.</div>
 <div class="nav"><a href="academic-development.html?from=supervisor">📊 منظومة التطوير الأكاديمي</a>
@@ -855,3 +857,4 @@ async function ensureVisitSupervisorSession(){
 <div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
 <!-- alfalah-designer-credit:end -->
 </body></html>
+
