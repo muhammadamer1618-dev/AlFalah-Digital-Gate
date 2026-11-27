@@ -51,6 +51,7 @@ th{background:#f7faf8;color:var(--green);font-weight:900;position:sticky;top:0}
 
 <link rel="stylesheet" href="../rased/rased-theme.css">
 <script src="../rased/rased-readonly-guard.js?v=20261120-3"></script>
+<script src="../rased/rased-logout.js?v=20261127-1"></script>
 </head>
 <body>
 <header class="top screen-only">
@@ -168,7 +169,7 @@ function formatStatus(value,type){
   return "—"
 }
 
-function logout(){localStorage.removeItem("currentSupervisor");sessionStorage.removeItem("currentSupervisor");location.href="supervisor-login.html"}
+function logout(){window.RasedLogout.logout(window);}
 window.logout=logout;
 
 function renderStats(){

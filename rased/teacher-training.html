@@ -10,6 +10,7 @@
 @media(max-width:720px){.courses{grid-template-columns:1fr}.back,.logout{position:static;margin:4px}.head{display:flex;flex-direction:column;align-items:center}.wrap{margin:14px auto}.modal-body{padding:12px}}
 </style>
 <link rel="stylesheet" href="rased-theme.css">
+<script src="rased-logout.js?v=20261127-1"></script>
 </head>
 <body>
 <header class="head"><button class="back" onclick="location.href='teacher.html'">← صفحة المعلم</button><img src="logo.jpeg" class="logo"><h1>مدارس الفلاح الأهلية</h1><h2 class="page-title">التطوير والدعم المهني</h2><p>الأنشطة التربوية والدورات والاجتماعات</p><button class="logout" onclick="logout()">تسجيل الخروج</button></header>
@@ -79,7 +80,7 @@ async function signActivity(){
 }
 async function acknowledgeCourse(){const c=selectedEvent;if(!c||kind(c)!=="course")return;if(!resource(c)&&!String(c.description||"").trim()&&!detailSections(c).length){alert("لا يوجد محتوى متاح للاطلاع عليه.");return;}const key=c.id+"_"+currentUser.replace(/[^a-zA-Z0-9._@-]/g,"_");await db.collection("trainingProgress").doc(key).set({courseId:c.id,courseTitle:c.title||"",eventKind:"course",courseType:"material",teacherEmail:currentUser,teacherName:currentTeacher?.name||currentUser,courseAcknowledged:true,completed:true,percent:100,courseAcknowledgedAt:firebase.firestore.FieldValue.serverTimestamp(),completedAt:firebase.firestore.FieldValue.serverTimestamp(),lastActivityAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await loadAll();renderModal(c)}
 function closeModal(){el("eventModal").classList.remove("show");el("eventModal").style.display="none";selectedEvent=null}
-function logout(){["currentUserRole","currentUser","currentUserName","currentUserEmail","currentUserType","currentUserPermissions"].forEach(k=>localStorage.removeItem(k));location.href="index.html"}
+function logout(){window.RasedLogout.logout(window);}
 async function start(){try{if(await protect())await loadAll()}catch(e){console.error(e);alert("تعذر تحميل المواد والاجتماعات: "+e.message)}}start();
 </script>
 

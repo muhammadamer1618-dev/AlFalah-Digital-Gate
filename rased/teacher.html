@@ -1174,6 +1174,7 @@ body{
 <link rel="stylesheet" href="rased-theme.css">
 <link rel="stylesheet" href="rased-workspace.css?v=20261127-1">
 <script defer src="rased-workspace.js?v=20261127-1"></script>
+<script src="rased-logout.js?v=20261127-1"></script>
 </head>
 
 <body data-rased-workspace="teacher">
@@ -5071,10 +5072,7 @@ async function copyGeneratedFileLink(){
   }
 }
 
-function logout(){
-rasedLogoutThisTab();
-location.href="../";
-}
+function logout(){window.RasedLogout.logout(window);}
 
 /* ======================================================
    START

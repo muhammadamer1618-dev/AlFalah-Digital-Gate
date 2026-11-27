@@ -795,6 +795,7 @@ footer strong{
 
 
 <link rel="stylesheet" href="../rased/rased-theme.css">
+<script src="../rased/rased-logout.js?v=20261127-1"></script>
 </head>
 
 <body>
@@ -1438,8 +1439,7 @@ async()=>{
 
     await signOut(auth);
 
-    location.href =
-    "index.html";
+    window.RasedLogout.logout(window);
 
 };
 

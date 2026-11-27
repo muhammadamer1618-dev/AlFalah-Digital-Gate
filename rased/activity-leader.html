@@ -39,6 +39,7 @@ textarea{min-height:110px;resize:vertical}
 </style>
 
 <link rel="stylesheet" href="rased-theme.css">
+<script src="rased-logout.js?v=20261127-1"></script>
 </head>
 
 <body>
@@ -254,17 +255,7 @@ return false;
 return true;
 }
 
-function logout(){
-[
-"currentUserRole",
-"currentUser",
-"currentUserName",
-"currentUserEmail",
-"currentUserType",
-"currentUserPermissions"
-].forEach(k=>localStorage.removeItem(k));
-location.href="index.html";
-}
+function logout(){window.RasedLogout.logout(window);}
 
 async function loadAccount(){
 username=(localStorage.getItem("currentUserEmail")||localStorage.getItem("currentUser")||"").trim().toLowerCase();

@@ -438,7 +438,12 @@ async function openUnified(type){
   showAccountChip(s);
   window.location.href=rasedUrl(s);
 }
-function install(){
+async function install(){
+  const logoutUrl=new URL(window.location.href);
+  if(logoutUrl.searchParams.get("logout")==="1"){
+    await logoutUnified();logoutUrl.searchParams.delete("logout");history.replaceState(null,"",logoutUrl.href);
+  }
+
   const timer=setInterval(()=>{
     if(typeof window.openPortal!=="function"||!$("portalModal"))return;
     clearInterval(timer);

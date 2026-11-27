@@ -20,7 +20,7 @@ module.exports=(async()=>{
  const normal=await verify({role:'supervisor',supervisorType:'supervisor'});assert.equal(normal.ctx.location.href,'');assert.equal(normal.result,true);
  const selected=await verify({role:'supervisor',supervisorType:'executive_viewer'},true,'target');assert.equal(selected.ctx.location.href,'','legacy read-only supervisor inspection stays available');assert.equal(selected.result,true);
  const page=fs.readFileSync(root+'rased/executive-dashboard.html','utf8');assert(page.includes('نظام راصد — مدارس الفلاح الأهلية • تصميم محمد عامر أحمد'));assert(!page.includes('متابعة دون إضافة أو تعديل أو حذف'));
- assert(fs.readFileSync(root+'index.html','utf8').includes('alfalah-sso.js?v=20261126-executive-routing-1'));
+ assert(fs.readFileSync(root+'index.html','utf8').includes('alfalah-sso.js?v=20261127-logout-1'));
  assert(supervisorPage.includes('if(await verifyAccount()===false)return;'));
  console.log('PASS: executive unified login route, legacy links, fresh account type, regular roles, read-only selection, cache version and requested footer.');
 })();

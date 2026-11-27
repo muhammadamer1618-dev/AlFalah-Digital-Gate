@@ -13,6 +13,7 @@
 </style>
 
 <link rel="stylesheet" href="rased-theme.css">
+<script src="rased-logout.js?v=20261127-1"></script>
 </head>
 <body>
 <header class="head"><button class="back" onclick="location.href='supervisor-dashboard.html'">← لوحة الإشراف</button><img src="logo.jpeg" class="logo"><h1>مدارس الفلاح الأهلية</h1><p>متابعة التوجيه الطلابي</p><button class="logout" onclick="logout()">تسجيل الخروج</button></header>
@@ -49,7 +50,7 @@ const db=firebase.firestore();
 let rows=[],permissions={},current=null,currentUser="";
 const el=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 const has=k=>permissions[k]!==false;
-function logout(){["currentUserRole","currentUser","currentUserName","currentUserEmail","currentUserType","currentUserPermissions"].forEach(k=>localStorage.removeItem(k));location.href="index.html"}
+function logout(){window.RasedLogout.logout(window);}
 function effectiveProblem(x){return x.problemType==="أخرى"?(x.customProblem||"أخرى"):(x.problemType||"—")}
 function halfHour(t){if(!/^\d{2}:\d{2}$/.test(String(t||"")))return "غير محدد";const [h,m]=t.split(":").map(Number),s=m<30?0:30,e=s===0?29:59;return `${String(h).padStart(2,"0")}:${String(s).padStart(2,"0")}–${String(h).padStart(2,"0")}:${String(e).padStart(2,"0")}`}
 function countMap(list,get){const m={};list.forEach(x=>{const k=String(get(x)||"غير محدد");m[k]=(m[k]||0)+1});return m}

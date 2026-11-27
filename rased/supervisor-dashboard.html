@@ -81,6 +81,7 @@
 <link rel="stylesheet" href="rased-theme.css">
 <link rel="stylesheet" href="rased-workspace.css?v=20261127-1">
 <script defer src="rased-workspace.js?v=20261127-1"></script>
+<script src="rased-logout.js?v=20261127-1"></script>
 </head><body data-rased-workspace="supervisor">
 <header class="head"><img src="logo.jpeg" class="logo"><h1>مدارس الفلاح الأهلية</h1><div id="portalRoleTitle">نظام راصد - بوابة الإشراف</div><button class="logout" onclick="logout()">تسجيل الخروج</button><button id="executiveReturn" class="logout" style="left:auto;right:16px;display:none" onclick="returnToExecutiveDashboard()">← العودة للمدير العام</button></header>
 <div class="wrap"><div class="welcome">مرحبًا، <strong id="supName">المستخدم</strong> — <span id="supRoleLabel">حساب إشراف</span>. تظهر لك فقط الأقسام التي منحتها لك الإدارة.</div>
@@ -297,7 +298,7 @@ function protect(){
  if(r!=="supervisor"){alert("هذه الصفحة لحسابات الإشراف فقط");location.href="index.html";return false}
  return true;
 }
-function logout(){if(sessionStorage.getItem("rasedExecutiveReadOnly")==="1"){returnToExecutiveDashboard();return;}rasedLogoutThisTab();location.href="../"}
+function logout(){window.RasedLogout.logout(window);}
 function returnToExecutiveDashboard(){
  const keys=["Role","User","UserName","UserEmail","UserType","UserPermissions"];
  keys.forEach(k=>{const v=sessionStorage.getItem("rasedExecutiveActor"+k);if(v!==null)sessionStorage.setItem("currentUser"+k,v);});

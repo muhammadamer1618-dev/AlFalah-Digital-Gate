@@ -31,6 +31,7 @@ input,select{height:42px}textarea{min-height:95px;resize:vertical;line-height:1.
 </style>
 
 <link rel="stylesheet" href="rased-theme.css">
+<script src="rased-logout.js?v=20261127-1"></script>
 </head>
 <body>
 <header class="head">
@@ -167,7 +168,7 @@ let students=[],incidents=[],currentUser="",currentName="";
 
 const el=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-function logout(){["currentUserRole","currentUser","currentUserName","currentUserEmail","currentUserType","currentUserPermissions"].forEach(k=>localStorage.removeItem(k));location.href="index.html"}
+function logout(){window.RasedLogout.logout(window);}
 function tsMillis(v){try{return v?.toMillis?v.toMillis():new Date(v).getTime()||0}catch{return 0}}
 function effectiveProblem(x){return x.problemType==="أخرى"?(x.customProblem||"أخرى"):(x.problemType||"—")}
 function halfHourBucket(t){if(!/^\d{2}:\d{2}$/.test(String(t||"")))return "غير محدد";const [h,m]=t.split(":").map(Number);const s=m<30?0:30;const e=s===0?29:59;return `${String(h).padStart(2,"0")}:${String(s).padStart(2,"0")}–${String(h).padStart(2,"0")}:${String(e).padStart(2,"0")}`}

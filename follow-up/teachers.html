@@ -552,6 +552,7 @@ tbody tr:hover{
   <link rel="stylesheet" href="mobile.css?v=20261012-4">
 
 <link rel="stylesheet" href="../rased/rased-theme.css">
+<script src="../rased/rased-logout.js?v=20261127-1"></script>
 </head>
 
 <body>
@@ -2255,8 +2256,7 @@ el("logoutBtn")
         "currentSupervisor"
       );
 
-      location.href =
-        "supervisor-login.html";
+      window.RasedLogout.logout(window);
 
     }
   );

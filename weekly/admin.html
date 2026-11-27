@@ -1110,6 +1110,7 @@ footer strong{
 </style>
 
 <link rel="stylesheet" href="../rased/rased-theme.css">
+<script src="../rased/rased-logout.js?v=20261127-1"></script>
 </head>
 
 <body>
@@ -2701,8 +2702,7 @@ logoutBtn.addEventListener(
     );
 
 
-    window.location.href =
-    "admin-login.html";
+    window.RasedLogout.logout(window);
 
 
   }

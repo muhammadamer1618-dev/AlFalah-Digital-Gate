@@ -1486,6 +1486,7 @@ body{
   <link rel="stylesheet" href="mobile.css?v=20261012-4">
 
 <link rel="stylesheet" href="../rased/rased-theme.css">
+<script src="../rased/rased-logout.js?v=20261127-1"></script>
 </head>
 
 
@@ -3350,39 +3351,7 @@ async function acknowledgeVisit(
    LOGOUT
 ========================================== */
 
-function logoutTeacher(){
-
-  sessionStorage.removeItem("currentTeacher");
-  localStorage.removeItem("currentTeacher");
-
-
-  currentTeacher =
-    null;
-
-
-  teacherVisits =
-    [];
-
-
-  el("portalSection")
-    .classList
-    .remove("show");
-
-
-  el("loginSection")
-    .style.display =
-    "block";
-
-
-  el("logoutBtn")
-    .style.display =
-    "none";
-
-
-  el("teacherPin").value =
-    "";
-
-}
+function logoutTeacher(){window.RasedLogout.logout(window);}
 
 
 /* ==========================================
