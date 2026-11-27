@@ -5332,6 +5332,7 @@ window.addEventListener("load",async()=>{try{const role=sessionStorage.getItem("
 })();
 </script>
 
+<script>window.RasedWorkspaceInfo=function(){const list=typeof assignments!=="undefined"?assignments:[];return {name:typeof currentTeacher!=="undefined"?currentTeacher?.name:"",metrics:[{label:"المواد المسندة",value:new Set(list.map(a=>String(a.subjectId))).size},{label:"الفصول المسندة",value:new Set(list.map(a=>String(a.grade)+"|"+String(a.section))).size},{label:"الإسنادات التدريسية",value:list.length}]};};</script>
 
 <!-- alfalah-designer-credit:start -->
 <style id="alfalah-designer-credit-style">
@@ -5342,6 +5343,5 @@ window.addEventListener("load",async()=>{try{const role=sessionStorage.getItem("
 </style>
 <div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
 <!-- alfalah-designer-credit:end -->
-<script>window.RasedWorkspaceInfo=function(){const list=typeof assignments!=="undefined"?assignments:[];return {name:typeof currentTeacher!=="undefined"?currentTeacher?.name:"",metrics:[{label:"المواد المسندة",value:new Set(list.map(a=>String(a.subjectId))).size},{label:"الفصول المسندة",value:new Set(list.map(a=>String(a.grade)+"|"+String(a.section))).size},{label:"الإسنادات التدريسية",value:list.length}]};};</script>
 </body>
 </html>
