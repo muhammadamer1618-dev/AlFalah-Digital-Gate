@@ -5334,16 +5334,6 @@ window.addEventListener("load",async()=>{try{const role=sessionStorage.getItem("
 
 <script>window.RasedWorkspaceInfo=function(){const list=typeof assignments!=="undefined"?assignments:[];return {name:typeof currentTeacher!=="undefined"?currentTeacher?.name:"",metrics:[{label:"المواد المسندة",value:new Set(list.map(a=>String(a.subjectId))).size},{label:"الفصول المسندة",value:new Set(list.map(a=>String(a.grade)+"|"+String(a.section))).size},{label:"الإسنادات التدريسية",value:list.length}]};};</script>
 
-<!-- alfalah-designer-credit:start -->
-<style id="alfalah-designer-credit-style">
-#alfalah-designer-credit{display:none!important;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
-@media print {
- #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
-}
-</style>
-<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
-<!-- alfalah-designer-credit:end -->
-
 <style>
 #vlDistribution{width:min(96vw,1000px);max-height:90vh;overflow:auto;border:1px solid #c8ddd4;border-radius:18px;padding:20px;background:white;color:#173b30;direction:rtl;box-sizing:border-box}
 #vlDistribution::backdrop{background:#102f38a8}
@@ -5383,5 +5373,15 @@ window.openLabDistribution=function(){if(!currentTeacher||!currentUsername||rase
 })();
 </script>
 
+
+<!-- alfalah-designer-credit:start -->
+<style id="alfalah-designer-credit-style">
+#alfalah-designer-credit{display:none!important;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
+@media print {
+ #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
+}
+</style>
+<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
+<!-- alfalah-designer-credit:end -->
 </body>
 </html>
