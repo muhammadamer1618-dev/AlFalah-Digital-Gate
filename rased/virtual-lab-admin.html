@@ -34,4 +34,14 @@ $("backup").onclick=async()=>{let p=prompt("كلمة مرور النسخة ال�
 $("restore").onchange=async()=>{let f=$("restore").files[0];if(!f)return;let p=prompt("كلمة مرور النسخة المشفرة");if(!p)return;try{let v=JSON.parse(await f.text());if(v.version!==1)throw Error();let k=await key(p,un64(v.salt)),data=await crypto.subtle.decrypt({name:"AES-GCM",iv:un64(v.iv)},k,un64(v.data));let x=JSON.parse(dec.decode(data));if(!Array.isArray(x.accounts)||!Array.isArray(x.links))throw Error();let ids=new Set(x.accounts.map(a=>a.id));let valid=x.links.filter(([id,c])=>ids.has(id)&&students.some(s=>s.code===c));if(new Set(valid.map(v=>v[1])).size!==valid.length)throw Error();accounts=x.accounts;links=new Map(valid);rejected=new Set(x.rejected||[]);render();status("تم استعادة النسخة؛ راجع المطابقات غير المؤكدة.");}catch(e){status("تعذر فتح النسخة؛ تحقق من كلمة المرور والملف.");}};
 $("reload").onclick=load;$("clear").onclick=()=>{accounts=[];links.clear();rejected.clear();$("file").value="";$("restore").value="";render();status("تم مسح بيانات الحسابات من هذه الصفحة.");};$("search").oninput=render;$("filter").onchange=render;load();
 })();
-</script></body></html>
+</script>
+<!-- alfalah-designer-credit:start -->
+<style id="alfalah-designer-credit-style">
+#alfalah-designer-credit{display:none!important;position:fixed;bottom:8px;left:12px;z-index:2147482000;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.96);color:#195b57;font:600 11px Tahoma,Arial,sans-serif;direction:rtl;text-align:center;box-shadow:0 1px 5px #0002;pointer-events:none}
+@media print {
+ #alfalah-designer-credit{display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:2147482000!important;background:white!important;color:#333!important;box-shadow:none!important;border-top:1px solid #bbb!important;border-radius:0!important;text-align:center!important;font:600 9pt Tahoma,Arial,sans-serif!important;padding:3px!important}
+}
+</style>
+<div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
+<!-- alfalah-designer-credit:end -->
+</body></html>
