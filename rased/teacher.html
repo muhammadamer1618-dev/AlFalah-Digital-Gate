@@ -4787,45 +4787,6 @@ const html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"
 </head><body><div class="head"><img src="logo.jpeg"><h1>مدارس الفلاح الأهلية</h1><h2>سجل رسائل أولياء الأمور - المعلم</h2></div><div class="meta"><span><strong>المعلم:</strong> ${escapeHtml(currentTeacher?.name||"")}</span><span><strong>عدد الرسائل:</strong> ${rows.length}</span></div><table><thead><tr><th>م</th><th>التاريخ والوقت</th><th>الطالب</th><th>الفصل</th><th>المادة</th><th>الاختبار / النوع</th><th>الجوال</th><th>نص الرسالة</th></tr></thead><tbody>${body}</tbody></table><div class="foot"><span>نظام راصد - مدارس الفلاح الأهلية</span><span>تصميم محمد عامر أحمد - 2026</span></div><script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script>
 
 
-<style>
-#vlDistribution{width:min(96vw,1000px);max-height:90vh;overflow:auto;border:1px solid #c8ddd4;border-radius:18px;padding:20px;background:white;color:#173b30;direction:rtl;box-sizing:border-box}
-#vlDistribution::backdrop{background:#102f38a8}
-#vlDistribution .vlbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-#vlDistribution h2{margin:0;font-size:22px}
-#vlDistribution button,#vlDistribution select,#vlDistribution input{font:inherit;padding:9px;border-radius:8px;border:1px solid #b9cfc5;background:white;color:#173b30}
-#vlDistribution button{cursor:pointer}
-#vlDistribution button:disabled{opacity:.5;cursor:not-allowed}
-#vlDistribution .vlsend{background:#087c55;color:white;border:0}
-#vlDistribution .vlscroll{overflow:auto;margin-top:12px}
-#vlDistribution table{width:100%;border-collapse:collapse;min-width:560px}
-#vlDistribution th,#vlDistribution td{padding:9px;border-bottom:1px solid #e2ebe6;text-align:right;color:#173b30;background:white}
-#vlDistribution th{background:#eff6f1}
-#vlDistribution .vlhint{background:#f2f7f4;padding:12px;border-radius:10px;line-height:1.7}
-</style>
-<dialog id="vlDistribution">
-<div class="vlbar"><h2>🧪 توزيع حسابات المعمل الافتراضي</h2><button id="vlDistClose" type="button">إغلاق ✕</button></div>
-<p class="vlhint">اختر الفصل من إسناداتك، ثم استورد ملف حسابات هذا الفصل فقط بصيغة CSV UTF-8 من Excel. تتم المطابقة بالاسم الكامل والصف داخل المتصفح. لا ترفع الصفحة كلمات المرور إلى راصد ولا تحفظها في سجل الرسائل. تحقق من اسم الطالب ورقم ولي الأمر قبل الإرسال.</p>
-<div class="vlbar"><label>الفصل <select id="vlDistClass"></select></label><label>ملف الحسابات <input id="vlDistFile" type="file" accept=".csv,text/csv"></label></div>
-<p id="vlDistStatus" role="status" aria-live="polite"></p>
-<div class="vlscroll"><table><thead><tr><th>الطالب</th><th>جوال ولي الأمر</th><th>المطابقة</th><th>الإرسال</th><th>التأكيد اليدوي</th></tr></thead><tbody id="vlDistRows"></tbody></table></div>
-</dialog>
-<script>
-(function(){
-const d=document.getElementById("vlDistribution"),cls=document.getElementById("vlDistClass"),file=document.getElementById("vlDistFile"),body=document.getElementById("vlDistRows"),status=document.getElementById("vlDistStatus");
-let pairs=[],students=[],accounts=[],confirmed=new Set(),epoch=0;
-const clean=x=>String(x??"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/\s+/g," ").trim();
-const nameKey=x=>clean(x);
-function gradeKey(x){return clean(x).replace(/[٠-٩]/g,c=>String("٠١٢٣٤٥٦٧٨٩".indexOf(c))).replace(/[أإآ]/g,"ا").replace(/الصف|المرحلة|الابتدائية|الابتدائي|ابتدائية|المتوسطة|المتوسط|الثانوية|الثانوي/g,m=>/ابتد/.test(m)?"ابتدائي":/متوسط/.test(m)?"متوسط":/ثانو/.test(m)?"ثانوي":"").replace(/الاول|اول/g,"1").replace(/الثاني|ثاني/g,"2").replace(/الثالث|ثالث/g,"3").replace(/الرابع|رابع/g,"4").replace(/الخامس|خامس/g,"5").replace(/السادس|سادس/g,"6").replace(/\s+/g,"").replace(/(ابتدائي|متوسط|ثانوي)[ابجد]$/,"$1");}
-function parseCSV(text){let rows=[],row=[],field="",quoted=false;for(let i=0;i<text.length;i++){let c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){field+='"';i++;}else quoted=!quoted;}else if(c===","&&!quoted){row.push(field);field="";}else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&text[i+1]==="\n")i++;row.push(field);if(row.some(v=>v!==""))rows.push(row);row=[];field="";}else field+=c;}if(quoted)throw Error("ملف CSV غير صالح");row.push(field);if(row.some(v=>v!==""))rows.push(row);return rows;}
-function reset(){epoch++;students=[];accounts=[];confirmed.clear();file.value="";body.replaceChildren();status.textContent="";}
-function render(){body.replaceChildren();let matches=0;const pair=pairs[Number(cls.value)];if(!pair)return;for(const st of students){const hits=accounts.filter(a=>nameKey(a.name)===nameKey(st.name)&&gradeKey(a.grade)===gradeKey(pair.grade));const unique=students.filter(x=>nameKey(x.name)===nameKey(st.name)).length===1;const a=hits.length===1&&unique?hits[0]:null;const phone=normalizeSaudiPhone(st.guardianPhone||st.phone||"");const valid=/^9665\d{8}$/.test(phone);if(a)matches++;const tr=document.createElement("tr");function cell(v){const td=document.createElement("td");td.textContent=v;tr.append(td);return td;}cell(st.name||"");cell(phone||"غير مسجل");cell(a?"مطابق":hits.length>1||!unique?"اسم مكرر — راجع الملف":"غير مطابق");const send= document.createElement("button");send.className="vlsend";send.type="button";send.textContent="واتساب";send.disabled=!a||!valid;send.onclick=()=>{if(!a||!valid)return;if(!confirm("تأكد من إرسال حساب "+st.name+" إلى جوال ولي الأمر "+phone+"؟"))return;const msg=["السلام عليكم ورحمة الله وبركاته","مدارس الفلاح الأهلية","بيانات دخول الطالب إلى المعمل الافتراضي","اسم الطالب: "+st.name,"اسم المستخدم: "+a.email,"كلمة المرور: "+a.password,"طريقة الدخول إلى المعمل الافتراضي:","١. الدخول إلى بوابة الفلاح الرقمية عبر الرابط التالي:","https://rasededu.online/","٢. اختيار بطاقة ولي الأمر.","٣. إدخال رقم هوية الطالب للدخول إلى بوابة الطالب.","٤. الضغط على بطاقة المعمل الافتراضي.","٥. تسجيل الدخول باستخدام اسم المستخدم وكلمة المرور أعلاه.","مع تحيات إدارة مدارس الفلاح الأهلية"].join("\n");window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank","noopener,noreferrer");};cell("").append(send);const check=document.createElement("input");check.type="checkbox";check.disabled=!a||!valid;check.checked=confirmed.has(st.code);check.setAttribute("aria-label","تأكيد الإرسال إلى "+st.name);check.onchange=()=>{if(check.checked)confirmed.add(st.code);else confirmed.delete(st.code);render();};cell("").append(check);body.append(tr);}status.textContent="طلاب الفصل: "+students.length+" | مطابق: "+matches+" | تم تأكيد الإرسال: "+confirmed.size+" (لهذه الجلسة فقط)";}
-async function load(){reset();const token=epoch,p=pairs[Number(cls.value)];if(!p)return;status.textContent="جارٍ تحميل كشف الفصل…";try{const snap=await db.collection("students").where("grade","==",p.grade).get();if(token!==epoch)return;students=snap.docs.map(x=>({...x.data(),code:String(x.data().code||x.id)})).filter(x=>String(x.section)===String(p.section)).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ar"));render();}catch(e){if(token===epoch)status.textContent="تعذر تحميل الطلاب."}}
-file.onchange=async()=>{accounts=[];confirmed.clear();const token=epoch;const selected=file.files[0];if(!selected){render();return;}try{if(selected.size>2e6)throw Error("حجم الملف كبير");let rows=parseCSV((await selected.text()).replace(/^\uFEFF/,""));if(token!==epoch)return;let h=rows.shift().map(x=>x.trim().toLowerCase());let ix=["classe_name","name","email","password"].map(x=>h.indexOf(x));if(ix.some(x=>x<0))throw Error("الأعمدة المطلوبة: classe_name, name, email, password");let p=pairs[Number(cls.value)];accounts=rows.map(r=>({grade:r[ix[0]],name:r[ix[1]],email:String(r[ix[2]]||"").trim(),password:String(r[ix[3]]||"")})).filter(a=>a.name&&a.email&&a.password&&gradeKey(a.grade)===gradeKey(p.grade));render();}catch(e){accounts=[];render();status.textContent="تعذر قراءة الملف: "+e.message;}};
-cls.onchange=load;document.getElementById("vlDistClose").onclick=()=>d.close();d.addEventListener("close",reset);
-window.openLabDistribution=function(){if(!currentTeacher||!currentUsername||rasedAuthGet("currentUserRole")!=="teacher"){alert("الخدمة متاحة للمعلمين بعد تسجيل الدخول.");return;}pairs=[...new Map(assignments.map(a=>[JSON.stringify([a.grade,a.section]),{grade:a.grade,section:a.section}])).values()];cls.replaceChildren();pairs.forEach((p,i)=>{let o=document.createElement("option");o.value=String(i);o.textContent=p.grade+" / "+p.section;cls.append(o);});if(!pairs.length){alert("لا توجد فصول مسندة إلى حسابك.");return;}d.showModal();load();};
-})();
-</script>
-
 </body></html>`;
 const w=window.open("","_blank");if(!w){alert("اسمح بالنوافذ المنبثقة للطباعة.");return;}w.document.open();w.document.write(html);w.document.close();
 }
@@ -5382,5 +5343,45 @@ window.addEventListener("load",async()=>{try{const role=sessionStorage.getItem("
 </style>
 <div id="alfalah-designer-credit" aria-label="تصميم محمد عامر أحمد">تصميم محمد عامر أحمد</div>
 <!-- alfalah-designer-credit:end -->
+
+<style>
+#vlDistribution{width:min(96vw,1000px);max-height:90vh;overflow:auto;border:1px solid #c8ddd4;border-radius:18px;padding:20px;background:white;color:#173b30;direction:rtl;box-sizing:border-box}
+#vlDistribution::backdrop{background:#102f38a8}
+#vlDistribution .vlbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+#vlDistribution h2{margin:0;font-size:22px}
+#vlDistribution button,#vlDistribution select,#vlDistribution input{font:inherit;padding:9px;border-radius:8px;border:1px solid #b9cfc5;background:white;color:#173b30}
+#vlDistribution button{cursor:pointer}
+#vlDistribution button:disabled{opacity:.5;cursor:not-allowed}
+#vlDistribution .vlsend{background:#087c55;color:white;border:0}
+#vlDistribution .vlscroll{overflow:auto;margin-top:12px}
+#vlDistribution table{width:100%;border-collapse:collapse;min-width:560px}
+#vlDistribution th,#vlDistribution td{padding:9px;border-bottom:1px solid #e2ebe6;text-align:right;color:#173b30;background:white}
+#vlDistribution th{background:#eff6f1}
+#vlDistribution .vlhint{background:#f2f7f4;padding:12px;border-radius:10px;line-height:1.7}
+</style>
+<dialog id="vlDistribution">
+<div class="vlbar"><h2>🧪 توزيع حسابات المعمل الافتراضي</h2><button id="vlDistClose" type="button">إغلاق ✕</button></div>
+<p class="vlhint">اختر الفصل من إسناداتك، ثم استورد ملف حسابات هذا الفصل فقط بصيغة CSV UTF-8 من Excel. تتم المطابقة بالاسم الكامل والصف داخل المتصفح. لا ترفع الصفحة كلمات المرور إلى راصد ولا تحفظها في سجل الرسائل. تحقق من اسم الطالب ورقم ولي الأمر قبل الإرسال.</p>
+<div class="vlbar"><label>الفصل <select id="vlDistClass"></select></label><label>ملف الحسابات <input id="vlDistFile" type="file" accept=".csv,text/csv"></label></div>
+<p id="vlDistStatus" role="status" aria-live="polite"></p>
+<div class="vlscroll"><table><thead><tr><th>الطالب</th><th>جوال ولي الأمر</th><th>المطابقة</th><th>الإرسال</th><th>التأكيد اليدوي</th></tr></thead><tbody id="vlDistRows"></tbody></table></div>
+</dialog>
+<script>
+(function(){
+const d=document.getElementById("vlDistribution"),cls=document.getElementById("vlDistClass"),file=document.getElementById("vlDistFile"),body=document.getElementById("vlDistRows"),status=document.getElementById("vlDistStatus");
+let pairs=[],students=[],accounts=[],confirmed=new Set(),epoch=0;
+const clean=x=>String(x??"").normalize("NFKC").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/\s+/g," ").trim();
+const nameKey=x=>clean(x);
+function gradeKey(x){return clean(x).replace(/[٠-٩]/g,c=>String("٠١٢٣٤٥٦٧٨٩".indexOf(c))).replace(/[أإآ]/g,"ا").replace(/الصف|المرحلة|الابتدائية|الابتدائي|ابتدائية|المتوسطة|المتوسط|الثانوية|الثانوي/g,m=>/ابتد/.test(m)?"ابتدائي":/متوسط/.test(m)?"متوسط":/ثانو/.test(m)?"ثانوي":"").replace(/الاول|اول/g,"1").replace(/الثاني|ثاني/g,"2").replace(/الثالث|ثالث/g,"3").replace(/الرابع|رابع/g,"4").replace(/الخامس|خامس/g,"5").replace(/السادس|سادس/g,"6").replace(/\s+/g,"").replace(/(ابتدائي|متوسط|ثانوي)[ابجد]$/,"$1");}
+function parseCSV(text){let rows=[],row=[],field="",quoted=false;for(let i=0;i<text.length;i++){let c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){field+='"';i++;}else quoted=!quoted;}else if(c===","&&!quoted){row.push(field);field="";}else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&text[i+1]==="\n")i++;row.push(field);if(row.some(v=>v!==""))rows.push(row);row=[];field="";}else field+=c;}if(quoted)throw Error("ملف CSV غير صالح");row.push(field);if(row.some(v=>v!==""))rows.push(row);return rows;}
+function reset(){epoch++;students=[];accounts=[];confirmed.clear();file.value="";body.replaceChildren();status.textContent="";}
+function render(){body.replaceChildren();let matches=0;const pair=pairs[Number(cls.value)];if(!pair)return;for(const st of students){const hits=accounts.filter(a=>nameKey(a.name)===nameKey(st.name)&&gradeKey(a.grade)===gradeKey(pair.grade));const unique=students.filter(x=>nameKey(x.name)===nameKey(st.name)).length===1;const a=hits.length===1&&unique?hits[0]:null;const phone=normalizeSaudiPhone(st.guardianPhone||st.phone||"");const valid=/^9665\d{8}$/.test(phone);if(a)matches++;const tr=document.createElement("tr");function cell(v){const td=document.createElement("td");td.textContent=v;tr.append(td);return td;}cell(st.name||"");cell(phone||"غير مسجل");cell(a?"مطابق":hits.length>1||!unique?"اسم مكرر — راجع الملف":"غير مطابق");const send= document.createElement("button");send.className="vlsend";send.type="button";send.textContent="واتساب";send.disabled=!a||!valid;send.onclick=()=>{if(!a||!valid)return;if(!confirm("تأكد من إرسال حساب "+st.name+" إلى جوال ولي الأمر "+phone+"؟"))return;const msg=["السلام عليكم ورحمة الله وبركاته","مدارس الفلاح الأهلية","بيانات دخول الطالب إلى المعمل الافتراضي","اسم الطالب: "+st.name,"اسم المستخدم: "+a.email,"كلمة المرور: "+a.password,"طريقة الدخول إلى المعمل الافتراضي:","١. الدخول إلى بوابة الفلاح الرقمية عبر الرابط التالي:","https://rasededu.online/","٢. اختيار بطاقة ولي الأمر.","٣. إدخال رقم هوية الطالب للدخول إلى بوابة الطالب.","٤. الضغط على بطاقة المعمل الافتراضي.","٥. تسجيل الدخول باستخدام اسم المستخدم وكلمة المرور أعلاه.","مع تحيات إدارة مدارس الفلاح الأهلية"].join("\n");window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank","noopener,noreferrer");};cell("").append(send);const check=document.createElement("input");check.type="checkbox";check.disabled=!a||!valid;check.checked=confirmed.has(st.code);check.setAttribute("aria-label","تأكيد الإرسال إلى "+st.name);check.onchange=()=>{if(check.checked)confirmed.add(st.code);else confirmed.delete(st.code);render();};cell("").append(check);body.append(tr);}status.textContent="طلاب الفصل: "+students.length+" | مطابق: "+matches+" | تم تأكيد الإرسال: "+confirmed.size+" (لهذه الجلسة فقط)";}
+async function load(){reset();const token=epoch,p=pairs[Number(cls.value)];if(!p)return;status.textContent="جارٍ تحميل كشف الفصل…";try{const snap=await db.collection("students").where("grade","==",p.grade).get();if(token!==epoch)return;students=snap.docs.map(x=>({...x.data(),code:String(x.data().code||x.id)})).filter(x=>String(x.section)===String(p.section)).sort((a,b)=>String(a.name).localeCompare(String(b.name),"ar"));render();}catch(e){if(token===epoch)status.textContent="تعذر تحميل الطلاب."}}
+file.onchange=async()=>{accounts=[];confirmed.clear();const token=epoch;const selected=file.files[0];if(!selected){render();return;}try{if(selected.size>2e6)throw Error("حجم الملف كبير");let rows=parseCSV((await selected.text()).replace(/^\uFEFF/,""));if(token!==epoch)return;let h=rows.shift().map(x=>x.trim().toLowerCase());let ix=["classe_name","name","email","password"].map(x=>h.indexOf(x));if(ix.some(x=>x<0))throw Error("الأعمدة المطلوبة: classe_name, name, email, password");let p=pairs[Number(cls.value)];accounts=rows.map(r=>({grade:r[ix[0]],name:r[ix[1]],email:String(r[ix[2]]||"").trim(),password:String(r[ix[3]]||"")})).filter(a=>a.name&&a.email&&a.password&&gradeKey(a.grade)===gradeKey(p.grade));render();}catch(e){accounts=[];render();status.textContent="تعذر قراءة الملف: "+e.message;}};
+cls.onchange=load;document.getElementById("vlDistClose").onclick=()=>d.close();d.addEventListener("close",reset);
+window.openLabDistribution=function(){if(!currentTeacher||!currentUsername||rasedAuthGet("currentUserRole")!=="teacher"){alert("الخدمة متاحة للمعلمين بعد تسجيل الدخول.");return;}pairs=[...new Map(assignments.map(a=>[JSON.stringify([a.grade,a.section]),{grade:a.grade,section:a.section}])).values()];cls.replaceChildren();pairs.forEach((p,i)=>{let o=document.createElement("option");o.value=String(i);o.textContent=p.grade+" / "+p.section;cls.append(o);});if(!pairs.length){alert("لا توجد فصول مسندة إلى حسابك.");return;}d.showModal();load();};
+})();
+</script>
+
 </body>
 </html>
